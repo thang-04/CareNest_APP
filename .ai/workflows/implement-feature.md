@@ -1,7 +1,11 @@
-# Workflow làm tính năng Mobile
+# Workflow — Implement feature (Mobile)
 
-1. Xác định actor, tác vụ, đường vào màn hình và tiêu chí hoàn thành.
-2. Kiểm tra navigation/state hiện có, API/contract BE, hành vi offline/lỗi và dữ liệu nhạy cảm.
-3. Implement theo pattern đang dùng; không tạo business rule hoặc dữ liệu chuẩn mới trong client.
-4. Kiểm tra thao tác chính, quyền hiển thị, lỗi API và trạng thái thiết bị phù hợp; phân biệt test cục bộ với kiểm chứng trên máy thật.
-
+1. **Requirement:** actor (Parent / Teacher / Kitchen Staff), outcome, điều kiện hoàn thành. Map sang mục màn hình trong `docs/features/<role>/README.md` → BE flow, module card, rule ID. Rule PENDING/OPEN ⇒ nêu khoảng trống, hỏi hoặc thiết kế UI theo dữ liệu/permission BE trả về — không tự quyết.
+2. **Memory:** grep `docs/knowledge/ISSUE_INDEX.md` + "Known pitfalls" của feature doc + `PATTERNS.md` cho màn hình/domain tương tự.
+3. **Navigation:** vị trí màn hình trong `docs/architecture/NAVIGATION.md`; deep link nếu nhận từ push. Màn hình mới ⇒ cập nhật NAVIGATION.md.
+4. **Contract:** endpoint có trong OpenAPI BE / module card chưa? Chưa ⇒ dừng phần gọi API, ghi đề xuất contract (endpoint, request, response `data`, status lỗi) để thống nhất với BE. Theo `workflows/integrate-api.md`.
+5. **Impact analysis:** role khác dùng chung component/state? dữ liệu nhạy cảm (sức khỏe, dị ứng, ảnh) — hiển thị/cache/log thế nào? offline? push? Chạm Bảng 2 của `ROUTER.md` ⇒ L3.
+6. **Code:** theo `.claude/rules/` + pattern đang có trong source. Không chọn thư viện nền mới khi chưa hỏi. Không tính lại số liệu nghiệp vụ (suất ăn, định lượng, trend) ở client — hiển thị giá trị BE trả.
+7. **Test & kiểm tra:** thao tác chính; trạng thái loading / empty / error / offline / 401 / 403; double-submit; chữ tiếng Việt dài; màn hình nhỏ. Phân biệt test tự động với kiểm tra tay trên emulator/máy thật.
+8. **Docs & memory:** cập nhật feature doc (màn hình mới, PENDING còn lại, Known pitfalls nếu gặp edge case), `CURRENT_STATE.md` khi feature bắt đầu/xong. Edge case đáng nhớ ⇒ `CASE-xxx` incident.
+9. Báo: đã chạy gì, chưa kiểm chứng gì (thiết bị, API thật, push), thay đổi BE còn chờ. Đối chiếu DoD.

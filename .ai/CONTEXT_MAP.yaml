@@ -1,31 +1,98 @@
-version: 1
+# KHÔNG đọc cả file: grep -iE "<từ khóa>" .ai/CONTEXT_MAP.yaml rồi chỉ mở file được trỏ tới.
+# Bản đồ context CareNest_APP. Agent: grep `keywords` → đọc `app_docs` (map màn hình) + `be_module_card` (nguồn rule).
+# `be_module_card` là đường dẫn trong repo BE: sibling ../CareNest_BE/<path> hoặc https://github.com/thang-04/CareNest_BE.git
+# Chỉ đường dẫn trong `available` (và app_docs dưới đây) đã tồn tại; `planned` thì chưa.
+version: 2
 repository: CareNest_APP
+role: Mobile client (Parent, Teacher, Kitchen Staff) — sở hữu UI, navigation, client state, API integration, nhận push. KHÔNG sở hữu business rule/authz/contract.
+
+keywords:
+  # từ khóa (VN|EN, regex-friendly) -> {app_docs, be_module_card}
+  "điểm danh|attendance|đi muộn|đến muộn|late|vắng|có mặt":
+    {app_docs: [docs/features/teacher/README.md, docs/features/parent/README.md], be_module_card: [docs/modules/attendance.md]}
+  "báo ăn|tham gia ăn|meal participation":
+    {app_docs: [docs/features/teacher/README.md], be_module_card: [docs/modules/attendance.md, docs/modules/nutrition.md]}
+  "đơn nghỉ|xin nghỉ|leave request|leave":
+    {app_docs: [docs/features/parent/README.md, docs/features/teacher/README.md], be_module_card: [docs/modules/attendance.md]}   # P-15 PENDING
+  "suất ăn|số suất|meal count|chốt suất|adjustment|điều chỉnh suất":
+    {app_docs: [docs/features/kitchen/README.md], be_module_card: [docs/modules/nutrition.md]}
+  "thực đơn|menu|món|dish|bữa ăn|meal":
+    {app_docs: [docs/features/kitchen/README.md, docs/features/parent/README.md], be_module_card: [docs/modules/nutrition.md]}
+  "định lượng|food quantity|thực phẩm tươi|fresh|kho khô|stored|bếp|kitchen":
+    {app_docs: [docs/features/kitchen/README.md], be_module_card: [docs/modules/nutrition.md]}
+  "dị ứng|allergy":
+    {app_docs: [docs/features/kitchen/README.md, docs/features/parent/README.md], be_module_card: [docs/modules/child.md, docs/modules/nutrition.md]}
+  "trẻ|child|hồ sơ trẻ|tổng quan con|child overview|chọn con":
+    {app_docs: [docs/features/parent/README.md], be_module_card: [docs/modules/child.md]}
+  "sức khỏe|health|chiều cao|cân nặng|measurement|tăng trưởng|biểu đồ|trend":
+    {app_docs: [docs/features/parent/README.md, docs/features/teacher/README.md], be_module_card: [docs/modules/health.md]}
+  "quan sát|observation|tiêu chí|nhận xét|summary|phát triển|development|hoạt động|activity":
+    {app_docs: [docs/features/teacher/README.md, docs/features/parent/README.md], be_module_card: [docs/modules/learning-observation.md]}
+  "cơ sở vật chất|csvc|thiết bị hỏng|sự cố|facility":
+    {app_docs: [docs/features/teacher/README.md], be_module_card: [docs/modules/facility-issue.md]}
+  "đăng nhập|login|logout|token|refresh|session|phiên|401|role|permission|phân quyền|403":
+    {app_docs: [docs/integration/AUTH_FLOW.md, docs/integration/BACKEND_INTEGRATION.md], be_module_card: [docs/modules/identity-access.md]}
+  "điểm trường|campus|lớp|classroom|phân công|assignment":
+    {app_docs: [docs/architecture/NAVIGATION.md], be_module_card: [docs/modules/school-structure.md]}
+  "thông báo|notification|push|deep link|device token|fcm|apns":
+    {app_docs: [docs/integration/PUSH_NOTIFICATION.md], be_module_card: [docs/modules/notification.md]}
+  "phụ huynh xem|parent view|hiển thị phụ huynh|được công bố|published":
+    {app_docs: [docs/features/parent/README.md], be_module_card: [docs/modules/child.md, docs/modules/identity-access.md]}   # ADR-0010
+  "api|endpoint|dto|error code|problemdetail|traceId|timeout|retry|offline|mất mạng":
+    {app_docs: [docs/integration/BACKEND_INTEGRATION.md], be_module_card: []}
+  "navigation|điều hướng|màn hình|screen|tab|route":
+    {app_docs: [docs/architecture/NAVIGATION.md], be_module_card: []}
+  "state|cache|store|query|đồng bộ|sync":
+    {app_docs: [docs/architecture/STATE_MANAGEMENT.md], be_module_card: []}
+  "build|gradle|xcode|pod|metro|emulator|simulator|thiết bị|device|release":
+    {app_docs: [docs/knowledge/TROUBLESHOOTING.md], be_module_card: []}
+  "ai|gợi ý|draft|bản nháp":
+    {app_docs: [docs/features/README.md], be_module_card: [docs/modules/ai-assistance.md]}   # APP không hiển thị DRAFT như chính thức
+
+topics:
+  project:       [docs/context/REPOSITORY_CONTEXT.md, docs/context/CURRENT_STATE.md]
+  architecture:  [docs/architecture/MOBILE_ARCHITECTURE.md, docs/architecture/STATE_MANAGEMENT.md, docs/architecture/NAVIGATION.md]
+  features:      [docs/features/README.md, docs/features/parent/README.md, docs/features/teacher/README.md, docs/features/kitchen/README.md]
+  integration:   [docs/integration/BACKEND_INTEGRATION.md, docs/integration/AUTH_FLOW.md, docs/integration/PUSH_NOTIFICATION.md]
+  memory:        [docs/knowledge/ISSUE_INDEX.md, docs/knowledge/KNOWN_ISSUES.md, docs/knowledge/TROUBLESHOOTING.md, docs/knowledge/PATTERNS.md]
+  quality:       [docs/quality/DEFINITION_OF_DONE.md]
+  coding-rules:  [.claude/rules/]
+  be-sources:    # trong repo BE
+    [docs/backend-coding-guide.md, docs/system/CROSS_REPO_MAP.md, docs/business/BUSINESS_RULES.md, docs/business/USER_ROLES.md, docs/contracts/API_CONVENTIONS.md, docs/contracts/ERROR_CONTRACT.md, docs/decisions/ADR-0010-parent-visibility-policy.md, docs/knowledge/CROSS_MODULE_ISSUES.md]
+
 available:
-  entrypoints:
-    - AGENTS.md
-    - CLAUDE.md
-  routing:
-    - .ai/ROUTER.md
-    - .ai/ESCALATION.md
-    - .ai/CONTEXT_MAP.yaml
-  context:
-    - .ai/REPO_CONTEXT.md
-  profiles:
-    - .ai/profiles/code.md
-    - .ai/profiles/feature.md
-    - .ai/profiles/cross-repo.md
-  workflows:
-    - .ai/workflows/fix-bug.md
-    - .ai/workflows/implement-feature.md
-    - .ai/workflows/review-code.md
-    - .ai/workflows/integrate-api.md
-  agent_skills:
-    - .agents/skills/carenest-mobile/SKILL.md
-    - .claude/skills/carenest-mobile/SKILL.md
-planned:
-  - docs/INDEX.md
+  entrypoints: [AGENTS.md, CLAUDE.md, docs/INDEX.md]
+  routing: [.ai/ROUTER.md, .ai/ESCALATION.md, .ai/CONTEXT_MAP.yaml]
+  profiles: [.ai/profiles/code.md, .ai/profiles/feature.md, .ai/profiles/architecture.md, .ai/profiles/cross-repo.md, .ai/profiles/full.md]
+  workflows: [.ai/workflows/fix-bug.md, .ai/workflows/implement-feature.md, .ai/workflows/review-code.md, .ai/workflows/integrate-api.md]
+  skills: [.agents/skills/, .claude/skills/]
+  rules: [.claude/rules/component.md, .claude/rules/navigation.md, .claude/rules/state.md, .claude/rules/api-client.md, .claude/rules/security-storage.md]
+  docs:
+    - docs/context/REPOSITORY_CONTEXT.md
+    - docs/context/CURRENT_STATE.md
+    - docs/architecture/NAVIGATION.md
+    - docs/features/README.md
+    - docs/features/parent/README.md
+    - docs/features/teacher/README.md
+    - docs/features/kitchen/README.md
+    - docs/integration/BACKEND_INTEGRATION.md
+    - docs/knowledge/ISSUE_INDEX.md
+    - docs/knowledge/KNOWN_ISSUES.md
+    - docs/knowledge/TROUBLESHOOTING.md
+    - docs/knowledge/PATTERNS.md
+    - docs/knowledge/incidents/_TEMPLATE.md
+    - docs/quality/DEFINITION_OF_DONE.md
+
+skeleton_only:   # tồn tại nhưng chưa có nội dung chốt — không dùng làm nguồn
   - docs/architecture/MOBILE_ARCHITECTURE.md
-  - docs/integration/BACKEND_INTEGRATION.md
+  - docs/architecture/STATE_MANAGEMENT.md
+  - docs/integration/AUTH_FLOW.md
+  - docs/integration/PUSH_NOTIFICATION.md
+
+planned:
+  - src/                                  # chưa có source; framework PROPOSED (React Native)
+  - docs/architecture/RELEASE.md          # build/ký app/phát hành — khi có source
+
 related_repositories:
-  CareNest_BE: https://github.com/thang-04/CareNest_BE.git
-  CareNest_FE: https://github.com/thang-04/CareNest_FE.git
+  CareNest_BE: {local: ../CareNest_BE, remote: https://github.com/thang-04/CareNest_BE.git, role: source of truth}
+  CareNest_FE: {local: ../CareNest_FE, remote: https://github.com/thang-04/CareNest_FE.git, role: Web client}

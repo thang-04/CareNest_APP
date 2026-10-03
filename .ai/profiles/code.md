@@ -1,4 +1,15 @@
-# Profile CODE — Mobile
+# Profile CODE — sửa cục bộ, bug, review nhỏ
 
-Bắt đầu với screen/navigation/state, API call và test gần thay đổi nếu đã có. Phân biệt lỗi APP với response/contract BE và trạng thái thiết bị. Chỉ mở BE khi hành vi phụ thuộc contract hoặc business rule; nâng context theo `../ESCALATION.md` nếu tác động liên repo. Không áp React Native convention khi stack thực tế khác.
+Mức: L1. Mục tiêu: tốn ít context nhất mà vẫn đúng.
 
+Đọc:
+1. Source + test gần vị trí lỗi: screen/component, hook, API client call, navigation route; thay đổi gần đây (git log file).
+2. `docs/knowledge/ISSUE_INDEX.md`: grep chuỗi lỗi, mã lỗi BE (`code`), tên màn hình, nền tảng (Android/iOS).
+3. `docs/features/<role>/README.md` — mục màn hình liên quan (BE flow/card/rule ID nào áp dụng).
+4. BE module card chỉ khi lỗi phụ thuộc dữ liệu/contract.
+
+Phân loại lỗi trước khi sửa: **APP** (UI/state/navigation) · **contract** (response khác `BE:docs/contracts/`) · **thiết bị/môi trường** (`docs/knowledge/TROUBLESHOOTING.md`) · **nghiệp vụ BE** (không sửa bằng workaround ở APP).
+
+Không đọc: architecture docs, ADR BE (trừ khi card trỏ tới). Không áp React Native convention khi source thực tế khác.
+
+Nâng lên L2/L3 khi sửa chạm: auth/token, push, dữ liệu sức khỏe/dị ứng/phụ huynh, offline ghi dữ liệu, contract BE (`.ai/ESCALATION.md`).
