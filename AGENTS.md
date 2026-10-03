@@ -11,6 +11,8 @@ Quy ước trong docs repo này: `BE:<path>` = file trong repo BE (vd. `BE:docs/
 3. Bug/lỗi/case lạ: **search `docs/knowledge/ISSUE_INDEX.md` trước** (chuỗi lỗi, màn hình, mã lỗi BE, thiết bị). Lỗi contract/nghiệp vụ: search thêm `BE:docs/knowledge/ISSUE_INDEX.md` và `BE:docs/knowledge/CROSS_MODULE_ISSUES.md`. Incident cũ là manh mối — kiểm chứng lại với code hiện tại.
 4. Kết thúc: đối chiếu `docs/quality/DEFINITION_OF_DONE.md`, gồm cập nhật engineering memory.
 
+**Tri thức mới** — user đưa nghiệp vụ mới / chốt PENDING, hoặc gặp **bug mới** / edge case ⇒ chạy `.ai/workflows/update-knowledge.md` ngay trong lượt (không đợi cuối task).
+
 ## Đọc tiết kiệm token
 
 - **`.ai/CONTEXT_MAP.yaml`: grep, không đọc cả file** — `grep -iE "<từ khóa>" .ai/CONTEXT_MAP.yaml` để ra module/card. Chỉ mở cả file khi cần sửa map.

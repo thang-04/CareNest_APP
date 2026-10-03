@@ -62,9 +62,10 @@ topics:
 
 available:
   entrypoints: [AGENTS.md, CLAUDE.md, docs/INDEX.md]
+  hooks: [.claude/settings.json, .claude/hooks/memory-reminder.mjs]   # Claude Stop hook nhắc cập nhật memory
   routing: [.ai/ROUTER.md, .ai/ESCALATION.md, .ai/CONTEXT_MAP.yaml]
   profiles: [.ai/profiles/code.md, .ai/profiles/feature.md, .ai/profiles/architecture.md, .ai/profiles/cross-repo.md, .ai/profiles/full.md]
-  workflows: [.ai/workflows/fix-bug.md, .ai/workflows/implement-feature.md, .ai/workflows/review-code.md, .ai/workflows/integrate-api.md]
+  workflows: [.ai/workflows/fix-bug.md, .ai/workflows/implement-feature.md, .ai/workflows/review-code.md, .ai/workflows/integrate-api.md, .ai/workflows/update-knowledge.md]
   skills: [.agents/skills/, .claude/skills/]
   rules: [.claude/rules/component.md, .claude/rules/navigation.md, .claude/rules/state.md, .claude/rules/api-client.md, .claude/rules/security-storage.md]
   docs:

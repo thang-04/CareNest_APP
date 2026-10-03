@@ -27,3 +27,7 @@ Chạm bất kỳ mục nào ⇒ ít nhất L3: dữ liệu sức khỏe / dị 
 Chat/nhắn tin (CareNest không thay Zalo) · multi-school/multi-tenant · kho/NCC/tồn kho · soạn/duyệt giáo án · chẩn đoán y tế/tâm lý · thanh toán/học phí · hiển thị AI draft như kết quả chính thức ⇒ **dừng**, đối chiếu `BE:docs/context/PROJECT_CONTEXT.md` (Exclusions) và hỏi người dùng.
 
 `BE:<path>` = `../CareNest_BE/<path>` (xem `AGENTS.md`).
+
+## Cập nhật tri thức (song song với mọi task)
+
+User đưa thông tin nghiệp vụ mới / chốt PENDING, gặp **bug mới** hoặc edge case ⇒ chạy `workflows/update-knowledge.md` (skill `update-knowledge`) **ngay trong lượt**, rồi tiếp tục task chính. Claude có Stop hook (`.claude/hooks/memory-reminder.mjs`) nhắc một lần khi code đổi mà `docs/` chưa đổi.
