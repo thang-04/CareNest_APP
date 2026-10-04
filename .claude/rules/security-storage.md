@@ -13,7 +13,7 @@ paths:
 > Cơ chế auth (BE) và push provider chưa chốt; thư viện secure storage chưa chọn — hỏi trước khi chọn. Xem `docs/integration/AUTH_FLOW.md`, `PUSH_NOTIFICATION.md`.
 
 ## Token
-- Lưu token chỉ trong secure storage của OS (Keychain / Android Keystore-backed). Không AsyncStorage/SharedPreferences thường, không file, không state persist.
+- Policy PROPOSED: token chỉ trong OS secure storage (Keychain/Keystore), không AsyncStorage (cũng không SharedPreferences thường, file, state persist); thư viện chưa chọn.
 - Không log, không gửi token vào crash report/analytics; không đưa vào URL/query string.
 - Logout ⇒ xóa token, cache, offline queue, device push token đăng ký với BE (khi có endpoint).
 

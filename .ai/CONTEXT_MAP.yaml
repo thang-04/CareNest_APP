@@ -1,6 +1,6 @@
 # KHÔNG đọc cả file: grep -iE "<từ khóa>" .ai/CONTEXT_MAP.yaml rồi chỉ mở file được trỏ tới.
 # Bản đồ context CareNest_APP. Agent: grep `keywords` → đọc `app_docs` (map màn hình) + `be_module_card` (nguồn rule).
-# `be_module_card` là đường dẫn trong repo BE: sibling ../CareNest_BE/<path> hoặc https://github.com/thang-04/CareNest_BE.git
+# Quy ước đường dẫn: `BE:<path>` = <path> tính từ gốc repo BE (sibling ../CareNest_BE/<path> hoặc https://github.com/thang-04/CareNest_BE.git). Đường dẫn không có tiền tố = trong repo APP.
 # Chỉ đường dẫn trong `available` (và app_docs dưới đây) đã tồn tại; `planned` thì chưa.
 version: 2
 repository: CareNest_APP
@@ -9,35 +9,35 @@ role: Mobile client (Parent, Teacher, Kitchen Staff) — sở hữu UI, navigati
 keywords:
   # từ khóa (VN|EN, regex-friendly) -> {app_docs, be_module_card}
   "điểm danh|attendance|đi muộn|đến muộn|late|vắng|có mặt":
-    {app_docs: [docs/features/teacher/README.md, docs/features/parent/README.md], be_module_card: [docs/modules/attendance.md]}
+    {app_docs: [docs/features/teacher/README.md, docs/features/parent/README.md], be_module_card: [BE:docs/modules/attendance.md]}
   "báo ăn|tham gia ăn|meal participation":
-    {app_docs: [docs/features/teacher/README.md], be_module_card: [docs/modules/attendance.md, docs/modules/nutrition.md]}
-  "đơn nghỉ|xin nghỉ|leave request|leave":
-    {app_docs: [docs/features/parent/README.md, docs/features/teacher/README.md], be_module_card: [docs/modules/attendance.md]}   # P-15 PENDING
+    {app_docs: [docs/features/teacher/README.md], be_module_card: [BE:docs/modules/attendance.md, BE:docs/modules/nutrition.md]}
+  "đơn nghỉ|báo nghỉ|xin nghỉ|leave request|leave":
+    {app_docs: [docs/features/parent/README.md, docs/features/teacher/README.md], be_module_card: [BE:docs/modules/attendance.md]}   # ATT-05: thông báo, không duyệt (P-15 đã đóng)
   "suất ăn|số suất|meal count|chốt suất|adjustment|điều chỉnh suất":
-    {app_docs: [docs/features/kitchen/README.md], be_module_card: [docs/modules/nutrition.md]}
+    {app_docs: [docs/features/kitchen/README.md], be_module_card: [BE:docs/modules/nutrition.md]}
   "thực đơn|menu|món|dish|bữa ăn|meal":
-    {app_docs: [docs/features/kitchen/README.md, docs/features/parent/README.md], be_module_card: [docs/modules/nutrition.md]}
+    {app_docs: [docs/features/kitchen/README.md, docs/features/parent/README.md], be_module_card: [BE:docs/modules/nutrition.md]}
   "định lượng|food quantity|thực phẩm tươi|fresh|kho khô|stored|bếp|kitchen":
-    {app_docs: [docs/features/kitchen/README.md], be_module_card: [docs/modules/nutrition.md]}
+    {app_docs: [docs/features/kitchen/README.md], be_module_card: [BE:docs/modules/nutrition.md]}
   "dị ứng|allergy":
-    {app_docs: [docs/features/kitchen/README.md, docs/features/parent/README.md], be_module_card: [docs/modules/child.md, docs/modules/nutrition.md]}
+    {app_docs: [docs/features/kitchen/README.md, docs/features/parent/README.md], be_module_card: [BE:docs/modules/child.md, BE:docs/modules/nutrition.md]}
   "trẻ|child|hồ sơ trẻ|tổng quan con|child overview|chọn con":
-    {app_docs: [docs/features/parent/README.md], be_module_card: [docs/modules/child.md]}
+    {app_docs: [docs/features/parent/README.md], be_module_card: [BE:docs/modules/child.md]}
   "sức khỏe|health|chiều cao|cân nặng|measurement|tăng trưởng|biểu đồ|trend":
-    {app_docs: [docs/features/parent/README.md, docs/features/teacher/README.md], be_module_card: [docs/modules/health.md]}
+    {app_docs: [docs/features/parent/README.md, docs/features/teacher/README.md], be_module_card: [BE:docs/modules/health.md]}
   "quan sát|observation|tiêu chí|nhận xét|summary|phát triển|development|hoạt động|activity":
-    {app_docs: [docs/features/teacher/README.md, docs/features/parent/README.md], be_module_card: [docs/modules/learning-observation.md]}
+    {app_docs: [docs/features/teacher/README.md, docs/features/parent/README.md], be_module_card: [BE:docs/modules/learning-observation.md]}   # "Hoạt động hằng ngày" cho phụ huynh chỉ hiển thị khi OBS-07 được chốt (ADR-0006 OPEN)
   "cơ sở vật chất|csvc|thiết bị hỏng|sự cố|facility":
-    {app_docs: [docs/features/teacher/README.md], be_module_card: [docs/modules/facility-issue.md]}
+    {app_docs: [docs/features/teacher/README.md], be_module_card: [BE:docs/modules/facility-issue.md]}
   "đăng nhập|login|logout|token|refresh|session|phiên|401|role|permission|phân quyền|403":
-    {app_docs: [docs/integration/AUTH_FLOW.md, docs/integration/BACKEND_INTEGRATION.md], be_module_card: [docs/modules/identity-access.md]}
+    {app_docs: [docs/integration/AUTH_FLOW.md, docs/integration/BACKEND_INTEGRATION.md], be_module_card: [BE:docs/modules/identity-access.md]}
   "điểm trường|campus|lớp|classroom|phân công|assignment":
-    {app_docs: [docs/architecture/NAVIGATION.md], be_module_card: [docs/modules/school-structure.md]}
+    {app_docs: [docs/architecture/NAVIGATION.md], be_module_card: [BE:docs/modules/school-structure.md]}
   "thông báo|notification|push|deep link|device token|fcm|apns":
-    {app_docs: [docs/integration/PUSH_NOTIFICATION.md], be_module_card: [docs/modules/notification.md]}
+    {app_docs: [docs/integration/PUSH_NOTIFICATION.md], be_module_card: [BE:docs/modules/notification.md]}
   "phụ huynh xem|parent view|hiển thị phụ huynh|được công bố|published":
-    {app_docs: [docs/features/parent/README.md], be_module_card: [docs/modules/child.md, docs/modules/identity-access.md]}   # ADR-0010
+    {app_docs: [docs/features/parent/README.md], be_module_card: [BE:docs/modules/child.md, BE:docs/modules/identity-access.md]}   # ADR-0010
   "api|endpoint|dto|error code|problemdetail|traceId|timeout|retry|offline|mất mạng":
     {app_docs: [docs/integration/BACKEND_INTEGRATION.md], be_module_card: []}
   "navigation|điều hướng|màn hình|screen|tab|route":
@@ -47,7 +47,7 @@ keywords:
   "build|gradle|xcode|pod|metro|emulator|simulator|thiết bị|device|release":
     {app_docs: [docs/knowledge/TROUBLESHOOTING.md], be_module_card: []}
   "ai|gợi ý|draft|bản nháp":
-    {app_docs: [docs/features/README.md], be_module_card: [docs/modules/ai-assistance.md]}   # APP không hiển thị DRAFT như chính thức
+    {app_docs: [docs/features/README.md], be_module_card: [BE:docs/modules/ai-assistance.md]}   # APP không hiển thị DRAFT như chính thức
 
 topics:
   project:       [docs/context/REPOSITORY_CONTEXT.md, docs/context/CURRENT_STATE.md]
@@ -58,7 +58,7 @@ topics:
   quality:       [docs/quality/DEFINITION_OF_DONE.md]
   coding-rules:  [.claude/rules/]
   be-sources:    # trong repo BE
-    [docs/backend-coding-guide.md, docs/system/CROSS_REPO_MAP.md, docs/business/BUSINESS_RULES.md, docs/business/USER_ROLES.md, docs/contracts/API_CONVENTIONS.md, docs/contracts/ERROR_CONTRACT.md, docs/decisions/ADR-0010-parent-visibility-policy.md, docs/knowledge/CROSS_MODULE_ISSUES.md]
+    [BE:docs/backend-coding-guide.md, BE:docs/system/CROSS_REPO_MAP.md, BE:docs/business/BUSINESS_RULES.md, BE:docs/business/USER_ROLES.md, BE:docs/contracts/API_CONVENTIONS.md, BE:docs/contracts/ERROR_CONTRACT.md, BE:docs/decisions/ADR-0010-parent-visibility-policy.md, BE:docs/knowledge/CROSS_MODULE_ISSUES.md]
 
 available:
   entrypoints: [AGENTS.md, CLAUDE.md, docs/INDEX.md]

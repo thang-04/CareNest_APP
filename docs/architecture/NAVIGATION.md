@@ -25,8 +25,8 @@ Dùng chung mọi role: Thông báo (danh sách in-app, nếu BE có) · Tài kh
 | Lịch sử điểm danh | Có mặt/vắng theo ngày | |
 | Bữa ăn | Thực đơn/bữa ăn của con | Chỉ field được phép (PAR-02) |
 | Sức khỏe | Số đo + trend đã **công bố**; diễn giải chỉ khi đã APPROVED | Không hiển thị AI DRAFT |
-| Hoạt động & phát triển | Hoạt động hằng ngày, cập nhật phát triển **đã duyệt** | Field cụ thể [P] P-13b |
-| Đơn nghỉ | Tạo/xem đơn | **[P] P-15** — phụ huynh gửi qua app hay GV nhập |
+| Cập nhật phát triển & hoạt động | Cập nhật phát triển **đã duyệt**; "Hoạt động hằng ngày" chỉ hiển thị khi OBS-07 được chốt (ADR-0006 OPEN) | Field cụ thể [P] P-13b · Hoạt động hằng ngày [P] OBS-07 |
+| Báo nghỉ | Gửi / hủy / xem thông báo nghỉ của con (`leave:create`); không có bước duyệt | ATT-05; `SUBMITTED → CANCELLED` |
 
 Không có: chat, xem trẻ khác, dữ liệu chưa công bố.
 
@@ -38,8 +38,7 @@ Không có: chat, xem trẻ khác, dữ liệu chưa công bố.
 | Điểm danh + báo ăn | Nhập hàng loạt cả lớp/ngày; cập nhật trẻ đến muộn | Cut-off [P] P-03 — BE quyết định |
 | Quan sát hằng ngày | Nhập hàng loạt theo tiêu chí có cấu trúc + ghi chú | Tiêu chí là data từ BE (P-11) |
 | Báo sự cố CSVC | Tạo báo cáo hỏng/thiếu/không đủ + vị trí; xem trạng thái | |
-| Đơn nghỉ của lớp | Xem/nhập/duyệt | **[P] P-15** |
-| Duyệt summary | Xem/sửa/duyệt summary DRAFT của lớp | **[?]** nếu làm trên mobile |
+| Báo nghỉ của lớp | Xem thông báo nghỉ của lớp (chỉ xem) | ATT-05; GV tạo thay phụ huynh PROPOSED — chưa làm || Duyệt summary | Xem/sửa/duyệt summary DRAFT của lớp | **[?]** nếu làm trên mobile |
 | Nhập số đo sức khỏe | Chiều cao, cân nặng | **[P]** người nhập chưa chốt (USER_ROLES) |
 
 ## Kitchen
@@ -47,10 +46,16 @@ Không có: chat, xem trẻ khác, dữ liệu chưa công bố.
 | Nhóm màn hình | Nội dung | Ghi chú |
 | --- | --- | --- |
 | Suất ăn hôm nay | Số suất **đã chốt** theo campus / bữa | Bếp theo campus hay trung tâm [P] P-06 |
-| Thực đơn | Thực đơn **đã duyệt** | Menu chung/riêng [P] P-07 |
+| Thực đơn | MealPlan (thực đơn) **đã duyệt** | Thực đơn chung/riêng [P] P-07 |
 | Định lượng thực phẩm | Kế hoạch định lượng, tách Fresh / Stored | Chỉ hiển thị BE tính |
 | Dị ứng cần cho nấu | Danh sách dị ứng ở mức cần để nấu | Không xem hồ sơ trẻ (AUTH-05) |
 | Điều chỉnh suất | Adjustment sau khi chốt | Cách xử lý/báo bếp [P] P-04 |
+
+## Chưa gán role
+
+| Nhóm màn hình | Nội dung | Ghi chú |
+| --- | --- | --- |
+| Xác nhận số suất | Xác nhận MealCount trước khi chuyển bếp (NUT-02) | **[P] P-05**, permission `meal-count:confirm` — role chưa chốt, không gán nhánh |
 
 ## Deep link (từ push)
 

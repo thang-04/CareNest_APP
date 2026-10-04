@@ -18,4 +18,4 @@ paths:
 - Text hiển thị tiếng Việt, tập trung để dễ i18n sau; không ghép chuỗi chứa dữ liệu nhạy cảm vào log.
 - Ảnh trẻ: chỉ hiển thị từ URL/API có auth; không lưu vào gallery/cache công khai; không đưa vào snapshot test.
 - Accessibility cơ bản: nhãn cho nút icon, vùng chạm đủ lớn, không truyền thông tin chỉ bằng màu (vd. dị ứng phải có chữ/icon).
-- Comment: theo `CLAUDE.md` mục "Comment trong code".
+- Comment: theo `AGENTS.md` mục "Comment trong code".

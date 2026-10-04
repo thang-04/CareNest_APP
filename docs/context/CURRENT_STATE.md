@@ -1,30 +1,35 @@
 # Current State — CareNest_APP
 
-Cập nhật: 2026-10-03. **Agent: cập nhật file này khi màn hình/feature bắt đầu có code hoặc xong, khi chốt thư viện nền, hoặc khi một PENDING ảnh hưởng APP được chốt.**
+Cập nhật: 2026-10-04. **Agent: cập nhật file này khi màn hình/feature bắt đầu có code hoặc xong, khi chốt thư viện nền, hoặc khi một PENDING ảnh hưởng APP được chốt.**
 
 ## Tổng quan
 
 | Hạng mục | Trạng thái |
 | --- | --- |
-| Source code APP | Chưa có |
+| Source code APP | Chưa có — không áp convention framework khi chưa có source |
 | AI context + docs | Bản đầu (routing, workflow, feature map theo role) |
 | Framework | React Native PROPOSED |
 | Thư viện nền (navigation, state, HTTP, secure storage, push) | Chưa chọn |
-| Auth | Chờ BE chốt (`BE:docs/contracts/AUTH_CONTRACT.md` SKELETON) |
-| Push provider | Chờ chốt |
+| Auth | Chờ BE chốt (`BE:docs/contracts/AUTH_CONTRACT.md` SKELETON; `docs/integration/AUTH_FLOW.md` SKELETON) — không tự chọn cơ chế, hỏi |
+| Push provider | Chờ chốt (`docs/integration/PUSH_NOTIFICATION.md` SKELETON) — không tự chọn, hỏi |
 | BE | Đã có skeleton nền móng (response chuẩn, prefix API, OpenAPI); chưa có auth và nghiệp vụ — xem `BE:docs/context/CURRENT_STATE.md` |
 
 ## Feature theo role
 
 | Role | Thiết kế (docs) | Code | Chặn bởi |
 | --- | --- | --- | --- |
-| Parent | Map màn hình | — | P-13b (field), P-15 (đơn nghỉ), auth |
+| Parent | Map màn hình (báo nghỉ: ATT-05 đã chốt, không duyệt) | — | P-13b (field), OBS-07 (hoạt động hằng ngày), auth |
 | Teacher | Map màn hình | — | P-03 (cut-off), P-11 (tiêu chí quan sát), auth |
-| Kitchen | Map màn hình | — | P-04 (adjustment), P-06 (bếp theo campus), P-07 (menu), auth |
+| Kitchen | Map màn hình | — | P-04 (adjustment), P-06 (bếp theo campus), P-07 (thực đơn), auth |
+| Chưa gán role | Xác nhận số suất (`meal-count:confirm`) | — | P-05 (ai xác nhận) |
 
 ## PENDING ảnh hưởng APP (nguồn: `BE:docs/business/BUSINESS_RULES.md` Pending register)
 
-P-03 cut-off nhập · P-04 xử lý suất điều chỉnh · P-06 bếp theo campus/trung tâm · P-07 menu chung/riêng · P-11 tiêu chí quan sát · P-12 summary có gửi phụ huynh · P-13b field phụ huynh xem · P-15 đơn nghỉ ai tạo/duyệt · P-17 dị ứng ai khai báo.
+P-03 cut-off nhập · P-04 xử lý suất điều chỉnh · P-05 ai xác nhận số suất · P-06 bếp theo campus/trung tâm · P-07 thực đơn chung/riêng · P-11 tiêu chí quan sát · P-12 summary có gửi phụ huynh · P-13b field phụ huynh xem · P-17 dị ứng ai khai báo. OPEN: OBS-07 nguồn hoạt động (ADR-0006).
+
+Màn hình phụ thuộc PENDING: UI theo dữ liệu BE trả, không hard-code; chưa đăng ký route cho tới khi chốt (`docs/architecture/NAVIGATION.md`).
+
+Đã đóng: P-15 (2026-10-02) — đơn nghỉ là thông báo của phụ huynh qua app, không duyệt (ATT-05).
 
 ## Kế tiếp
 - Chốt framework + thư viện nền (ADR/ghi vào `docs/architecture/`).

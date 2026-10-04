@@ -11,17 +11,21 @@ Nguồn chung: card `BE:docs/modules/nutrition.md` · flow `BE:docs/business/flo
 - Chỉ hiển thị MealCount **CONFIRMED**; DRAFT không phải số để nấu.
 
 ### Thực đơn đã duyệt
-- BE: rule NUT-08 (chỉ APPROVED), NUT-13 / **P-07** (menu chung hay theo campus/nhóm tuổi)
+- BE: rule NUT-08 (chỉ APPROVED), NUT-13 / **P-07** (thực đơn chung hay theo campus/nhóm tuổi)
 - Endpoint: chưa có
-- AI chỉ tạo Menu DRAFT — bếp không thấy DRAFT.
+- AI chỉ tạo MealPlan (thực đơn) DRAFT — bếp không thấy DRAFT.
 
 ### Định lượng thực phẩm (Fresh / Stored)
-- BE: rule NUT-06, NUT-07 (định lượng = suất CONFIRMED × công thức Menu APPROVED), NUT-10 · P-10 (công thức chi tiết)
+- BE: rule NUT-06, NUT-07 (công thức: `BE:docs/business/BUSINESS_RULES.md`), NUT-10 · P-10 (công thức chi tiết)
 - Endpoint: chưa có
-- Không tính lại ở client; hiển thị đúng đơn vị BE trả. Kho/tồn kho/NCC ngoài V1 (NUT-11, NUT-12, ADR-0009).
+- Không tính lại ở client; hiển thị đúng đơn vị BE trả. Kho/tồn kho/NCC: OPEN, chưa làm (NUT-11, NUT-12, ADR-0009).
+
+### Trạng thái chuẩn bị + bàn giao suất — **PROPOSED**
+- BE: rule NUT-14 (chờ nấu → đang nấu → sẵn sàng bàn giao), NUT-15 (số suất từng lớp, GV xác nhận nhận), NUT-16 (ảnh món) · flow `BE:docs/business/flows/meal-management.md`
+- Endpoint: chưa có. Chưa làm màn hình cho tới khi team chốt (roadmap Must, nguồn BP-BT-03).
 
 ### Dị ứng cần cho nấu
-- BE: card `docs/modules/child.md` · rule HLT-06, AUTH-05, NUT-09 · P-17 (ai khai báo/xác nhận)
+- BE: card `BE:docs/modules/child.md` · rule HLT-06, AUTH-05, NUT-09 · P-17 (ai khai báo/xác nhận)
 - Chỉ thông tin BE trả cho role bếp. Dị ứng phải hiển thị bằng chữ/icon, không chỉ bằng màu.
 
 ### Điều chỉnh suất (adjustment) — **xử lý PENDING**

@@ -10,9 +10,8 @@ BE (`CareNest_BE`) là **nguồn duy nhất** của contract. File này chỉ n�
 4. `BE:docs/contracts/API_CONVENTIONS.md`, `ERROR_CONTRACT.md` — tóm tắt guide (`{code, desc, data}`, prefix `/api`). Mâu thuẫn ⇒ theo 1–3.
 
 ## Base URL & prefix
-- Base URL theo môi trường (dev/staging/prod) từ config app, không hard-code.
-- Prefix API cấu hình được ở BE (`carenest.api.prefix`, env `API_PREFIX`, mặc định `/api`) ⇒ APP cũng để prefix trong config. Resource: danh từ số nhiều, kebab-case (`/attendance-records`, `/meal-counts`).
-- Ngày/giờ ISO-8601. Thao tác xác nhận/duyệt: `POST /<resource>/{id}/confirm|approve`.
+- Quy ước URL/resource/prefix/endpoint hành động/phân trang: `BE:docs/contracts/API_CONVENTIONS.md` (không chép ở đây).
+- Phía APP: base URL theo môi trường (dev/staging/prod) **và prefix** lấy từ config app, không hard-code trong từng call (prefix BE cấu hình được).
 
 ## Envelope
 
@@ -49,10 +48,10 @@ Ngôn ngữ `desc`: ví dụ trong guide BE là tiếng Anh — hiển thị tr�
 
 ## Retry & offline (PROPOSED)
 
-- Tự retry (có backoff, giới hạn số lần) chỉ cho `GET` và `PUT` idempotent.
-- **Batch điểm danh/báo ăn lớp/ngày**: BE hướng `PUT` idempotent thay cả danh sách (khóa childId + date — `BE:docs/knowledge/PATTERNS.md` P-IDEMPOTENT-BATCH) ⇒ gửi lại toàn bộ payload an toàn, không tạo trùng. Mất mạng ⇒ giữ batch, đánh dấu "chưa lưu", gửi lại khi có mạng; lưu tạm theo `.claude/rules/security-storage.md`.
+- Tự retry (có backoff, giới hạn số lần) chỉ cho `GET` và thao tác ghi idempotent.
+- **Batch điểm danh/báo ăn lớp/ngày**: idempotent upsert theo lớp/ngày (BE PAT-IDEMPOTENT-BATCH, `BE:docs/knowledge/PATTERNS.md`); HTTP method TBD ⇒ gửi lại toàn bộ payload an toàn, không tạo trùng. Mất mạng ⇒ giữ batch, đánh dấu "chưa lưu", gửi lại khi có mạng; lưu tạm theo `.claude/rules/security-storage.md`.
 - Gửi lại sau cut-off (P-03 PENDING) ⇒ BE có thể từ chối — hiển thị `desc`, không tự sửa giờ. Sửa sau khi suất đã chốt ⇒ BE tự xử lý adjustment (ATT-07, NUT-03); APP không cần logic riêng.
-- `POST` (tạo, confirm, approve): không retry mù; chặn double-submit; mất kết nối giữa chừng ⇒ refetch để kiểm tra trước khi gửi lại.
+- Ghi không idempotent (tạo, confirm, approve): không retry mù; chặn double-submit; mất kết nối giữa chừng ⇒ refetch để kiểm tra trước khi gửi lại.
 - Offline toàn app: **không** trong scope hiện tại; chỉ batch nhập của giáo viên (PROPOSED, cần chốt).
 
 ## Khi contract thiếu hoặc lệch

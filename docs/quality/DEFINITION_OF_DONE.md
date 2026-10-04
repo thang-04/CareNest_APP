@@ -4,11 +4,11 @@ Agent và developer đối chiếu trước khi báo hoàn thành. Bỏ qua mụ
 
 ## Code
 - [ ] Không business rule ở client (suất ăn, định lượng, dị ứng, trend, field phụ huynh); dẫn chiếu rule ID BE khi màn hình phụ thuộc rule.
-- [ ] Không implement rule PENDING/OPEN như đã chốt (P-03, P-04, P-06, P-07, P-13b, P-15...).
+- [ ] Không implement rule PENDING/OPEN như đã chốt (P-03, P-04, P-05, P-06, P-07, P-13b, OBS-07...).
 - [ ] Ẩn UI không thay phân quyền; 401/403/404 xử lý đúng.
 - [ ] Gọi API qua lớp client chung; xử lý envelope `{code, desc, data}` theo HTTP status (`docs/integration/BACKEND_INTEGRATION.md`).
 - [ ] Không thêm dependency/thư viện nền khi chưa được duyệt.
-- [ ] Theo `.claude/rules/` và comment theo `CLAUDE.md`.
+- [ ] Theo `.claude/rules/` và comment theo `AGENTS.md`.
 
 ## Privacy & security
 - [ ] Token chỉ trong secure storage; logout xóa token, cache, offline queue.
@@ -31,8 +31,5 @@ Agent và developer đối chiếu trước khi báo hoàn thành. Bỏ qua mụ
 - [ ] Chốt thư viện nền/auth/push ⇒ bỏ header SKELETON và điền doc tương ứng.
 
 ## Engineering memory
-- [ ] Lỗi không hiển nhiên / thử >1 cách / chỉ trên 1 nền tảng / lỗi môi trường >15 phút ⇒ incident + dòng `ISSUE_INDEX.md` (kèm các cách đã thử thất bại).
-- [ ] Lỗi môi trường ⇒ mục `TROUBLESHOOTING.md`.
-- [ ] Bẫy của màn hình ⇒ 1 dòng "Known pitfalls" trong feature doc.
-- [ ] Bài học tổng quát ⇒ `PATTERNS.md`. Giới hạn còn tồn tại ⇒ `KNOWN_ISSUES.md`.
-- [ ] Lỗi contract/nghiệp vụ ⇒ đề xuất mục cho `BE:docs/knowledge/CROSS_MODULE_ISSUES.md`.
+- [ ] Đã chạy `.ai/workflows/update-knowledge.md` nếu có trigger T1/T2/T3 (hoặc nêu 1 dòng vì sao không cần).
+- [ ] Sửa skill ⇒ `.agents/skills` và `.claude/skills` giống hệt nhau (`diff -r .agents/skills .claude/skills`).

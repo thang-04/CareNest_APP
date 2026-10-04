@@ -1,28 +1,8 @@
 # Issue Index — CareNest_APP
 
-> Giữ file nhỏ để grep rẻ: **1 issue = 1 dòng**, root cause 1 câu; chi tiết, stack, các cách đã thử nằm trong file incident. Không dán log vào đây.
+Search đầu tiên khi gặp bug, crash, lỗi build/thiết bị, case lạ trên Mobile. Grep chuỗi lỗi nguyên văn, màn hình, role, HTTP status, `Android|iOS`, từ khóa VN/EN (vd. `Network request failed`, `Unable to resolve module` (RN, PROPOSED)). 1 issue = 1 dòng, **kể cả bug đang mở** (`open`). Chi tiết và các cách đã thử nằm trong `incidents/<ID>.md`. Cách ghi: `.ai/workflows/update-knowledge.md` T2. Lỗi contract/nghiệp vụ: grep thêm `BE:docs/knowledge/ISSUE_INDEX.md`.
 
-**File đầu tiên agent search khi gặp bug, crash, lỗi build/thiết bị, hoặc case lạ trên Mobile.** Mỗi issue 1 dòng. Grep theo: chuỗi lỗi nguyên văn, tên màn hình, role, HTTP status, nền tảng (`Android`/`iOS`), từ khóa nghiệp vụ (VN/EN).
+ID: `APP-BUG-` (code) · `APP-CASE-` (edge case nghiệp vụ/UX) · `APP-ENV-` (build/thiết bị/môi trường) · `APP-CTR-` (lệch contract BE), dạng `<loại>-YYMMDD-<slug>` (vd. `APP-BUG-261004-attendance-double-submit`). Status: `open` | `workaround` | `fixed`.
 
-## Cách dùng
-
-1. Grep chuỗi lỗi chính (vd. `Unable to resolve module`, `401`, `Network request failed`) và từ khóa (vd. `điểm danh`, `deep link`, `iOS`).
-2. Có match ⇒ đọc incident: xem **Attempts** (cách đã thử thất bại — đừng lặp lại) và **Fix**.
-3. Incident cũ chỉ là **manh mối**: kiểm chứng với code/version hiện tại trước khi kết luận cùng root cause.
-4. Không match ⇒ lỗi build/thiết bị xem `TROUBLESHOOTING.md`; lỗi dữ liệu/contract grep thêm `BE:docs/knowledge/ISSUE_INDEX.md` + `CROSS_MODULE_ISSUES.md`; rồi điều tra theo `.ai/workflows/fix-bug.md`.
-
-## Khi nào phải ghi
-
-Ghi khi ít nhất một điều đúng: lỗi không hiển nhiên · phải thử >1 cách · chỉ xảy ra trên 1 nền tảng/thiết bị/build · có thể lặp lại · lỗi môi trường/build tốn >15 phút. Không ghi lỗi gõ nhầm/hiển nhiên. **Không tạo incident giả hoặc chưa xác nhận root cause** (ghi `KNOWN_ISSUES.md` thay vì vậy).
-
-Ghi gồm: (1) file `incidents/<ID>-<slug>.md` từ `incidents/_TEMPLATE.md`, (2) 1 dòng bảng dưới, (3) 1 dòng "Known pitfalls" trong `docs/features/<role>/README.md` nếu là bẫy của màn hình, (4) `PATTERNS.md` nếu tổng quát hóa được, (5) `TROUBLESHOOTING.md` nếu là lỗi môi trường.
-
-Lỗi do contract/nghiệp vụ BE ⇒ ghi chính ở BE `docs/knowledge/CROSS_MODULE_ISSUES.md` (đề xuất nếu không được sửa BE); ở đây chỉ 1 dòng trỏ sang.
-
-ID: `BUG-xxx` (bug code) · `CASE-xxx` (edge case nghiệp vụ/UX) · `ENV-xxx` (build/thiết bị/môi trường) · `CTR-xxx` (lệch contract BE). Số tăng dần, không tái sử dụng.
-
-## Index
-
-| ID | Role / màn hình | Nền tảng | Triệu chứng (từ khóa + chuỗi lỗi) | Root cause (1 câu) | Status | File |
-| --- | --- | --- | --- | --- | --- | --- |
-| — | — | — | Chưa có issue | — | — | — |
+| ID | Màn hình/feature | Triệu chứng (từ khóa + chuỗi lỗi + thiết bị/OS) | Root cause (1 câu, `?` nếu chưa rõ) | Status |
+| --- | --- | --- | --- | --- |

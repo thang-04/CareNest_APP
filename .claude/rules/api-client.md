@@ -15,6 +15,6 @@ paths:
 - 401 ⇒ luồng auth (`docs/integration/AUTH_FLOW.md`); 403 ⇒ màn hình không có quyền; 404 ⇒ không tìm thấy; 409 ⇒ refetch + thông báo trạng thái đã đổi; 400 ⇒ map `data` field errors; 5xx/503/504 ⇒ thông báo thử lại.
 - Type request/response theo DTO BE; field không có trong contract ⇒ không dùng. Phân trang: `data` = `PageResponse {items, page, size, totalElements, totalPages}`.
 - Timeout rõ ràng; hủy request khi rời màn hình/đổi ngữ cảnh.
-- Retry tự động chỉ cho `GET` và `PUT` idempotent (vd. batch điểm danh lớp/ngày); `POST` (tạo, confirm, approve) không retry mù.
+- Retry tự động chỉ cho `GET` và ghi idempotent — batch điểm danh lớp/ngày là idempotent upsert theo lớp/ngày (BE PAT-IDEMPOTENT-BATCH); HTTP method TBD. Tạo, confirm, approve không retry mù.
 - Không log body request/response, header Authorization, token; log chỉ method + path template + status + thời gian.
 - Mock/fixture: dữ liệu giả, đúng envelope; không copy response thật có dữ liệu trẻ.

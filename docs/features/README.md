@@ -28,7 +28,7 @@ AI output là DRAFT ở BE (AI-01, AI-02). APP **không** hiển thị DRAFT cho
 ```markdown
 ### <Nhóm màn hình>
 - Mục đích: 1 dòng
-- BE: card `docs/modules/<x>.md` · flow `docs/business/flows/<y>.md` · rule <ID, ...>
+- BE: card `BE:docs/modules/<x>.md` · flow `BE:docs/business/flows/<y>.md` · rule <ID, ...>
 - Endpoint: <path hoặc "chưa có">
 - PENDING: <P-xx — ảnh hưởng UI gì>
 - Known pitfalls: <1 dòng/bẫy, link incident>

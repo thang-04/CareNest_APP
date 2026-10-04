@@ -24,7 +24,7 @@ Chạm bất kỳ mục nào ⇒ ít nhất L3: dữ liệu sức khỏe / dị 
 
 ## Bảng 3 — Ngoài scope
 
-Chat/nhắn tin (CareNest không thay Zalo) · multi-school/multi-tenant · kho/NCC/tồn kho · soạn/duyệt giáo án · chẩn đoán y tế/tâm lý · thanh toán/học phí · hiển thị AI draft như kết quả chính thức ⇒ **dừng**, đối chiếu `BE:docs/context/PROJECT_CONTEXT.md` (Exclusions) và hỏi người dùng.
+Chat/nhắn tin (CareNest không thay Zalo) · multi-school/multi-tenant · kho/NCC/tồn kho (OPEN — BE ADR-0009) · soạn/duyệt giáo án · chẩn đoán y tế/tâm lý · thanh toán/học phí · hiển thị AI draft như kết quả chính thức ⇒ **dừng**, đối chiếu `BE:docs/context/PROJECT_CONTEXT.md` (Exclusions) và hỏi người dùng.
 
 `BE:<path>` = `../CareNest_BE/<path>` (xem `AGENTS.md`).
 

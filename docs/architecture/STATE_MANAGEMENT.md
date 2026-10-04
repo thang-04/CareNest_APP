@@ -7,11 +7,11 @@
 | Loại state | Ví dụ | Nguồn sự thật | Ghi chú |
 | --- | --- | --- | --- |
 | Server state | Điểm danh, thực đơn, số suất, sức khỏe | BE | Cache có key theo user + role + ngữ cảnh + ngày; refetch sau ghi |
-| Session | User, role, token | BE (auth) | Token trong secure storage; xóa hết khi logout |
+| Session | User, role, token | BE (auth) | Policy PROPOSED: token chỉ trong OS secure storage (Keychain/Keystore), không AsyncStorage; thư viện chưa chọn. Xóa hết khi logout |
 | Ngữ cảnh chọn | Con đang xem, lớp, campus, ngày | Client | Đổi ngữ cảnh ⇒ hủy request cũ |
 | Form / nháp | Batch điểm danh đang nhập | Client | Giữ khi lỗi mạng; offline queue chỉ khi đã chốt (xem dưới) |
 
-- Không tính số liệu dẫn xuất ở client (MealCount, FoodQuantityPlan, trend) — BE tính (`BE:docs/modules/nutrition.md`, `health.md`).
+- Không tính số liệu dẫn xuất ở client (MealCount, FoodQuantityPlan, trend) — BE tính (`BE:docs/modules/nutrition.md`, `BE:docs/modules/health.md`).
 - Không optimistic update cho xác nhận/duyệt.
 
 ## Điền khi chốt

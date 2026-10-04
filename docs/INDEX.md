@@ -1,5 +1,7 @@
 # Docs Index — CareNest_APP
 
+Người đọc muốn hiểu kiến trúc tài liệu AI (3 repo, thư mục nào làm gì): `BE:docs/README_AI.md`.
+
 Không đọc hết. Task thường: `.ai/ROUTER.md` → `.ai/CONTEXT_MAP.yaml` keywords → feature doc + BE module card. Status: **FULL** = dùng làm nguồn · **SKELETON** = chưa có nội dung, không dùng làm nguồn.
 
 Nghiệp vụ, rule, contract nằm ở BE: `BE:docs/INDEX.md` (`BE:` = `../CareNest_BE/` hoặc https://github.com/thang-04/CareNest_BE.git).

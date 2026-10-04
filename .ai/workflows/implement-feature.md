@@ -7,5 +7,5 @@
 5. **Impact analysis:** role khác dùng chung component/state? dữ liệu nhạy cảm (sức khỏe, dị ứng, ảnh) — hiển thị/cache/log thế nào? offline? push? Chạm Bảng 2 của `ROUTER.md` ⇒ L3.
 6. **Code:** theo `.claude/rules/` + pattern đang có trong source. Không chọn thư viện nền mới khi chưa hỏi. Không tính lại số liệu nghiệp vụ (suất ăn, định lượng, trend) ở client — hiển thị giá trị BE trả.
 7. **Test & kiểm tra:** thao tác chính; trạng thái loading / empty / error / offline / 401 / 403; double-submit; chữ tiếng Việt dài; màn hình nhỏ. Phân biệt test tự động với kiểm tra tay trên emulator/máy thật.
-8. **Docs & memory:** cập nhật feature doc (màn hình mới, PENDING còn lại, Known pitfalls nếu gặp edge case), `CURRENT_STATE.md` khi feature bắt đầu/xong. Edge case đáng nhớ ⇒ `CASE-xxx` incident.
+8. **Docs & memory:** cập nhật feature doc (màn hình mới, PENDING còn lại, Known pitfalls nếu gặp edge case), `CURRENT_STATE.md` khi feature bắt đầu/xong. Edge case đáng nhớ ⇒ `update-knowledge.md` T3.
 9. Báo: đã chạy gì, chưa kiểm chứng gì (thiết bị, API thật, push), thay đổi BE còn chờ. Đối chiếu DoD.

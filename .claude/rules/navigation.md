@@ -16,4 +16,4 @@ paths:
 - Deep link (từ push): parse an toàn, chỉ nhận ID + loại màn hình; kiểm tra đăng nhập + role trước khi mở; dữ liệu luôn tải lại qua API (BE kiểm tra scope). ID không thuộc scope ⇒ BE trả 403/404 ⇒ màn hình "không có quyền / không tìm thấy", không crash.
 - Không truyền object dữ liệu nhạy cảm qua route params (có thể bị log/persist); truyền ID.
 - Ngữ cảnh đang chọn (con, lớp, campus, ngày) là state, không hard-code trong route; đổi ngữ cảnh phải hủy request cũ.
-- Màn hình PENDING (vd. đơn nghỉ của phụ huynh — P-15) ⇒ không đăng ký route cho tới khi chốt, hoặc bật theo cờ cấu hình.
+- Màn hình PENDING (vd. field phụ huynh xem — P-13b) ⇒ không đăng ký route cho tới khi chốt, hoặc bật theo cờ cấu hình.
