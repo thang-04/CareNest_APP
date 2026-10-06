@@ -55,17 +55,18 @@ topics:
   features:      [docs/features/README.md, docs/features/parent/README.md, docs/features/teacher/README.md, docs/features/kitchen/README.md]
   integration:   [docs/integration/BACKEND_INTEGRATION.md, docs/integration/AUTH_FLOW.md, docs/integration/PUSH_NOTIFICATION.md]
   memory:        [docs/knowledge/ISSUE_INDEX.md, docs/knowledge/KNOWN_ISSUES.md, docs/knowledge/TROUBLESHOOTING.md, docs/knowledge/PATTERNS.md]
-  quality:       [docs/quality/DEFINITION_OF_DONE.md]
+  quality:       [docs/quality/DEFINITION_OF_DONE.md, docs/quality/VERIFICATION.md]
   coding-rules:  [.claude/rules/]
   be-sources:    # trong repo BE
     [BE:docs/backend-coding-guide.md, BE:docs/system/CROSS_REPO_MAP.md, BE:docs/business/BUSINESS_RULES.md, BE:docs/business/USER_ROLES.md, BE:docs/contracts/API_CONVENTIONS.md, BE:docs/contracts/ERROR_CONTRACT.md, BE:docs/decisions/ADR-0010-parent-visibility-policy.md, BE:docs/knowledge/CROSS_MODULE_ISSUES.md]
 
 available:
   entrypoints: [AGENTS.md, CLAUDE.md, docs/INDEX.md]
-  hooks: [.claude/settings.json, .claude/hooks/memory-reminder.mjs]   # Claude Stop hook nhắc cập nhật memory
+  hooks: [.claude/settings.json, .claude/hooks/session-orient.mjs, .claude/hooks/guard-edits.mjs, .claude/hooks/track-activity.mjs, .claude/hooks/stop-gate.mjs, .claude/hooks/lib/]   # Claude hooks (BE ADR-0012)
   routing: [.ai/ROUTER.md, .ai/ESCALATION.md, .ai/CONTEXT_MAP.yaml]
   profiles: [.ai/profiles/code.md, .ai/profiles/feature.md, .ai/profiles/architecture.md, .ai/profiles/cross-repo.md, .ai/profiles/full.md]
-  workflows: [.ai/workflows/fix-bug.md, .ai/workflows/implement-feature.md, .ai/workflows/review-code.md, .ai/workflows/integrate-api.md, .ai/workflows/update-knowledge.md]
+  workflows: [.ai/workflows/fix-bug.md, .ai/workflows/implement-feature.md, .ai/workflows/review-code.md, .ai/workflows/integrate-api.md, .ai/workflows/update-knowledge.md, .ai/workflows/clarify-business.md, .ai/workflows/plan-change.md]
+  harness: [docs/quality/VERIFICATION.md, docs/plans/_TEMPLATE.md, scripts/verify.mjs, scripts/check-ai-layer.mjs, scripts/ai-layer/, .githooks/, .claude/hooks/harness.config.json, .gitattributes, .editorconfig]   # quy trình làn S/M/L + cổng (BE ADR-0012)
   skills: [.agents/skills/, .claude/skills/]
   rules: [.claude/rules/component.md, .claude/rules/navigation.md, .claude/rules/state.md, .claude/rules/api-client.md, .claude/rules/security-storage.md]
   docs:

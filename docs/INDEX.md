@@ -24,5 +24,7 @@ Nghiệp vụ, rule, contract nằm ở BE: `BE:docs/INDEX.md` (`BE:` = `../Care
 | | `knowledge/incidents/_TEMPLATE.md` | Mẫu incident (có Attempts) | FULL |
 | | `knowledge/KNOWN_ISSUES.md`, `TROUBLESHOOTING.md`, `PATTERNS.md` | Giới hạn, lỗi build/thiết bị, bài học | FULL |
 | quality | `quality/DEFINITION_OF_DONE.md` | Tiêu chí hoàn thành + memory checklist | FULL |
+| | `quality/VERIFICATION.md` | Bằng chứng trước khi báo xong (Iron Law, theo làn) | FULL |
+| plans | `plans/_TEMPLATE.md`, `plans/active/`, `plans/completed/` | Plan làn L (`.ai/workflows/plan-change.md`) | FULL |
 
 Coding rules: `.claude/rules/` (component, navigation, state, api-client, security-storage). Quy trình: `.ai/workflows/`.

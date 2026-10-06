@@ -1,5 +1,7 @@
 # Workflow — Review code (Mobile)
 
+Làn S: tự kiểm 3 điểm (đúng phạm vi, không đổi contract, có test). Làn M: các mục liên quan. Làn L: đủ, kể cả spec trước (mỗi AC trong plan: PASS / MISSING / EXTRA) và Kết luận; review qua subagent nếu công cụ hỗ trợ.
+
 Đọc mục tiêu thay đổi + diff + feature doc của role liên quan. Kiểm tra theo thứ tự ưu tiên:
 
 1. **Business rule ở client:** APP có tự tính/quyết định thay BE không (số suất, định lượng, dị ứng, trend sức khỏe, field phụ huynh được xem)? Implement rule PENDING như đã chốt?
@@ -12,4 +14,11 @@
 8. **Convention:** `.claude/rules/`; không thêm dependency khi chưa được duyệt.
 9. **Memory:** fix bug không hiển nhiên có incident + dòng `ISSUE_INDEX.md` chưa? Đối chiếu Known pitfalls + `PATTERNS.md`.
 
-Mỗi phát hiện: vị trí, kịch bản gây lỗi, cách sửa. Phân biệt lỗi đã chứng minh với câu hỏi/giả định. Không tuyên bố đã chạy trên thiết bị nếu chỉ đọc tĩnh.
+## Phát hiện
+`[Severity] file:line — kịch bản lỗi — cách sửa — đã chứng minh | giả thuyết`. Severity: **Critical** (lộ dữ liệu trẻ/token, vượt quyền, sai nghiệp vụ lõi) · **High** (vd. làm theo rule chưa CONFIRMED hoặc lệch tài liệu mà không hỏi) · **Medium** · **Low**. Spec không rõ ⇒ ghi là câu hỏi. Mỗi phát hiện: vị trí, kịch bản gây lỗi, cách sửa. Phân biệt lỗi đã chứng minh với câu hỏi/giả định. Không tuyên bố đã chạy trên thiết bị nếu chỉ đọc tĩnh.
+
+## Kết luận (làn L)
+`PASS` · `PASS_WITH_RISK` (liệt kê rủi ro chấp nhận) · `BLOCKED` (≥1 Critical/High đã chứng minh). Tối đa 3 vòng review–sửa, sau đó hỏi user.
+
+## Nhận review
+Kiểm chứng từng phát hiện trước khi sửa; sai ⇒ phản biện bằng bằng chứng. Không âm thầm đảo quyết định user đã ghi trong plan.
