@@ -1,11 +1,11 @@
 ---
 paths:
-  - "src/**/auth/**/*.{ts,tsx,js,jsx}"
-  - "src/**/storage/**/*.{ts,tsx,js,jsx}"
-  - "src/**/notifications/**/*.{ts,tsx,js,jsx}"
-  - "src/**/push/**/*.{ts,tsx,js,jsx}"
-  - "src/**/log*.{ts,js}"
-  - "src/**/offline/**/*.{ts,tsx,js,jsx}"
+  - "lib/core/storage/**/*.dart"
+  - "lib/core/notifications/**/*.dart"
+  - "lib/features/auth/**/*.dart"
+  - "lib/features/notifications/**/*.dart"
+  - "lib/**/*log*.dart"
+  - "lib/**/offline/**/*.dart"
 ---
 
 # Security & on-device storage rules
@@ -13,7 +13,7 @@ paths:
 > Cơ chế auth (BE) và push provider chưa chốt; thư viện secure storage chưa chọn — hỏi trước khi chọn. Xem `docs/integration/AUTH_FLOW.md`, `PUSH_NOTIFICATION.md`.
 
 ## Token
-- Policy PROPOSED: token chỉ trong OS secure storage (Keychain/Keystore), không AsyncStorage (cũng không SharedPreferences thường, file, state persist); thư viện chưa chọn.
+- Policy PROPOSED: token chỉ trong OS secure storage (Keychain/Keystore), không SharedPreferences, file thường hay state persist; thư viện chưa chọn.
 - Không log, không gửi token vào crash report/analytics; không đưa vào URL/query string.
 - Logout ⇒ xóa token, cache, offline queue, device push token đăng ký với BE (khi có endpoint).
 

@@ -7,7 +7,7 @@
 | Loại state | Ví dụ | Nguồn sự thật | Ghi chú |
 | --- | --- | --- | --- |
 | Server state | Điểm danh, thực đơn, số suất, sức khỏe | BE | Cache có key theo user + role + ngữ cảnh + ngày; refetch sau ghi |
-| Session | User, role, token | BE (auth) | Policy PROPOSED: token chỉ trong OS secure storage (Keychain/Keystore), không AsyncStorage; thư viện chưa chọn. Xóa hết khi logout |
+| Session | User, role, token | BE (auth) | Policy PROPOSED: token chỉ trong OS secure storage (Keychain/Keystore), không SharedPreferences; thư viện chưa chọn (DESIGN đề xuất flutter_secure_storage — PROPOSED). Xóa hết khi logout |
 | Ngữ cảnh chọn | Con đang xem, lớp, campus, ngày | Client | Đổi ngữ cảnh ⇒ hủy request cũ |
 | Form / nháp | Batch điểm danh đang nhập | Client | Giữ khi lỗi mạng; offline queue chỉ khi đã chốt (xem dưới) |
 

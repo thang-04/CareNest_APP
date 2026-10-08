@@ -5,7 +5,7 @@
 ## Đã biết (dùng được)
 - Quyền = Role × Permission ∩ Access scope, kiểm tra ở BE (`BE:docs/business/USER_ROLES.md`, AUTH-07). APP chỉ ẩn/hiện UI theo dữ liệu BE.
 - 401 / 403 trả envelope `{code, desc, data}` như mọi lỗi khác (`BACKEND_INTEGRATION.md`).
-- Policy PROPOSED: token chỉ trong OS secure storage (Keychain/Keystore), không AsyncStorage; thư viện chưa chọn. Logout xóa token + cache + offline queue (`.claude/rules/security-storage.md`).
+- Policy PROPOSED: token chỉ trong OS secure storage (Keychain/Keystore), không SharedPreferences; thư viện chưa chọn. Logout xóa token + cache + offline queue (`.claude/rules/security-storage.md`).
 
 ## Điền khi BE chốt
 - [ ] Đăng nhập: tài khoản do trường cấp? SĐT/OTP cho phụ huynh?

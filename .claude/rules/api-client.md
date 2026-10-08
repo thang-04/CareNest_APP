@@ -1,8 +1,7 @@
 ---
 paths:
-  - "src/**/api/**/*.{ts,tsx,js,jsx}"
-  - "src/**/services/**/*.{ts,tsx,js,jsx}"
-  - "src/**/*client*.{ts,js}"
+  - "lib/core/network/**/*.dart"
+  - "lib/features/**/data/**/*.dart"
 ---
 
 # API client rules

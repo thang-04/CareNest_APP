@@ -4,7 +4,7 @@ Chạy **ngay trong lượt** khi gặp trigger, không đợi cuối task. Đâ
 
 | Trigger | Ví dụ |
 | --- | --- |
-| T1. Thông tin nghiệp vụ mới / chốt PENDING / đổi quyết định | "phụ huynh được xem chiều cao cân nặng", "chọn React Native" |
+| T1. Thông tin nghiệp vụ mới / chốt PENDING / đổi quyết định | "phụ huynh được xem chiều cao cân nặng", "chọn Riverpod" |
 | T2. Bug mới chưa có trong `ISSUE_INDEX` APP lẫn BE (kể cả chưa fix xong) | Crash, sai navigation theo role, push không mở đúng màn hình, lệch contract API |
 | T3. Edge case UI/nghiệp vụ đáng nhớ | Mất mạng khi giáo viên lưu điểm danh cả lớp |
 

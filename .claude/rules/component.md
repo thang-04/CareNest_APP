@@ -1,13 +1,13 @@
 ---
 paths:
-  - "src/**/screens/**/*.{ts,tsx,js,jsx}"
-  - "src/**/components/**/*.{ts,tsx,js,jsx}"
-  - "src/**/features/**/*.tsx"
+  - "lib/features/**/presentation/**/*.dart"
+  - "lib/core/widgets/**/*.dart"
+  - "lib/core/layouts/**/*.dart"
 ---
 
 # Screen & component rules
 
-> Glob và cấu trúc thư mục là PROPOSED (chưa có source; React Native PROPOSED). Source thực tế khác ⇒ theo source, cập nhật `paths`.
+> Flutter (CONFIRMED); glob theo cấu trúc `DESIGN.md` §2. Source thực tế khác ⇒ theo source, cập nhật `paths`.
 
 - Screen = điều phối: lấy dữ liệu qua hook/state layer, xử lý loading / empty / error / offline / 403, truyền props xuống. Component trình bày không gọi API, không đọc token.
 - **Không business rule trong UI:** không tính số suất, định lượng, trend sức khỏe, không quyết định trẻ nào/field nào phụ huynh được xem. Hiển thị đúng giá trị BE trả (vd. trạng thái `CONFIRMED`, `APPROVED`).
