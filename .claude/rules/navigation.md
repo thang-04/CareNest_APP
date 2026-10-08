@@ -1,14 +1,12 @@
 ---
 paths:
-  - "src/**/navigation/**/*.{ts,tsx,js,jsx}"
-  - "src/**/navigators/**/*.{ts,tsx,js,jsx}"
-  - "src/**/routes/**/*.{ts,tsx,js,jsx}"
-  - "src/**/linking*.{ts,js}"
+  - "lib/routing/**/*.dart"
+  - "lib/core/layouts/**/*.dart"
 ---
 
 # Navigation rules
 
-> Thư viện navigation: chưa chọn (hỏi trước khi chọn). Cây màn hình theo role: `docs/architecture/NAVIGATION.md` (nguồn chuẩn — cập nhật khi thêm màn hình).
+> Thư viện navigation: `go_router` (CONFIRMED 2026-10-08), cấu hình ở `lib/routing/`. Cây màn hình theo role: `docs/architecture/NAVIGATION.md` (nguồn chuẩn — cập nhật khi thêm màn hình).
 
 - Tách stack/tab theo role (Parent / Teacher / Kitchen) sau đăng nhập; role lấy từ thông tin user BE trả, không từ input người dùng.
 - Người dùng nhiều role (nếu có) ⇒ hỏi cách chọn role, không tự quyết.

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { formatSummary, parseMavenOutput, selectQuickTests } from "../verify.mjs";
+import { formatFlutterSummary, formatSummary, parseFlutterStep, parseMavenOutput, selectQuickTests } from "../verify.mjs";
 
 const PASS_OUTPUT = [
   "[INFO] --- surefire:3.5.6:test (default-test) @ carenest-be ---",
@@ -121,4 +121,55 @@ test("quick: đổi pom/resources ⇒ cần full; class không có test ⇒ ch�
   assert.equal(selectQuickTests(["pom.xml"], TESTS).needsFull, true);
   assert.equal(selectQuickTests(["src/main/java/com/carenest/utils/NewUtil.java"], TESTS).allTests, true);
   assert.deepEqual(selectQuickTests([], TESTS), { tests: ["ArchitectureRulesTest"], needsFull: false, allTests: false });
+});
+
+test("flutter: format đổi file ⇒ FAIL + tên file", () => {
+  const step = parseFlutterStep("format", "Changed lib/app.dart\nFormatted 3 files (1 changed) in 0.10 seconds.\n", 1);
+  assert.equal(step.status, "FAIL");
+  assert.deepEqual(step.problems, ["format: lib/app.dart (sửa: dart format lib test)"]);
+  assert.equal(parseFlutterStep("format", "Formatted 3 files (0 changed) in 0.10 seconds.\n", 0).status, "ok");
+});
+
+test("flutter: analyze đếm issue và lấy dòng lỗi", () => {
+  const out = [
+    "Analyzing carenest_app...",
+    "",
+    "  error • Undefined name 'x' • lib/app.dart:3:5 • undefined_identifier",
+    "   info • Use 'const' • lib/main.dart:7:3 • prefer_const_constructors",
+    "",
+    "2 issues found. (ran in 1.2s)",
+  ].join("\r\n");
+  const step = parseFlutterStep("analyze", out, 1);
+  assert.equal(step.status, "2 issues");
+  assert.equal(step.problems.length, 2);
+  assert.match(step.problems[0], /^analyze: error • Undefined name 'x' • lib\/app\.dart:3:5/);
+  assert.equal(parseFlutterStep("analyze", "No issues found! (ran in 0.9s)\n", 0).status, "ok");
+});
+
+test("flutter: test lấy số đếm cuối, skip và test fail", () => {
+  const out = [
+    "00:01 +0: loading test/a_test.dart",
+    "00:02 +1: test/a_test.dart: theme primary",
+    "00:02 +1 -1: test/a_test.dart: button loading [E]",
+    "00:03 +2 ~1 -1: Some tests failed.",
+  ].join("\n");
+  const step = parseFlutterStep("test", out, 1);
+  assert.deepEqual([step.tests, step.failures, step.skipped], [4, 1, 1]);
+  assert.equal(step.status, "FAIL");
+  assert.deepEqual(step.problems, ["test: test/a_test.dart: button loading"]);
+  const pass = parseFlutterStep("test", "00:02 +5: All tests passed!\n", 0);
+  assert.deepEqual([pass.status, pass.tests, pass.failures], ["ok", 5, 0]);
+});
+
+test("flutter summary: bước chưa chạy hiện '-', skip ⇒ cảnh báo", () => {
+  const steps = {
+    format: parseFlutterStep("format", "Formatted 3 files (0 changed)", 0),
+    analyze: parseFlutterStep("analyze", "No issues found!", 0),
+    test: parseFlutterStep("test", "00:02 +3 ~1: All tests passed!", 0),
+  };
+  const lines = formatFlutterSummary(steps, 0, 20, "verify.log").split("\n");
+  assert.equal(lines[0], "VERIFY PASS full | format ok | analyze ok | tests 4 fail 0 skip 1 | 20s | log verify.log");
+  assert.match(lines[1], /1 test bị skip/);
+  const failed = formatFlutterSummary({ format: parseFlutterStep("format", "Changed lib/a.dart", 1) }, 1, 2, "verify.log");
+  assert.match(failed, /^VERIFY FAIL full \| format FAIL \| analyze - \| tests - \| 2s \| log verify\.log\n- format: lib\/a\.dart/);
 });

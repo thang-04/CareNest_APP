@@ -1,9 +1,7 @@
 ---
 paths:
-  - "src/**/store/**/*.{ts,tsx,js,jsx}"
-  - "src/**/state/**/*.{ts,tsx,js,jsx}"
-  - "src/**/hooks/**/*.{ts,tsx,js,jsx}"
-  - "src/**/queries/**/*.{ts,tsx,js,jsx}"
+  - "lib/features/**/presentation/controllers/**/*.dart"
+  - "lib/features/**/presentation/providers/**/*.dart"
 ---
 
 # State & cache rules

@@ -2,6 +2,7 @@
 // Cổng kiểm chứng (ADR-0012): chạy build/test, ghi log đầy đủ ra file, chỉ in tóm tắt ≤10 dòng để tiết kiệm token.
 // Dùng: node scripts/verify.mjs            (full: mvnw verify = test + ArchUnit + snapshot OpenAPI + Spotless)
 //       node scripts/verify.mjs --quick    (làn S: test liên quan file đổi + ArchUnit + Spotless)
+//       Repo Flutter (có pubspec.yaml): dart format check + flutter analyze + flutter test, bỏ qua --quick
 // Luôn in 1 dòng `VERIFY PASS|FAIL|SKIP <mode> | ...` — hook đọc dòng này làm bằng chứng.
 import { execFileSync, spawn } from "node:child_process";
 import { createWriteStream, existsSync, mkdirSync } from "node:fs";
@@ -93,6 +94,73 @@ export function formatSummary(mode, parsed, exitCode, seconds, logFile) {
   return [head, ...notes.slice(0, 8)].join("\n");
 }
 
+// Flutter (APP): format → analyze → test, dừng ở bước fail đầu tiên
+const FLUTTER_STEPS = [
+  { key: "format", exe: "dart", args: ["format", "--output=none", "--set-exit-if-changed", "lib", "test"] },
+  { key: "analyze", exe: "flutter", args: ["analyze"] },
+  { key: "test", exe: "flutter", args: ["test"] },
+];
+const FLUTTER_COUNT = /\+(\d+)(?: ~(\d+))?(?: -(\d+))?: /;
+
+export function parseFlutterStep(key, text, exitCode) {
+  const lines = text.split(/\r?\n/);
+  const problems = [];
+  const add = (problem) => problems.length < 5 && problems.push(problem.slice(0, 220));
+  if (key === "format") {
+    for (const line of lines) if (line.startsWith("Changed ")) add(`format: ${line.slice(8).trim()} (sửa: dart format lib test)`);
+    return { status: exitCode === 0 ? "ok" : "FAIL", problems };
+  }
+  if (key === "analyze") {
+    for (const line of lines) if (/^\s*(error|warning|info) • /.test(line)) add(`analyze: ${line.trim()}`);
+    const found = text.match(/(\d+) issues? found/);
+    const status = exitCode === 0 && !found ? "ok" : found ? `${found[1]} issue${found[1] === "1" ? "" : "s"}` : "FAIL";
+    return { status, problems };
+  }
+  // Reporter của flutter test in bộ đếm cộng dồn `+pass ~skip -fail`; dòng cuối là tổng
+  let count = null;
+  for (const line of lines) {
+    const m = line.match(FLUTTER_COUNT);
+    if (m) count = m;
+    const failed = line.match(/^\d+:\d+ \+\d+(?: ~\d+)? -\d+: (.*) \[E\]\s*$/);
+    if (failed) add(`test: ${failed[1]}`);
+  }
+  const passed = count ? +count[1] : 0;
+  const skipped = count ? +(count[2] ?? 0) : 0;
+  const failures = count ? +(count[3] ?? 0) : 0;
+  return { status: exitCode === 0 ? "ok" : "FAIL", tests: passed + skipped + failures, failures, skipped, problems };
+}
+
+export function formatFlutterSummary(steps, exitCode, seconds, logFile) {
+  const t = steps.test;
+  const head = [
+    `VERIFY ${exitCode === 0 ? "PASS" : "FAIL"} full`,
+    `format ${steps.format?.status ?? "-"}`,
+    `analyze ${steps.analyze?.status ?? "-"}`,
+    t ? `tests ${t.tests} fail ${t.failures} skip ${t.skipped}` : "tests -",
+    `${seconds}s`,
+    `log ${logFile}`,
+  ].join(" | ");
+  const notes = [];
+  if (t?.skipped) notes.push(`CẢNH BÁO: ${t.skipped} test bị skip ⇒ phần đó CHƯA kiểm chứng`);
+  for (const step of Object.values(steps)) for (const p of step.problems) notes.push(`- ${p}`);
+  if (exitCode !== 0) notes.push(`Chi tiết: xem ${logFile}`);
+  return [head, ...notes.slice(0, 8)].join("\n");
+}
+
+async function runFlutter(root, logFile) {
+  const steps = {};
+  let code = 0;
+  for (const [i, step] of FLUTTER_STEPS.entries()) {
+    const run = await runToLog(root, step.exe, step.args, logFile, i > 0);
+    steps[step.key] = parseFlutterStep(step.key, run.text, run.code);
+    if (run.code !== 0) {
+      code = 1;
+      break;
+    }
+  }
+  return { code, steps };
+}
+
 function gitLines(root, args) {
   try {
     return execFileSync("git", args, { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] })
@@ -152,18 +220,21 @@ function mavenCommand(root, quick) {
   };
 }
 
-function runToLog(root, exe, args, logFile) {
+function runToLog(root, exe, args, logFile, append = false) {
   mkdirSync(dirname(join(root, logFile)), { recursive: true });
-  const log = createWriteStream(join(root, logFile));
+  const log = createWriteStream(join(root, logFile), { flags: append ? "a" : "w" });
+  if (append) log.write(`\n$ ${exe} ${args.join(" ")}\n`);
   let text = "";
   return new Promise((done) => {
     // JVM ghi stdout UTF-8 khi bị pipe (mặc định theo code page Windows ⇒ lỗi font tiếng Việt)
     const utf8 = "-Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8";
     const env = { ...process.env, MAVEN_OPTS: `${process.env.MAVEN_OPTS ?? ""} ${utf8}`.trim() };
     // .cmd cần shell trên Windows; args do script tự sinh (không lấy từ input) nên ghép chuỗi an toàn
+    // Chỉ quote khi path có khoảng trắng: cmd gọi "flutter"/"dart" (.bat trên PATH) có quote ⇒ %~dp0 sai, lỗi "cannot find the path"
+    const command = /\s/.test(exe) ? `"${exe}"` : exe;
     const child =
       process.platform === "win32"
-        ? spawn(`"${exe}" ${args.join(" ")}`, { cwd: root, shell: true, env })
+        ? spawn(`${command} ${args.join(" ")}`, { cwd: root, shell: true, env })
         : spawn(exe, args, { cwd: root, env });
     const collect = (chunk) => {
       log.write(chunk);
@@ -200,7 +271,14 @@ async function main(argv) {
     console.log(`VERIFY ${code === 0 ? "PASS" : "FAIL"} full | npm run verify | log ${logFile}`);
     return code === 0 ? 0 : 1;
   }
-  console.log("VERIFY SKIP | chưa có code (không có pom.xml/package.json)");
+  if (existsSync(join(root, "pubspec.yaml"))) {
+    const logFile = "verify.log";
+    const started = Date.now();
+    const { code, steps } = await runFlutter(root, logFile);
+    console.log(formatFlutterSummary(steps, code, Math.round((Date.now() - started) / 1000), logFile));
+    return code;
+  }
+  console.log("VERIFY SKIP | chưa có code (không có pom.xml/package.json/pubspec.yaml)");
   return 0;
 }
 

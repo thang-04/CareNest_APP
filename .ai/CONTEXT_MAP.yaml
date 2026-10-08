@@ -44,7 +44,7 @@ keywords:
     {app_docs: [docs/architecture/NAVIGATION.md], be_module_card: []}
   "state|cache|store|query|đồng bộ|sync":
     {app_docs: [docs/architecture/STATE_MANAGEMENT.md], be_module_card: []}
-  "build|gradle|xcode|pod|metro|emulator|simulator|thiết bị|device|release":
+  "build|gradle|xcode|pod|flutter|pubspec|emulator|simulator|thiết bị|device|release":
     {app_docs: [docs/knowledge/TROUBLESHOOTING.md], be_module_card: []}
   "ai|gợi ý|draft|bản nháp":
     {app_docs: [docs/features/README.md], be_module_card: [BE:docs/modules/ai-assistance.md]}   # APP không hiển thị DRAFT như chính thức
@@ -68,11 +68,14 @@ available:
   workflows: [.ai/workflows/fix-bug.md, .ai/workflows/implement-feature.md, .ai/workflows/review-code.md, .ai/workflows/integrate-api.md, .ai/workflows/update-knowledge.md, .ai/workflows/clarify-business.md, .ai/workflows/plan-change.md]
   harness: [docs/quality/VERIFICATION.md, docs/plans/_TEMPLATE.md, scripts/verify.mjs, scripts/check-ai-layer.mjs, scripts/ai-layer/, .githooks/, .claude/hooks/harness.config.json, .gitattributes, .editorconfig]   # quy trình làn S/M/L + cổng (BE ADR-0012)
   skills: [.agents/skills/, .claude/skills/]
+  source: [lib/, test/, pubspec.yaml]   # Flutter (CONFIRMED 2026-10-08)
   rules: [.claude/rules/component.md, .claude/rules/navigation.md, .claude/rules/state.md, .claude/rules/api-client.md, .claude/rules/security-storage.md]
   docs:
     - docs/context/REPOSITORY_CONTEXT.md
     - docs/context/CURRENT_STATE.md
+    - docs/architecture/MOBILE_ARCHITECTURE.md
     - docs/architecture/NAVIGATION.md
+    - DESIGN.md                           # quy chuẩn UI/kiến trúc Flutter
     - docs/features/README.md
     - docs/features/parent/README.md
     - docs/features/teacher/README.md
@@ -86,13 +89,11 @@ available:
     - docs/quality/DEFINITION_OF_DONE.md
 
 skeleton_only:   # tồn tại nhưng chưa có nội dung chốt — không dùng làm nguồn
-  - docs/architecture/MOBILE_ARCHITECTURE.md
   - docs/architecture/STATE_MANAGEMENT.md
   - docs/integration/AUTH_FLOW.md
   - docs/integration/PUSH_NOTIFICATION.md
 
 planned:
-  - src/                                  # chưa có source; framework PROPOSED (React Native)
   - docs/architecture/RELEASE.md          # build/ký app/phát hành — khi có source
 
 related_repositories:

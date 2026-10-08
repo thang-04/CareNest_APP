@@ -31,7 +31,7 @@ Quy ước trong docs repo này: `BE:<path>` = file trong repo BE (vd. `BE:docs/
 
 ## Stack
 
-Mobile framework: **React Native — PROPOSED** (chưa chốt). Navigation, state/cache, HTTP client, push provider, secure storage: chưa chọn. Đọc source thực tế trước khi áp rule framework. BE: Java Spring Boot + PostgreSQL (CONFIRMED); response `{code, desc, data}` với `code` == HTTP status, prefix API cấu hình được — nguồn: `BE:docs/backend-coding-guide.md` §7–8 + source BE (APP tóm tắt ở `docs/integration/BACKEND_INTEGRATION.md`).
+Mobile framework: **Flutter — CONFIRMED** (user, 2026-10-08); package `carenest_app`, quy chuẩn UI/kiến trúc ở `DESIGN.md` (Feature-based + Clean Architecture). Navigation: `go_router` (CONFIRMED). State/cache, HTTP client, push provider, secure storage: chưa chọn (DESIGN đề xuất Riverpod, Dio, flutter_secure_storage — PROPOSED, hỏi trước khi thêm). BE: Java Spring Boot + PostgreSQL (CONFIRMED); response `{code, desc, data}` với `code` == HTTP status, prefix API cấu hình được — nguồn: `BE:docs/backend-coding-guide.md` §7–8 + source BE (APP tóm tắt ở `docs/integration/BACKEND_INTEGRATION.md`).
 
 ## Quy tắc chung CareNest (bắt buộc)
 

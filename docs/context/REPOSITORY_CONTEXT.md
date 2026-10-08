@@ -39,8 +39,9 @@ Chat/nhắn tin (Zalo vẫn dùng), kho/NCC (OPEN — BE ADR-0009, chưa làm), 
 
 | Hạng mục | Trạng thái |
 | --- | --- |
-| Framework mobile | React Native — **PROPOSED** |
-| Navigation, state/cache, HTTP client, secure storage | Chưa chọn — hỏi trước khi chọn |
+| Framework mobile | Flutter — **CONFIRMED** (user, 2026-10-08); quy chuẩn `DESIGN.md` |
+| Navigation | `go_router` — CONFIRMED |
+| State/cache, HTTP client, secure storage | Chưa chọn — hỏi trước khi chọn |
 | Push provider | Chưa chốt (BE `notification` card) |
 | Auth mechanism | Chưa chốt (BE `AUTH_CONTRACT.md` SKELETON; coding guide BE định hướng JWT access + refresh, chưa triển khai) |
 | BE | Java 21 + Spring Boot + PostgreSQL — CONFIRMED; response `{code, desc, data}` |
