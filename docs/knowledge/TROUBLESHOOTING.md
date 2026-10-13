@@ -31,3 +31,11 @@ Cách xử lý nhanh lỗi môi trường: cài đặt toolchain, build Android/
 - Xử lý: đã sửa trong `scripts/verify.mjs` (chỉ quote path có khoảng trắng). Gọi tay: `dart ...`, không `"dart" ...`
 - Đã thử không hiệu quả: quote `"dart.bat"`
 - Incident: APP-ENV-261008-verify-quoted-bat
+
+## Xem màn bằng mắt (chụp ảnh)
+
+### Chrome headless chụp ra trang trắng hoặc "Không tìm thấy trang" với `flutter run -d web-server`
+- Môi trường: Windows 11, Flutter 3.44.0, Chrome headless (`--headless=new`, CDP qua Node 22), app debug ở `127.0.0.1:<port>`
+- Nguyên nhân: server debug của `web-server` chờ kết nối debug service và chỉ phục vụ ổn một client; đổi hash sau khi tải (Page.navigate hoặc `location.hash`) cho ra 404; `--screenshot` của Chrome dùng viewport rộng hơn `--window-size` nên cắt mép phải. Gốc chưa xác minh hết.
+- Xử lý: chụp bằng golden test tạm — `MaterialApp.router` + `buildAppRouter(enablePreview: true)`, `tester.view.physicalSize = Size(750, 1624)`, `devicePixelRatio = 2`, nạp font bằng `FontLoader` (`assets/fonts/BeVietnamPro-*.ttf`, `<flutter>/bin/cache/artifacts/material_fonts/materialicons-regular.otf`), `precacheImage` logo trong `tester.runAsync`, rồi `matchesGoldenFile` + `flutter test <file> --update-goldens`. Xoá file test và ảnh sau khi xem, không commit. Chạy lại không có `--update-goldens` mà ảnh khác ⇒ Flutter ghi ảnh so sánh vào `test/failures/`: xoá luôn thư mục này.
+- Đã thử không hiệu quả: `--virtual-time-budget`; CDP `Emulation.setDeviceMetricsOverride` + `setVirtualTimePolicy`; tắt throttle nền; `flutter build web --debug` + server tĩnh (route vẫn 404 sau tải). Tiến trình `dartvm` cũ giữ cổng sau khi dừng shell cha ⇒ `errno = 10048` khi chạy lại.

@@ -1,31 +1,38 @@
-# CareNest Mobile – Design & Coding Guide (Flutter)
+# CareNest Mobile — Design & Coding Guide (Flutter)
 
-Tài liệu dùng chung cho nhóm phát triển **CareNest Mobile trên Android/iOS bằng Flutter**. Được chuyển từ quy chuẩn CareNest Web, tổ chức theo **Feature-based + Clean Architecture**, và cập nhật theo `DESIGN_review_Flutter.md` ngày 08/10/2026. Đây là **quy chuẩn triển khai đề xuất**, chưa phải mô tả một dự án Flutter đã được kiểm tra mã nguồn.
+| Thông tin | Giá trị |
+| --- | --- |
+| Bản cập nhật mobile | 2.0 — 10/10/2026 |
+| UI đồng bộ theo | **CareNest Design System — web + app, phiên bản 3.1 — 09/10/2026** |
+| Trạng thái Design System nguồn | **PROPOSED — chờ team duyệt**; bản này đồng bộ theo nguồn đó, không xác nhận team đã duyệt |
+| Nền tảng | Flutter Android/iOS, repository `CareNest_APP` |
+| Kiến trúc | Feature-based + Clean Architecture |
+| Phạm vi lần sửa | Quy chuẩn UI, token, component, khung màn, câu chữ, checklist và tham chiếu liên quan |
+| Nguồn UI chính | `CareNest_FE/DESIGN.md`; khi nối repo, chép nguyên bản Design System chung thành `CareNest_APP/DESIGN.md` |
+| Vai trò tài liệu này | Guide triển khai mobile đã đồng bộ; **không tạo một Design System riêng cho app** |
 
-Trước khi làm màn hình mới: đọc tài liệu và xem **UiKitScreen** trong bản debug để chọn widget, màu và kiểu chữ. Nguyên tắc: dùng lại thành phần chung; thiếu thì bổ sung vào `core/widgets` hoặc hệ thống theme để cả nhóm cùng dùng.
+Trước khi làm màn hình mới, đọc Design System chung và danh mục widget ở §7.1. Dùng component chung; thiếu thì bổ sung vào `core/widgets` và token, kèm widget test (§7.4), trước khi dùng ở màn hình.
 
-**Phạm vi:** thiết kế, kiến trúc, API, trạng thái giao diện, xác thực và chất lượng mã nguồn cho app native. Mục 8.4 bổ sung khung điều hướng theo nhóm người dùng; mục 18 quy định cách kế thừa trạng thái chứng từ/chữ ký từ tài liệu nghiệp vụ. Ma trận quyền, chuyển trạng thái và thao tác nghiệp vụ cụ thể vẫn phải đối chiếu SRS/Use Case/Screen Flow; không tự suy ra từ giao diện web.
+**Ưu tiên UI:** yêu cầu rõ của người dùng trong lượt hiện tại → Design System chung → phần UI của guide này → mặc định Material/AI. Khi cần thay đổi lâu dài, cập nhật nguồn chung và hai nền tảng trong cùng đợt; ngoại lệ ghi rõ “lệch design system ở …” trong PR.
 
-**Quy ước mức độ xác nhận:**
+**PHẢI / KHÔNG** là bắt buộc theo Design System đang áp dụng. **NÊN** là mặc định, lệch thì ghi lý do. Các lựa chọn kỹ thuật/API là **PROPOSED** cho tới khi nhóm và backend xác nhận. **OPEN** là điểm cần chốt; **NEEDS VERIFICATION** là thông tin cần đối chiếu SRS/Use Case/Screen Flow hoặc mã nguồn.
 
-- **PROPOSED:** đề xuất triển khai trong guide, chưa chứng minh dự án đã có mã nguồn/API tương ứng.
-- **OPEN:** cần nhóm hoặc backend chốt trước khi triển khai phần phụ thuộc.
-- **NEEDS VERIFICATION:** thông tin được nhắc trong review nhưng cần đối chiếu tài liệu gốc.
+Guide giữ hướng dẫn chạy dự án, kiến trúc, API, xác thực, upload và push của bản mobile. Quyền, mã role, field, endpoint và vòng đời nghiệp vụ vẫn do SRS/Use Case/Screen Flow cùng `CareNest_BE` quyết định. Mẫu UI không tự xác nhận một chức năng hoặc endpoint đã tồn tại.
 
-Các lựa chọn kỹ thuật mặc định trong guide là **PROPOSED**. Review đánh giá một bản DESIGN dành cho web; file đang sửa đã là bản Flutter, nên giữ các phần phù hợp và bổ sung những điểm còn thiếu. Những nhận định `CONFIRMED` về vai trò/tài khoản trong review được ghi nhận là thông tin từ review, chưa được xác minh độc lập với SRS trong lần cập nhật này.
+**Xác thực native:** giữ đề xuất Bearer token + secure storage; web dùng cookie HttpOnly. Design System 3.1 còn mở lựa chọn form đăng nhập hay Keycloak. Chốt với backend trước khi tích hợp; hợp đồng ở mục 12 vẫn là đề xuất, phương án cookie ở mục 12.7.
 
-**Điểm khác với web:** tài liệu mặc định đề xuất **Bearer token + secure storage cho app native**; web tiếp tục dùng cookie HttpOnly. Backend phải hỗ trợ hợp đồng mobile tương ứng. Nếu backend chỉ hỗ trợ cookie hiện tại, xem mục 12.7 trước khi triển khai; không tự giả định endpoint web trả token JSON.
+**Khi nối vào repo:** theo Phụ lục A, tách phần code sang `docs/architecture/CODING_GUIDE.md` và dùng bản Design System chung làm `DESIGN.md`. Lần sửa này cập nhật tài liệu; chưa sửa repository, cài package, tạo widget hoặc chạy build.
 
 ## Mục lục
 
 1. [Chạy dự án và cấu hình](#section-1)
 2. [Cấu trúc thư mục](#section-2)
-3. [Thương hiệu và tài nguyên](#section-3)
+3. [Thương hiệu, tranh và tài nguyên](#section-3)
 4. [Màu sắc và design tokens](#section-4)
-5. [Chữ, khoảng cách và bố cục thích ứng](#section-5)
-6. [Badge và màu thông tin](#section-6)
-7. [Widget dùng chung](#section-7)
-8. [Khung ứng dụng và mẫu màn hình](#section-8)
+5. [Chữ, kích thước, khoảng cách và chuyển động](#section-5)
+6. [Badge và ánh xạ trạng thái](#section-6)
+7. [Widget dùng chung và icon](#section-7)
+8. [Khung ứng dụng và công thức màn hình](#section-8)
 9. [Theme và tổ chức style](#section-9)
 10. [Kiến trúc và luồng dữ liệu](#section-10)
 11. [Quy trình thêm feature](#section-11)
@@ -36,6 +43,10 @@ Các lựa chọn kỹ thuật mặc định trong guide là **PROPOSED**. Revie
 16. [Nối Spring Boot và tích hợp nền tảng](#section-16)
 17. [Checklist trước PR](#section-17)
 18. [Nguồn nghiệp vụ chung và các điểm cần chốt](#section-18)
+
+- [Phụ lục A — Nối tài liệu vào repository](#appendix-a)
+- [Phụ lục B — Bảng thay đổi UI](#appendix-b)
+- [Tài liệu tham chiếu](#references)
 
 ---
 
@@ -116,10 +127,11 @@ Giữ `main.dart`, `app.dart`, `core/`, `features/` theo đề xuất. Bổ sung
 
 ```text
 assets/
-  brand/
-    logo_mark.png
-    logo_full.png
+  image/
+    Logo.jpg                        # Logo đầy đủ hiện có (§3.1)
+  brand/                            # Khi có bản PNG nền trong: logo-mark.png, logo-full.png
   images/
+  illustrations/                    # Cùng bộ tranh sáp màu của web
   icons/
   fonts/
 
@@ -142,10 +154,12 @@ lib/
       colors.dart
       sizes.dart
       asset_paths.dart
+      motion.dart                    # AppMotion theo Design System
+      app_icons.dart                 # Một điểm import icon, tên giống web
     theme/
       app_theme.dart
       app_text_styles.dart
-      app_status_colors.dart        # ThemeExtension cho success/warning/purple/teal và chip
+      app_status_colors.dart        # ThemeExtension: semantic, phản hồi, 7 tông bản ghi
     utils/
       date_formatters.dart
       number_formatters.dart
@@ -169,7 +183,20 @@ lib/
       app_password_field.dart
       app_card.dart
       app_status_badge.dart
+      app_filter_chip.dart
+      app_stat_card.dart
+      app_segmented.dart
+      app_banner.dart
+      app_toast.dart
+      app_bottom_sheet.dart
+      app_submit_overlay.dart
+      app_progress_bar.dart
+      app_avatar.dart
+      app_info_list.dart
+      app_list_row.dart
+      app_stepper.dart
       app_loading.dart
+      app_skeleton.dart
       app_empty_state.dart
       app_error_state.dart
       app_confirmation_dialog.dart
@@ -180,6 +207,7 @@ lib/
     layouts/
       app_shell.dart
       auth_scaffold.dart
+      app_hero_scene.dart            # Nơi duy nhất dùng kính/blur trên hero
 
   features/
     auth/
@@ -235,11 +263,6 @@ lib/
         controllers/
         providers/
 
-    ui_kit/
-      presentation/
-        screens/
-          ui_kit_screen.dart        # Chỉ đăng ký route trong debug
-
     feature_name/
       data/
         datasources/
@@ -285,20 +308,23 @@ Entity `AppUser` không chứa access/refresh token. `AuthSession` thuộc domai
 ---
 
 <a id="section-3"></a>
-## 3. Thương hiệu và tài nguyên
+## 3. Thương hiệu, tranh và tài nguyên
 
-Giữ nhận diện của CareNest Web.
+Theo Design System §4. Logo, tranh và font cùng nguồn với web; cách bố trí theo nền tảng.
 
-| Tài nguyên | Dùng ở đâu | Widget đề xuất |
-|---|---|---|
-| `assets/brand/logo_mark.png` | Biểu tượng trong app và splash | `AppLogo` dạng mark |
-| `assets/brand/logo_full.png` | Màn đăng nhập, màn giới thiệu nếu có | `AppLogo` dạng full |
-| Chữ CareNest | Cạnh biểu tượng nếu dùng chữ render | `AppWordmark`: Care xanh đậm, Nest xanh trời |
-| App launcher icon | Icon ngoài màn hình điện thoại | Cấu hình riêng Android/iOS |
+### 3.1 Logo và font
 
-Không kéo méo, đổi màu hoặc thêm bóng vào logo. Giữ tỷ lệ ảnh bằng `BoxFit.contain`. Không lấy ảnh có khoảng trắng quá lớn làm launcher icon. Splash/launcher icon phải cấu hình qua tài nguyên nền tảng hoặc công cụ tương ứng; không sao chép `favicon.png` làm giải pháp mặc định.
+| Tài nguyên app | Dùng | Quy tắc |
+| --- | --- | --- |
+| `assets/image/Logo.jpg` | `AppLogo` đầy đủ; đăng nhập | Bản hiện có (user, 2026-10-10): biểu tượng + chữ, **nền trắng** ⇒ chỉ đặt trên nền sáng |
+| `assets/brand/logo-mark.png`, `logo-full.png` | Dạng mark/full nền trong | Chưa có file; khi có thì đổi một dòng ở `AppAssets` |
+| Chữ render `AppWordmark` | Cạnh biểu tượng khi cần | **Care** dùng token `wordmarkCare` (`#0269C5`); **Nest** dùng `brand` (`#4FB0F5`) |
+| App launcher icon | Màn hình Android/iOS | Cấu hình tài nguyên riêng nền tảng từ logo, không lấy favicon làm mặc định |
+| `assets/fonts/` | Be Vietnam Pro | Đóng gói 400/500/600/700, family `BeVietnamPro` |
 
-Tập trung đường dẫn ở `AppAssets`. Ảnh/font đóng gói phải khai báo trong `pubspec.yaml`; không hardcode đường dẫn rải rác. Ưu tiên font đóng gói để giao diện có chữ Việt ổn định khi mạng yếu.
+`wordmarkCare` là tên token adapter Flutter cho màu logo tại Design System §4.1, không phải màu primary tương tác. Đường dẫn logo dùng tên gạch nối như nguồn chung; nếu asset hiện có dùng `logo_mark.png`/`logo_full.png`, đổi tên hoặc ánh xạ tại `AppAssets` và cập nhật `pubspec.yaml` cùng đợt, không để hai bản logo khác nhau.
+
+Không kéo méo, đổi màu hoặc thêm bóng logo. Nền sau logo luôn sáng; giữ tỷ lệ bằng `BoxFit.contain`. `mockups/brand/logo.jpg` là nguồn để cắt, không dùng trực tiếp. Tập trung đường dẫn ở `AppAssets` trong `core/constants/asset_paths.dart`.
 
 ```yaml
 flutter:
@@ -306,6 +332,7 @@ flutter:
   assets:
     - assets/brand/
     - assets/images/
+    - assets/illustrations/
   fonts:
     - family: BeVietnamPro
       fonts:
@@ -319,321 +346,518 @@ flutter:
           weight: 700
 ```
 
-Chỉ giữ các mục asset thực sự tồn tại. `assets/icons/` cần khai báo thêm nếu được sử dụng. Giữ thông tin tên app/phiên bản trong cấu hình và màn tài khoản/giới thiệu; không cần footer ở mọi màn mobile.
+Chỉ khai báo thư mục/file thật sự tồn tại. `assets/icons/` khai báo khi dùng asset icon; không thay bộ icon chung bằng các ảnh riêng từng feature. Tên app/phiên bản nằm ở cấu hình và màn Tài khoản/Giới thiệu; không thêm footer vào mọi màn.
+
+### 3.2 Tranh và bề mặt
+
+Dùng **cùng bộ 20 tranh sáp màu** của web (`src/assets/illustrations/scenes/`, `login-scene.webp`, `hero-scene.webp`). App đóng gói bản rộng 1080 px, WebP ≤150 KB vào `assets/illustrations/`; danh mục đường dẫn tập trung ở `AppAssets`. Đây là yêu cầu asset, chưa xác nhận các file đã có trong app.
+
+| Vị trí | App |
+| --- | --- |
+| Nền toàn app | Nền `background` trơn; không phủ tranh toàn bộ app |
+| Màn Hôm nay | Hero cao 224 logical pixels, đáy mờ về nền; khối chào kính |
+| Đăng nhập | Tranh khoảng 42% phía trên; sheet form trắng bo 32 phía dưới |
+| Card/list/sheet thông thường | Trắng đặc `surface`, không kính |
+| Màn trống | Tranh 168×124, bo 20; tiêu đề + giải thích + hành động phù hợp |
+| Màn lỗi | Icon, không tranh |
+
+Kính chỉ dùng cho khối chào trong hero: trắng 72%, blur 20, viền trắng 85%. Khai báo token tập trung; chỉ `app_hero_scene.dart` xử lý blur. **KHÔNG `BackdropFilter` trong item danh sách cuộn.**
+
+App tạm dùng tranh **T0 Sân chơi** tới khi backend có hợp đồng appearance. `GET /school/appearance` trong Design System là đề xuất, không tự gọi như API đã có. Tranh đăng nhập chỉ giữ tỷ lệ 42% khi đủ không gian; cho form cuộn và xử lý bàn phím theo mục 5.6.
 
 ---
 
 <a id="section-4"></a>
 ## 4. Màu sắc và design tokens
 
-Chỉ định nghĩa màu gốc bằng các hằng số của `AppColors` trong `core/constants/colors.dart`. Theme ánh xạ màu qua `ColorScheme` và `ThemeExtension`; widget dùng theme thay vì tự viết `Color(0x...)`.
+Theo Design System §3.1–3.3. Mã màu chỉ định nghĩa trong `core/constants/colors.dart`; màu bóng trong `AppShadows`. Widget đọc `ColorScheme` / `AppStatusColors`, không viết `Color(0x...)` hoặc `Colors.*` riêng tại screen.
 
-### 4.1 Bảng màu giữ từ web
+### 4.1 Màu nền tảng — cùng mã với web
 
-| Nhóm | Token Dart đề xuất | Mã | Sử dụng |
-|---|---|---|---|
-| Brand | `brandBlue700` | `#0269C5` | Chữ Care, điểm nhấn |
-| Brand | `brandBlue600` | `#1675CF` | Màu thương hiệu phụ |
-| Brand | `brandSky400` | `#4FB0F5` | Chữ Nest |
-| Brand | `brandSky300` | `#71C6FD` | Minh họa nhẹ |
-| Brand | `brandMint300` | `#94DEBD` | Điểm nhấn minh họa |
-| Primary | `primary` | `#1565E0` | Nút chính, link, mục đang chọn |
-| Primary | `primaryPressed` | `#0F55C4` | Trạng thái nhấn |
-| Primary | `primaryContainer` | `#EAF2FE` | Nền chọn nhẹ |
-| Primary | `focusRing` | `#D6E6FD` | Viền focus |
-| Success | `success` / `successText` | `#12A150` / `#0B7A3B` | Thành công / chữ trên nền nhạt |
-| Warning | `warning` / `warningText` | `#E8890C` / `#B25E00` | Cảnh báo / chữ trên nền nhạt |
-| Danger | `danger` / `dangerText` | `#E03131` / `#C92A2A` | Lỗi / chữ trên nền nhạt |
-| Purple | `purple` / `purpleText` | `#7048E8` / `#4D2DB7` | Nhãn cần phân biệt |
-| Teal | `teal` | `#0C8599` | Thông tin phụ |
-| Text | `textPrimary` | `#1B2433` | Nội dung chính |
-| Text | `textSecondary` | `#4A5568` | Nội dung phụ |
-| Text | `textMuted` | `#8592A6` | Placeholder/ghi chú, cần kiểm tra độ tương phản |
-| Text | `textInverse` | `#FFFFFF` | Chữ trên nền phù hợp |
-| Border | `border` / `borderStrong` | `#E3E9F2` / `#CDD6E3` | Viền thông thường/input |
-| Surface | `background` | `#F5F8FC` | Nền màn hình |
-| Surface | `surface` / `surfaceSoft` | `#FFFFFF` / `#F8FAFC` | Card và khối phụ |
-| Disabled | `disabled` / `disabledContainer` | `#ADB5BD` / `#F1F3F6` | Phần tử vô hiệu |
-| Loading | `skeleton` | `#EEF1F5` | Placeholder khi tải |
+| Vai trò | Mã | Web | App `AppColors` |
+| --- | --- | --- | --- |
+| Nền thương hiệu: nút chính, mục chọn đậm | `#4FB0F5` | `--color-brand` | `brand` |
+| Thương hiệu khi rê chuột | `#71C6FD` | `--color-brand-hover` | — |
+| Thương hiệu khi nhấn | `#95CFF9` | `--color-brand-active` | `brandPressed` |
+| Chữ/icon trên nền thương hiệu (4,64:1) | `#0E3F63` | `--color-on-brand` | `onBrand` |
+| Link, chữ màu, icon nhấn, focus (5,06:1) | `#0B72BC` | `--color-primary` | `primary` |
+| Link khi rê/nhấn | `#0A6AAE` | `--color-primary-hover` | `primaryPressed` |
+| Nền nhạt: mục chọn, ô icon | `#E2F2FD` | `--color-primary-soft` | `primarySoft` |
+| Viền nhạt chọn | `#95CFF9` | `--color-primary-border` | `primaryBorder` |
+| Vòng focus | `#C5E5FC` | `--color-focus-ring` | `focusRing` |
+| Mint của logo | `#94DEBD` | `--color-accent` | `accent` |
+| Nền mint | `#EEFAF4` | `--color-accent-soft` | `accentSoft` |
+| Chữ trên nền mint (4,92:1) | `#1F7A59` | `--color-accent-fg` | `accentText` |
+| Nền màn | `#F1F9FE` | `--color-bg` | `background` |
+| Bề mặt: card, sheet, modal, ô nhập | `#FFFFFF` | `--color-surface` | `surface` |
+| Bề mặt phụ trong card | `#F8FAFC` | `--color-surface-muted` | `surfaceMuted` |
+| Chữ chính (15,6:1) | `#1B2433` | `--color-text` | `textPrimary` |
+| Chữ phụ (7,5:1) | `#4A5568` | `--color-text-secondary` | `textSecondary` |
+| Chữ mờ, placeholder (4,84:1) | `#66728A` | `--color-text-muted` | `textMuted` |
+| Chữ vô hiệu | `#A3AEBD` | `--color-text-disabled` | `textDisabled` |
+| Viền nhạt, kẻ phân cách | `#E3E9F2` | `--color-border` | `border` |
+| Viền ô nhập, nút phụ | `#CDD6E3` | `--color-border-strong` | `borderStrong` |
+| Viền vùng kéo-thả | `#B9C6D8` | `--color-border-dashed` | — |
+| Rãnh segmented, khung chờ | `#EEF1F5` | `--skeleton` | `track` |
+| Nền sau hộp thoại (không blur) | `#0E3F63` 32% | `--color-overlay` | `overlay` |
 
-**Màu chip theo tông (CONFIRMED — user duyệt 2026-10-08):** chữ chip dùng `…Text` của tông, riêng teal dùng `tealText` #0A6B7B và warning dùng `warningChipText` #A35600 (`warningText` #B25E00 trên nền warning chỉ 4.30:1). Nền/viền: success #E7F6EE/#B5E3C8, warning #FFF4E5/#FFD8A8, danger #FDECEC/#F8C4C4, purple #F1EDFD/#D5CBF9, teal #E3F4F6/#B2DFE5; info dùng `primaryContainer`/`focusRing`, neutral dùng `disabledContainer`/`border`. Chữ/nền mỗi tông ≥4.5:1 (WCAG AA), có test khóa trong `test/core/theme/app_theme_test.dart`. Khai báo ở `AppColors`, ánh xạ trong `AppStatusColors`.
+`brand` là **nền nút chính**, `onBrand` là **chữ/icon trên nút chính**. `primary` là **link, icon nhấn, focus**, không còn là màu nền nút như guide cũ. Không dùng chữ trắng trên `brand`.
 
-Các màu nền/viền semantic chưa liệt kê mã phải được bổ sung tập trung và kiểm tra trên UiKitScreen trước khi dùng; không tự tạo khác nhau ở từng feature. Cặp màu thương hiệu không đồng nghĩa mọi cặp chữ/nền đều đọc tốt.
+### 4.2 Màu phản hồi — tách khỏi trạng thái bản ghi
 
-### 4.2 Ánh xạ token sang Flutter
+| Nghĩa | Màu | Chữ | Nền | Viền | Web | App |
+| --- | --- | --- | --- | --- | --- | --- |
+| Thành công | `#12A150` | `#0B7A3B` | `#E7F7EE` | `#B5E5C8` | `--color-success*` | `success*` |
+| Cảnh báo | `#E8890C` | `#9A5100` | `#FFF4E3` | `#F7D49C` | `--color-warning*` | `warning*` |
+| Lỗi, nguy hiểm | `#E03131` | `#C92A2A` | `#FDECEC` | `#F6B9B9` | `--color-danger*` | `danger*` |
+| Thông tin | `#0B72BC` | `#0E3F63` | `#E2F2FD` | `#95CFF9` | `--color-info*` | `info*` |
 
-| Token/nhóm | Vị trí trong theme |
-|---|---|
-| `primary`, `textInverse` | `ColorScheme.primary`, `onPrimary` |
-| `primaryContainer`, `brandBlue700` | `primaryContainer`, `onPrimaryContainer` |
-| `danger`, `textInverse` | `error`, `onError` |
-| `surface`, `textPrimary`, `textSecondary` | `surface`, `onSurface`, `onSurfaceVariant` |
-| `borderStrong`, `border` | `outline`, `outlineVariant` |
-| `background` | `ThemeData.scaffoldBackgroundColor` |
-| Success, warning, purple, teal; nền/viền chip | `ThemeExtension<AppStatusColors>` trong `app_status_colors.dart` |
-| Pressed, focus, disabled, skeleton | Component theme/widget chung, dùng token đã có |
+Dùng 3.3 cho **thông điệp** (có chuyện gì vừa xảy ra); dùng 3.2 cho **trạng thái của một bản ghi**. Chữ màu trên nền nhạt dùng bậc đậm (`-fg`, `-700`, `-800`), không dùng màu chính.
 
-`ColorScheme.fromSeed` sinh bảng màu từ seed; **không bảo đảm `primary` bằng đúng `#1565E0`**. Ghi đè các role đã được duyệt bằng `copyWith` hoặc khai báo `ColorScheme` đầy đủ; không chỉ truyền seed rồi coi là giữ nguyên nhận diện. Khi ghi đè phải kiểm tra lại các cặp `on…` và màu container. Các role được sinh nhưng chưa duyệt vẫn là PROPOSED. Xem ví dụ mục 9.1. [S10, S11]
+Token Flutter cho mỗi nhóm phản hồi: `success/successText/successSoft/successBorder`, tương tự `warning`, `danger`, `info`. Bảng trên là giá trị chuẩn. `AppButton` danger dùng `dangerSoft` + `dangerText`, không nền đỏ đặc chữ trắng.
 
-`background` vẫn là token của CareNest, nhưng ánh xạ qua Scaffold; không dùng thuộc tính `ColorScheme.background` đã deprecated trong SDK hiện hành.
+### 4.3 Ánh xạ Flutter
 
-### 4.3 Nguyên tắc
+Để các widget Material mặc định dùng đúng nền CTA, **`ColorScheme.primary` ánh xạ tới `AppColors.brand`**, không tới token Dart `AppColors.primary`. Đây là khác nhau giữa tên role Material và tên token CareNest; cấu hình một lần, không đảo qua lại giữa feature.
 
-- Dùng token theo ý nghĩa: `primary`, `surface`, `error`, `onSurface`; không đặt token mới theo tên một màn hình.
-- Không dùng riêng màu để truyền đạt thông tin; badge có chữ hoặc icon.
-- Ngoại lệ màu từ dữ liệu: ảnh thật, avatar màu do dữ liệu cung cấp; vẫn cần fallback và bảo đảm chữ dễ đọc.
-- Màu pressed, disabled, focus, selection được cấu hình trong theme/widget chung.
-- Bản đầu dùng **Light Theme** đồng nhất với web và đặt `themeMode: ThemeMode.light` trong `MaterialApp.router`. Chỉ bật Dark Theme/System Theme sau khi có đầy đủ token tối và kiểm tra màn hình; không mặc định chuyển bằng `ThemeData.dark()` rồi coi là đã hoàn thành.
+| Flutter | Token CareNest | Dùng |
+| --- | --- | --- |
+| `ColorScheme.primary` / `onPrimary` | `brand` / `onBrand` | Nút chính |
+| `primaryContainer` / `onPrimaryContainer` | `primarySoft` / `onBrand` | Container chọn; component có thể dùng chữ `primary` theo mục 8 |
+| `secondary` / `onSecondary` | `primary` / `surface` | Role phụ; link đọc `AppStatusColors.primary` |
+| `secondaryContainer` / `onSecondaryContainer` | `primarySoft` / `onBrand` | Vùng phụ được chọn |
+| `error` / `onError` | `danger` / `surface` | Role lỗi Material; nút danger vẫn dùng container nhạt |
+| `errorContainer` / `onErrorContainer` | `dangerSoft` / `dangerText` | Container lỗi |
+| `surface` / `onSurface` / `onSurfaceVariant` | `surface` / `textPrimary` / `textSecondary` | Bề mặt và chữ |
+| `outline` / `outlineVariant` | `borderStrong` / `border` | Viền |
+| `scrim` | `overlay` | Nền sau dialog/sheet, không blur |
+| `ThemeData.scaffoldBackgroundColor` | `background` | Nền màn |
+| `ThemeExtension<AppStatusColors>` | `brandPressed`, `primary`, `primaryPressed`, `focusRing`, `textMuted`, `textDisabled`, `track`, màu phản hồi và các tông mục 6 | Widget chung đọc extension |
+
+`ColorScheme.fromSeed` không bảo đảm màu sinh ra giống token nguồn. Ghi đè role cần dùng và kiểm tra các cặp `on…`. Không để màu tự sinh hoặc mặc định Material đi vào component CareNest. Token `background` dùng qua Scaffold, không dùng `ColorScheme.background` đã deprecated. [S10, S11]
+
+### 4.4 Luật dùng màu
+
+- Dùng lớp semantic theo ý nghĩa; không đặt màu theo tên màn và không hardcode màu trong feature.
+- Không dùng riêng màu để truyền đạt thông tin; luôn có nhãn, thêm icon/chú giải khi cần.
+- Không tự tô đánh giá sức khỏe nếu backend không trả nhãn đã được chốt (HLT-02, P-13).
+- Màu từ dữ liệu như ảnh/avatarColor là ngoại lệ; có fallback và kiểm tra chữ dễ đọc. Mock/fixture/test/demo không dùng dữ liệu hoặc ảnh trẻ thật.
+- Chỉ **Light Theme**, `themeMode: ThemeMode.light`. Chưa bật Dark/System Theme khi nguồn chung chưa có bộ token tối.
+- Thiếu token/variant: cập nhật Design System, token cả hai repo và widget test (§7.4). Không tự thêm màu tại màn hình.
 
 ---
 
 <a id="section-5"></a>
-## 5. Chữ, khoảng cách và bố cục thích ứng
+## 5. Chữ, kích thước, khoảng cách và chuyển động
 
-Đơn vị kích thước bố cục Flutter là **logical pixel**. Không chuyển các kích thước desktop sang mobile theo tỷ lệ cố định.
+Theo Design System §3.4–3.9. Kích thước Flutter dùng **logical pixel**; số trong bảng là giá trị nền trước text scaling. Không chuyển số desktop theo một tỷ lệ cố định.
 
 ### 5.1 Typography
 
-Font `BeVietnamPro`; khai báo `TextTheme` trong `app_theme.dart` / `app_text_styles.dart`.
+Font đóng gói `BeVietnamPro`; định nghĩa tập trung trong `app_text_styles.dart` và `TextTheme`.
 
-| Vai trò | TextTheme | Cỡ đề xuất | Độ đậm |
-|---|---|---|---|
-| Tiêu đề lớn trong nội dung | `headlineSmall` | 24 | 700 |
-| Tiêu đề AppBar | `titleLarge` | 20 | 600 |
-| Tiêu đề khối/card | `titleMedium` | 16 | 600 |
-| Nội dung chính/form | `bodyLarge` | 16 | 400 |
-| Nội dung phụ/list | `bodyMedium` | 14 | 400 |
-| Label/nút | `labelLarge` | 14 | 600 |
-| Chú thích | `labelSmall` | 12 | 400 |
+| Vai trò | TextTheme | Cỡ app | Độ đậm |
+| --- | --- | --- | --- |
+| Tiêu đề màn/tab | `headlineSmall` | 22 | 700 |
+| Lời chào trên tranh | `displaySmall` | 26 | 700 |
+| Số lớn/KPI/số đo | `headlineMedium` | 28 | 700 |
+| AppBar/hộp thoại | `titleLarge` | 18 | 600 |
+| Tiêu đề card | `titleMedium` | 17 | 700 |
+| Tiêu đề dòng/nhãn ô nhập | `titleSmall` | 16 | 600 |
+| Nội dung chính | `bodyLarge` | 16, dòng 1,5 | 400 |
+| Nội dung phụ/meta | `bodyMedium` | 14 | 400 |
+| Chữ nút | `labelLarge` | 16 | 700 |
+| Badge/chip/ngày giờ phụ | `labelMedium` | 13 | 600 |
+| Nhãn nhóm in hoa | `labelSmall` | 12, giãn 0,06em | 600 |
 
-Nội dung chính ưu tiên 16 để phụ huynh dễ đọc trên điện thoại; chú thích 12 chỉ dành cho thông tin phụ. Không chuyển mặc định body 13–14 của web thành toàn bộ nội dung mobile.
+Giãn 0,06em của labelSmall tương đương letterSpacing 0,72 logical pixel ở cỡ nền 12, khai báo tại app_text_styles.dart.
 
-Độ đậm dùng 400/500/600/700. Widget lấy style từ theme; không tạo cỡ chữ tùy ý. Tôn trọng text scaling của hệ điều hành; không ép hệ số chữ bằng 1 toàn app. Kiểm tra text lớn, nhãn dài, tiếng Việt có dấu và lỗi nhiều dòng. [S2]
+400 cho nội dung, 500 cho menu/tab, 600 cho nhãn/chữ nhấn/mã chứng từ, 700 cho tiêu đề/card/nút/số lớn. **Không 800.** Chữ 12 chỉ dành cho nhãn/giờ phụ. Số căn cột dùng `FontFeature.tabularFigures()` trong style chung.
 
-### 5.2 Khoảng cách, bo góc và bóng
+Không khóa `textScaler`. Kiểm tại 1,0 / 1,3 / 2,0. Nội dung xuống dòng, không ellipsis; ngoại lệ tiêu đề AppBar và dòng danh sách tối đa 2 dòng. Không cắt thông tin quan trọng để giữ chiều cao card. [S2]
 
-| Token | Giá trị đề xuất | Dùng cho |
-|---|---|---|
-| `AppSpacing.space1`…`space7` | 4, 8, 12, 16, 20, 24, 32 | Gap/padding theo lưới 4 |
-| `pagePadding` | 16 | Lề ngang điện thoại |
-| `cardPadding` | 16 | Nội dung card |
-| `radiusSmall` | 8 | Input/nút |
-| `radiusMedium` | 12 | Card/dialog |
-| `radiusLarge` | 20 | Sheet nếu dùng bo góc |
-| `radiusPill` | 999 | Chip/badge dạng viên; không áp cho mọi card |
-| `minimumTapTarget` | 48 | Vùng chạm tối thiểu theo quy chuẩn nhóm |
-| `buttonMinHeight` | 48 | Nút chuẩn; cho phép tăng khi chữ lớn |
+### 5.2 Khoảng cách
 
-`sizes.dart` khai báo `AppSpacing`, `AppRadius`, `AppSizes`; giá trị đều là logical pixel. Quy chuẩn nhóm dùng vùng chạm tối thiểu **48×48 logical pixels** trên cả Android/iOS, đáp ứng mức 48 của Android và cao hơn mức 44 của iOS. Chỉ dùng các mức bóng/elevation đã định nghĩa trong theme. Badge có thể nhỏ hơn 48 nếu không tương tác; nếu bấm được phải mở rộng vùng chạm. [S2]
+| AppSpacing | Giá trị |
+| --- | --- |
+| `space1` | 4 |
+| `space2` | 8 |
+| `space3` | 12 |
+| `space4` | 16 |
+| `space5` | 20 |
+| `space6` | 24 |
+| `space8` | 32 |
+| `space10` | 40 |
 
-### 5.3 Responsive và bàn phím
+Không dùng `space7 = 32`; đổi mọi tham chiếu sang `space8`.
 
-- Theo **chiều rộng cửa sổ hiện có**, không theo tên thiết bị. Dùng `LayoutBuilder` cho vùng nội dung và `MediaQuery` cho thông tin cửa sổ/inset.
-- Quy ước đề xuất: dưới 600 logical pixels dùng bố cục một cột và NavigationBar; từ 600 có thể dùng NavigationRail/hai cột khi phù hợp. Đây là mốc dự án, có thể điều chỉnh sau kiểm tra. [S3]
-- Form dùng cuộn, xử lý bàn phím, focus và nút tiếp theo. Không đặt chiều cao card/text cố định gây cắt chữ.
-- `SafeArea` dùng ở nơi cần tránh status bar, notch, vùng home indicator; không cộng inset trùng với Scaffold/AppBar.
-- Vùng nút dưới cùng không bị bàn phím hoặc thanh điều hướng hệ thống che. Kiểm tra `viewInsets` và cơ chế resize của Scaffold.
-- Kiểm tra màn nhỏ khoảng 320 logical pixels, màn phổ biến, tablet, xoay ngang và chữ lớn. Không bắt mọi màn dùng đúng một kích thước thiết kế.
+| Áp dụng | Giá trị app |
+| --- | --- |
+| Lề màn | 16; 20 khi chiều rộng cửa sổ ≥400 |
+| Padding card chuẩn / dày | 20 / 16 |
+| Giữa card | 12 |
+| Giữa section | 24 |
+
+### 5.3 Bo góc
+
+| AppRadius | Giá trị | Áp dụng |
+| --- | --- | --- |
+| `xs` | 6 | Chi tiết nhỏ theo component |
+| `sm` | 12 | Ảnh thu nhỏ, ô lịch |
+| `md` | 14 | Theo component chung |
+| `lg` | 16 | Banner, toast |
+| `xl` | 20 | Ô nhập nhiều dòng, tranh màn trống |
+| `xxl` | 24 | Card, thẻ số liệu |
+| `xxxl` | 32 | Dialog, sheet mép trên |
+| `pill` | 9999 | Nút, badge, chip, segmented, ô nhập một dòng |
+
+Ô icon 40 và avatar dùng hình tròn. Bo lồng nhau: bo trong = bo ngoài − khoảng cách hai mép; phép tính nằm trong component/token, không tự viết số ở feature.
+
+### 5.4 Kích thước
+
+| AppSizes / vai trò | Giá trị nền |
+| --- | --- |
+| `buttonHeight` / `buttonSmallHeight` | 52 / 44 |
+| `inputHeight` | 52 |
+| `minimumTapTarget` | 48×48 |
+| `badgeHeight` | 28 |
+| `filterChipHeight` | 36 |
+| `listRowMinHeight` | 64 |
+| `iconTileSize` | 40 |
+| `iconInline` / `iconTile` / `iconNavigation` | 20 / 22 / 24 |
+| `iconBadge` | 14 theo component badge ở Design System §6.1 |
+| `appBarHeight` | 56 |
+| `bottomNavigationHeight` | 72 + safe area |
+| `navigationIndicatorWidth` / `navigationIndicatorHeight` | 64 / 32 |
+| `heroHeight` | 224 |
+| `emptyIllustrationWidth` / `emptyIllustrationHeight` | 168 / 124 |
+
+Tên AppSizes là adapter đề xuất cho các kích thước đã có trong Design System; dùng thống nhất trong `sizes.dart`. 52 là chiều cao nền, không ép form/nút cắt chữ tại text scaling lớn. Nút nhỏ 44 và chip tương tác 36 vẫn phải có **vùng chạm ≥48×48**. Badge không tương tác có thể cao 28.
+
+### 5.5 Bóng và chuyển động
+
+`AppShadows.card` có đúng hai lớp theo Design System §3.8:
+
+```dart
+// Chỉ khai báo trong AppShadows, không đặt tại feature.
+BoxShadow(color: Color(0x0A101828), blurRadius: 2, offset: Offset(0, 1)),
+BoxShadow(color: Color(0x400B72BC), blurRadius: 40,
+  spreadRadius: -20, offset: Offset(0, 16)),
+```
+
+Lớp nổi dùng `AppShadows.overlay` tương đương `--shadow-xl` của web. Design System nguồn không ghi số đầy đủ của `--shadow-xl`; khi nối repo lấy từ `tokens.css`, không tự chọn bóng Material để coi là đã đồng bộ. Nút không bóng. Focus dùng vòng 3 với `focusRing` qua theme.
+
+| AppMotion | Giá trị | Dùng |
+| --- | --- | --- |
+| `curve` | cubic-bezier(0.4, 0, 0.2, 1) | Đường cong chung, không nảy |
+| `fast` | 150 ms | Nhấn/tab/chip |
+| `overlay` | 180 ms | Mở lớp nổi |
+| `base` | 300 ms | Chuyển màn/mở rộng |
+| `toast` / `toastError` | 3,5 s / 6 s | Toast thường/lỗi |
+| `skeletonPulse` | 1,2 s | Khung chờ |
+
+Giá trị chuyển động phụ cũng đặt trong `motion.dart`: nhấn nút scale 0,98; lớp nổi mờ 0→1 + scale 0,95→1 + dịch 4; skeleton độ mờ 0,6↔1; toast có thanh đếm ngược 3; segmented trượt nền ô chọn. Loading dùng ba chấm `primary`, `brand`, `accent` nhảy lần lượt; progress đang chạy có sọc.
+
+Tôn trọng `MediaQuery.disableAnimations`: tắt hiệu ứng, **giữ thanh đếm ngược toast** theo Design System. Không dựng thời lượng/curve riêng ở feature.
+
+### 5.6 Responsive, bàn phím và SafeArea
+
+- Bố cục app chuẩn **một cột**, thanh điều hướng đáy + AppBar màn con. Không tự chuyển sang NavigationRail/hai cột tại mốc 600 như guide cũ; nếu cần kiểu tablet mới, bổ sung ngoại lệ vào Design System §1.3 trước.
+- Đo chiều rộng cửa sổ bằng `LayoutBuilder`/`MediaQuery`; dùng mốc 400 cho lề màn. Không suy theo tên thiết bị. [S3]
+- Form cuộn, có focus và input action phù hợp; thanh nút dính đáy ở trên bàn phím. Không cố định chiều cao khối text/card.
+- `SafeArea` tránh notch/home indicator; không cộng inset hai lần vào AppBar/Scaffold/thanh đáy.
+- Kiểm ở 360–430 logical pixels, thêm màn hẹp khoảng 320, cửa sổ rộng và xoay ngang; chữ lớn 2,0 không mất nội dung hoặc thao tác.
 
 ---
 
 <a id="section-6"></a>
-## 6. Badge và màu thông tin
+## 6. Badge và ánh xạ trạng thái
 
-Phần này chỉ chuẩn hóa cách hiển thị, không định nghĩa trạng thái nghiệp vụ hoặc bước chuyển trạng thái.
+Theo Design System §3.2. Chuẩn hóa **cách hiển thị**; không tự định nghĩa vòng đời hoặc mã enum backend.
 
-| Tông | Ý nghĩa hiển thị chung |
-|---|---|
-| Gray | Trung tính, không hoạt động |
-| Blue | Thông tin hoặc đang thực hiện |
-| Orange | Chờ/nhắc chú ý |
-| Purple | Nhóm trạng thái cần phân biệt riêng theo đặc tả feature |
-| Red | Lỗi hoặc cần xử lý |
-| Green | Thành công hoặc hoàn thành |
-| Teal | Nhãn thông tin phụ |
+### 6.1 Tông thống nhất
 
-`AppStatusBadge(label, tone, icon)` là widget chung. Feature ánh xạ mã trạng thái sang nhãn/tông dựa trên đặc tả đã chốt; không khai báo một vòng đời mặc định cho mọi feature. Khi hai trạng thái cùng tông vẫn phải phân biệt bằng chữ/icon. Không để badge bấm được mà chỉ thể hiện bằng màu.
+```dart
+enum AppStatusTone { gray, orange, blue, approval, red, green, teal }
+```
+
+| Tông | Màu | Chữ | Nền | Nghĩa |
+| --- | --- | --- | --- | --- |
+| `gray` | `#7B8AA0` | `#556377` | `#EAECF0` | Nháp, đã hủy, ngừng, chưa có |
+| `orange` | `#F5820B` | `#944F06` | `#FDEBD8` | Chờ người khác làm, cần để ý |
+| `blue` | `#2BA0F3` | `#0E3F63` | `#DDF0FD` | Đang thực hiện, đã gửi |
+| `approval` | `#F5B400` | `#835C00` | `#FDF3D6` | Chờ người duyệt/phê duyệt |
+| `red` | `#F0475A` | `#A63749` | `#FDE2E5` | Cần xử lý, bị trả lại |
+| `green` | `#22B573` | `#176F51` | `#DCF3E9` | Hoàn tất |
+| `teal` | `#13B5B1` | `#0F6C71` | `#D9F3F3` | Nhãn thông tin |
+
+Dùng đúng mã nền đã liệt kê trong nguồn chung; viền pha màu tông 34% trên trắng, tính một lần trong token. Không dùng màu feedback mục 4.2 thay cho tông bản ghi. Chữ luôn lấy màu đậm của tông; không dùng màu tông chính làm chữ trên nền nhạt.
+
+Web giữ tên legacy `purple` nhưng nó là **vàng chờ duyệt** (`--tone-approval`), không còn màu tím. App dùng `approval`. Đổi enum cũ `{ neutral, info, warning, purple, danger, success, teal }` sang tên mới và rà từng bảng mapping; không đổi bằng thay chuỗi toàn cục vì `warning/danger/success/info` vẫn là tên phản hồi.
+
+`approval` chỉ cho chờ người duyệt. “Chờ xử lý chênh lệch” dùng tông này khi thật sự chờ duyệt; nếu chỉ chờ xử lý công việc thì dùng `orange` theo ý nghĩa. Không dùng vàng chờ duyệt để trang trí.
+
+### 6.2 Widget và mapping theo feature
+
+`AppStatusBadge(label, tone, icon)` dạng viên thuốc, cao nền 28, chữ 13/600, icon 14 khi có. Cùng mã backend và cùng nhóm người đọc ở web/app phải có cùng nhãn, tông và icon. Feature có một bảng map tại `features/<feature>/presentation/<feature>_status.dart`; domain không phụ thuộc màu/icon Flutter.
+
+| Feature/trạng thái từ backend | Phụ huynh | Nhân viên | Tông |
+| --- | --- | --- | --- |
+| Điểm danh: có mặt | Đã đến lớp | Có mặt | `green` |
+| Điểm danh: vắng có phép/có thông báo nghỉ | Nghỉ có báo | Có phép | `orange` |
+| Điểm danh: vắng không phép | Nghỉ không báo | Không phép | `red` |
+| Thông báo nghỉ: `SUBMITTED` | Đã gửi | Đã gửi | `blue` |
+| Thông báo nghỉ: `CANCELLED` | Đã hủy | Đã hủy | `gray` |
+| Chứng từ: chờ duyệt | Theo quyền xem | Chờ duyệt | `approval` |
+| Tài sản: Tốt / Bình thường / Cần sửa / Hỏng | Theo phạm vi | Giữ nhãn tương ứng | `green` / `blue` / `orange` / `red` |
+
+Các mô tả điểm danh/chứng từ trong bảng không phải tên enum BE; dùng mã thật từ hợp đồng. Thông báo nghỉ **không thêm trạng thái chờ duyệt** (ATT-05).
+
+- Tông `blue` không có icon thì có chấm phát sáng; hiệu ứng tắt khi giảm chuyển động.
+- Chờ ghi rõ **chờ ai** khi BE trả dữ liệu; không tự đoán người xử lý.
+- Nhãn vai trò của tôi/người liên quan (“Người nhận”, “Người bàn giao”, “Tôi”) dùng `teal`; thiếu/hư hỏng/dị ứng dùng `red`; thừa/lệch sổ sách dùng `orange`.
+- Banner cảnh báo dị ứng trong màn Thực đơn dùng feedback warning, khác với chip phân loại dị ứng `red`.
+- Màu không đứng một mình: badge có chữ, lịch có chú giải. Badge bấm được phải đủ vùng chạm và semantics.
 
 ---
 
 <a id="section-7"></a>
-## 7. Widget dùng chung
+## 7. Widget dùng chung và icon
 
-**Đã triển khai (2026-10-08)** trong `lib/core/widgets/`: `AppButton`, `AppTextField`, `AppPasswordField`, `AppCard`, `AppStatusBadge`, `AppLoading`, `AppSkeleton`, `AppEmptyState`, `AppErrorState` (bố cục chung `AppStateMessage`), `AppConfirmationDialog`, `brand/AppWordmark`. Các tên còn lại trong bảng là API đề xuất, chưa có. Xem và thử các biến thể trên UiKitScreen trước khi dùng.
+Theo Design System §5–6. App dùng `lib/core/widgets/`; feature không gọi trực tiếp widget Material để tạo style riêng cho cùng loại control. Widget Material có thể là phần triển khai bên trong wrapper chung.
 
-| Nhu cầu | Widget/cơ chế | Quy tắc |
-|---|---|---|
-| Nút | `AppButton` bọc `FilledButton` / `OutlinedButton` / `TextButton` | Primary/secondary/text/danger; loading/disabled; vùng chạm tối thiểu 48×48 |
-| Ô nhập | `AppTextField` dựa trên `TextFormField` | Label, hint, error, keyboardType, input action |
-| Mật khẩu | `AppPasswordField` | Ẩn/hiện; không lưu mật khẩu; không chặn password manager tùy tiện |
-| Card | `AppCard` | Padding, bo góc, màu từ theme |
-| Danh sách | `ListView.builder` / sliver | Dữ liệu dài dựng theo nhu cầu, không bọc mọi thứ trong Column |
-| Badge | `AppStatusBadge` | Chữ + tông; thêm icon khi hữu ích |
-| Avatar | `AppAvatar` khi cần | Placeholder khi thiếu ảnh/lỗi ảnh |
-| Loading | `AppLoading`, `AppSkeleton` khi cần | Không chặn toàn màn cho thao tác nhỏ |
-| Rỗng/lỗi | `AppEmptyState`, `AppErrorState` | Lời giải thích và hành động phù hợp |
-| View bất đồng bộ | `AppAsyncView` | Tải/rỗng/lỗi; phân biệt lần đầu và refresh |
-| Xác nhận | `AppConfirmationDialog` dùng `AlertDialog` | Nút ghi đúng tên hành động, ví dụ “Hủy phiếu”; không “OK” |
-| Chọn/lọc | `showModalBottomSheet` | Form dài mở màn riêng; tránh modal desktop lớn |
-| Tab/chuyển nhóm/lọc nhanh | `TabBar`, `SegmentedButton`, `FilterChip` | Chọn theo ý nghĩa; không coi mọi bộ lọc là tab điều hướng |
-| Làm mới danh sách | `RefreshIndicator` | Giữ dữ liệu/bộ lọc, danh sách ngắn hoặc rỗng vẫn có thể kéo nếu phù hợp |
-| Chọn/tìm kiếm | Sheet dùng chung khi có nhiều nơi sử dụng | Search, chọn, hủy; hỗ trợ danh sách dài |
-| Bộ lọc | `AppFilterSheet` nếu dùng lặp lại | Áp dụng/đặt lại, số bộ lọc đang bật |
-| Thông báo ngắn | `ScaffoldMessenger`/SnackBar qua helper | Hành động và lỗi form không chỉ dựa vào SnackBar |
-| Tiến độ | `LinearProgressIndicator` hoặc wrapper | Chỉ biểu diễn dữ liệu có thật |
-| Chọn ảnh/file | Widget riêng khi có nhu cầu | Permission đúng lúc, preview, nén ảnh theo hợp đồng, tiến độ và hủy upload; mục 16.1 |
-| Chuông/danh sách thông báo | Widget/màn thuộc feature `notifications` | Badge theo dữ liệu; push là tích hợp riêng theo mục 16.2 |
+### 7.1 Danh mục đích
 
-Dùng một bộ icon chính, mặc định Material Icons. Không trộn bộ icon ở mỗi feature. Icon đơn có tooltip/semantics label. Ưu tiên widget Material chuẩn đã cấu hình theme thay vì viết lại toàn bộ hành vi focus, semantics và hiệu ứng nhấn.
+“Cần bổ sung” theo Design System 3.1 là trạng thái được nguồn ghi nhận, **chưa kiểm chứng mã nguồn repo**. Các widget có tên trong guide cũ cũng phải rà lại style trước khi coi là đạt bản mới.
 
-UiKitScreen là danh mục thử component, không chứa dữ liệu thật và chỉ có route trong debug; release không chỉ ẩn nút truy cập mà còn không đăng ký route.
+| Thành phần | Widget app | Hình và hành vi chung |
+| --- | --- | --- |
+| Nút | `AppButton` | Primary/secondary/text/danger; viên thuốc, chữ 16/700, cao 52; primary `brand/onBrand`; secondary trắng + `borderStrong`; danger `dangerSoft/dangerText`; không bóng |
+| Ô nhập | `AppTextField`, `AppPasswordField` | Một dòng viên thuốc, cao nền 52; nhiều dòng bo 20; nhãn trên, hint/error dưới; focus viền `primary` + vòng `focusRing`; mật khẩu ẩn/hiện; icon trái tuỳ chọn (`leadingIcon`, khi mockup có); khoá (`enabled: false`) nền `surfaceMuted` |
+| Card | `AppCard` | Trắng đặc, bo 24, padding 20 (dày 16), bóng card; đầu card ô icon + tiêu đề + link |
+| Badge | `AppStatusBadge` | Viên thuốc, nền/viền/chữ đúng tông mục 6; cao 28 |
+| Chip lọc | `AppFilterChip` | Viên thuốc viền; chọn nền `primarySoft`, chữ `onBrand`; vùng chạm ≥48 |
+| Thẻ số liệu | `AppStatCard` — cần bổ sung | Nhãn trên, số lớn màu đậm theo tông, icon mờ ở góc, nền chuyển nhẹ; có mũi tên khi bấm được |
+| Ô số liệu gọn | `AppStatTile`, `AppStatRow` | Số lớn + nhãn dưới, nền/viền/chữ theo tông mục 6; hàng chia đều, chữ phóng >1,3 xuống lưới 2 cột (mockup 2026-10-13) |
+| Đầu trang chủ | `AppHeroHeader`, `AppHeroBell` | Dải nền `brand`, chữ `onBrand`, lời chào + tên, chuông có số chưa đọc; card ngữ cảnh đè mép dưới dải. Thay hero tranh khi chưa có bộ tranh (§3.2) |
+| Việc cần làm | `AppTaskCard` | Card trắng + `AppListRow`: ô icon, tên, mô tả, badge; việc cần làm ngay viền `primary` |
+| Dải ngày | `AppDayStrip` | Ô T2…CN + ngày/tháng; ô chọn nền `brand`; vùng chạm ≥48 |
+| Lịch tháng | `AppMonthCalendar` | Thứ Hai đầu tuần; chấm theo tông + nhãn semantics; cuối tuần chữ mờ; ngày chọn tròn `primary` |
+| Dòng thời gian | `AppTimeline` | Cột giờ tuỳ chọn · chấm + đường nối · nội dung; mốc đang diễn ra chấm đặc, nền `primarySoft` |
+| Tìm kiếm | `AppSearchField` | Viên thuốc, icon kính lúp, không nhãn trên ⇒ có nhãn semantics; `matchesSearch` lọc không phân biệt dấu |
+| Ảnh giữ chỗ | `AppPhotoPlaceholder` | Khối `primarySoft` + icon ảnh, chữ dưới, "+N" ở ô cuối; dùng khi chưa có ảnh qua URL có auth, không dùng ảnh trẻ thật |
+| Ô chọn | `AppSelectField` | Cùng khung ô nhập, mũi tên xuống; màn mở `AppBottomSheet` để chọn |
+| Mã OTP | `AppOtpField` | Ô số rời, một `TextField` ẩn nhận phím/dán/autofill; ô đang nhập viền `primary` |
+| Segmented | `AppSegmented` | Rãnh `track`, ô chọn trắng trượt; count lấy BE; tab/menu đậm 500 |
+| Banner | `AppBanner` | Màu nhạt theo nghĩa phản hồi, không viền, icon trơn, bo 16 |
+| Toast | `AppToast` — cần bổ sung | Nền màu theo loại, icon tròn, thanh đếm ngược 3; mép trên dưới status bar; 3,5 s / lỗi 6 s |
+| Xác nhận | `AppConfirmationDialog` | Icon lớn giữa trong vòng tròn tông, tiêu đề + mô tả; nút lặp đúng hành động, phụ “Quay lại”; bo 32 |
+| Sheet | `AppBottomSheet` | Trắng, bo trên 32, bóng lớp nổi, scrim `overlay` không blur; focus/Back/semantics phù hợp |
+| Gửi form | `AppSubmitOverlay` | Phủ trắng, ba chấm “Đang gửi…” → “Đã gửi” hoặc lỗi + “Thử lại”; giữ form |
+| Loading | `AppLoading` | Ba chấm `primary/brand/accent`; không spinner quay |
+| Skeleton | `AppSkeleton` | Đúng hình nội dung, nhịp thở theo `AppMotion` |
+| Rỗng/lỗi | `AppEmptyState`, `AppErrorState` | Rỗng có tranh nhỏ; lỗi có icon + câu cụ thể + “Thử lại” |
+| View bất đồng bộ | `AppAsyncView` — adapter của guide | Điều phối lần đầu/refresh/rỗng/lỗi bằng widget chuẩn; không thêm style/variant riêng |
+| Tiến trình | `AppProgressBar` — cần bổ sung | Chuyển sắc cùng họ + sọc; xong xanh lá “Hoàn thành”; tổng 0 hiển thị “—”; dữ liệu BE |
+| Avatar | `AppAvatar` | Tròn, chữ đầu tên, pastel theo công thức mục 7.3 |
+| Nhãn–giá trị | `AppInfoList` — cần bổ sung | Một cột; nhãn muted + giá trị chính; thiếu theo nhóm người đọc |
+| Dòng danh sách | `AppListRow` | Trong card, sọc/kẻ nhạt, cả dòng bấm được nếu có đích; cao ≥64; tải thêm |
+| Bước | `AppStepper` — cần bổ sung | Wizard/tiến trình chứng từ theo dữ liệu được chốt; bước hiện tại `primary` |
+| Logo | `AppLogo`, `AppWordmark` | Theo mục 3.1, không thêm style logo ở feature |
+
+Cơ chế danh sách dài: `ListView.builder`/sliver; refresh dùng `RefreshIndicator`. Chọn/tìm kiếm/bộ lọc ngắn dùng wrapper `AppBottomSheet`; form dài mở màn riêng. `AppFilterSheet` có thể là composition của sheet + control chung, không tạo design variant mới. Chuông/danh sách thông báo thuộc `features/notifications`, không chứng minh push đã tích hợp.
+
+Kết quả thao tác dùng `AppToast`; controller trả kết quả và UI gọi helper. Không dùng SnackBar Material mặc định trong feature. Khi chưa có component cần thiết, bổ sung wrapper + widget test; không dựng tạm một kiểu khác ở màn.
+
+### 7.2 Icon
+
+- Đích chung **Tabler outline**, nét app 1,75. Chỉ `lib/core/constants/app_icons.dart` import bộ icon.
+- Tên ánh xạ giống web `src/components/ui/icons.js`, đổi lowerCamel: `Save` → `save`. Cùng chức năng cùng tên/icon; icon mới thêm tên ở web và app cùng đợt.
+- Gói Tabler Flutter còn **OPEN**. Trước khi chốt dependency, `AppIcons` tạm ánh xạ `Icons.*_rounded` theo ngoại lệ đã có trong Design System §15. **Không `Icons.*`/`TablerIcons.*` trực tiếp trong feature.**
+- Icon một màu theo chữ cạnh nó, đứng trước chữ trong nút. Ô icon dùng `primarySoft/primary` hoặc nền/chữ theo tông.
+- Icon đơn có tooltip hoặc `Semantics`; không emoji làm biểu tượng. Giữ kích thước theo mục 5.4.
+
+### 7.3 Avatar
+
+Cùng người cùng màu ở hai nền tảng: tổng mã ký tự của tên mod 5, giống hàm `avatarTone` trong web `src/utils/format.js`. Khi nối code phải đối chiếu cách web duyệt tên/chuỗi để giữ đúng kết quả, không dùng hash khác ở Dart.
+
+| Tông | Nền | Chữ |
+| --- | --- | --- |
+| 0 | `#E2F2FD` | `#0B72BC` |
+| 1 | `#FCE7F3` | `#BE185D` |
+| 2 | `#DCFCE7` | `#15803D` |
+| 3 | `#FEF3C7` | `#B45309` |
+| 4 | Tông teal pha 14% trên trắng | `#0F6C71` |
+
+Màu avatar khai báo trong token. Mặc định chữ đầu tên; ảnh thật chỉ khi BE trả URL có quyền. Không ảnh trẻ thật trong mock/fixture/test/demo.
+
+### 7.4 Kiểm component và đổi component
+
+App **không có UiKitScreen** (user bỏ, 2026-10-10). Đây là chỗ lệch Design System chung, cần đồng bộ bên web. Thay vào đó, mỗi widget chung có widget test ở `test/core/widgets/` phủ các trạng thái chính (selected/disabled/loading/error) và badge đủ 7 tông. Mỗi màn kiểm text scaling 2,0 bằng widget test.
+
+Component/variant mới phải cập nhật Design System §6 và widget test; component chưa có ở repo kia ghi rõ. Mẫu cùng nghĩa dùng từ hai chỗ chuyển lên dùng chung. Đổi token cần cập nhật cả `tokens.css`, `colors.dart` và tài liệu chung, kèm ảnh trước–sau.
 
 ---
 
 <a id="section-8"></a>
-## 8. Khung ứng dụng và mẫu màn hình
+## 8. Khung ứng dụng và công thức màn hình
+
+Theo Design System §7.2–8.2. Đây là chuẩn bố cục; quyền và field thật vẫn theo backend/SRS.
 
 ### 8.1 Khung ứng dụng
 
-| Web | Mobile tương ứng |
-|---|---|
-| Sidebar cố định | NavigationBar cho các đích cấp cao; NavigationRail khi rộng |
-| Header chung | AppBar gọn; màn con có Back |
-| Breadcrumb | Stack điều hướng, tiêu đề màn và nút Back |
-| Footer | Phiên bản/hỗ trợ trong màn tài khoản/giới thiệu |
-| Bảng nhiều cột | List/card, chỉ hiện thông tin chính; chạm để xem chi tiết |
-| Modal lớn | Bottom sheet cho thao tác ngắn; màn riêng cho form dài |
-| Bộ lọc ngang | Search và nút mở filter sheet |
-| Phân trang số | Tải thêm/cursor hoặc phân trang backend theo hợp đồng |
-| Hover | Pressed/selected/focus; không phụ thuộc hover |
+| Phần | Quy chuẩn app |
+| --- | --- |
+| AppShell | Nội dung một cột + thanh điều hướng 3–5 đích; giữ tab/scroll khi cần |
+| Màn tab | Tiêu đề lớn trong nội dung; Hôm nay có hero |
+| Màn con | AppBar trắng cao 56, nút Back, tiêu đề căn trái |
+| Thanh đáy | Cao 72 + safe area; nhãn luôn hiện; icon 24 |
+| Đích đang chọn | Viên 64×32 `primarySoft` sau icon; icon/nhãn `primary` |
+| Số chưa đọc | Viên nền `danger`, chữ `surface` trắng; có semantics |
+| Ngữ cảnh con/lớp/điểm trường | Chip avatar/tên + mũi tên, mở `AppBottomSheet` chọn |
+| Vùng hành động form/chi tiết | Nút dính đáy, nền đặc, tránh bàn phím/home indicator |
+| Điều hướng chi tiết | Route con hoặc bottom sheet cho chi tiết ngắn; không breadcrumb desktop |
+| Phiên bản/hỗ trợ | Màn Tài khoản/Giới thiệu; không footer toàn app |
 
-Các đích điều hướng cấp cao do `navigation_destinations.dart` khai báo một lần và chọn theo vai trò/quyền backend trả về. **NavigationBar có 3–5 đích chính** khi phạm vi phù hợp; chức năng còn lại nằm trong màn nội dung. Tên đích theo phạm vi đã chốt, không đưa mọi màn thành tab. Bảng ở mục 8.4 là gợi ý bố cục, chưa phải danh sách use case được duyệt.
+Mỗi vùng thao tác **một nút chính**. **App không dùng FAB.** Không tạo số liệu/lối tắt ngoài phạm vi hoặc số đếm suy từ một trang dữ liệu.
 
-`AppShell` giữ trạng thái tab/scroll khi cần. Màn chi tiết/form thường dùng route con; tránh lồng nhiều Scaffold hoặc hiện hai AppBar. Android Back và thao tác Back trên iOS phải cho kết quả nhất quán. Deep link chờ kiểm tra phiên trước khi mở màn; sau đăng nhập chỉ điều hướng tới đường dẫn nội bộ đã kiểm tra.
+Các đích khai báo một lần ở `navigation_destinations.dart`, chọn theo quyền backend. `AppShell` không lồng hai AppBar/Scaffold. Back Android/iOS nhất quán; deep link chờ kiểm tra phiên và quyền; chỉ chuyển sau đăng nhập tới đường dẫn nội bộ đã kiểm tra.
 
-### 8.2 Mẫu màn hình
+### 8.2 Công thức màn
 
-| Loại | Bố cục đề xuất |
-|---|---|
-| Trang chủ | AppBar → tóm tắt phù hợp → lối vào các tính năng trong phạm vi |
-| Danh sách | Tiêu đề → search/filter → list/card → tải thêm; giữ bộ lọc/scroll khi quay lại |
-| Chi tiết | AppBar + Back → thông tin theo section/card → vùng thao tác nếu có |
-| Tạo/sửa | AppBar + Back → form cuộn → lỗi từng trường → nút gửi/lưu |
-| Form nhiều bước | Progress/step label → nội dung bước → Back/Next; chỉ dùng khi cần |
-| Đăng nhập | Logo gọn → form → thông báo lỗi → CTA; không chia cột thương hiệu như desktop |
-| Xác thực OTP | Đích nhận mã được che bớt → nhập/dán mã → gửi lại theo thời hạn backend |
-| Tải/lỗi phiên | Loading hoặc lỗi có thử lại; không chớp màn đăng nhập rồi nhảy vào app |
+| Loại | Bố cục app |
+| --- | --- |
+| Hôm nay/tổng quan | Hero + card theo mức quan trọng (tối đa 3) + 1–2 lối tắt trong phạm vi |
+| Danh sách | AppBar/tiêu đề tab + segmented/dải ngày + card chứa dòng nhóm theo ngày + tải thêm; giữ scroll/filter |
+| Việc của tôi | Segmented trạng thái → dòng danh sách; count chỉ khi BE trả |
+| Chi tiết ngắn | Bottom sheet; có lối mở màn con khi cần |
+| Chi tiết chứng từ | Màn con, card thông tin xếp dọc → lịch sử → chữ ký nếu thuộc phạm vi → nút dính đáy |
+| Tạo/sửa | Một cột, form cuộn theo section/card → lỗi dưới trường → nút dính đáy |
+| Form nhiều bước | AppStepper + nội dung bước + Back/Next; không thêm bước nghiệp vụ |
+| Thao tác được giao | Banner hướng dẫn → thông tin → vùng nhập → chữ ký được phép → nút |
+| Hồ sơ | Avatar/thông tin đầu hồ sơ → danh sách lối vào |
+| Đăng nhập | Tranh trên → logo/lời chào → sheet trắng chứa form dưới |
+| OTP, khi có trong hợp đồng | Giữ nhận diện auth; đích nhận mã che bớt → nhập/dán mã → gửi lại theo hạn BE |
+| Tải/lỗi phiên | AppLoading hoặc lỗi + Thử lại, không chớp login rồi nhảy vào app |
 
-Mỗi vùng thao tác chỉ có một CTA chính. Không dùng đồng thời FAB và nút primary cho cùng một thao tác. Dùng nút đủ rộng trong form; không mặc định mọi màn đều có FAB.
+Không thêm khối gợi ý, số liệu bịa, chức năng in A4 hoặc form desktop nhiều cột.
 
 ### 8.3 Hành vi mobile
 
-- Kéo để refresh chỉ khi phù hợp; không ghi đè form đang nhập.
-- Back khi có thay đổi chưa lưu cần xử lý theo thiết kế; dùng cơ chế Back hiện hành của Flutter như `PopScope`, không chặn mọi thao tác Back.
-- Đi vào background không tương đương logout. Resume có thể tải lại thông tin phiên/data khi cần; không tự mất nội dung form.
-- Quyền camera/ảnh/file hỏi khi người dùng thực hiện thao tác; có cách tiếp tục hoặc mở cài đặt khi bị từ chối.
-- Mạng yếu/mất mạng phải có trạng thái rõ. Không coi việc có kết nối Wi-Fi là bằng chứng API truy cập được.
-- Chưa có cơ chế đồng bộ thì không báo thao tác offline đã gửi thành công. Giữ dữ liệu form trong state khi request lỗi, gồm điểm danh/đánh giá cuối ngày nếu các màn này thuộc phạm vi đã chốt; lưu draft bền qua việc đóng app chỉ khi có thiết kế riêng.
+- Kéo refresh khi phù hợp; giữ dữ liệu/bộ lọc, không ghi đè form đang nhập.
+- Back có thay đổi chưa lưu xử lý theo thiết kế, dùng cơ chế như `PopScope`; không chặn mọi thao tác Back.
+- Background không tương đương logout; resume có thể kiểm tra/tải lại phiên, không tự mất form.
+- Xin quyền camera/ảnh/file khi thao tác, có đường tiếp tục/mở cài đặt nếu bị từ chối.
+- Mất mạng có trạng thái rõ; Wi-Fi không chứng minh API truy cập được. Chưa có đồng bộ thì không báo đã gửi offline.
+- Giữ form khi request lỗi; draft bền qua đóng app chỉ khi có thiết kế riêng.
+- Đổi tài khoản/đăng xuất dọn dữ liệu riêng tài khoản; không thoáng hiện dữ liệu người trước. Push/màn khóa không mang dữ liệu sức khỏe.
 
-### 8.4 Nhóm người dùng và khung điều hướng (PROPOSED / NEEDS VERIFICATION)
+### 8.4 Nhóm người dùng và tab
 
-Review nêu mobile phục vụ **Giáo viên (gồm Tổ trưởng), Phụ huynh, Nhân viên bếp** và ghi thông tin này là CONFIRMED theo Screen Flow mobile v3. Lần sửa này chỉ có hai file DESIGN/review, nên phạm vi ba nhóm cần đối chiếu SRS/Screen Flow gốc trước khi bật đầy đủ. Nếu phạm vi được duyệt chỉ có Teacher và Parent thì chỉ đăng ký hai cấu hình đó; chưa bật Kitchen Staff.
+Design System nguồn nêu Phụ huynh, Giáo viên, Bếp; tab giáo viên là PROPOSED, bếp cần đối chiếu phạm vi. Giữ kiểm tra SRS/Screen Flow và mã backend của bản mobile; **không bật thêm role chỉ do có mẫu UI**.
 
-| Nhóm | Mã backend cần đối chiếu | Đích NavigationBar gợi ý | Trạng thái |
-|---|---|---|---|
-| Giáo viên | `TEACHER` | Trang chủ · Lớp học · Thông báo · Tài khoản | PROPOSED; màn con theo SRS |
-| Phụ huynh | `PARENT` | Trang chủ · Bé của tôi · Thông báo · Tài khoản | Bổ sung nhóm còn thiếu; mã/quyền cần đối chiếu backend |
-| Nhân viên bếp | `KITCHEN_STAFF` | Trang chủ · Công việc bếp · Thông báo · Tài khoản | NEEDS VERIFICATION về phạm vi mobile |
-| Tổ trưởng | `TEAM_LEADER` hoặc quyền/cờ của `TEACHER` | Dùng khung giáo viên; hiện thêm chức năng được phép | OPEN; không mặc định tạo một role riêng |
+| Nhóm | Mã backend cần đối chiếu | Tab theo Design System | Trạng thái |
+| --- | --- | --- | --- |
+| Phụ huynh | `PARENT` | **Trang chủ · Bé của tôi · Thông báo · Tài khoản** | Theo mockup (user 2026-10-13); quyền/field cần backend chốt |
+| Giáo viên | `TEACHER` | **Trang chủ · Lớp học · Thông báo · Tài khoản** | Theo mockup (user 2026-10-13); màn con theo SRS |
+| Nhân viên bếp | `KITCHEN_STAFF` | **Trang chủ · Thực đơn · Thông báo · Tài khoản** | Theo mockup (user 2026-10-13); quyền theo AUTH-05 |
+| Phó Hiệu trưởng | Vice Principal (mã BE chưa có) | **Trang chủ · Duyệt · Thông báo · Tài khoản** | User chốt có trên app 2026-10-13; BE `USER_ROLES.md:21` còn ghi chỉ Web; scope campus AUTH-02 |
+| Hiệu trưởng | Principal (mã BE chưa có) | **Tổng quan · Duyệt · Thông báo · Tài khoản** | User chốt có trên app 2026-10-13; BE `USER_ROLES.md:20` còn ghi chỉ Web; scope toàn trường AUTH-01 |
+| Tổ trưởng | `TEAM_LEADER` hoặc quyền/cờ của `TEACHER` | Khung giáo viên + chức năng được phép | OPEN; không mặc định tạo role riêng |
 
-- Vai trò/quyền lấy từ user do backend trả; người dùng không tự chọn role trong form đăng nhập. Mã không hỗ trợ thì hiển thị trạng thái rõ, không mặc định thành Teacher.
-- `route_access_policy.dart` kiểm tra quyền cho cả route trực tiếp và deep link. Ẩn tab/nút chỉ là UX; backend vẫn xác minh quyền và phạm vi dữ liệu cho từng API.
-- Deep link từ thông báo chờ xác thực, kiểm tra quyền và dữ liệu đích còn tồn tại; không mở màn cấm chỉ vì payload có ID. Không hiển thị dữ liệu của tài khoản trước sau khi đổi tài khoản.
-- Không đưa các role web như Phó hiệu trưởng/nhân viên văn phòng vào mobile chỉ vì cùng dùng backend. Đối chiếu ma trận quyền trong SRS trước khi thêm route.
-- Review nêu tài khoản phụ huynh do Phó hiệu trưởng tạo trên web và gửi SMS mời cài app. Ghi nhận là NEEDS VERIFICATION; chưa tự thêm “Đăng ký tài khoản” trên mobile. Hợp đồng kích hoạt/đặt mật khẩu ban đầu cần backend chốt, tách khỏi OTP đăng nhập.
+Chỉ đăng ký cấu hình của nhóm đã được duyệt. Phó Hiệu trưởng và Hiệu trưởng được user chốt đưa lên app (2026-10-13, plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`); nhân viên văn phòng vẫn không có. User không chọn role ở login; role không hỗ trợ có thông báo rõ, không mặc định Teacher.
+
+`route_access_policy.dart` kiểm tra cả route trực tiếp/deep link và dữ liệu đích còn tồn tại; ẩn tab/nút chỉ là UX, BE vẫn kiểm quyền từng API. Bản mobile trước ghi tài khoản phụ huynh do Phó hiệu trưởng tạo và SMS mời: giữ là NEEDS VERIFICATION; không thêm tự đăng ký. Kích hoạt/đặt mật khẩu ban đầu tách khỏi OTP login.
+
+### 8.5 Công thức màn phụ huynh
+
+Theo Design System §8.2. Chỉ hiển thị field mà DTO có và quyền cho phép; P-13b còn OPEN. Mã rule dưới đây là dẫn chiếu của nguồn, chưa thay thế việc đọc SRS/BE.
+
+| Màn | Thành phần theo thứ tự |
+| --- | --- |
+| Đăng nhập | Tranh · logo · “Chào mừng phụ huynh” · tài khoản · mật khẩu · “Quên mật khẩu” · “Đăng nhập”; không đăng ký; form/Keycloak theo backend |
+| Hôm nay | Hero + lời chào + chip chọn con · Điểm danh (badge + giờ) · Bữa ăn hôm nay · Cập nhật mới; trường nghỉ thì banner xám thay card Điểm danh |
+| Bé | Avatar + chip chọn con + lớp/điểm trường · lối vào Điểm danh/Thực đơn/Sức khỏe/Cập nhật phát triển/Thông báo nghỉ · Thông tin của bé |
+| Điểm danh | Segmented Tuần/Tháng · lịch chấm đúng tông + chú giải · tổng chỉ khi BE trả |
+| Thực đơn | Dải ngày · banner warning dị ứng nếu BE trả · mỗi bữa một card, món một dòng; chỉ thực đơn đã công bố (NUT-08) |
+| Sức khỏe | Lần đo gần nhất/số lớn · biểu đồ một màu `primary` · lần khám; không tự tô đánh giá (HLT-02, P-13); AI chỉ khi đã duyệt (HLT-05) |
+| Cập nhật phát triển | Dòng thời gian theo tháng, phần xem trước 3 dòng theo công thức nguồn, mở chi tiết để đọc đủ; chỉ mục đã duyệt (OBS-03/05) |
+| Thông báo nghỉ | Danh sách Đã gửi/Đã hủy, không chờ duyệt (ATT-05) · form Từ–Đến ngày/lý do chip/ghi chú · AppSubmitOverlay · chi tiết/toast/banner BE · danger “Hủy thông báo nghỉ” |
+| Thông báo | Nhóm Hôm nay/Hôm qua/Trước đó, chấm chưa đọc có semantics |
+| Tài khoản | Avatar + tên + SĐT · Con của tôi · cài đặt · danger “Đăng xuất” |
+
+Màn giáo viên/bếp chưa có công thức chi tiết trong nguồn chung: dùng token/component/mẫu §8.2 của guide, chỉ thêm field và thao tác sau khi yêu cầu được chốt.
 
 ---
 
 <a id="section-9"></a>
 ## 9. Theme và tổ chức style
 
-Flutter không dùng CSS, BEM, `className`, `var(--token)` hoặc CSS riêng cho feature.
+Flutter không dùng CSS/BEM; **hành vi và hình thức** vẫn phải khớp Design System. Không để mặc định Material thay thế token/component CareNest.
 
 | Nơi | Nội dung |
-|---|---|
-| `core/constants/colors.dart` | Giá trị màu gốc |
-| `core/constants/sizes.dart` | Khoảng cách, bo góc, kích thước dùng chung |
-| `core/theme/app_theme.dart` | ThemeData, ColorScheme, theme của input/nút/card/navigation |
-| `core/theme/app_text_styles.dart` | TextTheme/typography |
-| `core/theme/app_status_colors.dart` | ThemeExtension cho màu semantic ngoài ColorScheme |
-| `core/widgets/` | Widget chung có hành vi và style đồng nhất |
-| `<feature>/presentation/widgets/` | Widget riêng feature |
+| --- | --- |
+| `core/constants/colors.dart` | Màu nền, tông bản ghi, phản hồi, avatar, logo, kính |
+| `core/constants/sizes.dart` | AppSpacing, AppRadius, AppSizes, AppShadows |
+| `core/constants/motion.dart` | AppMotion và tham số hiệu ứng |
+| `core/constants/app_icons.dart` | Một điểm import bộ icon, ánh xạ giống web |
+| `core/constants/asset_paths.dart` | AppAssets, logo, font, tranh |
+| `core/theme/app_theme.dart` | ThemeData/ColorScheme, component theme, Light Theme |
+| `core/theme/app_text_styles.dart` | TextTheme đúng mục 5.1; không cỡ chữ ở feature |
+| `core/theme/app_status_colors.dart` | ThemeExtension; tông và màu semantic ngoài ColorScheme |
+| `core/widgets/` | Wrapper/component chung, đúng mục 7 |
+| `<feature>/presentation/widgets/` | Composition và nội dung riêng feature |
 
-Quy tắc:
+Số trong `EdgeInsets`, `SizedBox`, `BorderRadius` tại feature chỉ là 0 hoặc hằng AppSpacing/AppRadius/AppSizes. Giá trị động từ dữ liệu/layout phải qua API component phù hợp. `build()` không gọi API/storage/thay state. Chuyển widget chung khi cùng nghĩa/hành vi, không vì chỉ trông giống nhau.
 
-1. Lấy màu/chữ qua `Theme.of(context)` hoặc ThemeExtension; không tạo màu/cỡ chữ mới trong từng screen.
-2. Dùng token khoảng cách và BorderRadius chung; không tạo theme khác cho cùng loại nút ở từng feature.
-3. `build()` không gọi API, đọc storage hoặc thay đổi state.
-4. Tách widget theo trách nhiệm khi màn hình khó đọc; không tạo widget mới cho mọi SizedBox.
-5. Chỉ chuyển widget lên core khi có cùng ngữ nghĩa/hành vi và được tái sử dụng, không chỉ vì hình thức giống nhau.
-6. Nếu cần style đặc thù, giữ ở widget riêng feature; token mới dùng chung phải cập nhật guide và UiKitScreen.
-7. Dữ liệu động như ảnh/avatar/progress là tham số widget, không phải lý do để bỏ qua theme.
+### 9.1 Mẫu ColorScheme nền (PROPOSED)
 
-### 9.1 Mẫu cấu hình theme (PROPOSED)
-
-Ví dụ dưới đây đặt trong `core/theme/app_theme.dart`; import `AppColors` từ `core/constants/colors.dart`. Các token lấy đúng mã ở mục 4.1. Đây là **mẫu nền**, chưa bao gồm mọi component theme/ThemeExtension và chưa được chạy trong dự án của nhóm.
+Mẫu dưới đây đặt trong `core/theme/app_theme.dart`, giả định `AppColors` đã khai báo đủ theo mục 4. Đây là mẫu cấu hình, chưa phải code đã chạy trong repo.
 
 ```dart
 import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 
-ThemeData buildLightTheme() {
-  final scheme = ColorScheme.fromSeed(
-    seedColor: AppColors.primary,
+ColorScheme buildLightColorScheme() {
+  return ColorScheme.fromSeed(
+    seedColor: AppColors.brand,
     brightness: Brightness.light,
   ).copyWith(
-    primary: AppColors.primary,
-    onPrimary: AppColors.textInverse,
-    primaryContainer: AppColors.primaryContainer,
-    onPrimaryContainer: AppColors.brandBlue700,
+    primary: AppColors.brand,
+    onPrimary: AppColors.onBrand,
+    primaryContainer: AppColors.primarySoft,
+    onPrimaryContainer: AppColors.onBrand,
+    secondary: AppColors.primary,
+    onSecondary: AppColors.surface,
+    secondaryContainer: AppColors.primarySoft,
+    onSecondaryContainer: AppColors.onBrand,
     error: AppColors.danger,
-    onError: AppColors.textInverse,
+    onError: AppColors.surface,
+    errorContainer: AppColors.dangerSoft,
+    onErrorContainer: AppColors.dangerText,
     surface: AppColors.surface,
     onSurface: AppColors.textPrimary,
     onSurfaceVariant: AppColors.textSecondary,
     outline: AppColors.borderStrong,
     outlineVariant: AppColors.border,
-  );
-
-  final base = ThemeData(
-    useMaterial3: true,
-    colorScheme: scheme,
-    fontFamily: 'BeVietnamPro',
-    scaffoldBackgroundColor: AppColors.background,
-  );
-
-  return base.copyWith(
-    textTheme: base.textTheme.copyWith(
-      headlineSmall: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
-      titleLarge: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-      titleMedium: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      bodyLarge: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-      bodyMedium: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
-      labelLarge: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-      labelSmall: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
-    ).apply(
-      fontFamily: 'BeVietnamPro',
-      bodyColor: AppColors.textPrimary,
-      displayColor: AppColors.textPrimary,
-    ),
+    scrim: AppColors.overlay,
   );
 }
 ```
 
-Trong `app.dart`, truyền `theme: buildLightTheme()` và `themeMode: ThemeMode.light` cho `MaterialApp.router`. Không khóa `textScaler` để ép bố cục.
+`ThemeData` dùng `useMaterial3: true`, scheme trên, `fontFamily: 'BeVietnamPro'`, `scaffoldBackgroundColor: AppColors.background`, TextTheme mục 5.1 và `ThemeExtension<AppStatusColors>`. `MaterialApp.router` dùng `ThemeMode.light`, không khóa textScaler. Role chưa ghi đè trong mẫu không được tự dùng làm màu mới cho UI. [S10, S11]
 
-Hoàn thiện `ThemeExtension<AppStatusColors>` cho success/warning/purple/teal, gồm màu chữ/nền/viền theo tông; triển khai `copyWith` và `lerp`, đăng ký trong `ThemeData.extensions`. `AppStatusBadge` đọc extension để mọi feature dùng cùng màu. Chốt thêm theme cho button/input/card/AppBar/NavigationBar/sheet/dialog và trạng thái pressed/disabled/focus trên UiKitScreen; không coi mẫu trên là toàn bộ theme đã hoàn chỉnh. [S10, S11]
+### 9.2 Hợp đồng theme/component
 
+- `AppStatusColors` cung cấp link `primary`, pressed/focus, muted/disabled/track, phản hồi và 7 bộ tông gồm màu/chữ/nền/viền; triển khai copyWith/lerp và đăng ký ThemeData.extensions.
+- AppButton: primary `brand/onBrand`, pressed `brandPressed`; danger nhạt `dangerSoft/dangerText`; bo pill, không bóng; loading ba chấm.
+- Input: viền borderStrong, focus primary + vòng focusRing; màu lỗi theo feedback; label/hint/error có style chung.
+- AppBar trắng, căn trái; NavigationBar cao 72 + safe area, nhãn luôn hiện, indicator 64×32; không để primary role Material làm icon chọn thành nền brand sai mục 8.1.
+- Card trắng đặc bo 24 + AppShadows.card; banner/toast bo 16; dialog/sheet bo 32 + overlay không blur.
+- Link đọc token `primary` qua extension; không lấy `colorScheme.primary` vì role đó là nền brand của nút.
+- Theme input/button/card/navigation/sheet/dialog định nghĩa một lần, kiểm bằng widget test. Không tạo một theme khác ở mỗi feature.
+
+Thiếu màu/token/variant → cập nhật Design System và hai repo trước khi dùng. Mẫu trên không thay thế toàn bộ theme/widget và kiểm thử dự án.
 
 ---
 
@@ -659,7 +883,7 @@ Dùng **Feature-based + Clean Architecture** với ba tầng `presentation`, `do
 **Quy tắc:**
 
 - Không gọi Dio hoặc secure storage trong screen/widget. `auth_local_data_source` dùng TokenStorage được inject.
-- Controller không nhận `BuildContext` chỉ để gọi API; UI xử lý SnackBar/dialog/điều hướng theo kết quả.
+- Controller không nhận `BuildContext` chỉ để gọi API; UI xử lý AppToast/AppConfirmationDialog/điều hướng theo kết quả.
 - DTO map JSON ở tầng data, kiểm tra trường thiếu/không hợp lệ; không ép JSON trực tiếp vào widget.
 - State bất biến; có trạng thái tải lần đầu, tải thêm, refresh và gửi form riêng khi cần.
 - Phân biệt lỗi xác thực, thiếu quyền, validation, timeout, mạng, server và hủy request. Chuẩn hóa thành `AppFailure` thay vì hiển thị raw DioException/stack trace.
@@ -681,19 +905,19 @@ Ví dụ đường dẫn `features/feature_name/` chỉ minh họa tổ chức, 
 3. Tạo DTO, remote datasource và repository implementation trong `data/`.
 4. Nếu cần mock, tạo implementation cùng interface và fixture; chọn implementation ở bootstrap/provider, không if mock trong screen.
 5. Tạo controller/state; bổ sung use case nếu có phối hợp hoặc logic tái sử dụng đáng kể.
-6. Tạo screen/widgets theo mẫu mục 8, dùng theme và widget chung.
+6. Tạo screen/widgets theo mẫu mục 8 và Design System §8, dùng theme/token/component chung; thiếu thì bổ sung mục 7 và widget test, không dựng style tạm.
 7. Đăng ký route tại `routing/app_router.dart`; route chờ xác thực và kiểm tra vai trò/quyền qua policy, kể cả deep link.
 8. Chỉ thêm đích điều hướng cấp cao khi phù hợp; màn chi tiết không mặc định thêm tab.
 9. Thử loading/rỗng/lỗi/mạng yếu/bàn phím/chữ lớn/Back; giữ nội dung form khi request thất bại.
 10. Kiểm tra analyzer/format; chạy unit/widget/integration test phù hợp với phần thay đổi.
-11. Cập nhật UiKitScreen/guide khi tạo component hoặc token chung mới.
+11. Cập nhật Design System chung, token hai repo và widget test khi tạo component/token chung; ghi ngoại lệ UI trong PR và đồng bộ phiên bản.
 
 ---
 
 <a id="section-12"></a>
 ## 12. Đăng nhập, phiên và lưu token
 
-Mục này mô tả xác thực. Khung vai trò/điều hướng ở mục 8.4; quy tắc kế thừa nghiệp vụ ở mục 18. API và OTP dưới đây là PROPOSED/OPEN cho tới khi backend và SRS chốt.
+Mục này mô tả xác thực. Khung vai trò/điều hướng ở mục 8.4; quy tắc kế thừa nghiệp vụ ở mục 18. API và OTP dưới đây là PROPOSED/OPEN cho tới khi backend và SRS chốt. Design System §15 còn mở form app/web hay Keycloak: chốt phương án trước khi tích hợp. Mẫu UI đăng nhập ở mục 8 không tự xác nhận cơ chế auth.
 
 ### 12.1 Chọn cơ chế cho native
 
@@ -797,39 +1021,64 @@ Các trạng thái đề xuất: `checking`, `unauthenticated`, `authenticating`
 <a id="section-13"></a>
 ## 13. Chữ trên giao diện
 
-- Tiếng Việt có dấu, câu ngắn, xưng hô trung tính. Code/identifier dùng tiếng Anh.
-- Nút bắt đầu bằng động từ: Đăng nhập, Gửi mã, Thử lại, Áp dụng, Lưu thay đổi. Không dùng “OK/Submit” khi có thể ghi rõ hành động.
-- Lỗi nêu vấn đề và cách sửa; không đưa exception kỹ thuật lên UI.
-- Label không thay bằng placeholder. Trường bắt buộc có dấu và semantics phù hợp.
-- Ngày `dd/MM/yyyy` (hiển thị ngày/tháng/năm; `MM` là tháng trong mẫu `intl`), giờ hiển thị theo múi giờ đã thống nhất; không lấy múi giờ máy làm quy tắc nghiệp vụ mặc định. Tập trung `DateFormat`/định dạng số, tiền trong helper; không format khác nhau ở từng screen.
-- Nhãn chờ ghi rõ **chờ ai** khi có dữ liệu, ví dụ “Chờ giáo viên xác nhận”; không chỉ hiện “Đang chờ”. Không tự suy đoán người xử lý tiếp theo khi backend chưa trả thông tin.
-- Mã máy/enum không hiển thị nguyên văn; nhãn tiếng Việt map ở presentation hoặc mapper phù hợp.
-- Nhãn dài được xuống dòng/truncation có chủ đích; không cắt mất thông tin quan trọng chỉ để giữ card thấp.
-- Không yêu cầu người dùng hiểu “JWT, refresh token, Dio, HTTP 401”; dùng “Phiên đăng nhập đã hết hạn”, “Không thể kết nối. Hãy thử lại”.
+Theo Design System §10. UI tiếng Việt có dấu, câu ngắn, chủ động, xưng hô trung tính “bạn”; code/identifier dùng tiếng Anh. Không emoji, mã kỹ thuật, null/ID nội bộ hoặc exception trên UI.
+
+### 13.1 Quy tắc
+
+- Nút ghi đúng động từ: “Đăng nhập”, “Gửi phiếu”, “Lưu nháp”, “Duyệt”, “Hủy thông báo nghỉ”. Không “OK”, “Đồng ý”, “Có”, “Submit”, “Xác nhận” chung chung.
+- Hộp xác nhận lặp đúng hành động; nút phụ “Quay lại”. Xóa/hủy dùng danger và icon đỏ.
+- Lỗi nói điều sai + cách sửa: “Chưa chọn ngày bắt đầu nghỉ”, thay vì “Dữ liệu không hợp lệ”. Lỗi trường dưới ô, giữ dữ liệu form.
+- Label không thay bằng placeholder; trường bắt buộc có `*` và semantics. Mã chứng từ hiển thị đậm màu `primary`.
+- Ngày `dd/MM/yyyy`, ngày giờ `dd/MM/yyyy HH:mm`, giờ 24h. Trong `intl`, **MM là tháng**, `mm` là phút. Ngày gần có thể “Thứ Sáu, 9/10”; số thập phân dấu phẩy “104,5 cm”. Helper tập trung, thống nhất múi giờ nghiệp vụ với backend.
+- Chờ ghi rõ chờ ai khi backend trả thông tin. Không tự suy người xử lý tiếp theo.
+- Không khóa textScaler; xuống dòng theo mục 5.1. Ngoại lệ phần xem trước Cập nhật phát triển theo §8.5 phải mở được nội dung đầy đủ.
+- Không yêu cầu người dùng hiểu “JWT, refresh token, Dio, HTTP 401”; dùng “Phiên đăng nhập đã hết hạn” hoặc “Không thể kết nối. Hãy thử lại”.
+
+### 13.2 Thuật ngữ theo người đọc
+
+| Nhân viên (giáo viên/bếp) | Phụ huynh | Không dùng |
+| --- | --- | --- |
+| trẻ | bé, con | học sinh |
+| giáo viên | cô giáo | GVCN trong câu |
+| Ban giám hiệu, Hiệu trưởng, Phó hiệu trưởng | nhà trường | admin, BGH trong câu |
+| điểm trường | điểm trường | campus, cơ sở |
+| thông báo nghỉ | thông báo nghỉ, báo nghỉ | đơn nghỉ, đơn xin phép |
+| thực đơn, suất ăn | thực đơn, bữa sáng/trưa/chiều | MealPlan |
+| chờ duyệt, đã duyệt, trả lại | Theo quyền và nội dung được xem | pending, approved |
+| Chưa cập nhật | Nhà trường chưa cập nhật | null, Không có dữ liệu |
+
+Nhãn tab dùng đúng Hôm nay/Bé/Lớp/Bếp/Thông báo/Tài khoản ở mục 8.4. Cùng feature, cùng người đọc phải cùng nhãn với web.
 
 ---
 
 <a id="section-14"></a>
 ## 14. Tải, lỗi, rỗng và xác nhận
 
-| Tình huống | Cách xử lý |
-|---|---|
-| Tải lần đầu | Loading/skeleton tại vùng nội dung |
-| Refresh | Giữ dữ liệu hiện tại, hiển thị tiến độ nhỏ |
-| Tải thêm | Spinner cuối list, chặn request trùng, retry tại cuối list |
-| Nút đang gửi | Loading + disabled, không gửi lặp |
-| Không có dữ liệu | Empty state có giải thích; CTA chỉ khi phù hợp |
-| Bộ lọc không có kết quả | Giữ filter, có “Đặt lại bộ lọc” |
-| Lỗi form | Lỗi ngay dưới trường; giữ dữ liệu đã nhập |
-| Lỗi tải | Error state + “Thử lại” |
-| Mất mạng/timeout | Thông báo kết nối; không coi là đăng xuất |
-| Thiếu quyền | Màn/thông báo phù hợp; không biến thành dữ liệu rỗng |
-| Tác vụ ảnh hưởng lớn | Dialog/sheet xác nhận đúng tên hành động |
-| Upload bị hủy/từ chối quyền | Có phản hồi, không tạo bản ghi giả thành công |
+Theo Design System §9, §11; mọi màn tải dữ liệu đủ các trạng thái liên quan.
 
-Không dùng một boolean `isLoading` cho mọi hoạt động nếu cần giữ list hoặc form độc lập. Không hiện thành công trước khi API xác nhận; optimistic update chỉ dùng khi có chiến lược khôi phục rõ.
+| Tình huống | Hiển thị và hành vi |
+| --- | --- |
+| Tải lần đầu | AppSkeleton đúng hình vùng nội dung; **không spinner giữa màn** |
+| Tải lại/refresh | Giữ dữ liệu/filter, kéo xuống + thanh tiến độ mảnh dưới AppBar |
+| Tải thêm | Ba chấm AppLoading cuối list, chặn request trùng, retry cuối list |
+| Rỗng | AppEmptyState: tranh 168×124 bo 20 + câu khi nào có dữ liệu/làm gì tiếp; CTA nếu có việc làm được |
+| Lọc không có kết quả | Giữ filter + AppEmptyState + “Đặt lại bộ lọc” |
+| Mất mạng/lỗi tải | AppErrorState có icon, câu cụ thể + “Thử lại”; không tranh, không coi là logout |
+| Không có quyền | “Bạn không có quyền xem nội dung này” + nút về Hôm nay; không biến thành rỗng |
+| Nội dung không còn | “Nội dung không còn” + nút về Hôm nay |
+| Lỗi trường | Dưới ô, màu danger + icon, map lỗi backend đúng field, giữ form |
+| Đang gửi form | AppSubmitOverlay, khóa gửi lặp; ba chấm “Đang gửi…”; lỗi giữ dữ liệu + “Thử lại” |
+| Thao tác nhỏ đang chạy | AppButton loading/disabled, ba chấm nhỏ; không phủ toàn màn |
+| Kết quả thao tác | AppToast nền màu đúng loại, thanh đếm ngược; 3,5 s / lỗi 6 s; phía trên dưới status bar |
+| Hành động không hoàn tác | AppConfirmationDialog icon lớn giữa; danger cho hủy/xóa; CTA lặp đúng tên hành động |
+| Field thiếu | Ẩn dòng hoặc “Chưa cập nhật”; phụ huynh “Nhà trường chưa cập nhật”; không dựng giá trị 0 thay dữ liệu thiếu |
+| Upload hủy/từ chối quyền | Phản hồi rõ, không tạo bản ghi giả thành công |
 
-Test TalkBack/VoiceOver, nhãn nút icon, thứ tự focus và chữ lớn. Vùng chạm của control tương tác đạt tối thiểu theo mục 5; thông tin quan trọng không chỉ thể hiện qua màu. [S2]
+Không dùng một boolean isLoading cho mọi hoạt động khi cần giữ list/form độc lập. Không hiện thành công trước API xác nhận; optimistic update chỉ khi có chiến lược khôi phục rõ. Mẫu form phải giữ dữ liệu sau lỗi.
+
+Test TalkBack/VoiceOver, semantics icon/chấm chưa đọc, thứ tự focus, chữ 2,0 và vùng chạm ≥48. Màu luôn có chữ/icon/chú giải. Mục 3–6 là nguồn kích thước/theme, không tự dựng lại trạng thái tại feature. [S2]
+
+Dữ liệu sức khỏe không đi vào push/màn khóa. Đăng xuất/đổi tài khoản không thoáng hiện dữ liệu phiên trước. Mock/fixture/test/ảnh chụp/demo không dùng dữ liệu hoặc ảnh trẻ thật.
 
 ---
 
@@ -879,7 +1128,7 @@ Unit test cho mapping/validation/refresh/storage failure; widget test cho trạn
 ### 16.1 Chọn và upload ảnh (PROPOSED)
 
 - Dùng `image_picker` để chọn từ camera/thư viện khi feature cần; thêm mô tả quyền/cấu hình Android/iOS đúng phiên bản package và API nền tảng. Chỉ xin quyền cần thiết tại thời điểm thao tác; xử lý hủy chọn/từ chối quyền. [S12]
-- Widget hiển thị preview, xóa ảnh đã chọn, tiến độ và thử lại. Review nêu **tối đa 3 ảnh** cho ImageUploader web; dùng làm giới hạn đề xuất cho màn mobile tương ứng, không áp mặc định cho mọi feature. Backend chốt số ảnh, dung lượng, kích thước và MIME type cho từng endpoint.
+- Widget hiển thị preview, xóa ảnh đã chọn, tiến độ và thử lại. Design System §6.3 nêu **tối đa 3 ảnh** cho ImageUploader web; dùng làm giới hạn đề xuất cho màn mobile tương ứng, không áp mặc định cho mọi feature. Backend chốt số ảnh, dung lượng, kích thước và MIME type cho từng endpoint.
 - Nén/resize ảnh trước gửi bằng lớp xử lý ảnh được nhóm chọn; kiểm tra lại kích thước/định dạng sau xử lý. Không coi chọn ảnh bằng image_picker là đã hoàn thành mọi yêu cầu nén. Upload multipart theo hợp đồng API.
 - Android có thể hủy Activity lúc mở trình chọn: xử lý kết quả qua `retrieveLostData` theo package, gắn lại đúng form/phiên hiện tại. File camera ở cache có thể là tạm; draft cần giữ qua việc đóng app phải có cơ chế lưu riêng. [S12]
 - Giữ form và danh sách ảnh khi lỗi mạng; chỉ báo gửi thành công sau khi API xác nhận. Không tự replay upload sau refresh nếu body/endpoint chưa bảo đảm gửi lại an toàn.
@@ -894,7 +1143,6 @@ Chuông trong app và danh sách thông báo không chứng minh backend đã h�
 - Payload chỉ mang loại thông báo/ID tối thiểu; tải dữ liệu chi tiết qua API có xác thực. Tránh hiển thị nội dung nhạy cảm của trẻ trên màn khóa; nội dung thông báo cần nhóm chốt.
 - Khi chưa có push backend, chỉ triển khai danh sách/chuông theo API được xác nhận; không báo thông báo đẩy đã hoạt động.
 
-
 ---
 
 <a id="section-17"></a>
@@ -902,14 +1150,21 @@ Chuông trong app và danh sách thông báo không chứng minh backend đã h�
 
 ### Thiết kế và tương tác
 
-- [ ] Dùng màu/chữ/khoảng cách từ theme và token chung; primary đúng `#1565E0`, không chỉ dựa vào seed.
-- [ ] Material 3, TextTheme, ThemeExtension và Light Theme được cấu hình nhất quán.
-- [ ] Dùng widget chung đúng biến thể; widget mới được bổ sung vào UiKitScreen nếu dùng chung.
-- [ ] Không sao chép sidebar, breadcrumb, bảng rộng hoặc CSS web sang màn điện thoại.
-- [ ] SafeArea, bàn phím, Back và vùng nút dưới cùng hoạt động đúng.
-- [ ] Không tràn/cắt chữ với màn nhỏ, chữ lớn và nhãn tiếng Việt dài.
-- [ ] Có loading/rỗng/lỗi/retry/disabled phù hợp; giữ form khi request lỗi.
-- [ ] Icon tương tác có nhãn; màu trạng thái có chữ/icon; vùng chạm đủ lớn.
+- [ ] UI theo Design System chung 3.1; ngoại lệ ghi rõ, không ghi PROPOSED thành đã duyệt.
+- [ ] Nút chính `brand #4FB0F5` / `onBrand #0E3F63`; link `primary #0B72BC`; nền `#F1F9FE`, muted `#66728A`.
+- [ ] Light Theme, TextTheme đúng 22/26/28/18/17/16/14/13/12 theo vai trò; nút 16/700; không 800, không khóa textScaler.
+- [ ] Nút/input một dòng pill cao nền 52; card bo 24 padding 20, dialog/sheet bo 32; `space8 = 32`, không space7.
+- [ ] Vùng chạm ≥48 kể cả nút nhỏ/chip; list row ≥64; NavigationBar 72 + safe area, nhãn luôn hiện.
+- [ ] Một nút chính mỗi vùng; không FAB; câu nút là động từ; danger đỏ nhạt chữ đỏ, không bóng nút.
+- [ ] Badge dùng 7 tông gray/orange/blue/approval/red/green/teal; cùng nhãn/tông với web theo người đọc; approval vàng chỉ chờ người duyệt.
+- [ ] Icon qua AppIcons; Tabler outline hoặc fallback Material rounded đúng ngoại lệ; không import trực tiếp/emoji tại feature.
+- [ ] Card trắng đặc; kính chỉ hero, không BackdropFilter trong list; logo/tranh cùng nguồn, không méo/đổi màu logo.
+- [ ] Tải đầu skeleton, loading ba chấm, form AppSubmitOverlay, kết quả AppToast; rỗng có tranh/lỗi có icon; đủ retry/permission/not-found.
+- [ ] Hành động không hoàn tác có AppConfirmationDialog; giữ form khi lỗi; SafeArea/bàn phím/Back đúng.
+- [ ] 360–430 và màn hẹp/chữ 1,0/1,3/2,0 không mất nội dung; semantics/TalkBack/VoiceOver đúng.
+- [ ] Không tự đánh giá sức khỏe, tính tổng/trạng thái hoặc thêm field thay BE; không dữ liệu/ảnh trẻ thật trong mock/test/demo.
+- [ ] Widget/variant/token mới có trong Design System và widget test; đổi token cập nhật cả hai repo + ảnh trước–sau.
+- [ ] Giảm chuyển động tắt hiệu ứng theo AppMotion, giữ thanh đếm ngược toast.
 
 ### Kiến trúc và dữ liệu
 
@@ -937,52 +1192,136 @@ Chuông trong app và danh sách thông báo không chứng minh backend đã h�
 
 - [ ] Analyzer và kiểm tra format thành công.
 - [ ] Kiểm thử phù hợp với thay đổi đã chạy; luồng xác thực có kiểm tra restore/expiry/logout.
-- [ ] Bản release không có mock login/UiKit route/log nhạy cảm, dùng URL môi trường đúng.
+- [ ] Bản release không có mock login/route xem thử theo vai trò/log nhạy cảm, dùng URL môi trường đúng.
 - [ ] Package/platform config và pubspec.lock được cập nhật đồng bộ.
 - [ ] Quyền thiết bị và xử lý từ chối quyền đã kiểm tra nếu thay đổi liên quan.
 - [ ] Nếu upload ảnh: giới hạn backend, nén, hủy/khôi phục chọn ảnh và lỗi mạng được xử lý.
 - [ ] Nếu có push: FCM/APNs, device token, đổi tài khoản và mở deep link đã kiểm tra; không mặc định chuông là push.
+
+### Tự rà UI tại repository app
+
+Chạy tại gốc `CareNest_APP`; các lệnh dưới chỉ rà khi đã có repo, chưa chạy trong lần sửa Markdown này:
+
+```bash
+# Màu ngoài token/bóng: kết quả cần rà ngoại lệ màu từ dữ liệu.
+rg -n 'Color\(0x|Colors\.' lib -g '*.dart' -g '!core/constants/colors.dart' -g '!core/constants/sizes.dart'
+# Chữ, kích thước và icon tự đặt ở feature: dòng mới cần xử lý.
+rg -n 'fontSize:|fontWeight:|BorderRadius\.circular\([1-9]|EdgeInsets\.[A-Za-z]+\([^)]*[1-9]|SizedBox\((width|height): *[1-9]|Icons\.|TablerIcons\.' lib/features -g '*.dart'
+# Blur chỉ ở hero, widget mặc định cần dùng qua wrapper.
+rg -n 'BackdropFilter' lib -g '*.dart' -g '!app_hero_scene.dart'
+rg -n '\b(ElevatedButton|AlertDialog|SnackBar|ListTile|CircleAvatar)\(' lib/features -g '*.dart'
+flutter analyze
+dart format --output=none --set-exit-if-changed lib test
+flutter test
+```
+
+Đọc kết quả trong ngữ cảnh; comment/mẫu không tự đồng nghĩa lỗi. Dòng mới của thay đổi phải tuân thủ luật token/component. Khi các script dự án có sẵn, chạy thêm `node scripts/check-ai-layer.mjs` và `node scripts/verify.mjs` theo Design System Phụ lục A. Không tự xác nhận script/package/repo đã tồn tại từ tài liệu.
 
 ---
 
 <a id="section-18"></a>
 ## 18. Nguồn nghiệp vụ chung và các điểm cần chốt
 
-### 18.1 Kế thừa web/mobile mà không làm lệch đặc tả
+### 18.1 Kế thừa web/mobile
 
-| Nội dung chung | Cách dùng cho mobile |
-|---|---|
-| Thương hiệu, mã màu, font, lưới 4, bo góc | Dùng token Flutter ở mục 3–5; thay đổi token dùng chung cần cập nhật cả guide web/mobile |
-| Tông trạng thái và UX copy | Cùng ý nghĩa/nhãn nghiệp vụ; widget Flutter ở mục 6–7, copy ở mục 13 |
-| Vòng đời chứng từ | Giữ quy tắc đã được SRS/Use Case duyệt; mobile ánh xạ mã backend sang nhãn/chip, không suy chuyển trạng thái từ màu hoặc vị trí nút |
-| Chữ ký và lịch sử xử lý | Giữ ý nghĩa dữ liệu người ký/thời điểm/trạng thái; hiển thị nếu màn mobile được yêu cầu. Nếu ký chỉ có trên web, mobile chỉ xem, không tự thêm nút/khối ký |
-| In A4, PrintToolbar, PDF/CSV | Không đưa vào mobile theo phạm vi trong review; nếu yêu cầu thay đổi phải bổ sung thiết kế riêng |
+| Nội dung | Cách dùng cho mobile |
+| --- | --- |
+| Logo/tranh/màu/font/spacing/radius/motion/icon | Theo Design System chung §3–5 và guide mục 3–7; không có bộ token UI độc lập cho app |
+| Tông trạng thái và thuật ngữ | Cùng ý nghĩa; nhãn theo phụ huynh/nhân viên ở mục 6, 13; legacy purple web = approval app |
+| Vòng đời chứng từ | Theo SRS/Use Case và mã BE; không suy chuyển trạng thái từ màu/vị trí nút |
+| Chữ ký/lịch sử | Chỉ field/thao tác thuộc phạm vi đã duyệt; nếu ký chỉ ở web thì mobile chỉ xem |
+| Khác biệt thiết bị | Chỉ các khác biệt được Design System §1.3 cho phép; bổ sung dòng trước khi tạo khác biệt mới |
+| In A4/PDF/CSV | Không tự chuyển PrintToolbar/font Tinos/layout A4 sang mobile; chức năng mới cần yêu cầu riêng |
 
-Review dẫn nguồn chung là DESIGN web mục 4, 6, 12, 13; đó là số mục của **bản web được review**, không phải số mục của file mobile này. Bản mobile giữ guideline triển khai riêng; không dùng để ghi đè bản DESIGN dành cho web. Hai file đầu vào không chứa đầy đủ quy tắc vòng đời/chữ ký gốc, nên không tự tạo enum trạng thái, danh sách người ký hoặc bước phê duyệt trong lần sửa này.
+Các mã ATT-05, NUT-08, HLT-02/05, OBS-03/05, P-13/P-13b được **dẫn từ Design System nguồn**; hai file đầu vào không chứa đầy đủ SRS/Use Case/DTO. Chưa xác minh độc lập nghiệp vụ hoặc endpoint. Không thêm role, trạng thái BE, chữ ký hay bước duyệt chỉ từ ví dụ UI.
 
-### 18.2 Danh sách OPEN / NEEDS VERIFICATION
+### 18.2 Điểm OPEN / NEEDS VERIFICATION
 
-| Điểm cần chốt | Quy ước tạm trong guide | Cần xác nhận với |
-|---|---|---|
-| Phạm vi vai trò mobile | Khung Teacher/Parent; Kitchen Staff theo review nhưng chỉ bật sau đối chiếu | SRS/Screen Flow và nhóm nghiệp vụ |
-| Tổ trưởng | Không mặc định `TEAM_LEADER` là role riêng | SRS + schema user/permissions backend |
-| Tạo tài khoản phụ huynh/SMS mời | Ghi nhận mô tả của review; chưa thêm tự đăng ký | Luồng quản lý tài khoản web/mobile và backend |
-| State/DI và routing | Riverpod + go_router là lựa chọn PROPOSED trong guide | Nhóm phát triển trước khi cài package |
-| Xác thực native | Bearer + secure storage; fallback cookie ở 12.7 | Backend: endpoint, refresh/rotation/thu hồi và hợp đồng CSRF nếu dùng cookie |
-| OTP | Có mẫu challenge/verify/resend; chưa giả định endpoint tồn tại | SRS + backend: khi nào yêu cầu OTP, kênh gửi, thời hạn, giới hạn thử |
-| Push notification | FCM là phương án PROPOSED, chưa coi là đã tích hợp | Backend + cấu hình Firebase/APNs |
-| Ảnh upload | 3 ảnh chỉ là giới hạn đề xuất cho màn tương ứng trong review | Hợp đồng từng endpoint + nhóm chọn giải pháp nén |
-| Chứng từ/chữ ký/quyền dữ liệu | Đọc/hiển thị theo đặc tả đã duyệt; không tự sinh luồng | SRS/Use Case và DTO/API backend |
+| Điểm | Quy ước tạm | Cần chốt với |
+| --- | --- | --- |
+| Design System 3.1 | Đồng bộ tài liệu theo bản PROPOSED, không ghi đã duyệt | Team |
+| Field phụ huynh P-13b | Dựng khung, field không có thì bỏ dòng | BGH + BE |
+| Tab/màn giáo viên/bếp | Hôm nay/Lớp hoặc Bếp/Thông báo/Tài khoản; bếp chỉ bật khi phạm vi duyệt | SRS/Screen Flow + team |
+| Tổ trưởng | Không mặc định TEAM_LEADER riêng | SRS + schema user/permissions |
+| Tạo tài khoản phụ huynh/SMS mời | Giữ ghi nhận bản mobile trước, không tự đăng ký | Luồng quản lý tài khoản + BE |
+| Gói Tabler Flutter | AppIcons tạm Material rounded; giữ tên giống web | Team APP |
+| Appearance | T0 Sân chơi, không tự gọi GET /school/appearance | BE |
+| Sức khỏe P-13 | Không tự màu/nhãn đánh giá; AI chỉ dữ liệu đã duyệt | BGH + BE |
+| Riverpod/go_router | Lựa chọn PROPOSED của guide, không khẳng định đã cài | Team |
+| Form auth hay Keycloak | Giữ tranh + logo, form theo phương án chốt | BE + team |
+| Bearer/cookie/refresh/CSRF | Giữ đề xuất mục 12; chốt hợp đồng trước tích hợp | BE |
+| OTP | Mẫu challenge/verify/resend; không giả định endpoint tồn tại | SRS + BE |
+| Push | FCM đề xuất, không coi chuông = push đã hoạt động | BE + Firebase/APNs |
+| Upload | Giới hạn theo endpoint; 3 ảnh là mẫu tương ứng web | BE + giải pháp nén |
+| Chứng từ/chữ ký/quyền | Hiển thị theo đặc tả/DTO; không sinh luồng | SRS/Use Case + BE |
+| Bóng lớp nổi --shadow-xl | Nguồn chưa ghi số; lấy từ tokens.css khi nối code | Team FE/APP |
+| Token tự sinh chung | Chưa có; hai file đối chiếu cùng bảng | Team |
+| Nối repo APP | Dùng quy trình Phụ lục A; lần này chỉ sửa Markdown | Team APP |
 
-Phần UI/theme và mock có thể triển khai theo các đề xuất trên. Những tích hợp phụ thuộc một hợp đồng còn OPEN chỉ chuyển sang API thật sau khi hợp đồng được xác nhận và guide được cập nhật; không gắn nhãn CONFIRMED từ mock.
+UI/mock có thể triển khai theo nguồn chung; tích hợp phụ thuộc hợp đồng OPEN chỉ chuyển sang API thật sau xác nhận. Không gắn CONFIRMED từ dữ liệu mock hoặc một dòng mô tả widget đã có.
 
 ---
 
+<a id="appendix-a"></a>
+## Phụ lục A — Nối tài liệu vào repository
+
+Theo Phụ lục A của **CareNest Design System — web + app**. Bản Markdown này là guide đồng bộ để đọc và bàn giao; khi nối repo, dùng cấu trúc dưới đây để tránh hai nguồn UI khác nhau.
+
+| Đích trong `CareNest_APP` | Nội dung |
+| --- | --- |
+| `DESIGN.md` | **Chép nguyên bản Design System chung 3.1** từ web; không thay bằng một bản chỉ dành cho mobile |
+| `docs/architecture/CODING_GUIDE.md` | Tách phần code của guide: mục 1–2, 10–12, 15–16; phần kiến trúc/auth/release ở 17; quy định nghiệp vụ và điểm cần chốt ở 18; giữ tham chiếu rõ sang DESIGN.md |
+| `AGENTS.md` | Stack: “Giao diện: theo DESIGN.md (chung với web). Luật cứng mục 2, tự kiểm mục 13.2.”; thêm đường dẫn coding guide cho phần code |
+| `.claude/rules/ui-style.md` | Paths cho presentation/widget/theme/constants; tóm Design System §2.1, 2.3, 3.2, 9, 10, 13.2 |
+| Comment `DESIGN.md §…` trong `lib/` | Rà lại số mục theo Design System chung, không theo số mục guide này |
+
+Số mục không phải giao diện “10–18” trong Phụ lục A nguồn là số của bản DESIGN cũ; sau đồng bộ, mục 13–14 và phần đầu 17 của guide này là UI, do Design System chung sở hữu. Khi tách coding guide, chuyển logic code và tham chiếu UI về nguồn chung, không chép lại một bảng màu cũ.
+
+Thứ tự triển khai tài liệu và code:
+
+1. Tách phần code, chép Design System chung, cập nhật hướng dẫn AI và tham chiếu.
+2. Làm PR theme chung: màu/tông, typography, spacing/radius/sizes/motion/icon và asset trước khi dựng màn mới; rà mọi tham chiếu đổi tên.
+3. Nâng wrapper AppButton/Input/Card/Badge/Loading/Dialog, bổ sung widget còn thiếu; phủ đủ trạng thái bằng widget test.
+4. Áp công thức màn, kiểm kích thước/chữ lớn/trạng thái, chạy kiểm tra dự án ở mục 17.
+5. Đổi token lâu dài: cập nhật token web + app, tăng phiên bản và ghi lịch sử nguồn chung, chép DESIGN.md sang repo kia cùng đợt.
+
+Đây là hướng dẫn bàn giao; **chưa thực hiện thay đổi repository** trong lần chỉnh Markdown.
+
+---
+
+<a id="appendix-b"></a>
+## Phụ lục B — Bảng thay đổi UI
+
+Các giá trị cũ dưới đây chỉ để tra cứu migration, **không phải token được phép dùng mới**.
+
+| Hạng mục | Bản mobile trước | Bản đồng bộ 3.1 |
+| --- | --- | --- |
+| Nút chính | Primary #1565E0, chữ trắng | Brand #4FB0F5, chữ #0E3F63 |
+| Link | Dùng chung primary nút | Primary #0B72BC, pressed #0A6AAE |
+| Nền / muted | #F5F8FC / #8592A6 | #F1F9FE / #66728A |
+| Tông bản ghi | neutral/info/warning/purple/danger/success/teal | gray/orange/blue/approval/red/green/teal |
+| Chờ duyệt | Tím #7048E8 | Vàng approval #F5B400; legacy purple chỉ giữ ở web |
+| Bo nút/input | 8 | Pill 9999; multiline 20 |
+| Card / dialog / sheet | 12 / 12 / 20 | 24 / 32 / 32 |
+| Nút/input / padding card | 48 / 16 | 52 / 20; card dày 16 |
+| Khoảng cách 32 | space7 | space8; thêm space10 = 40 |
+| AppBar/card/nút/badge | 20/600, 16/600, 14/600, 12 | 18/600, 17/700, 16/700, 13/600 |
+| Icon | Material tùy feature | AppIcons chung, đích Tabler outline, fallback rounded qua mapping |
+| Loading/toast | Spinner, SnackBar mặc định | Ba chấm, AppToast có thanh đếm ngược |
+| Danger button | Đỏ đặc chữ trắng | Đỏ nhạt chữ đỏ |
+| Bề mặt/tranh | Chưa quy định đủ | Card trắng đặc; hero kính; cùng bộ tranh; lỗi dùng icon |
+| Navigation | Trang chủ/Lớp học/Bé của tôi/Công việc bếp | Hôm nay/Lớp/Bé/Bếp; nhãn luôn hiện |
+| Tablet/FAB | Có thể NavigationRail tại 600; FAB khi phù hợp | Một cột/thanh đáy theo nguồn; không FAB; khác thêm cần cập nhật nguồn chung |
+| Quyền/nghiệp vụ/auth | Đề xuất kỹ thuật + xác minh SRS | Giữ ranh giới cũ; nguồn UI không xác nhận role/API/ma trận quyền |
+
+---
+
+<a id="references"></a>
 ## Tài liệu tham chiếu
 
-**Nguồn chỉnh sửa:** `DESIGN (2).md` và `DESIGN_review_Flutter.md` do người dùng cung cấp.
+**Nguồn lần sửa:** hai file người dùng cung cấp: “CareNest Mobile – Design & Coding Guide (Flutter)” và “CareNest Design System — web + app” phiên bản 3.1 (09/10/2026). Design System là nguồn quyết định UI. Các tham chiếu DESIGN/review cũ chỉ giữ ở nội dung cần đối chiếu, không coi là tài liệu đã đọc thêm trong lần này.
 
-Các lựa chọn cấu trúc, token thiết kế và hợp đồng API trong guide là đề xuất cho CareNest; nguồn dưới đây hỗ trợ nguyên tắc nền tảng/package, không phải xác nhận backend hoặc widget của dự án đã tồn tại.
+Liên kết kỹ thuật dưới đây được giữ từ guide mobile; S10–S11 được kiểm tra lại cho mẫu theme. Các nguồn package không xác nhận repo CareNest đã cài thư viện hoặc backend đã có hợp đồng.
 
 - **S1:** [Flutter – Architecture recommendations](https://docs.flutter.dev/app-architecture/recommendations): phân tách UI/data, repository và domain layer theo nhu cầu.
 - **S2:** [Flutter – Accessibility](https://docs.flutter.dev/ui/accessibility): text scaling, vùng chạm, screen reader và contrast.
@@ -993,10 +1332,9 @@ Các lựa chọn cấu trúc, token thiết kế và hợp đồng API trong gu
 - **S7:** [flutter_secure_storage – Package documentation](https://pub.dev/packages/flutter_secure_storage): lưu bảo mật và cấu hình nền tảng.
 - **S8:** [dio_cookie_manager – Package documentation](https://pub.dev/packages/dio_cookie_manager): quản lý cookie cho Dio native.
 - **S9:** [Effective Dart – Style](https://dart.dev/effective-dart/style): tên file/class/identifier và formatter.
-
 - **S10:** [Flutter API – ColorScheme.fromSeed](https://api.flutter.dev/flutter/material/ColorScheme/ColorScheme.fromSeed.html): màu từ seed và ghi đè các role.
 - **S11:** [Flutter API – ThemeData](https://api.flutter.dev/flutter/material/ThemeData/ThemeData.html): Material 3, ColorScheme, TextTheme và component theme.
 - **S12:** [image_picker – Package documentation](https://pub.dev/packages/image_picker): cấu hình nền tảng, xử lý lost data và file tạm.
 - **S13:** [Firebase – Get started with FCM in Flutter](https://firebase.google.com/docs/cloud-messaging/flutter/get-started): cấu hình push, quyền và device token.
 
-Ngày cập nhật guide: **08/10/2026**. S10–S13 được đối chiếu trong lần sửa này; S1–S9 là liên kết tham khảo giữ từ bản đầu vào. Chưa kiểm tra mã nguồn dự án, build hoặc luồng xác thực thực tế. Khóa phiên bản Flutter/package trong repository và dùng tài liệu tương ứng trước khi triển khai.
+Ngày cập nhật guide: **10/10/2026**. Đồng bộ UI theo Design System 3.1; chưa kiểm tra mã nguồn/build/luồng auth của dự án. Khóa Flutter/package trong repository và dùng tài liệu tương ứng khi triển khai.

@@ -5,34 +5,39 @@ import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/theme/app_text_styles.dart';
 
-/// Light theme duy nhất ở bản đầu (DESIGN.md §4.3, §9.1).
+/// Light theme duy nhất (DESIGN.md §4.3, §4.4, §9).
 ThemeData buildLightTheme() {
-  // fromSeed không giữ đúng #1565E0 ⇒ ghi đè các role đã duyệt (DESIGN §4.2)
-  final scheme =
-      ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
-        brightness: Brightness.light,
-      ).copyWith(
-        primary: AppColors.primary,
-        onPrimary: AppColors.textInverse,
-        primaryContainer: AppColors.primaryContainer,
-        onPrimaryContainer: AppColors.brandBlue700,
-        error: AppColors.danger,
-        onError: AppColors.textInverse,
-        errorContainer: AppColors.dangerContainer,
-        onErrorContainer: AppColors.dangerText,
-        surface: AppColors.surface,
-        onSurface: AppColors.textPrimary,
-        onSurfaceVariant: AppColors.textSecondary,
-        surfaceContainerLowest: AppColors.surface,
-        surfaceContainerLow: AppColors.surfaceSoft,
-        surfaceContainerHighest: AppColors.disabledContainer,
-        outline: AppColors.borderStrong,
-        outlineVariant: AppColors.border,
-        inverseSurface: AppColors.textPrimary,
-        onInverseSurface: AppColors.textInverse,
-        surfaceTint: Colors.transparent,
-      );
+  // ColorScheme.primary = brand (nền nút chính), không phải token `primary` (link) — §4.3
+  const scheme = ColorScheme(
+    brightness: Brightness.light,
+    primary: AppColors.brand,
+    onPrimary: AppColors.onBrand,
+    primaryContainer: AppColors.primarySoft,
+    onPrimaryContainer: AppColors.onBrand,
+    secondary: AppColors.primary,
+    onSecondary: AppColors.surface,
+    secondaryContainer: AppColors.primarySoft,
+    onSecondaryContainer: AppColors.onBrand,
+    error: AppColors.danger,
+    onError: AppColors.surface,
+    errorContainer: AppColors.dangerSoft,
+    onErrorContainer: AppColors.dangerText,
+    surface: AppColors.surface,
+    onSurface: AppColors.textPrimary,
+    onSurfaceVariant: AppColors.textSecondary,
+    surfaceContainerLowest: AppColors.surface,
+    surfaceContainerLow: AppColors.surfaceMuted,
+    surfaceContainer: AppColors.surfaceMuted,
+    surfaceContainerHigh: AppColors.track,
+    surfaceContainerHighest: AppColors.track,
+    outline: AppColors.borderStrong,
+    outlineVariant: AppColors.border,
+    scrim: AppColors.overlay,
+    shadow: Color(0xFF101828),
+    inverseSurface: AppColors.textPrimary,
+    onInverseSurface: AppColors.surface,
+    surfaceTint: Colors.transparent,
+  );
 
   final base = ThemeData(
     useMaterial3: true,
@@ -42,152 +47,129 @@ ThemeData buildLightTheme() {
   );
   final textTheme = AppTextStyles.textTheme(base.textTheme);
 
-  const smallShape = RoundedRectangleBorder(
-    borderRadius: BorderRadius.all(Radius.circular(AppRadius.small)),
-  );
-  const buttonMinimumSize = Size(64, AppSizes.buttonMinHeight);
-  const buttonPadding = EdgeInsets.symmetric(horizontal: AppSpacing.space5);
-
-  OutlineInputBorder inputBorder(Color color, [double width = 1]) {
-    return OutlineInputBorder(
-      borderRadius: const BorderRadius.all(Radius.circular(AppRadius.small)),
-      borderSide: BorderSide(color: color, width: width),
-    );
-  }
+  const pill = StadiumBorder();
+  const buttonSize = Size(64, AppSizes.buttonHeight);
+  const buttonPadding = EdgeInsets.symmetric(horizontal: AppSpacing.space6);
 
   return base.copyWith(
     textTheme: textTheme,
-    extensions: const [AppStatusColors.light],
+    extensions: [AppStatusColors.light],
+    appBarTheme: AppBarTheme(
+      backgroundColor: AppColors.surface,
+      foregroundColor: AppColors.textPrimary,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      centerTitle: false,
+      toolbarHeight: AppSizes.appBarHeight,
+      titleTextStyle: textTheme.titleLarge,
+      shape: const Border(bottom: BorderSide(color: AppColors.border)),
+    ),
     dividerTheme: const DividerThemeData(
       color: AppColors.border,
       thickness: 1,
       space: 1,
     ),
-    appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.surface,
-      foregroundColor: AppColors.textPrimary,
-      elevation: 0,
-      scrolledUnderElevation: 1,
-      shadowColor: AppColors.border,
-      centerTitle: false,
-      titleTextStyle: textTheme.titleLarge,
-    ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        minimumSize: buttonMinimumSize,
+        backgroundColor: AppColors.brand,
+        foregroundColor: AppColors.onBrand,
+        disabledBackgroundColor: AppColors.track,
+        disabledForegroundColor: AppColors.textDisabled,
+        minimumSize: buttonSize,
         padding: buttonPadding,
-        shape: smallShape,
+        shape: pill,
+        elevation: 0,
         textStyle: textTheme.labelLarge,
-        disabledBackgroundColor: AppColors.disabledContainer,
-        disabledForegroundColor: AppColors.disabled,
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        minimumSize: buttonMinimumSize,
+        backgroundColor: AppColors.surface,
+        foregroundColor: AppColors.textPrimary,
+        minimumSize: buttonSize,
         padding: buttonPadding,
-        shape: smallShape,
-        textStyle: textTheme.labelLarge,
-        foregroundColor: AppColors.primary,
-        disabledForegroundColor: AppColors.disabled,
+        shape: pill,
         side: const BorderSide(color: AppColors.borderStrong),
+        textStyle: textTheme.labelLarge,
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        minimumSize: const Size(
-          AppSizes.minimumTapTarget,
-          AppSizes.buttonMinHeight,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space3),
-        shape: smallShape,
+        foregroundColor: AppColors.primary,
+        minimumSize: const Size(AppSizes.minimumTapTarget, 48),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space2),
+        shape: pill,
         textStyle: textTheme.labelLarge,
-        disabledForegroundColor: AppColors.disabled,
       ),
     ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: AppColors.surface,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space4,
-        vertical: AppSpacing.space3,
+    checkboxTheme: CheckboxThemeData(
+      fillColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected)
+            ? AppColors.primary
+            : AppColors.surface,
       ),
-      border: inputBorder(AppColors.borderStrong),
-      enabledBorder: inputBorder(AppColors.borderStrong),
-      focusedBorder: inputBorder(AppColors.primary, 2),
-      errorBorder: inputBorder(AppColors.danger),
-      focusedErrorBorder: inputBorder(AppColors.danger, 2),
-      disabledBorder: inputBorder(AppColors.border),
-      labelStyle: textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
-      floatingLabelStyle: textTheme.bodyMedium?.copyWith(
-        color: AppColors.primary,
-      ),
-      hintStyle: textTheme.bodyLarge?.copyWith(color: AppColors.textMuted),
-      helperStyle: textTheme.labelSmall?.copyWith(
-        color: AppColors.textSecondary,
-      ),
-      errorStyle: textTheme.labelSmall?.copyWith(color: AppColors.dangerText),
-      errorMaxLines: 3,
-      helperMaxLines: 3,
-    ),
-    cardTheme: const CardThemeData(
-      color: AppColors.surface,
-      elevation: 0,
-      margin: EdgeInsets.zero,
+      checkColor: const WidgetStatePropertyAll(AppColors.surface),
+      side: const BorderSide(color: AppColors.borderStrong, width: 1.5),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(AppRadius.medium)),
-        side: BorderSide(color: AppColors.border),
-      ),
-    ),
-    navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: AppColors.surface,
-      indicatorColor: AppColors.primaryContainer,
-      elevation: 0,
-      labelTextStyle: WidgetStateProperty.resolveWith(
-        (states) => textTheme.labelMedium?.copyWith(
-          color: states.contains(WidgetState.selected)
-              ? AppColors.primary
-              : AppColors.textSecondary,
-        ),
-      ),
-      iconTheme: WidgetStateProperty.resolveWith(
-        (states) => IconThemeData(
-          color: states.contains(WidgetState.selected)
-              ? AppColors.primary
-              : AppColors.textSecondary,
-        ),
-      ),
-    ),
-    dialogTheme: DialogThemeData(
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(AppRadius.medium)),
-      ),
-      titleTextStyle: textTheme.titleLarge,
-      contentTextStyle: textTheme.bodyLarge?.copyWith(
-        color: AppColors.textSecondary,
+        borderRadius: BorderRadius.circular(AppRadius.xs + 2),
       ),
     ),
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: AppColors.surface,
+      surfaceTintColor: Colors.transparent,
+      modalBarrierColor: AppColors.overlay,
       showDragHandle: true,
+      dragHandleColor: AppColors.borderStrong,
+      dragHandleSize: Size(40, 4),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppRadius.large),
+          top: Radius.circular(AppRadius.xxxl),
         ),
       ),
     ),
-    snackBarTheme: SnackBarThemeData(
-      behavior: SnackBarBehavior.floating,
-      backgroundColor: AppColors.textPrimary,
-      contentTextStyle: textTheme.bodyMedium?.copyWith(
-        color: AppColors.textInverse,
+    dialogTheme: const DialogThemeData(
+      backgroundColor: AppColors.surface,
+      surfaceTintColor: Colors.transparent,
+      barrierColor: AppColors.overlay,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(AppRadius.xxxl)),
       ),
-      shape: smallShape,
+    ),
+    // Thanh đáy cao 72, nhãn luôn hiện, viên 64×32 `primarySoft` sau icon (§8.1)
+    navigationBarTheme: NavigationBarThemeData(
+      height: AppSizes.bottomNavigationHeight,
+      backgroundColor: AppColors.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      indicatorColor: AppColors.primarySoft,
+      indicatorShape: const StadiumBorder(),
+      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      iconTheme: WidgetStateProperty.resolveWith(
+        (states) => IconThemeData(
+          size: AppSizes.iconNavigation,
+          color: states.contains(WidgetState.selected)
+              ? AppColors.primary
+              : AppColors.textSecondary,
+        ),
+      ),
+      labelTextStyle: WidgetStateProperty.resolveWith(
+        (states) => textTheme.labelSmall?.copyWith(
+          letterSpacing: 0,
+          fontWeight: states.contains(WidgetState.selected)
+              ? FontWeight.w600
+              : FontWeight.w500,
+          color: states.contains(WidgetState.selected)
+              ? AppColors.primary
+              : AppColors.textSecondary,
+        ),
+      ),
+    ),
+    badgeTheme: const BadgeThemeData(
+      backgroundColor: AppColors.dangerText,
+      textColor: AppColors.surface,
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
       color: AppColors.primary,
-      linearTrackColor: AppColors.skeleton,
     ),
   );
 }
