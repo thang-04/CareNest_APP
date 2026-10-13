@@ -3,15 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 
-export 'package:carenest_app/core/theme/app_status_colors.dart'
-    show AppStatusTone;
-
-/// Badge chỉ hiển thị (không bấm); luôn có chữ để không truyền thông tin chỉ bằng màu.
+/// Badge viên thuốc cao 28, chữ 13/600, icon 14 (DESIGN.md §6.2).
+/// Tông `blue` không icon có chấm sáng thay icon.
 class AppStatusBadge extends StatelessWidget {
   const AppStatusBadge({
     super.key,
     required this.label,
-    this.tone = AppStatusTone.neutral,
+    required this.tone,
     this.icon,
   });
 
@@ -22,27 +20,49 @@ class AppStatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppStatusColors.of(context).tone(tone);
-    final textStyle = Theme.of(
-      context,
-    ).textTheme.labelMedium?.copyWith(color: colors.foreground);
+    final showDot = icon == null && tone == AppStatusTone.blue;
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space2,
-        vertical: AppSpacing.space1 / 2,
-      ),
+      constraints: const BoxConstraints(minHeight: AppSizes.badgeHeight),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
         color: colors.background,
-        border: Border.all(color: colors.border),
         borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 14, color: colors.foreground),
+            Icon(icon, size: AppSizes.iconBadge, color: colors.foreground),
             const SizedBox(width: AppSpacing.space1),
           ],
-          Flexible(child: Text(label, style: textStyle)),
+          if (showDot) ...[
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: colors.main,
+                shape: BoxShape.circle,
+                boxShadow: MediaQuery.disableAnimationsOf(context)
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: colors.main.withValues(alpha: 0.25),
+                          spreadRadius: 3,
+                        ),
+                      ],
+              ),
+            ),
+            const SizedBox(width: 6),
+          ],
+          Flexible(
+            child: Text(
+              label,
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(color: colors.foreground),
+            ),
+          ),
         ],
       ),
     );
