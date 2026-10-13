@@ -60,6 +60,10 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Logo — đường dẫn tập trung ở AppAssets (DESIGN.md §3.1)
+  assets:
+    - assets/image/Logo.jpg
+
   # BeVietnamPro (OFL, assets/fonts/OFL.txt) — DESIGN.md §3, §5.1
   fonts:
     - family: BeVietnamPro

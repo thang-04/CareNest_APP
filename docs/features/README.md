@@ -9,6 +9,8 @@ Mỗi role 1 file. File **chỉ map** màn hình → BE flow / module card / rul
 | Parent | [parent/README.md](parent/README.md) | child, attendance, nutrition, health, learning-observation (đọc theo PAR-*) |
 | Teacher | [teacher/README.md](teacher/README.md) | attendance, learning-observation, facility-issue, health |
 | Kitchen Staff | [kitchen/README.md](kitchen/README.md) | nutrition, child (dị ứng) |
+| Vice Principal | [vice-principal/README.md](vice-principal/README.md) | nutrition, attendance, child, learning-observation (scope campus) |
+| Principal | [principal/README.md](principal/README.md) | school-structure, child, nutrition, learning-observation (toàn trường) |
 
 ## Nguồn BE dùng chung
 
