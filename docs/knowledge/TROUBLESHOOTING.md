@@ -32,6 +32,20 @@ Cách xử lý nhanh lỗi môi trường: cài đặt toolchain, build Android/
 - Đã thử không hiệu quả: quote `"dart.bat"`
 - Incident: APP-ENV-261008-verify-quoted-bat
 
+### Dart 3.11.5: version solving failed với carenest_app yêu cầu ^3.12.0
+- Môi trường: Windows 11; PATH cũ chọn Flutter 3.41.8 / Dart 3.11.5.
+- Nguyên nhân: SDK thấp hơn yêu cầu trong pubspec.yaml và pubspec.lock; Flutter 3.47.6 còn cần đồng bộ 5 package transitive của SDK.
+- Xử lý đã kiểm chứng: chọn D:\Flutter_Setup\stable-3.47.6\flutter\bin trên PATH của tiến trình, chạy flutter pub get; node scripts/verify.mjs đạt 27 test, fail 0, skip 0.
+- Lệnh PowerShell trong thư mục repo:
+    $env:Path = 'D:\Flutter_Setup\stable-3.47.6\flutter\bin;' + $env:Path
+    flutter pub get --enforce-lockfile
+    node scripts/verify.mjs
+- Android Studio: Settings → Languages & Frameworks → Flutter → Flutter SDK path = D:\Flutter_Setup\stable-3.47.6\flutter. Dart SDK đi kèm ở bin\cache\dart-sdk.
+- Đã thử không hiệu quả: pub get --offline với SDK cũ vẫn fail; enforce-lockfile với SDK mới trước khi đồng bộ vẫn exit 65.
+- Flutter mới tự thêm analyzer.exclude cho build/android/ios/web/windows/macos/linux vào analysis_options.yaml; đây là migration của SDK, không đổi rule lint.
+- Giới hạn: PATH mặc định và SDK trong IDE chưa được đổi/kiểm chứng; kết quả trên dùng SDK mới qua PATH tiến trình. Chưa build Android/iOS hoặc chạy máy thật; Android còn license chưa chấp nhận.
+- Incident: APP-ENV-261008-flutter-sdk-mismatch (workaround cho đến khi terminal/IDE chọn đúng SDK).
+
 ## Xem màn bằng mắt (chụp ảnh)
 
 ### Chrome headless chụp ra trang trắng hoặc "Không tìm thấy trang" với `flutter run -d web-server`
