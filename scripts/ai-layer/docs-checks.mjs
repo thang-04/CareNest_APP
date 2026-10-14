@@ -32,12 +32,13 @@ function isCandidate(token) {
 }
 
 function resolveToken(root, config, file, token) {
+  const stripLine = (p) => p.replace(/#.*$/, "").replace(/:\d+(-\d+)?$/, "");
   const ref = crossRepoRef(token);
   if (ref) {
     const base = siblingRoot(root, config, ref.repo);
-    return base ? (existsSync(join(base, ref.rel)) ? "ok" : "missing") : "skip";
+    return base ? (existsSync(join(base, stripLine(ref.rel))) ? "ok" : "missing") : "skip";
   }
-  const clean = token.replace(/#.*$/, "").replace(/:\d+(-\d+)?$/, "");
+  const clean = stripLine(token);
   const bases = [dirname(file)];
   for (let dir = dirname(file); dir !== "." && dir; dir = dirname(dir)) bases.push(dirname(dir));
   bases.push(".", ...config.checkAiLayer.pathRoots);

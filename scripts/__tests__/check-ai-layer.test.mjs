@@ -54,7 +54,7 @@ test("E2: tham chiếu BE: / ../CareNest_BE/ giải theo repo sibling, sibling v
   const ws = makeWorkspace();
   makeRepo({ "docs/modules/a.md": "# a\n" }, { workspace: ws, name: "CareNest_BE" });
   const fe = makeRepo(
-    { "docs/x.md": "`BE:docs/modules/a.md` `BE:docs/modules/zz.md` `../CareNest_BE/docs/modules/a.md` `APP:docs/q.md`" },
+    { "docs/x.md": "`BE:docs/modules/a.md` `BE:docs/modules/a.md:3` `BE:docs/modules/zz.md` `../CareNest_BE/docs/modules/a.md` `APP:docs/q.md`" },
     { workspace: ws, name: "CareNest_FE" },
   );
   const result = run(fe, { only: ["E2"], overrides: { repo: "FE" } });
