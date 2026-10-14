@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
+import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
@@ -152,11 +153,14 @@ class _EntryCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.space4),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
-          color: fresh ? AppColors.primary : AppColors.border,
+          color: fresh
+              ? AppColors.primary
+              : AppColors.surface.withValues(alpha: 0.85),
           width: fresh ? 1.5 : 1,
         ),
+        boxShadow: AppShadows.card,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

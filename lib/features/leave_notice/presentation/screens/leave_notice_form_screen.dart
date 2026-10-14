@@ -7,16 +7,19 @@ import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
+import 'package:carenest_app/core/widgets/app_avatar.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
+import 'package:carenest_app/core/widgets/app_month_calendar.dart';
 import 'package:carenest_app/core/widgets/app_segmented.dart';
+import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_text_field.dart';
 import 'package:carenest_app/features/leave_notice/data/fake_leave_notice_source.dart';
 import 'package:carenest_app/features/leave_notice/domain/leave_notice.dart';
 import 'package:carenest_app/features/leave_notice/presentation/leave_notice_status.dart';
 import 'package:carenest_app/features/parent_home/domain/parent_today.dart';
 
-/// Xin nghỉ cho bé — mockup P03. Ngày qua cut-off hay đã chốt suất do BE từ chối (ATT-05b);
-/// form chỉ hỗ trợ nhập.
+/// Xin nghỉ cho bé — bố cục D Clay: lịch tháng chọn khoảng ngày, thấy ngày đã báo nghỉ.
+/// Ngày qua cut-off hay đã chốt suất do BE từ chối (ATT-05b); form chỉ hỗ trợ nhập.
 class LeaveNoticeFormScreen extends StatefulWidget {
   const LeaveNoticeFormScreen({
     super.key,
@@ -42,6 +45,12 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
       widget.source ?? FakeLeaveNoticeSource.shared;
   late DateTime _from = _source.today.add(const Duration(days: 1));
   late DateTime _to = _from;
+  late DateTime _month = DateTime(_from.year, _from.month);
+  // Đã chạm ngày bắt đầu, chạm tiếp là ngày kết thúc
+  bool _pickingEnd = false;
+
+  /// Ngày đã có đơn nghỉ (để không báo trùng); tải lỗi ⇒ để trống, không chặn form.
+  Set<DateTime> _reportedDays = const {};
   LeaveSession _session = LeaveSession.fullDay;
   final _reason = TextEditingController();
   String? _reasonError;
@@ -49,30 +58,61 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
   bool _submitting = false;
 
   @override
+  void initState() {
+    super.initState();
+    _loadReported();
+  }
+
+  @override
   void dispose() {
     _reason.dispose();
     super.dispose();
   }
 
-  Future<void> _pickDate({required bool isFrom}) async {
-    final today = _source.today;
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: isFrom ? _from : _to,
-      firstDate: isFrom ? today : _from,
-      lastDate: today.add(const Duration(days: 180)),
-      helpText: isFrom ? 'Nghỉ từ ngày' : 'Nghỉ đến ngày',
-    );
-    if (picked == null || !mounted) return;
+  Future<void> _loadReported() async {
+    try {
+      final notices = await _source.loadNotices(widget.child.id);
+      final days = <DateTime>{};
+      for (final notice in notices) {
+        if (notice.status == LeaveNoticeStatus.cancelled) continue;
+        for (
+          var day = notice.from;
+          !day.isAfter(notice.to);
+          day = day.add(const Duration(days: 1))
+        ) {
+          days.add(DateTime(day.year, day.month, day.day));
+        }
+      }
+      if (mounted) setState(() => _reportedDays = days);
+    } catch (_) {
+      // Thiếu dấu ngày đã báo vẫn gửi được đơn; BE kiểm tra trùng
+    }
+  }
+
+  DateTime get _lastDay => _source.today.add(const Duration(days: 180));
+
+  bool _isSelectable(DateTime day) =>
+      !day.isBefore(_source.today) && !day.isAfter(_lastDay);
+
+  void _onDayTap(DateTime day) {
     setState(() {
-      if (isFrom) {
-        _from = picked;
-        if (_to.isBefore(_from)) _to = _from;
+      if (_pickingEnd && !day.isBefore(_from)) {
+        _to = day;
+        _pickingEnd = false;
       } else {
-        _to = picked;
+        _from = day;
+        _to = day;
+        _pickingEnd = true;
       }
     });
   }
+
+  void _shiftMonth(int delta) =>
+      setState(() => _month = DateTime(_month.year, _month.month + delta));
+
+  String get _rangeLabel => DateUtils.isSameDay(_from, _to)
+      ? 'Nghỉ ngày ${DateLabels.date(_from)}'
+      : 'Nghỉ từ ${DateLabels.dayMonth(_from)} đến ${DateLabels.date(_to)}';
 
   Future<void> _submit() async {
     final reason = _reason.text.trim();
@@ -119,17 +159,6 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final stacked = MediaQuery.textScalerOf(context).scale(1) > 1.3;
-    final fromField = AppDateField(
-      label: 'Từ ngày *',
-      value: DateLabels.date(_from),
-      onTap: _submitting ? null : () => _pickDate(isFrom: true),
-    );
-    final toField = AppDateField(
-      label: 'Đến ngày *',
-      value: DateLabels.date(_to),
-      onTap: _submitting ? null : () => _pickDate(isFrom: false),
-    );
     return Scaffold(
       appBar: AppBar(
         title: const Text('Xin nghỉ cho bé'),
@@ -144,42 +173,108 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
             dense: true,
             child: Row(
               children: [
-                const AppIconTile(icon: AppIcons.childFace),
+                AppAvatar(name: widget.child.fullName),
                 const SizedBox(width: AppSpacing.space3),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Bé ${widget.child.fullName}',
-                        style: textTheme.titleSmall,
-                      ),
-                      Text(
-                        'Lớp ${widget.child.className}',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    '${widget.child.shortName} · ${widget.child.className}',
+                    style: textTheme.titleSmall,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: AppSpacing.space5),
-          if (stacked) ...[
-            fromField,
-            const SizedBox(height: AppSpacing.space4),
-            toField,
-          ] else
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(height: AppSpacing.space4),
+          AppCard(
+            dense: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(child: fromField),
-                const SizedBox(width: AppSpacing.space3),
-                Expanded(child: toField),
+                Row(
+                  children: [
+                    IconButton(
+                      tooltip: 'Tháng trước',
+                      onPressed:
+                          _month.isAfter(
+                            DateTime(_source.today.year, _source.today.month),
+                          )
+                          ? () => _shiftMonth(-1)
+                          : null,
+                      icon: const Icon(AppIcons.back),
+                    ),
+                    Expanded(
+                      child: Text(
+                        'Tháng ${_month.month}, ${_month.year}',
+                        textAlign: TextAlign.center,
+                        style: textTheme.titleSmall,
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Tháng sau',
+                      onPressed:
+                          _month.isBefore(
+                            DateTime(_lastDay.year, _lastDay.month),
+                          )
+                          ? () => _shiftMonth(1)
+                          : null,
+                      icon: const Icon(AppIcons.chevronRight),
+                    ),
+                  ],
+                ),
+                AppMonthCalendar(
+                  month: _month,
+                  rangeStart: _from,
+                  rangeEnd: _to,
+                  isDayEnabled: _isSelectable,
+                  markers: {
+                    for (final day in _reportedDays)
+                      if (day.year == _month.year && day.month == _month.month)
+                        day.day: const AppDayMarker(
+                          tone: AppStatusTone.approval,
+                          label: 'Đã báo nghỉ',
+                        ),
+                  },
+                  onSelected: _submitting ? null : _onDayTap,
+                ),
+                const SizedBox(height: AppSpacing.space2),
+                Text(_rangeLabel, style: textTheme.titleSmall),
+                Text(
+                  _pickingEnd
+                      ? 'Chạm ngày kết thúc nếu nghỉ nhiều ngày.'
+                      : 'Chạm một ngày để đổi ngày bắt đầu.',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textMuted,
+                  ),
+                ),
+                if (_reportedDays.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.space2),
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: AppStatusColors.of(
+                            context,
+                          ).tone(AppStatusTone.approval).main,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.space2),
+                      Expanded(
+                        child: Text(
+                          'Ngày đã báo nghỉ',
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
+          ),
           const SizedBox(height: AppSpacing.space4),
           Text(
             'Buổi nghỉ',

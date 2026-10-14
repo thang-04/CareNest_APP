@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/motion.dart';
+import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/features/attendance/domain/attendance.dart';
@@ -89,8 +90,9 @@ class AttendanceKidRow extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: AppColors.surface.withValues(alpha: 0.85)),
+        boxShadow: AppShadows.card,
       ),
       // Chữ lớn ⇒ nút xuống dòng dưới tên thay vì ép tràn
       child: stacked
@@ -139,7 +141,7 @@ class _Toggle extends StatelessWidget {
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         child: AnimatedContainer(
           duration: AppMotion.fast,
           curve: AppMotion.curve,
@@ -149,13 +151,17 @@ class _Toggle extends StatelessWidget {
           ),
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space2),
+          // Clay: nút chưa chọn trắng nổi gờ đáy; nút đã chọn nền tông + viền tông + quầng
           decoration: BoxDecoration(
             color: selected ? colors.background : AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+            borderRadius: BorderRadius.circular(AppRadius.pill),
             border: Border.all(
-              color: selected ? colors.main : AppColors.borderStrong,
+              color: selected ? colors.main : AppColors.border,
               width: selected ? 1.5 : 1,
             ),
+            boxShadow: selected
+                ? AppShadows.tinted(colors.main, strength: 0.35)
+                : AppShadows.buttonSecondary,
           ),
           child: Text(
             label,

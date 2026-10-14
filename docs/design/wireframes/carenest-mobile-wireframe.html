@@ -1,0 +1,1777 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CareNest Mobile — Wireframe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<style>
+/* Token: cùng mã với FE src/styles/tokens.css và APP lib/core/constants/colors.dart */
+:root {
+  --bg: #f1f9fe; --surface: #fff; --surface-muted: #f8fafc; --track: #eef1f5;
+  --text: #1b2433; --text-2: #4a5568; --text-3: #66728a; --text-dis: #a3aebd;
+  --border: #e3e9f2; --border-strong: #cdd6e3;
+  --brand: #4fb0f5; --brand-active: #95cff9; --on-brand: #0e3f63;
+  --primary: #0b72bc; --primary-soft: #e2f2fd; --primary-border: #95cff9; --focus-ring: #c5e5fc;
+  --accent: #94debd; --accent-soft: #eefaf4; --accent-fg: #1f7a59;
+  --tone-blue: #2ba0f3; --tone-blue-fg: #0e3f63;
+  --tone-approval: #f5b400; --tone-approval-fg: #835c00;
+  --tone-orange: #f5820b; --tone-orange-fg: #944f06;
+  --tone-red: #f0475a; --tone-red-fg: #a63749;
+  --tone-green: #22b573; --tone-green-fg: #176f51;
+  --tone-gray: #7b8aa0; --tone-gray-fg: #556377;
+  --tone-teal: #13b5b1; --tone-teal-fg: #0f6c71;
+  --warning: #e8890c; --warning-fg: #9a5100; --warning-bg: #fff4e3; --warning-border: #f7d49c;
+  --danger: #e03131; --danger-fg: #c92a2a; --danger-bg: #fdecec; --danger-border: #f6b9b9;
+  --info-fg: #0e3f63; --info-bg: #e2f2fd; --info-border: #95cff9;
+  --card-shadow: 0 1px 2px rgba(16,24,40,.04), 0 16px 40px -20px rgba(11,114,188,.25);
+  --r-card: 24px; --r-tile: 20px; --r-field: 16px;
+  --font: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+/* Nấc Xám: chỉ tắt màu nhấn và màu trạng thái; nền, viền, chữ, bo góc, bóng giữ nguyên */
+:root[data-mau="xam"] {
+  --brand: #2c2c2c; --brand-active: #555; --on-brand: #fff;
+  --primary: #2c2c2c; --primary-soft: #eef0f3; --primary-border: #cdd6e3; --focus-ring: #e3e9f2;
+  --accent: #cdd6e3; --accent-soft: #f1f3f6; --accent-fg: #4a5568;
+  --tone-blue: #7b8aa0; --tone-blue-fg: #434d5c; --tone-approval: #7b8aa0; --tone-approval-fg: #434d5c;
+  --tone-orange: #7b8aa0; --tone-orange-fg: #434d5c; --tone-red: #7b8aa0; --tone-red-fg: #434d5c;
+  --tone-green: #7b8aa0; --tone-green-fg: #434d5c; --tone-teal: #7b8aa0; --tone-teal-fg: #434d5c;
+  --warning: #7b8aa0; --warning-fg: #434d5c; --warning-bg: #f1f3f6; --warning-border: #cdd6e3;
+  --danger: #7b8aa0; --danger-fg: #434d5c; --danger-bg: #f1f3f6; --danger-border: #cdd6e3;
+  --info-fg: #434d5c; --info-bg: #f1f3f6; --info-border: #cdd6e3;
+  --card-shadow: 0 1px 2px rgba(16,24,40,.04), 0 16px 40px -20px rgba(16,24,40,.22);
+}
+:root[data-mau="xam"] .scene img { filter: grayscale(1); }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: #f4f4f5; color: var(--text); font-family: var(--font); }
+
+/* ---------- Khung trưng bày ---------- */
+#wf-design { padding: 24px 16px 48px; }
+.stage { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
+.slot { display: grid; gap: 10px; justify-items: center; }
+.slot-label { display: flex; align-items: center; gap: 8px; font: 600 14px/1.3 system-ui, sans-serif; color: #171717; text-decoration: none; }
+.slot-label span { font-weight: 400; color: #737373; }
+.slot-label em { font-style: normal; height: 20px; padding: 0 8px; border-radius: 10px; background: #eef2ff; color: #4338ca; font-size: 12px; font-weight: 500; line-height: 20px; }
+.phone { position: relative; display: flex; flex-direction: column; width: min(375px, calc(100vw - 32px)); height: 780px;
+  overflow: hidden; border: 1px solid #d4d4d8; border-radius: 36px; background: var(--bg); box-shadow: 0 20px 40px -24px rgba(0,0,0,.25); }
+.sb { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; height: 40px; padding: 0 24px; font-size: 14px; font-weight: 600; }
+.sb .ics { display: flex; gap: 6px; } .sb .ic { width: 16px; height: 16px; }
+.scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+.scroll::-webkit-scrollbar { display: none; }
+.page { display: grid; gap: 24px; padding: 8px 16px 24px; }
+.page.tight { gap: 16px; }
+.page > *, .sec > *, .sec, .field, .inp { min-width: 0; }
+.inp input { width: 100%; }
+
+/* ---------- Nguyên tố (khớp widget APP: AppCard, AppListRow, AppStatusBadge, AppButton…) ---------- */
+.ic { width: 20px; height: 20px; stroke-width: 2; flex-shrink: 0; }
+.card { background: var(--surface); border-radius: var(--r-card); box-shadow: var(--card-shadow); }
+.card.pad { padding: 16px; }
+.card.pad20 { padding: 20px; }
+.sec { display: grid; gap: 12px; }
+.sec-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 24px; }
+.sec-h h2 { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.35; }
+.link { display: inline-flex; align-items: center; gap: 2px; min-height: 32px; color: var(--primary); font-size: 14px; font-weight: 600; text-decoration: none; background: none; border: 0; padding: 0; font-family: inherit; cursor: pointer; }
+.link .ic { width: 16px; height: 16px; }
+.tile { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; background: var(--primary-soft); color: var(--primary); }
+.tile .ic { width: 22px; height: 22px; }
+.tile[data-t] { background: color-mix(in srgb, var(--t) 16%, var(--surface)); color: var(--tf); }
+[data-t="blue"] { --t: var(--tone-blue); --tf: var(--tone-blue-fg); }
+[data-t="green"] { --t: var(--tone-green); --tf: var(--tone-green-fg); }
+[data-t="orange"] { --t: var(--tone-orange); --tf: var(--tone-orange-fg); }
+[data-t="red"] { --t: var(--tone-red); --tf: var(--tone-red-fg); }
+[data-t="approval"] { --t: var(--tone-approval); --tf: var(--tone-approval-fg); }
+[data-t="gray"] { --t: var(--tone-gray); --tf: var(--tone-gray-fg); }
+[data-t="teal"] { --t: var(--tone-teal); --tf: var(--tone-teal-fg); }
+[data-t="primary"] { --t: var(--primary); --tf: var(--primary); }
+.chip:not([data-t]) { --t: var(--tone-gray); --tf: var(--tone-gray-fg); }
+.chip { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; height: 28px; padding: 0 10px 0 9px;
+  border: 1px solid color-mix(in srgb, var(--t) 34%, var(--surface)); border-radius: 999px; background: color-mix(in srgb, var(--t) 16%, var(--surface));
+  color: var(--tf); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.chip .ic { width: 14px; height: 14px; }
+.row { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 16px; color: inherit; text-decoration: none; }
+.row + .row { border-top: 1px solid var(--border); }
+.row .tx { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.row .t { font-size: 16px; font-weight: 600; line-height: 1.35; }
+.row .m { font-size: 13px; line-height: 1.4; color: var(--text-3); }
+.row .chev { color: var(--text-dis); width: 18px; height: 18px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 52px; padding: 0 24px; border-radius: 999px;
+  border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font: 600 16px/1 var(--font); cursor: pointer; white-space: nowrap; }
+.btn.pri { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
+.btn.soft { background: var(--primary-soft); border-color: var(--primary-border); color: var(--primary); }
+.btn.sm { height: 40px; padding: 0 16px; font-size: 14px; }
+.btn.block { width: 100%; }
+.btn:disabled { background: var(--track); border-color: var(--track); color: var(--text-dis); }
+.ibtn { display: grid; place-items: center; position: relative; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+.ibtn .dot { position: absolute; top: 4px; right: 2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--danger); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+.field { display: grid; gap: 6px; }
+.field label { font-size: 14px; font-weight: 600; }
+.field label b { color: var(--danger-fg); font-weight: 600; }
+.inp { display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 16px; border: 1px solid var(--border-strong); border-radius: var(--r-field); background: var(--surface); }
+.inp input, .inp textarea { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: 400 16px/1.4 var(--font); color: var(--text); }
+.inp .ic { color: var(--text-3); }
+.inp.area { align-items: flex-start; height: auto; min-height: 104px; padding: 14px 16px; }
+.inp.area textarea { resize: none; min-height: 72px; }
+.inp:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--focus-ring); }
+.inp.err { border-color: var(--danger); }
+.help { font-size: 13px; color: var(--text-3); }
+.help.err { color: var(--danger-fg); }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px; border-radius: 999px; background: var(--track); }
+.seg button { height: 40px; border: 0; border-radius: 999px; background: none; color: var(--text-2); font: 500 14px var(--font); white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--primary); font-weight: 600; box-shadow: 0 1px 2px rgba(16,24,40,.08); }
+.banner { display: flex; gap: 10px; padding: 12px 14px; border: 1px solid var(--info-border); border-radius: 16px; background: var(--info-bg); color: var(--info-fg); font-size: 14px; line-height: 1.45; }
+.banner.warn { border-color: var(--warning-border); background: var(--warning-bg); color: var(--warning-fg); }
+.banner.err { border-color: var(--danger-border); background: var(--danger-bg); color: var(--danger-fg); }
+.banner b { font-weight: 600; }
+.stat:not([data-t]) { --t: var(--primary); --tf: var(--primary); }
+.stat { position: relative; overflow: hidden; display: grid; align-content: space-between; gap: 8px; min-height: 96px; padding: 14px 16px;
+  border-radius: var(--r-tile); background: linear-gradient(135deg, color-mix(in srgb, var(--t) 12%, var(--surface)), var(--surface) 70%); box-shadow: var(--card-shadow); }
+.stat .l { font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--text); }
+.stat .v { font-size: 28px; font-weight: 700; line-height: 1; letter-spacing: -.01em; font-variant-numeric: tabular-nums; color: color-mix(in srgb, var(--t) 70%, var(--text)); }
+.stat .v small { margin-left: 4px; font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--text-3); }
+.stat .bg { position: absolute; right: -6px; bottom: -10px; width: 64px; height: 64px; color: var(--t); opacity: .14; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.mini { display: grid; justify-items: center; gap: 2px; padding: 10px 4px; border-radius: 16px; background: color-mix(in srgb, var(--t) 12%, var(--surface)); }
+.mini .v { font-size: 22px; font-weight: 700; line-height: 1.1; color: color-mix(in srgb, var(--t) 70%, var(--text)); font-variant-numeric: tabular-nums; }
+.mini .l { font-size: 12px; color: var(--text-2); white-space: nowrap; }
+.av { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; background: #e2f2fd; color: #0b72bc; font-size: 14px; font-weight: 700; }
+:root[data-mau="xam"] :is(.av, .big-av) { background: #eef0f3; color: #434d5c; }
+.hello { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.hello p { margin: 0; font-size: 14px; color: var(--text-2); }
+.hello h1 { margin: 2px 0 0; font-size: 22px; font-weight: 700; line-height: 1.3; }
+.appbar { display: flex; align-items: center; gap: 8px; min-height: 56px; padding: 0 8px 0 4px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.appbar h1 { flex: 1; min-width: 0; margin: 0; font-size: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.appbar .back { display: grid; place-items: center; width: 48px; height: 48px; border: 0; background: none; color: var(--text); }
+.ctx { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+.ctx .tx { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.ctx .t { font-size: 16px; font-weight: 700; line-height: 1.35; }
+.ctx .m { font-size: 13px; color: var(--text-3); }
+.nav { display: grid; grid-template-columns: repeat(4, 1fr); flex-shrink: 0; height: 72px; padding-bottom: 4px; background: var(--surface); border-top: 1px solid var(--border); }
+.nav a { display: grid; justify-items: center; align-content: center; gap: 4px; color: var(--text-2); font-size: 12px; font-weight: 500; text-decoration: none; }
+.nav a span.pill { position: relative; display: grid; place-items: center; width: 64px; height: 32px; border-radius: 999px; }
+.nav a[aria-current="page"] { color: var(--primary); font-weight: 600; }
+.nav a[aria-current="page"] span.pill { background: var(--primary-soft); }
+.nav .ic { width: 24px; height: 24px; }
+.nav .dot { position: absolute; top: -2px; right: 10px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--danger); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+.dock { flex-shrink: 0; display: grid; gap: 8px; padding: 12px 16px 20px; background: var(--surface); border-top: 1px solid var(--border); }
+.dock .sum { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; font-size: 13px; color: var(--text-2); }
+.skel { border-radius: 8px; background: linear-gradient(90deg, var(--track), #f6f8fb, var(--track)); background-size: 200% 100%; animation: sk 1.4s linear infinite; }
+@keyframes sk { to { background-position: -200% 0; } }
+.state { display: grid; justify-items: center; gap: 8px; padding: 28px 20px; text-align: center; }
+.state .tile { width: 56px; height: 56px; } .state .tile .ic { width: 28px; height: 28px; }
+.state h3 { margin: 4px 0 0; font-size: 17px; font-weight: 700; }
+.state p { margin: 0 0 8px; font-size: 14px; line-height: 1.5; color: var(--text-2); }
+.scene { position: relative; height: 196px; flex-shrink: 0; overflow: hidden; }
+.scene img { width: 100%; height: 100%; object-fit: cover; object-position: center 70%; }
+.scene::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(241,249,254,.15) 0%, rgba(241,249,254,.35) 55%, var(--bg) 100%); }
+.scene .over { position: absolute; z-index: 1; inset: 0 16px auto; display: flex; justify-content: space-between; align-items: flex-start; padding-top: 8px; }
+.frost { padding: 8px 14px; border-radius: 18px; background: rgba(255,255,255,.82); }
+.frost p { margin: 0; font-size: 13px; color: var(--text-2); } .frost h1 { margin: 0; font-size: 20px; font-weight: 700; }
+.lift { margin-top: -44px; position: relative; z-index: 2; }
+.hscroll { display: flex; gap: 12px; overflow-x: auto; margin: 0 -16px; padding: 4px 16px 12px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.hscroll > * { scroll-snap-align: start; flex: 0 0 auto; }
+.hscroll::-webkit-scrollbar { display: none; }
+.roundbtn { display: grid; justify-items: center; gap: 6px; width: 72px; color: var(--text); font-size: 12px; font-weight: 500; line-height: 1.3; text-align: center; text-decoration: none; }
+.roundbtn .tile { width: 56px; height: 56px; } .roundbtn .tile .ic { width: 24px; height: 24px; }
+.tl { display: grid; gap: 0; }
+.tl-i { display: grid; grid-template-columns: 52px 16px 1fr; gap: 0 10px; }
+.tl-i .time { padding-top: 2px; font-size: 13px; font-weight: 600; color: var(--text-2); font-variant-numeric: tabular-nums; text-align: right; }
+.tl-i .rail { position: relative; display: grid; justify-items: center; }
+.tl-i .rail::before { content: ""; width: 12px; height: 12px; margin-top: 5px; border-radius: 50%; border: 2px solid var(--border-strong); background: var(--surface); }
+.tl-i .rail.on::before { border-color: var(--tf, var(--primary)); background: var(--tf, var(--primary)); }
+.tl-i .rail::after { content: ""; position: absolute; top: 21px; bottom: -2px; width: 2px; background: var(--border); }
+.tl-i:last-child .rail::after { display: none; }
+.tl-i .body { display: grid; gap: 4px; padding-bottom: 18px; }
+.tl-i .body .t { font-size: 15px; font-weight: 600; } .tl-i .body .m { font-size: 13px; color: var(--text-3); }
+.qa { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); font-size: 14px; font-weight: 500; white-space: nowrap; text-decoration: none; }
+.qa .ic { width: 18px; height: 18px; color: var(--primary); }
+.utile { display: grid; gap: 10px; align-content: start; min-height: 96px; padding: 16px; border-radius: var(--r-tile); background: var(--surface); box-shadow: var(--card-shadow); color: inherit; text-decoration: none; font-size: 15px; font-weight: 600; line-height: 1.35; }
+.pick { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px 0 4px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); font-size: 15px; font-weight: 600; min-width: 0; }
+.pick .av { width: 36px; height: 36px; font-size: 13px; }
+.pick span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pair { display: inline-grid; grid-auto-flow: column; gap: 6px; }
+.opt { height: 40px; min-width: 64px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--surface); color: var(--text-2); font: 500 13px var(--font); white-space: nowrap; }
+.opt[aria-pressed="true"][data-t] { border-color: color-mix(in srgb, var(--t) 60%, var(--surface)); background: color-mix(in srgb, var(--t) 16%, var(--surface)); color: var(--tf); font-weight: 600; }
+.kid { display: grid; justify-items: center; gap: 6px; padding: 12px 6px 10px; border-radius: 18px; border: 1.5px solid transparent; background: var(--surface); box-shadow: var(--card-shadow); text-align: center; }
+.kid .av { width: 44px; height: 44px; }
+.kid .n { font-size: 13px; font-weight: 600; line-height: 1.3; min-height: 34px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.kid[data-t] { border-color: color-mix(in srgb, var(--t) 55%, var(--surface)); }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.bar { height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 4px; background: var(--brand); }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { padding: 10px 16px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-3); background: var(--surface-muted); }
+.tbl td { padding: 12px 16px; border-top: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+.tbl .num { text-align: right; }
+.tbl tfoot td { font-weight: 700; background: var(--surface-muted); }
+.sheet { position: absolute; inset: auto 0 0; z-index: 5; display: grid; gap: 14px; padding: 12px 16px 24px; border-radius: 32px 32px 0 0; background: var(--surface); box-shadow: 0 -12px 32px -12px rgba(16,24,40,.2); }
+.sheet .grab { justify-self: center; width: 40px; height: 4px; border-radius: 2px; background: var(--border-strong); }
+.scrim { position: absolute; inset: 0; z-index: 4; background: rgba(14,63,99,.32); }
+.days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.day { display: grid; justify-items: center; gap: 2px; padding: 8px 0; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); font-size: 12px; color: var(--text-3); }
+.day b { font-size: 16px; color: var(--text); font-weight: 600; }
+.day[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
+.day[aria-pressed="true"] b { color: var(--on-brand); }
+.day[aria-disabled="true"] { opacity: .45; }
+.choicechips { display: flex; flex-wrap: wrap; gap: 8px; }
+.cchip { height: 40px; padding: 0 16px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--surface); font: 500 14px var(--font); color: var(--text-2); }
+.cchip[aria-pressed="true"] { border-color: var(--primary-border); background: var(--primary-soft); color: var(--primary); font-weight: 600; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo img { width: 48px; height: 48px; object-fit: contain; }
+.logo .wm { font-size: 26px; font-weight: 700; color: #0269c5; letter-spacing: -.01em; }
+.logo .wm span { color: #4fb0f5; }
+:root[data-mau="xam"] .logo img { filter: grayscale(1); }
+:root[data-mau="xam"] .logo .wm, :root[data-mau="xam"] .logo .wm span { color: #2c2c2c; }
+.muted { color: var(--text-3); } .fs13 { font-size: 13px; } .fw6 { font-weight: 600; }
+.between { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+.ver { text-align: center; font-size: 13px; color: var(--text-3); }
+
+/* ---------- Trang "Từng mục" (đặt trước style để style ghi đè margin của nav) ---------- */
+.kit { display: grid; gap: 44px; max-width: 1240px; margin: 0 auto; }
+.kit-sec h2 { margin: 0 0 4px; color: #171717; font: 600 18px/1.3 system-ui, -apple-system, sans-serif; }
+.kit-sec > p { margin: 0 0 14px; color: #525252; font: 14px/1.5 system-ui, -apple-system, sans-serif; }
+.kit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: 20px 16px; }
+.cell { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.cell-lab { display: flex; align-items: center; gap: 8px; color: #171717; font: 600 13px/1.3 system-ui, -apple-system, sans-serif; }
+.cell-lab em { height: 20px; padding: 0 8px; border-radius: 10px; background: #eef2ff; color: #4338ca; font-size: 12px; font-style: normal; font-weight: 500; line-height: 20px; }
+.cell-body { display: grid; gap: 14px; align-content: start; min-width: 0; padding: 8px 16px 16px; overflow: hidden; border: 1px solid #e4e4e7; border-radius: 20px; background: var(--bg); font-family: var(--font); }
+.cell-body [data-wf-block]::before { display: none; }
+.cell-body > .appbar:first-child { margin: -8px -16px 0; }
+.cell-body > .nav { margin: 0 -16px -16px; }
+.inp.is-focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--focus-ring); }
+
+/* ---------- Style: chỉ đổi dáng (bo góc, bóng, nền, cách trình bày); màu brand và font giữ nguyên ---------- */
+.phone, .cell-body { color: var(--text); }
+.nav a { position: relative; }
+
+/* 2 · Clay nổi — dùng lại token --shadow-clay / --shadow-clay-btn đã có ở FE */
+[data-st="clay"] { --r-card: 28px; --r-tile: 24px; --r-field: 18px;
+  --card-shadow: inset 0 2px 0 rgba(255,255,255,.95), inset 0 -3px 0 rgba(11,114,188,.07), 0 16px 30px -14px rgba(79,176,245,.55), 0 3px 8px -3px rgba(16,24,40,.08); }
+:is(.phone, .cell-body)[data-st="clay"] { background: #e6f2fc; }
+[data-st="clay"] .btn.pri { box-shadow: inset 0 -3px 0 rgba(0,0,0,.14), 0 8px 16px -8px rgba(79,176,245,.75); }
+[data-st="clay"] .btn:not(.pri) { box-shadow: inset 0 -2px 0 rgba(16,24,40,.06); }
+[data-st="clay"] .tile { background: linear-gradient(150deg, color-mix(in srgb, var(--t, var(--primary)) 26%, var(--surface)), color-mix(in srgb, var(--t, var(--primary)) 9%, var(--surface)));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 6px 12px -6px color-mix(in srgb, var(--t, var(--primary)) 45%, transparent); }
+[data-st="clay"] .chip { border-color: transparent; box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 3px 6px -3px color-mix(in srgb, var(--t) 55%, transparent); }
+[data-st="clay"] .inp { border-color: transparent; box-shadow: inset 0 2px 4px rgba(16,24,40,.07), 0 0 0 1px var(--border); }
+[data-st="clay"] .inp:focus-within, [data-st="clay"] .inp.is-focus { box-shadow: inset 0 2px 4px rgba(16,24,40,.07), 0 0 0 2px var(--primary), 0 0 0 5px var(--focus-ring); }
+[data-st="clay"] .seg { box-shadow: inset 0 2px 4px rgba(16,24,40,.08); }
+[data-st="clay"] .seg button[aria-pressed="true"] { box-shadow: var(--card-shadow); }
+[data-st="clay"] .ibtn { border-color: transparent; box-shadow: var(--card-shadow); }
+[data-st="clay"] .nav { margin: 0 12px 12px; height: 68px; padding: 0; border: 0; border-radius: 28px; box-shadow: var(--card-shadow), 0 0 0 1px rgba(255,255,255,.8); }
+[data-st="clay"] .dock { margin: 0 12px 12px; border: 0; border-radius: 28px; box-shadow: var(--card-shadow); }
+[data-st="clay"] .appbar { border: 0; background: transparent; }
+[data-st="clay"] .banner { border-color: transparent; box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 8px 16px -12px rgba(16,24,40,.3); }
+[data-st="clay"] .mini { box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 8px 16px -10px color-mix(in srgb, var(--t) 60%, transparent); }
+[data-st="clay"] .qa, [data-st="clay"] .cchip, [data-st="clay"] .opt { border-color: transparent; box-shadow: inset 0 -2px 0 rgba(16,24,40,.05), 0 4px 10px -6px rgba(16,24,40,.25); }
+
+/* 3 · Kính trên tranh — như card FE đặt trên tranh nền */
+[data-st="glass"] { --card-shadow: 0 16px 40px -20px rgba(11,114,188,.3); --glass: rgba(255,255,255,.66); }
+:is(.phone, .cell-body)[data-st="glass"] { position: relative; isolation: isolate; }
+:is(.phone, .cell-body)[data-st="glass"]::before { content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(180deg, rgba(241,249,254,.6), rgba(241,249,254,.3)), url(img/hero-scene.webp) center 85% / cover; }
+[data-st="glass"] :is(.card, .utile, .kid, .w, .feed-card, .hero, .kpi-big) { background: var(--glass); border: 1px solid rgba(255,255,255,.85); -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3); }
+[data-st="glass"] .stat { background: linear-gradient(135deg, color-mix(in srgb, var(--t) 22%, transparent), var(--glass) 70%); border: 1px solid rgba(255,255,255,.85); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+[data-st="glass"] .mini { background: color-mix(in srgb, var(--t) 18%, rgba(255,255,255,.7)); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+[data-st="glass"] :is(.appbar, .nav, .dock) { background: rgba(255,255,255,.72); border-color: rgba(255,255,255,.8); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+[data-st="glass"] .nav { margin: 0 12px 12px; border: 1px solid rgba(255,255,255,.9); border-radius: 28px; box-shadow: var(--card-shadow); }
+[data-st="glass"] .inp, [data-st="glass"] .ibtn { background: rgba(255,255,255,.82); border-color: rgba(255,255,255,.9); }
+[data-st="glass"] .banner { -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+[data-st="glass"] .hello { padding: 10px 12px; border-radius: 22px; background: rgba(255,255,255,.62); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+
+/* 4 · Gradient thương hiệu — dải đầu đậm, card đè lên mép */
+[data-st="grad"] { --grad: linear-gradient(125deg, var(--primary) 0%, var(--tone-blue) 100%); }
+[data-st="grad"] .hello { position: relative; z-index: 0; margin: -8px -16px -44px; padding: 14px 16px 64px; border-radius: 0 0 32px 32px; background: var(--grad); }
+[data-st="grad"] .hello + * { position: relative; z-index: 1; }
+[data-st="grad"] .hello p { color: rgba(255,255,255,.92); }
+[data-st="grad"] .hello h1 { color: #fff; }
+[data-st="grad"] :is(.hello, .appbar:not([style])) .ibtn { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.4); color: #fff; }
+.phone[data-st="grad"]:has(.scroll > .page:first-child > .hello:first-child) .sb,
+.phone[data-st="grad"]:has(.scroll > .appbar:first-child:not([style])) .sb { background: var(--primary); color: #fff; }
+[data-st="grad"] .appbar:not([style]) { background: var(--grad); border: 0; color: #fff; }
+[data-st="grad"] .appbar:not([style]) :is(.back, .link, .muted) { color: #fff; }
+[data-st="grad"] .btn.pri { border: 0; background: var(--grad); color: #fff; box-shadow: 0 10px 20px -10px color-mix(in srgb, var(--primary) 75%, transparent); }
+[data-st="grad"] :is(.grid2 > .stat:first-child, .stat[data-t="primary"]) { background: var(--grad); }
+[data-st="grad"] :is(.grid2 > .stat:first-child, .stat[data-t="primary"]) * { color: #fff !important; }
+[data-st="grad"] :is(.grid2 > .stat:first-child, .stat[data-t="primary"]) .bg { opacity: .22; }
+[data-st="grad"] .nav a[aria-current="page"] span.pill { background: var(--grad); color: #fff; }
+[data-st="grad"] .tile:not([data-t]) { background: var(--grad); color: #fff; }
+[data-st="grad"] .day[aria-pressed="true"] { border-color: transparent; background: var(--grad); }
+[data-st="grad"] .day[aria-pressed="true"], [data-st="grad"] .day[aria-pressed="true"] b { color: #fff; }
+
+/* 5 · Bento pastel — bảng màu vui (sun, sky, leaf, coral, lavender) có sẵn ở FE */
+[data-st="bento"] { --r-card: 28px; --r-tile: 26px; --card-shadow: none; --p1: #fef3c7; --p2: #e0f2fe; --p3: #dcfce7; --p4: #ffe4e6; --p5: #ede9fe; }
+:root[data-mau="xam"] [data-st="bento"] { --p1: #f1f3f6; --p2: #eef1f5; --p3: #f1f3f6; --p4: #eef1f5; --p5: #eef0f3; }
+:is(.phone, .cell-body)[data-st="bento"] { background: #fffaf0; }
+[data-st="bento"] :is(.card, .utile, .kid, .w, .feed-card) { box-shadow: none; border: 1.5px solid #f1e8d6; }
+[data-st="bento"] .card.ctx { border-color: transparent; background: var(--p5); }
+[data-st="bento"] .utile { border-color: transparent; }
+[data-st="bento"] .utile:nth-child(4n+1) { background: var(--p1); }
+[data-st="bento"] .utile:nth-child(4n+2) { background: var(--p2); }
+[data-st="bento"] .utile:nth-child(4n+3) { background: var(--p3); }
+[data-st="bento"] .utile:nth-child(4n+4) { background: var(--p4); }
+[data-st="bento"] .utile .tile { background: rgba(255,255,255,.8); }
+[data-st="bento"] .stat { background: color-mix(in srgb, var(--t) 20%, var(--surface)); box-shadow: none; }
+[data-st="bento"] .stat .bg { opacity: .24; }
+[data-st="bento"] .mini { background: color-mix(in srgb, var(--t) 22%, var(--surface)); }
+[data-st="bento"] .chip { border-color: transparent; background: color-mix(in srgb, var(--t) 24%, var(--surface)); }
+[data-st="bento"] .hello h1::after { content: ""; display: inline-block; width: 26px; height: 26px; margin-left: 6px; vertical-align: -4px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3l3.6 7.6 8.4 1-6.2 5.8 1.6 8.3L16 21.6 8.6 25.7l1.6-8.3L4 11.6l8.4-1z' fill='%23fbbf24' stroke='%23f59e0b' stroke-width='1.5' stroke-linejoin='round'/%3E%3Ccircle cx='27' cy='5' r='2.2' fill='%23f472b6'/%3E%3Ccircle cx='4' cy='27' r='1.8' fill='%2394debd'/%3E%3C/svg%3E") center / contain no-repeat; }
+[data-st="bento"] .nav { margin: 0 12px 12px; height: 66px; padding: 0; border: 0; border-radius: 33px; background: #1b2433; }
+[data-st="bento"] .nav a { color: #cdd5e0; }
+[data-st="bento"] .nav a[aria-current="page"] { color: #fff; }
+[data-st="bento"] .nav a[aria-current="page"] span.pill { background: var(--brand); color: var(--on-brand); }
+[data-st="bento"] :is(.dock, .appbar) { border: 0; background: transparent; }
+[data-st="bento"] .inp { border: 1.5px solid #eadfca; }
+[data-st="bento"] .banner { border-color: transparent; border-radius: 22px; }
+[data-st="bento"] .sec-h h2 { font-size: 19px; }
+[data-st="bento"] .ibtn { border-color: #f1e8d6; }
+
+/* 6 · Tối giản — không bóng, viền mảnh, badge chấm + chữ */
+[data-st="mini"] { --r-card: 16px; --r-tile: 14px; --r-field: 12px; --card-shadow: none; }
+:is(.phone, .cell-body)[data-st="mini"] { background: #f6f7f9; }
+[data-st="mini"] :is(.card, .utile, .stat, .kid, .mini, .w, .feed-card, .hero, .kpi-big) { border: 1px solid var(--border); background: var(--surface); box-shadow: none; }
+[data-st="mini"] .stat .bg { display: none; }
+[data-st="mini"] .tile { border-radius: 12px; background: var(--surface-muted); color: var(--tf, var(--text-2)); }
+[data-st="mini"] .chip { gap: 6px; height: auto; padding: 0; border: 0; background: none; }
+[data-st="mini"] .chip .ic { display: none; }
+[data-st="mini"] .chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--t); }
+[data-st="mini"] .hello h1 { font-size: 28px; letter-spacing: -.02em; }
+[data-st="mini"] .hello p { color: var(--text-3); font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+[data-st="mini"] :is(.btn, .qa, .cchip, .opt, .pick) { border-radius: 12px; }
+[data-st="mini"] .seg { border-radius: 12px; }
+[data-st="mini"] .seg button { border-radius: 9px; }
+[data-st="mini"] .ibtn { border-color: transparent; background: transparent; }
+[data-st="mini"] .nav a span.pill { background: none !important; }
+[data-st="mini"] .nav a[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 30%; right: 30%; height: 3px; border-radius: 0 0 3px 3px; background: var(--primary); }
+[data-st="mini"] .row { min-height: 56px; }
+[data-st="mini"] .banner { border-radius: 12px; }
+[data-st="mini"] .av { border-radius: 12px; }
+[data-st="mini"] .sec-h h2 { font-size: 13px; color: var(--text-3); letter-spacing: .06em; text-transform: uppercase; }
+
+/* 7 · Đêm — bộ token tối riêng, tông trạng thái sáng hơn để đủ tương phản */
+[data-st="dark"] { --bg: #0b1220; --surface: #131c2e; --surface-muted: #182338; --track: #212c43; --text: #e7edf6; --text-2: #b7c2d4; --text-3: #8d9ab0; --text-dis: #56637b;
+  --border: #243049; --border-strong: #33405c; --primary: #6cc0ff; --primary-soft: #14304d; --primary-border: #2b5d8a; --focus-ring: #1d4a73;
+  --tone-blue-fg: #9fd3ff; --tone-approval-fg: #ffd666; --tone-orange-fg: #ffb46e; --tone-red-fg: #ff97a5; --tone-green-fg: #74e0ab; --tone-gray-fg: #b7c2d4; --tone-teal-fg: #72e3de;
+  --warning-fg: #ffb46e; --warning-bg: #2a1f10; --warning-border: #5b4220; --danger-fg: #ff9696; --danger-bg: #2c1417; --danger-border: #5d2a31;
+  --info-fg: #9fd3ff; --info-bg: #11263c; --info-border: #2b5d8a;
+  --card-shadow: 0 0 0 1px rgba(255,255,255,.04), 0 16px 32px -18px rgba(0,0,0,.7); }
+:is(.phone, .cell-body)[data-st="dark"] { background: var(--bg); }
+[data-st="dark"] .av { background: #14304d; color: #9fd3ff; }
+[data-st="dark"] .scene::after { background: linear-gradient(180deg, rgba(11,18,32,.1), rgba(11,18,32,.55) 55%, var(--bg)); }
+[data-st="dark"] .scene img { filter: brightness(.72); }
+[data-st="dark"] .frost { background: rgba(19,28,46,.86); }
+[data-st="dark"] .logo .wm { color: #6cc0ff; }
+[data-st="dark"] .logo .wm span { color: #9fd3ff; }
+[data-st="dark"] .skel { background: linear-gradient(90deg, var(--track), #2a3650, var(--track)); background-size: 200% 100%; }
+[data-st="dark"] .utile .tile, [data-st="dark"] .tile { background: color-mix(in srgb, var(--t, var(--primary)) 20%, var(--surface)); }
+
+
+/* ---------- Nút tích chọn + bảng "Đã chọn" góc trên phải ---------- */
+.slot-head { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.cell-lab .pick-btn { margin-left: auto; }
+.pick-btn { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 10px 0 8px; border: 1px solid #d4d4d8; border-radius: 14px; background: #fff;
+  color: #404040; font: 500 12px system-ui, -apple-system, sans-serif; cursor: pointer; }
+.pick-btn svg { width: 14px; height: 14px; color: #a3a3a3; }
+.pick-btn:hover { border-color: #a3a3a3; }
+.pick-btn[aria-pressed="true"] { border-color: #16a34a; background: #16a34a; color: #fff; }
+.pick-btn[aria-pressed="true"] svg { color: #fff; }
+.pick-btn[aria-pressed="true"] span { font-size: 0; }
+.pick-btn[aria-pressed="true"] span::after { font-size: 12px; content: "Đã chọn"; }
+.wf-picks { position: fixed; top: 64px; right: 16px; z-index: 70; width: min(340px, calc(100vw - 32px)); border: 1px solid #e5e5e5; border-radius: 12px;
+  background: #fff; box-shadow: 0 12px 32px rgb(0 0 0 / .14); color: #262626; font: 13px/1.45 system-ui, -apple-system, sans-serif; }
+.wf-picks summary { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; cursor: pointer; list-style: none; font-weight: 600; }
+.wf-picks summary::-webkit-details-marker { display: none; }
+.wf-picks summary b { min-width: 22px; height: 20px; padding: 0 6px; border-radius: 10px; background: #16a34a; color: #fff; font-size: 12px; line-height: 20px; text-align: center; }
+.wf-picks summary svg { width: 16px; height: 16px; margin-left: auto; transition: rotate .15s; }
+.wf-picks[open] summary svg { rotate: 180deg; }
+.wf-picks-body { display: grid; gap: 10px; max-height: 60vh; overflow-y: auto; padding: 0 12px 12px; }
+.wf-picks ul { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.wf-picks li { display: flex; align-items: flex-start; gap: 8px; padding: 6px 8px; border-radius: 8px; background: #f6f7f9; }
+.wf-picks li span { flex: 1; min-width: 0; }
+.wf-picks li button { flex-shrink: 0; width: 22px; height: 22px; border: 0; border-radius: 6px; background: none; color: #737373; font-size: 16px; line-height: 1; cursor: pointer; }
+.wf-picks li button:hover { background: #e5e5e5; color: #171717; }
+.wf-picks p { margin: 0; color: #525252; }
+.wf-picks-act { display: flex; gap: 8px; }
+.wf-picks-act button { height: 32px; padding: 0 12px; border: 1px solid #d4d4d8; border-radius: 8px; background: #fff; color: #262626; font: 500 13px system-ui, sans-serif; cursor: pointer; }
+.wf-picks-act button[data-copy-picks] { border-color: #171717; background: #171717; color: #fff; }
+.wf-picks-act button:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ---------- Nguyên tố cho các concept trang chủ D/E/F ---------- */
+.hero { position: relative; display: grid; gap: 14px; padding: 20px; overflow: hidden; border-radius: 28px; box-shadow: var(--card-shadow);
+  background: linear-gradient(140deg, color-mix(in srgb, var(--brand) 26%, var(--surface)), var(--surface) 72%); }
+.av.xl { width: 72px; height: 72px; font-size: 24px; }
+.av.lg { width: 56px; height: 56px; font-size: 19px; }
+.name-switch { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: none; color: var(--text); font: 700 26px/1.2 var(--font); text-align: left; cursor: pointer; }
+.name-switch .ic { width: 24px; height: 24px; color: var(--primary); }
+.name-switch.md { font-size: 20px; }
+.today-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--border); border-radius: 18px; background: var(--surface); }
+.today-strip > div { display: grid; gap: 2px; min-width: 0; padding: 10px 12px; }
+.today-strip > div + div { border-left: 1px solid var(--border); }
+.today-strip .k { overflow: hidden; color: var(--text-3); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.today-strip .v { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.feed-card { overflow: hidden; border-radius: var(--r-card); background: var(--surface); box-shadow: var(--card-shadow); }
+.feed-card img { display: block; width: 100%; height: 150px; object-fit: cover; }
+.feed-card .fb { display: grid; gap: 8px; padding: 14px 16px; }
+.feed-head { display: flex; align-items: center; gap: 10px; }
+.feed-head .av { width: 36px; height: 36px; font-size: 13px; }
+.feed-head .tx { display: grid; flex: 1; min-width: 0; }
+.feed-head .t { font-size: 15px; font-weight: 600; } .feed-head .m { color: var(--text-3); font-size: 12px; }
+.event { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px dashed var(--border-strong); border-radius: 18px; font-size: 14px; }
+.event .tx { flex: 1; min-width: 0; }
+.stories { display: flex; gap: 18px; margin: 0 -16px; padding: 8px 20px; overflow-x: auto; scrollbar-width: none; }
+.story { display: grid; flex-shrink: 0; justify-items: center; gap: 8px; padding: 0; border: 0; background: none; color: var(--text-2); font: 600 13px var(--font); cursor: pointer; }
+.story .av { width: 64px; height: 64px; font-size: 21px; outline: 3px solid transparent; outline-offset: 3px; }
+.story[aria-current="true"] { color: var(--text); }
+.story[aria-current="true"] .av { outline-color: var(--brand); }
+.ring { --p: 0; --rc: var(--brand); display: grid; flex-shrink: 0; place-items: center; width: 96px; height: 96px; border-radius: 50%;
+  background: conic-gradient(var(--rc) calc(var(--p) * 1%), var(--track) 0); }
+.ring::before { content: ""; grid-area: 1 / 1; width: 76px; height: 76px; border-radius: 50%; background: var(--surface); }
+.ring > span { display: grid; grid-area: 1 / 1; justify-items: center; position: relative; line-height: 1.1; }
+.ring b { font-size: 20px; font-variant-numeric: tabular-nums; } .ring small { max-width: 52px; overflow: hidden; color: var(--text-3); font-size: 10px; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.ring.sm { width: 72px; height: 72px; } .ring.sm::before { width: 56px; height: 56px; } .ring.sm b { font-size: 16px; }
+.countdown { font-size: 56px; font-weight: 700; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+.huge { font-size: 76px; font-weight: 700; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.fab, .fab[data-wf-block] { position: absolute; right: 16px; bottom: 88px; z-index: 3; display: inline-flex; align-items: center; gap: 8px; height: 56px; padding: 0 20px;
+  border: 0; border-radius: 28px; background: var(--brand); color: var(--on-brand); font: 600 15px var(--font); box-shadow: 0 12px 24px -10px rgba(11,114,188,.55); }
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.step { display: grid; justify-items: center; gap: 6px; color: var(--text-3); font-size: 12px; line-height: 1.3; text-align: center; }
+.step .dot { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--track); color: var(--text-3); }
+.step .dot .ic { width: 16px; height: 16px; }
+.step.done .dot { background: var(--tone-green); color: #fff; }
+.step.now { color: var(--text); font-weight: 600; }
+.step.now .dot { background: var(--brand); color: var(--on-brand); box-shadow: 0 0 0 4px var(--focus-ring); }
+.bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.w { display: grid; align-content: start; gap: 8px; min-width: 0; padding: 16px; border-radius: var(--r-tile); background: var(--surface); box-shadow: var(--card-shadow); color: inherit; text-decoration: none; }
+.w.span2 { grid-column: span 2; }
+.w .k { display: flex; align-items: center; justify-content: space-between; gap: 6px; color: var(--text-2); font-size: 13px; font-weight: 600; }
+.w .v { font-size: 26px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.tabs-line { display: flex; gap: 22px; border-bottom: 1px solid var(--border); }
+.tabs-line button { height: 44px; margin-bottom: -1px; padding: 0; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--text-3); font: 500 15px var(--font); white-space: nowrap; }
+.tabs-line button[aria-selected="true"] { border-bottom-color: var(--primary); color: var(--text); font-weight: 600; }
+.task-act { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+.task-act + .task-act { border-top: 1px solid var(--border); }
+.task-act .tx { display: grid; flex: 1; gap: 2px; min-width: 0; }
+.task-act .t { font-size: 16px; font-weight: 600; } .task-act .m { color: var(--text-3); font-size: 13px; }
+.avstack { display: flex; }
+.avstack .av { width: 28px; height: 28px; margin-left: -8px; border: 2px solid var(--surface); font-size: 11px; }
+.avstack .av:first-child { margin-left: 0; }
+.narr { margin: 0; font-size: 18px; line-height: 1.6; }
+.narr b { color: var(--primary); }
+.check-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; }
+.check-row + .check-row { border-top: 1px solid var(--border); }
+.check-row .box { display: grid; flex-shrink: 0; place-items: center; width: 26px; height: 26px; margin-top: 1px; border: 2px solid var(--border-strong); border-radius: 8px; color: #fff; }
+.check-row .box .ic { width: 16px; height: 16px; }
+.check-row.done .box { border-color: var(--tone-green); background: var(--tone-green); }
+.check-row.done .t { color: var(--text-3); text-decoration: line-through; }
+.check-row .time { width: 44px; flex-shrink: 0; padding-top: 3px; color: var(--text-2); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.check-row .tx { display: grid; flex: 1; gap: 2px; min-width: 0; } .check-row .t { font-size: 15px; font-weight: 600; } .check-row .m { color: var(--text-3); font-size: 13px; }
+.pager { display: flex; justify-content: center; gap: 6px; }
+.pager i { width: 7px; height: 7px; border-radius: 50%; background: var(--border-strong); }
+.pager i.on { width: 20px; border-radius: 4px; background: var(--primary); }
+.hcards { display: flex; gap: 12px; margin: 0 -16px; padding: 4px 16px 12px; overflow-x: auto; scrollbar-width: none; }
+.hcards > * { flex: 0 0 200px; }
+
+/* ---------- Nguyên tố cho concept Đăng nhập / Xin nghỉ / Điểm danh / trang chủ G-H ---------- */
+.uline { display: grid; gap: 4px; padding: 6px 0 10px; border-bottom: 2px solid var(--border-strong); }
+.uline label { color: var(--text-3); font-size: 13px; font-weight: 600; }
+.uline input { width: 100%; padding: 0; border: 0; outline: 0; background: none; color: var(--text); font: 500 20px/1.3 var(--font); }
+.uline:focus-within, .uline.is-focus { border-bottom-color: var(--primary); }
+.uline.err { border-bottom-color: var(--danger); }
+.go-btn { display: grid; place-items: center; width: 64px; height: 64px; border: 0; border-radius: 50%; background: var(--brand); color: var(--on-brand); box-shadow: 0 12px 24px -10px rgba(11,114,188,.55); }
+.go-btn .ic { width: 28px; height: 28px; }
+.go-btn:disabled { background: var(--track); color: var(--text-dis); box-shadow: none; }
+.big-av { display: grid; place-items: center; width: 96px; height: 96px; border-radius: 50%; background: #e2f2fd; color: #0b72bc; font-size: 32px; font-weight: 700; }
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px 0; text-align: center; }
+.cal .dow { padding: 4px 0; color: var(--text-3); font-size: 12px; font-weight: 600; }
+.cal button { position: relative; height: 40px; border: 0; background: none; color: var(--text); font: 500 15px var(--font); font-variant-numeric: tabular-nums; }
+.cal button[disabled] { color: var(--text-dis); }
+.cal button.today span { box-shadow: inset 0 0 0 1.5px var(--primary); }
+.cal button span { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; }
+.cal button.in { background: var(--primary-soft); }
+.cal button.s { background: linear-gradient(90deg, transparent 50%, var(--primary-soft) 50%); }
+.cal button.e { background: linear-gradient(90deg, var(--primary-soft) 50%, transparent 50%); }
+.cal button.s span, .cal button.e span { background: var(--brand); color: var(--on-brand); font-weight: 700; }
+.cal button.dot::after { content: ""; position: absolute; bottom: 3px; left: 50%; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: var(--tone-approval); }
+.wiz { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.wiz span { display: grid; gap: 6px; color: var(--text-3); font-size: 12px; font-weight: 600; }
+.wiz span::before { content: ""; height: 4px; border-radius: 2px; background: var(--track); }
+.wiz span.done::before, .wiz span.now::before { background: var(--brand); }
+.wiz span.now { color: var(--text); }
+.ask { display: grid; gap: 10px; }
+.ask .q { justify-self: start; max-width: 85%; padding: 10px 14px; border-radius: 18px 18px 18px 6px; background: var(--surface); box-shadow: var(--card-shadow); font-size: 15px; font-weight: 600; }
+.ask .a { justify-self: end; max-width: 85%; padding: 10px 14px; border-radius: 18px 18px 6px 18px; background: var(--brand); color: var(--on-brand); font-size: 15px; font-weight: 600; }
+.stackwrap { position: relative; padding-bottom: 20px; }
+.stackwrap::before, .stackwrap::after { content: ""; position: absolute; left: 16px; right: 16px; bottom: 10px; height: 40px; border-radius: 24px; background: var(--surface); opacity: .7; box-shadow: var(--card-shadow); }
+.stackwrap::after { left: 28px; right: 28px; bottom: 0; opacity: .45; }
+.stackwrap > .hero { position: relative; z-index: 1; }
+.alpha { display: flex; flex-direction: column; gap: 2px; color: var(--primary); font-size: 11px; font-weight: 700; text-align: center; }
+.selchip { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 6px 0 4px; border-radius: 18px; background: color-mix(in srgb, var(--tone-red) 16%, var(--surface)); color: var(--tone-red-fg); font-size: 14px; font-weight: 600; }
+.selchip .av { width: 28px; height: 28px; font-size: 11px; }
+.selchip .x { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; }
+.cbx { display: grid; flex-shrink: 0; place-items: center; width: 26px; height: 26px; border: 2px solid var(--border-strong); border-radius: 8px; color: #fff; }
+.cbx.on { border-color: var(--tone-red); background: var(--tone-red); }
+.cbx .ic { width: 16px; height: 16px; }
+.meal3 { display: inline-grid; grid-auto-flow: column; gap: 4px; }
+.meal3 button { width: 44px; height: 36px; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface); color: var(--text-3); font: 600 12px var(--font); }
+.meal3 button[aria-pressed="true"] { border-color: color-mix(in srgb, var(--tone-green) 60%, var(--surface)); background: color-mix(in srgb, var(--tone-green) 16%, var(--surface)); color: var(--tone-green-fg); }
+.weekdots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.wd { display: grid; justify-items: center; gap: 4px; padding: 8px 0 10px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); color: var(--text-3); font-size: 12px; }
+.wd b { color: var(--text); font-size: 17px; }
+.wd i { width: 6px; height: 6px; border-radius: 50%; background: var(--t, var(--border-strong)); }
+.wd[aria-pressed="true"] { border-color: var(--brand); background: var(--brand); color: var(--on-brand); }
+.wd[aria-pressed="true"] b { color: var(--on-brand); }
+.wallet { display: grid; }
+.wallet .hero + .peek { margin-top: -18px; }
+.peek { position: relative; z-index: 0; display: flex; align-items: center; gap: 10px; padding: 26px 18px 14px; border-radius: 0 0 24px 24px; background: color-mix(in srgb, #f472b6 16%, var(--surface)); color: var(--text-2); font-size: 14px; font-weight: 600; }
+.peek .av { width: 32px; height: 32px; font-size: 12px; }
+.wallet .hero { z-index: 1; }
+.heat { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.ht { display: grid; gap: 2px; padding: 10px 12px; border-radius: 14px; background: color-mix(in srgb, var(--t) calc(var(--k) * 1%), var(--surface)); color: var(--text); font-size: 12px; }
+.ht b { font-size: 18px; font-variant-numeric: tabular-nums; }
+.kpi-big { display: grid; gap: 6px; padding: 20px; border-radius: 28px; background: var(--surface); box-shadow: var(--card-shadow); }
+.kpi-big .num { font-size: 52px; font-weight: 700; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+.spark { width: 100%; height: 56px; color: var(--primary); }
+/* ---------- Thanh công cụ wireframe (skill design-process.md) ---------- */
+.wf-bar { position: relative; z-index: 50; display: flex; align-items: center; gap: 20px; height: 56px; padding: 0 16px; overflow-x: auto; white-space: nowrap; background: #fff; border-bottom: 1px solid #e5e5e5; color: #737373; font: 14px/1 system-ui, -apple-system, sans-serif; }
+.wf-bar *, .wf-reason * { box-sizing: border-box; }
+.wf-group { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.wf-set { display: flex; align-items: center; gap: 2px; flex-shrink: 0; padding: 3px; border-radius: 10px; background: #f4f4f5; }
+.wf-set a { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: 7px; color: #737373; text-decoration: none; }
+.wf-set a:hover { color: #171717; }
+.wf-switch { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; color: #737373; text-decoration: none; }
+.wf-switch i { position: relative; width: 36px; height: 20px; border-radius: 10px; background: #e4e4e7; transition: background .15s; }
+.wf-switch i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / .2); transition: translate .15s; }
+.wf-switch[aria-checked="true"] i { background: #171717; }
+.wf-switch[aria-checked="true"] i::after { translate: 16px 0; }
+.wf-set a[aria-current="page"], .wf-flags a[aria-pressed="true"] { background: #fff; color: #171717; font-weight: 500; box-shadow: 0 1px 2px rgb(0 0 0 / .08), 0 0 0 1px rgb(0 0 0 / .04); }
+.wf-flags a::before { content: ""; width: 12px; height: 12px; border: 1.5px solid #a3a3a3; border-radius: 3px; }
+.wf-flags a[aria-pressed="true"]::before { border-color: #171717; background: #171717 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / 10px no-repeat; }
+body[data-gon="1"] [data-wf-gon], body[data-bolap="1"] [data-wf-lap] { display: none !important; }
+[data-wf-param="v"] a { justify-content: center; min-width: 32px; }
+[data-wf-param="v"] a[data-recommended]::after { content: ""; position: absolute; top: 5px; right: 5px; width: 5px; height: 5px; border-radius: 50%; background: #4f46e5; }
+.wf-menu { flex-shrink: 0; }
+.wf-menu summary { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; border-radius: 8px; cursor: pointer; list-style: none; }
+.wf-menu summary::-webkit-details-marker { display: none; }
+.wf-menu summary:hover, .wf-menu[open] summary { background: #f4f4f5; }
+.wf-menu b { color: #171717; font-weight: 500; }
+.wf-bar svg { width: 16px; height: 16px; flex-shrink: 0; }
+.wf-popover { position: fixed; z-index: 60; display: grid; min-width: 168px; padding: 4px; background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; box-shadow: 0 8px 24px rgb(0 0 0 / .08); }
+.wf-popover a { display: flex; align-items: center; height: 34px; padding: 0 10px; border-radius: 6px; color: #404040; text-decoration: none; }
+.wf-popover a:hover, .wf-popover a[aria-current="page"] { background: #f4f4f5; color: #171717; }
+.wf-reason { border-bottom: 1px solid #e5e5e5; background: #fafafa; color: #404040; font: 13px/1.5 system-ui, -apple-system, sans-serif; }
+.wf-reason summary { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-height: 44px; padding: 8px 16px; cursor: pointer; list-style: none; }
+.wf-reason summary::-webkit-details-marker { display: none; }
+.wf-reason-name { min-width: 0; overflow: hidden; color: #171717; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.wf-reason-tag { flex-shrink: 0; height: 20px; padding: 0 8px; border-radius: 10px; background: #eef2ff; color: #4338ca; font-size: 12px; font-weight: 500; line-height: 20px; }
+.wf-reason-why { flex: 1; min-width: 0; overflow: hidden; color: #525252; text-overflow: ellipsis; white-space: nowrap; }
+.wf-reason[open] .wf-reason-why { white-space: normal; }
+.wf-reason-toggle { display: inline-flex; flex-shrink: 0; align-items: center; gap: 4px; height: 28px; margin-left: auto; padding: 0 8px; border-radius: 6px; color: #171717; font-weight: 500; }
+.wf-reason summary:hover .wf-reason-toggle { background: #f0f0f0; }
+.wf-reason-toggle svg { width: 16px; height: 16px; transition: rotate .15s; }
+.wf-reason[open] .wf-reason-toggle svg { rotate: 180deg; }
+.wf-reason-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 4px 16px 16px; }
+.wf-reason-cols { display: grid; max-width: 1200px; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 16px 32px; }
+.wf-reason h3 { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; color: #171717; font-size: 12px; font-weight: 600; }
+.wf-reason h3 i { width: 6px; height: 6px; border-radius: 50%; background: #a3a3a3; }
+.wf-reason h3 i[data-tone="uu"] { background: #16a34a; }
+.wf-reason h3 i[data-tone="nhuoc"] { background: #d97706; }
+.wf-reason h4 { margin: 0 0 6px; color: #171717; font-size: 13px; font-weight: 600; }
+.wf-reason p.why { margin: 0 0 8px; color: #525252; }
+.wf-reason dl.spec { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 3px 8px; margin: 0 0 10px; }
+.wf-reason dl.spec dt { color: #737373; }
+.wf-reason dl.spec dd { margin: 0; color: #262626; }
+body[data-man="kit"] .wf-nokit { display: none; }
+.wf-reason ul { display: grid; gap: 2px; margin: 0 0 8px; padding-left: 16px; }
+.wf-reason li::marker { color: #a3a3a3; }
+.wf-reason p { margin: 0; }
+.wf-reason-tips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 12px; border-top: 1px solid #ebebeb; }
+.wf-reason-tips h3 { margin: 0 4px 0 0; }
+.wf-reason-tips button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: 1px solid #e5e5e5; border-radius: 8px; background: #fff; color: #262626; font: inherit; white-space: nowrap; cursor: pointer; }
+.wf-reason-tips button:hover { border-color: #d4d4d4; background: #f5f5f5; }
+.wf-reason-tips button svg { width: 14px; height: 14px; color: #737373; }
+.wf-reason-tips button [data-icon="da-chep"], .wf-reason-tips button[data-copied] [data-icon="chep"] { display: none; }
+.wf-reason-tips button[data-copied] [data-icon="da-chep"] { display: block; color: #16a34a; }
+.wf-reason :focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }
+@media (max-width: 767px) {
+  .wf-reason-why { order: 1; flex-basis: 100%; }
+  .wf-reason-toggle span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .wf-reason-tips h3 { flex-basis: 100%; }
+}
+[data-wf-block] { position: relative; }
+[data-wf-block]::before { content: attr(data-wf-block); position: absolute; top: 4px; left: 4px; z-index: 6; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 9px; background: #1f1f1f; color: #fff; font: 11px system-ui, sans-serif; }
+[data-wf-block][data-wf-block-out]::before { top: auto; bottom: 100%; }
+</style>
+</head>
+<body>
+<nav class="wf-bar" aria-label="Wireframe">
+  <details class="wf-menu">
+    <summary><span>Màn:</span><b data-wf-current="man"></b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+    <div class="wf-popover" data-wf-param="man" id="wf-man"></div>
+  </details>
+  <div class="wf-group wf-nokit"><span>Bố cục</span><span class="wf-set" data-wf-param="v" id="wf-v"></span></div>
+  <div class="wf-group"><span>Style</span><span class="wf-set" data-wf-param="st" id="wf-st"></span></div>
+  <div class="wf-group wf-nokit"><span>Xem</span><span class="wf-set" data-wf-param="xem"><a data-value="mot">Một</a><a data-value="pa">Mọi bố cục</a><a data-value="style">7 style</a></span></div>
+  <span class="wf-set wf-flags wf-nokit"><a data-wf-toggle="gon" data-on="1" data-off="0">Gọn chữ</a><a data-wf-toggle="bolap" data-on="1" data-off="0">Bỏ lặp</a></span>
+  <a class="wf-switch" data-wf-toggle="mau" data-on="mau" data-off="xam" role="switch">Màu <i></i></a>
+  <details class="wf-menu wf-nokit">
+    <summary><span>Trạng thái:</span><b data-wf-current="tt"></b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+    <div class="wf-popover" data-wf-param="tt"><a data-value="du-lieu">Có dữ liệu</a><a data-value="dang-tai">Đang tải</a><a data-value="rong">Rỗng</a><a data-value="loi">Lỗi</a></div>
+  </details>
+</nav>
+<details class="wf-reason" data-wf-reason>
+  <summary>
+    <span class="wf-reason-name" id="rs-name"></span>
+    <span class="wf-reason-tag" id="rs-tag">Khuyên dùng</span>
+    <span class="wf-reason-why" id="rs-why"></span>
+    <span class="wf-reason-toggle"><span>Ưu, nhược</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span>
+  </summary>
+  <div class="wf-reason-body">
+    <div class="wf-reason-cols" id="rs-cols"></div>
+    <div class="wf-reason-tips" id="rs-tips"></div>
+  </div>
+</details>
+<main id="wf-design"></main>
+
+<script>
+new MutationObserver(() => { if (document.querySelector("i[data-lucide]")) lucide.createIcons(); }).observe(document.body, { childList: true, subtree: true });
+
+const params = new URLSearchParams(location.search);
+const state = { man: "ph-chu", v: "a", st: "clay", xem: "style", gon: "0", bolap: "0", mau: "mau", tt: "du-lieu", uu: "0" };
+for (const key of Object.keys(state)) state[key] = params.get(key) || state[key];
+Object.assign(document.body.dataset, state);
+document.documentElement.dataset.mau = state.mau;
+const linkTo = (changes) => `?${new URLSearchParams({ ...state, ...changes })}`;
+
+/* ---------- Helper dựng nguyên tố ---------- */
+const I = (n, c = "") => `<i data-lucide="${n}" class="ic ${c}"></i>`;
+const chip = (t, text, ic) => `<span class="chip" data-t="${t}">${ic ? I(ic) : ""}${text}</span>`;
+const tile = (ic, t) => `<span class="tile"${t ? ` data-t="${t}"` : ""}>${I(ic)}</span>`;
+const row = ({ ic, t, title, meta, trail = "", gon = true, chev = false, lap = false }) =>
+  `<a class="row" href="#">${ic ? tile(ic, t) : ""}<span class="tx"><span class="t">${title}</span>${meta ? `<span class="m"${gon ? " data-wf-gon" : ""}${lap ? " data-wf-lap" : ""}>${meta}</span>` : ""}</span>${trail}${chev ? I("chevron-right", "chev") : ""}</a>`;
+const sb = () => `<div class="sb"><span>9:41</span><span class="ics">${I("signal")}${I("wifi")}${I("battery-full")}</span></div>`;
+const bell = (n) => `<a class="ibtn" href="#" aria-label="Thông báo${n ? `, ${n} chưa đọc` : ""}">${I("bell")}${n ? `<span class="dot">${n}</span>` : ""}</a>`;
+const appbar = (title, trailing = "", back = true) => `<div class="appbar" data-wf-block="1">${back ? `<button class="back" aria-label="Quay lại">${I("arrow-left")}</button>` : `<span style="width:12px"></span>`}<h1>${title}</h1>${trailing}</div>`;
+const sec = (title, link, inner, block, extra = "") => !inner ? "" : `<section class="sec"${block ? ` data-wf-block="${block}"` : ""}${extra}><div class="sec-h"><h2>${title}</h2>${link ? `<a class="link" href="#">${link}${I("chevron-right")}</a>` : ""}</div>${inner}</section>`;
+const stat = (t, label, value, small, ic) => `<div class="stat" data-t="${t}"><span class="l">${label}</span><span class="v">${value}${small ? `<small>${small}</small>` : ""}</span>${I(ic, "bg")}</div>`;
+const mini = (t, v, l) => `<div class="mini" data-t="${t}"><span class="v">${v}</span><span class="l">${l}</span></div>`;
+const NAVS = {
+  ph: [["house", "Trang chủ"], ["smile", "Bé của tôi"], ["bell", "Thông báo", 2], ["user", "Tài khoản"]],
+  gv: [["house", "Trang chủ"], ["users", "Lớp học"], ["bell", "Thông báo", 3], ["user", "Tài khoản"]],
+  bep: [["house", "Trang chủ"], ["utensils", "Thực đơn"], ["bell", "Thông báo", 2], ["user", "Tài khoản"]],
+  pht: [["house", "Trang chủ"], ["stamp", "Duyệt", 3], ["bell", "Thông báo"], ["user", "Tài khoản"]],
+  ht: [["layout-dashboard", "Tổng quan"], ["stamp", "Duyệt", 2], ["bell", "Thông báo"], ["user", "Tài khoản"]],
+};
+const nav = (role, active = 0) => `<nav class="nav" data-wf-block="9" aria-label="Điều hướng">${NAVS[role].map(([ic, l, n], i) =>
+  `<a href="#"${i === active ? ' aria-current="page"' : ""}><span class="pill">${I(ic)}${n ? `<span class="dot">${n}</span>` : ""}</span>${l}</a>`).join("")}</nav>`;
+const skelRows = (n, h = 64) => `<div class="card">${Array.from({ length: n }, (_, i) =>
+  `<div class="row"${i ? "" : ""}><span class="skel" style="width:40px;height:40px;border-radius:50%"></span><span class="tx"><span class="skel" style="height:14px;width:${60 - i * 7}%"></span><span class="skel" style="height:11px;width:${42 + i * 5}%"></span></span></div>`).join("")}</div>`;
+const skelBlock = (h) => `<div class="skel" style="height:${h}px;border-radius:20px"></div>`;
+const empty = (ic, title, text, action) => `<div class="card"><div class="state">${tile(ic)}<h3>${title}</h3><p>${text}</p>${action ? `<button class="btn sm soft">${action}</button>` : ""}</div></div>`;
+const errorBlock = () => `<div class="card"><div class="state"><span class="tile" data-t="red">${I("wifi-off")}</span><h3>Chưa tải được dữ liệu</h3><p>Kiểm tra kết nối mạng rồi thử lại. Dữ liệu cũ vẫn giữ nguyên.</p><button class="btn sm soft">${I("refresh-cw")}Thử lại</button></div></div>`;
+/* Chọn phần dữ liệu theo trạng thái đang xem */
+let errShown = false;
+// Lỗi chỉ hiện một khối cho cả màn; các khối dữ liệu khác ẩn
+const S = (data, { skel, empty: e }) => {
+  if (state.tt !== "loi") return ({ "du-lieu": data, "dang-tai": skel, "rong": e })[state.tt];
+  if (errShown) return "";
+  errShown = true;
+  return errorBlock();
+};
+
+/* ---------- Dữ liệu giả dùng chung (không có dữ liệu trẻ thật) ---------- */
+const TODAY = "Thứ Hai, 12/10";
+const KIDS = [
+  ["Nguyễn Minh Anh", "Đơn nghỉ 13/10 · đã báo", "present"],
+  ["Lê Hoàng Nam", "Dị ứng hải sản", "present"],
+  ["Phạm Khánh Linh", "Ốm · đơn 11–13/10", "leave"],
+  ["Vũ Đức Huy", "Chưa có đơn", "absent"],
+  ["Trần Ngọc Bảo Châu Nguyễn", "Ăn 1 bữa · Trưa", "present"],
+  ["Đỗ Tuấn Kiệt", "", "present"],
+  ["Hoàng Gia Bảo", "", "unset"],
+];
+const ini = (name) => name.split(" ").slice(-2).map((w) => w[0]).join("");
+
+/* ---------- Từng màn × phương án ---------- */
+const SCREENS = {
+  /* ===== Đăng nhập ===== */
+  login: {
+    label: "Đăng nhập", rec: "a",
+    opts: {
+      a: { name: "A · Logo giữa, form trong card", why: "Đến để vào app nhanh: logo nhận diện trên cùng, hai ô và nút chính nằm gọn một khối giữa màn.",
+        pros: ["Giống trang đăng nhập FE (logo + card form), người dùng hai nền tảng thấy cùng một sản phẩm", "Ít thay đổi so với APP hiện tại, rủi ro thấp"],
+        cons: ["Màn trông trơn, ít chất mầm non"], fit: "Muốn đồng bộ FE mà không thêm ảnh vào app." },
+      b: { name: "B · Tranh nền FE + sheet form", why: "Đưa tranh vẽ sáp màu của FE lên nửa trên, form nằm trong sheet trắng trượt lên.",
+        pros: ["Nhận diện FE rõ nhất (cùng tranh login-scene)", "Ấm, hợp Phụ huynh"],
+        cons: ["Cần chép ảnh webp ~0,5 MB vào assets APP", "Bàn phím mở lên che tranh, form phải cuộn"], fit: "Muốn ấn tượng đầu tiên giống web nhất." },
+      c: { name: "C · Form trơn, nút dính đáy", why: "Tiêu đề lớn căn trái, ô nhập trên nền, nút Đăng nhập dính trên bàn phím.",
+        pros: ["Nút luôn trong vùng ngón cái, kể cả khi bàn phím mở", "Gọn nhất, nhanh nhất cho nhân viên đăng nhập hằng ngày"],
+        cons: ["Ít nhận diện, khác FE nhiều nhất"], fit: "Ưu tiên tốc độ hơn cảm xúc." },
+    },
+    tips: ["Logo to hơn", "Bỏ dòng phiên bản", "Đưa ghi chú SMS xuống dưới nút", "Thêm tranh nền nhẹ cho phương án A"],
+    render(v) {
+      const loading = state.tt === "dang-tai", err = state.tt === "loi", blank = state.tt === "rong";
+      const phone = blank ? "" : "0912 345 678", pw = blank ? "" : "••••••••";
+      const fields = `
+        ${err ? `<div class="banner err" role="alert">${I("circle-alert")}<span><b>Số điện thoại hoặc mật khẩu chưa đúng.</b> Kiểm tra lại rồi thử lần nữa.</span></div>` : ""}
+        <div class="field"><label>Số điện thoại</label><div class="inp${err ? " err" : ""}"><input value="${phone}" placeholder="Nhập số điện thoại" inputmode="tel"${loading ? " disabled" : ""}></div></div>
+        <div class="field"><label>Mật khẩu</label><div class="inp${err ? " err" : ""}"><input type="password" value="${pw}" placeholder="Nhập mật khẩu"${loading ? " disabled" : ""}>${I("eye-off")}</div>
+          <div class="between"><span></span><a class="link" href="#">Quên mật khẩu?</a></div></div>`;
+      const submit = `<button class="btn pri block"${blank ? " disabled" : ""}>${loading ? `${I("loader-circle")}Đang đăng nhập…` : "Đăng nhập"}</button>`;
+      const note = `<div class="banner" data-wf-block="4">${I("info")}<span data-wf-gon>Tài khoản do nhà trường cấp qua SMS. Lần đầu đăng nhập, bạn cần đổi mật khẩu.</span></div>`;
+      const logo = (big) => `<div class="logo" style="${big ? "flex-direction:column;gap:6px" : ""}"><img src="img/logo-mark.png" alt="" style="${big ? "width:72px;height:72px" : ""}"><div style="${big ? "text-align:center" : ""}"><div class="wm">Care<span>Nest</span></div><div class="fs13 muted">Trường Mầm non Thượng Hồng</div></div></div>`;
+      if (v === "a") return { body: `<div class="page" style="padding-top:40px;gap:28px">
+          <div data-wf-block="1" style="display:grid;justify-items:center">${logo(true)}</div>
+          <div class="card pad20" data-wf-block="2" style="display:grid;gap:16px"><h2 style="margin:0;font-size:18px">Đăng nhập</h2>${fields}${submit}</div>
+          ${note}<p class="ver" data-wf-gon>Phiên bản 1.0.0</p></div>` };
+      if (v === "b") return { body: `<div class="scene" style="height:260px" data-wf-block="1"><img src="img/login-scene.webp" alt=""><div class="over" style="justify-content:center;padding-top:28px"><div class="frost">${logo(false)}</div></div></div>
+          <div class="card" data-wf-block="2" style="position:relative;z-index:2;margin-top:-56px;border-radius:32px 32px 0 0;padding:24px 16px 24px;display:grid;gap:16px;min-height:540px">
+          <h2 style="margin:0;font-size:22px">Chào mừng trở lại</h2>${fields}${submit}${note}<p class="ver" data-wf-gon>Phiên bản 1.0.0</p></div>` };
+      return { body: `<div class="page" style="padding-top:28px;gap:20px">
+          <div data-wf-block="1">${logo(false)}</div>
+          <div><h1 style="margin:8px 0 4px;font-size:26px">Đăng nhập</h1><p class="muted" style="margin:0" data-wf-gon>Dùng số điện thoại nhà trường đã đăng ký.</p></div>
+          <div data-wf-block="2" style="display:grid;gap:16px">${fields}</div>${note}</div>`,
+        dock: `<div class="dock" data-wf-block="5">${submit}<p class="ver" style="margin:0" data-wf-gon>Phiên bản 1.0.0</p></div>` };
+    },
+  },
+
+  /* ===== Phụ huynh: Trang chủ ===== */
+  "ph-chu": {
+    label: "PH chủ", rec: "a",
+    opts: {
+      a: { name: "A · Nền sáng, một card Hôm nay", why: "Phụ huynh mở app để xem hôm nay của bé: bé đang chọn và ba việc trong ngày nằm ngay dưới lời chào, không dải xanh đặc chiếm nửa màn.",
+        pros: ["Thông tin hôm nay lên cao hơn ~120px so với bản hero xanh", "Card, badge, ô icon cùng họ với FE", "Đổi bé nằm ngay card bé"],
+        cons: ["Bớt mảng màu thương hiệu ở đầu màn"], fit: "Dùng mỗi ngày, cần thấy ngay tình hình của bé." },
+      b: { name: "B · Tranh nền + thẻ số liệu ngang", why: "Tranh FE ở đầu màn, card bé kính mờ đè lên; Hôm nay là ba thẻ số liệu kiểu FE trượt ngang.",
+        pros: ["Gần không khí FE nhất (tranh sáp màu, thẻ pastel)", "Thân thiện, hợp Phụ huynh"],
+        cons: ["Thẻ ngang chỉ thấy 2,5 thẻ, việc thứ ba phải vuốt", "Thêm ảnh vào assets"], fit: "Muốn app Phụ huynh có cảm xúc, ít chữ." },
+      c: { name: "C · Thanh đổi bé + dòng thời gian", why: "Chọn bé ngay trên thanh đầu, lối tắt nằm một hàng, Hôm nay là dòng thời gian theo giờ.",
+        pros: ["Phụ huynh nhiều con đổi bé một chạm", "Dòng thời gian đọc theo giờ, dễ hiểu"],
+        cons: ["Không còn lời chào, ít thân thiện", "Lối tắt dạng chip nhỏ hơn ô"], fit: "Phụ huynh có từ hai bé trở lên." },
+    },
+    tips: ["Bỏ lời chào, giữ card bé", "Tiện ích thành một hàng icon tròn", "Đưa thực đơn lên đầu Hôm nay", "Thêm tranh nền nhạt vào A"],
+    render(v) {
+      const kid = `<div class="card ctx" data-wf-block="2"><span class="av">MA</span><span class="tx"><span class="t">Bé Nguyễn Minh Anh</span><span class="m">Mầm 3A · 4 tuổi</span></span><a class="link" href="#">${I("arrow-left-right")}Đổi bé</a></div>`;
+      const todayRows = row({ ic: "circle-check", t: "green", title: "Điểm danh", meta: "Đến lớp lúc 07:42", trail: chip("green", "Có mặt", "check") })
+        + row({ ic: "utensils", t: "orange", title: "Bữa trưa · 10:45", meta: "Cơm, canh bí đỏ thịt bằm, cá basa sốt cà chua, chuối tráng miệng" })
+        + row({ ic: "palette", t: "blue", title: "Hoạt động · 09:30", meta: "Tô màu chiếc lá mùa thu" });
+      const utils = [["calendar-x", "Xin nghỉ cho bé", "orange"], ["images", "Hoạt động & đánh giá", "blue"], ["book-open", "Thực đơn tuần", "green"], ["heart-pulse", "Sức khỏe", "red"]];
+      const emptyToday = empty("calendar-days", "Hôm nay chưa có cập nhật", "Lớp chưa điểm danh hay đăng hoạt động. Thông tin sẽ hiện khi cô giáo cập nhật.");
+      if (v === "a") return { body: `<div class="page">
+          <div class="hello" data-wf-block="1"><div><p>Xin chào,</p><h1>Chị Nguyễn Thu Lan</h1></div>${bell(2)}</div>
+          ${kid}
+          ${sec(`Hôm nay<span data-wf-lap class="muted" style="font-weight:500"> · ${TODAY}</span>`, "Xem lịch", S(`<div class="card">${todayRows}</div>`, { skel: skelRows(3), empty: emptyToday }), 3)}
+          ${sec("Tiện ích", "", `<div class="grid2">${utils.map(([ic, l, t]) => `<a class="utile" href="#">${tile(ic, t)}${l}</a>`).join("")}</div>`, 4)}
+        </div>`, nav: nav("ph") };
+      if (v === "b") return { body: `<div class="scene" data-wf-block="1"><img src="img/hero-scene.webp" alt=""><div class="over"><div class="frost"><p>Xin chào,</p><h1>Chị Thu Lan</h1></div>${bell(2)}</div></div>
+          <div class="page" style="padding-top:0">
+          <div class="lift">${kid}</div>
+          ${sec(`Hôm nay<span data-wf-lap class="muted" style="font-weight:500"> · ${TODAY}</span>`, "Xem lịch", S(`<div class="hscroll">
+            <div style="width:150px">${stat("green", "Điểm danh", "Có mặt", "", "circle-check")}<p class="fs13 muted" style="margin:8px 4px 0" data-wf-gon>Đến lớp 07:42</p></div>
+            <div style="width:150px">${stat("orange", "Bữa trưa", "3 món", "", "utensils")}<p class="fs13 muted" style="margin:8px 4px 0" data-wf-gon>Cơm, canh bí đỏ, cá basa</p></div>
+            <div style="width:150px">${stat("blue", "Hoạt động", "09:30", "", "palette")}<p class="fs13 muted" style="margin:8px 4px 0" data-wf-gon>Tô màu chiếc lá</p></div></div>`,
+            { skel: `<div class="grid2">${skelBlock(96)}${skelBlock(96)}</div>`, empty: emptyToday }), 3)}
+          ${sec("Tiện ích", "", `<div class="between" style="align-items:flex-start">${utils.map(([ic, l, t]) => `<a class="roundbtn" href="#">${tile(ic, t)}${l}</a>`).join("")}</div>`, 4)}
+        </div>`, nav: nav("ph") };
+      return { body: `<div class="appbar" data-wf-block="1" style="padding:8px 8px 8px 12px;border:0;background:transparent"><button class="pick" style="flex:1"><span class="av">MA</span><span>Minh Anh · Mầm 3A</span>${I("chevron-down")}</button>${bell(2)}</div>
+          <div class="page" style="gap:20px">
+          <div data-wf-block="4"><div class="hscroll" style="padding-bottom:4px">${utils.map(([ic, l]) => `<a class="qa" href="#">${I(ic)}${l}</a>`).join("")}</div></div>
+          ${sec(`Hôm nay<span data-wf-lap class="muted" style="font-weight:500"> · ${TODAY}</span>`, "Xem lịch", S(`<div class="card pad"><div class="tl">
+            <div class="tl-i" data-t="green"><span class="time">07:42</span><span class="rail on"></span><span class="body"><span class="between"><span class="t">Đến lớp</span>${chip("green", "Có mặt", "check")}</span></span></div>
+            <div class="tl-i" data-t="blue"><span class="time">09:30</span><span class="rail on"></span><span class="body"><span class="t">Hoạt động</span><span class="m" data-wf-gon>Tô màu chiếc lá mùa thu</span></span></div>
+            <div class="tl-i"><span class="time">10:45</span><span class="rail"></span><span class="body"><span class="t">Bữa trưa</span><span class="m" data-wf-gon>Cơm, canh bí đỏ thịt bằm, cá basa sốt cà chua, chuối tráng miệng</span></span></div>
+            <div class="tl-i"><span class="time">14:30</span><span class="rail"></span><span class="body"><span class="t">Bữa chiều</span><span class="m" data-wf-gon>Bánh flan, nước cam</span></span></div>
+          </div></div>`, { skel: skelRows(4), empty: emptyToday }), 3)}
+        </div>`, nav: nav("ph") };
+    },
+  },
+
+  /* ===== Phụ huynh: Xin nghỉ ===== */
+  "ph-nghi": {
+    label: "PH nghỉ", rec: "a",
+    opts: {
+      a: { name: "A · Form một cột, nút dính đáy", why: "Đến để báo nghỉ: ngày, buổi, lý do theo thứ tự điền; hệ quả (huỷ suất, cô nhận thông báo) nằm ngay trên nút Gửi.",
+        pros: ["Thứ tự điền tự nhiên, ít chạm", "Hệ quả của đơn hiện trước khi gửi", "Khớp form FE (nhãn trên, ô bo, nút viên thuốc)"],
+        cons: ["Chọn khoảng ngày phải mở lịch hai lần"], fit: "Đơn nghỉ thường một hai ngày, điền nhanh." },
+      b: { name: "B · Dải ngày trong tuần + lý do nhanh", why: "Chạm thẳng các ngày trong tuần, chọn lý do bằng chip, tóm tắt số ngày ở thanh đáy.",
+        pros: ["Chọn 13–14/10 chỉ hai chạm, không mở lịch", "Lý do thường gặp một chạm"],
+        cons: ["Nghỉ sang tuần sau phải lật tuần", "Chip lý do là danh sách cố định, cần thống nhất với BE"], fit: "Phần lớn đơn trong tuần hiện tại." },
+      c: { name: "C · Tóm tắt từng dòng + đơn gần đây", why: "Mỗi thông tin một dòng chạm để sửa (mở sheet), dưới là các đơn đã gửi kèm trạng thái cô đã xem.",
+        pros: ["Thấy luôn trạng thái các đơn trước", "Màn gọn, ít ô nhập lộ ra"],
+        cons: ["Thêm một bước mở sheet cho mỗi dòng", "Người mới không thấy ngay phải điền gì"], fit: "Phụ huynh hay kiểm tra cô đã xem đơn chưa." },
+    },
+    tips: ["Bỏ card bé, đưa tên bé lên tiêu đề", "Thêm chip lý do nhanh vào A", "Đưa thông báo huỷ suất lên trên", "Nút Gửi nổi bật hơn"],
+    render(v) {
+      const blank = state.tt === "rong", loading = state.tt === "dang-tai", err = state.tt === "loi";
+      const kid = `<div class="card ctx" data-wf-block="2" style="padding:12px 16px"><span class="av">MA</span><span class="tx"><span class="t">Bé Nguyễn Minh Anh</span><span class="m">Mầm 3A</span></span></div>`;
+      const conseq = `<div class="banner warn" data-wf-block="6">${I("info")}<span><b>Suất ăn ngày 13/10 sẽ được huỷ tự động.</b> <span data-wf-gon>Cô Hà (GV lớp Mầm 3A) sẽ nhận được thông báo về đơn này.</span></span></div>`;
+      const errB = err ? `<div class="banner err" role="alert">${I("wifi-off")}<span><b>Chưa gửi được đơn.</b> Nội dung vẫn giữ nguyên, kiểm tra mạng rồi gửi lại.</span></div>` : "";
+      const send = `<button class="btn pri block"${blank ? " disabled" : ""}>${loading ? `${I("loader-circle")}Đang gửi…` : `${I("send")}Gửi đơn xin nghỉ`}</button>`;
+      const reason = blank ? "" : "Gia đình đưa bé đi khám răng định kỳ.";
+      if (v === "a") return { body: `${appbar("Xin nghỉ cho bé", `<a class="link" href="#" style="padding:0 8px">Đơn đã gửi</a>`)}
+          <div class="page" style="gap:18px;padding-top:16px">${errB}${kid}
+          <div class="grid2" data-wf-block="3"><div class="field"><label>Từ ngày <b>*</b></label><div class="inp"><input value="${blank ? "" : "13/10/2026"}" placeholder="Chọn ngày">${I("calendar")}</div></div>
+            <div class="field"><label>Đến ngày <b>*</b></label><div class="inp"><input value="${blank ? "" : "13/10/2026"}" placeholder="Chọn ngày">${I("calendar")}</div></div></div>
+          <div class="field" data-wf-block="4"><label>Buổi nghỉ</label><div class="seg"><button aria-pressed="true">Cả ngày</button><button>Buổi sáng</button><button>Buổi chiều</button></div></div>
+          <div class="field" data-wf-block="5"><label>Lý do <b>*</b></label><div class="inp area"><textarea placeholder="Ví dụ: bé bị sốt, gia đình có việc…">${reason}</textarea></div><span class="help" style="text-align:right">${reason.length}/500 ký tự</span></div>
+          ${blank ? "" : conseq}</div>`, dock: `<div class="dock" data-wf-block="7">${send}</div>` };
+      if (v === "b") {
+        const week = [["T2", 12, "dis"], ["T3", 13, "on"], ["T4", 14, "on"], ["T5", 15], ["T6", 16], ["T7", 17, "dis"], ["CN", 18, "dis"]];
+        return { body: `${appbar("Xin nghỉ cho bé", `<a class="link" href="#" style="padding:0 8px">Đơn đã gửi</a>`)}
+          <div class="page" style="gap:20px;padding-top:16px">${errB}${kid}
+          <div class="sec" data-wf-block="3"><div class="sec-h"><h2>Ngày nghỉ</h2><span class="link">${I("chevron-left")}12–18/10${I("chevron-right")}</span></div>
+            <div class="days">${week.map(([d, n, s]) => `<button class="day"${s === "on" && !blank ? ' aria-pressed="true"' : ""}${s === "dis" ? ' aria-disabled="true"' : ""}>${d}<b>${n}</b></button>`).join("")}</div>
+            <span class="help" data-wf-gon>Không chọn được hôm nay sau 07:00 và cuối tuần.</span></div>
+          <div class="field" data-wf-block="4"><label>Buổi nghỉ</label><div class="seg"><button aria-pressed="true">Cả ngày</button><button>Buổi sáng</button><button>Buổi chiều</button></div></div>
+          <div class="field" data-wf-block="5"><label>Lý do <b>*</b></label><div class="choicechips"><button class="cchip">Ốm, sốt</button><button class="cchip"${blank ? "" : ' aria-pressed="true"'}>Khám bệnh</button><button class="cchip">Việc gia đình</button><button class="cchip">Khác</button></div>
+            <div class="inp area" style="min-height:80px"><textarea placeholder="Ghi thêm cho cô (không bắt buộc)">${blank ? "" : "Khám răng định kỳ"}</textarea></div></div>
+          ${blank ? "" : conseq}</div>`,
+          dock: `<div class="dock" data-wf-block="7"><div class="sum"><span>${blank ? "Chưa chọn ngày" : "<b>Nghỉ 2 ngày</b> · 13–14/10 · Cả ngày"}</span><span data-wf-gon>Gần nhất: 28/09 · GV đã xem</span></div>${send}</div>` };
+      }
+      const line = (ic, l, val) => row({ ic, title: l, meta: val || "Chưa chọn", gon: false, chev: true });
+      return { body: `${appbar("Xin nghỉ cho bé")}
+          <div class="page" style="gap:20px;padding-top:16px">${errB}
+          <div class="card" data-wf-block="3">${line("smile", "Bé", "Nguyễn Minh Anh · Mầm 3A")}${line("calendar", "Ngày nghỉ", blank ? "" : "13/10/2026 · 1 ngày")}${line("sun", "Buổi", "Cả ngày")}${line("message-square-text", "Lý do", blank ? "" : "Gia đình đưa bé đi khám răng định kỳ.")}</div>
+          ${blank ? "" : conseq}
+          ${sec("Đơn đã gửi", "Tất cả", blank ? empty("calendar-x", "Chưa có đơn nào", "Đơn bạn gửi sẽ hiện ở đây kèm trạng thái cô đã xem.") : `<div class="card">${row({ title: "28/09/2026 · Buổi chiều", meta: "Bé sốt nhẹ", trail: chip("green", "GV đã xem", "eye") })}${row({ title: "15/09/2026 · Cả ngày", meta: "Việc gia đình", trail: chip("green", "GV đã xem", "eye") })}</div>`, 8)}
+          </div>`, dock: `<div class="dock" data-wf-block="7">${send}</div>` };
+    },
+  },
+
+  /* ===== Giáo viên: Trang chủ ===== */
+  "gv-chu": {
+    label: "GV chủ", rec: "a",
+    opts: {
+      a: { name: "A · Hạn gần nhất + danh sách việc", why: "Cô mở app để biết việc gì đến hạn: lớp và hạn điểm danh lên đầu, mọi việc trong ngày gom một card, việc gấp mang badge cam.",
+        pros: ["Một card thay sáu card rời, đọc lướt nhanh", "Hạn 08:30 nổi nhờ banner cam, không cần dải xanh", "Cùng họ dòng danh sách với FE"],
+        cons: ["Việc gấp và việc thường chung một danh sách"], fit: "Ngày thường có 4–7 việc." },
+      b: { name: "B · Việc gấp thành thẻ lớn", why: "Điểm danh, việc có hạn gần nhất, thành một thẻ lớn có nút làm ngay; việc khác là lưới ô số.",
+        pros: ["Một chạm từ trang chủ vào điểm danh", "Ô số cho biết khối lượng (12/28 bé, 2 đơn)"],
+        cons: ["Hết hạn điểm danh thì thẻ lớn phải đổi sang việc khác (cần logic chọn việc gấp)", "Lưới ô dài hơn khi có hơn 4 việc"], fit: "Muốn đẩy việc gấp nhất lên rõ nhất." },
+      c: { name: "C · Dòng thời gian trong ngày", why: "Việc xếp theo giờ: 08:30 điểm danh, trong ngày, 16:30 đón trẻ, cuối ngày đánh giá.",
+        pros: ["Hợp nhịp một ngày ở lớp", "Thanh tiến độ cho biết đã xong bao nhiêu"],
+        cons: ["Việc không có giờ (CSVC) phải gom vào nhóm Trong ngày", "Dài hơn A"], fit: "Cô làm theo lịch giờ cố định." },
+    },
+    tips: ["Bỏ dòng mô tả dưới mỗi việc", "Đưa banner hạn vào card lớp", "Đổi badge Cần làm sang màu đỏ khi quá hạn", "Thêm tranh lớp học vào đầu màn"],
+    render(v) {
+      const cls = `<div class="card ctx" data-wf-block="2"><span class="tile">${I("school")}</span><span class="tx"><span class="t">Lớp Mầm 3A · 28 bé</span><span class="m" data-wf-gon>Đang diễn ra: Đón trẻ, thể dục sáng</span></span><a class="link" href="#">Lịch${I("chevron-right")}</a></div>`;
+      const due = `<div class="banner warn" data-wf-block="5">${I("clock")}<span><b>Hạn điểm danh 08:30 · còn 10 phút</b></span></div>`;
+      const tasks = [
+        { ic: "clipboard-check", t: "orange", title: "Điểm danh & báo ăn", meta: "0/28 bé · trước 08:30", trail: chip("orange", "Cần làm") },
+        { ic: "calendar-x", t: "blue", title: "Đơn xin nghỉ", meta: "Minh Anh, Khánh Linh", trail: chip("blue", "2 mới") },
+        { ic: "ruler", t: "teal", title: "Đo sức khỏe tháng 10", meta: "Chiều cao, cân nặng · 12/28 bé", trail: chip("teal", "Còn 16") },
+        { ic: "footprints", t: "gray", title: "Đón trẻ", meta: "Xác minh người đón", trail: chip("gray", "16:30") },
+        { ic: "notebook-pen", t: "gray", title: "Đánh giá hằng ngày", meta: "Giáo án: Tô màu chiếc lá", trail: chip("gray", "Cuối ngày") },
+        { ic: "wrench", t: "gray", title: "Cơ sở vật chất", meta: "Kiểm kê 1 phiếu · báo hỏng 1", trail: chip("gray", "2 việc") },
+      ];
+      const emptyT = empty("party-popper", "Hôm nay không còn việc nào", "Việc mới (đơn nghỉ, nhắc đo sức khỏe) sẽ hiện ở đây.");
+      const hello = `<div class="hello" data-wf-block="1"><div><p>Chào cô,</p><h1>Trần Thu Hà</h1></div>${bell(3)}</div>`;
+      if (v === "a") return { body: `<div class="page">${hello}<div class="sec" style="gap:12px">${cls}${due}</div>
+          ${sec("Việc cần làm hôm nay", "", S(`<div class="card">${tasks.map((t) => row(t)).join("")}</div>`, { skel: skelRows(5), empty: emptyT }), 3)}</div>`, nav: nav("gv") };
+      if (v === "b") return { body: `<div class="scene" style="height:150px" data-wf-block="1"><img src="img/lop-hoc.webp" alt=""><div class="over"><div class="frost"><p>Chào cô,</p><h1>Trần Thu Hà</h1></div>${bell(3)}</div></div>
+          <div class="page" style="padding-top:0">${cls}
+          ${S(`<div class="card pad20" data-wf-block="5" style="display:grid;gap:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--tone-orange) 14%, var(--surface)),var(--surface) 70%)">
+            <div class="between"><span class="fw6" style="font-size:17px">Điểm danh & báo ăn</span>${chip("orange", "Còn 10 phút", "clock")}</div>
+            <div class="between"><span class="stat" style="all:unset"><span class="v" style="font-size:28px;font-weight:700">0<small style="font-size:15px;color:var(--text-3)">/28 bé</small></span></span><span class="fs13 muted" data-wf-gon>Hạn 08:30</span></div>
+            <button class="btn pri block">Điểm danh ngay</button></div>`, { skel: skelBlock(170), empty: "" })}
+          ${sec("Việc khác hôm nay", "", S(`<div class="grid2">${stat("blue", "Đơn xin nghỉ", "2", "mới", "calendar-x")}${stat("teal", "Đo sức khỏe", "12", "/28 bé", "ruler")}${stat("gray", "Đón trẻ", "16:30", "", "footprints")}${stat("gray", "Đánh giá ngày", "0", "/28", "notebook-pen")}</div>
+            <div class="card" style="margin-top:12px">${row(tasks[5])}</div>`, { skel: `<div class="grid2">${skelBlock(96)}${skelBlock(96)}${skelBlock(96)}${skelBlock(96)}</div>`, empty: emptyT }), 3)}</div>`, nav: nav("gv") };
+      const tl = (time, on, t, title, meta, trail) => `<div class="tl-i" data-t="${t}"><span class="time">${time}</span><span class="rail${on ? " on" : ""}"></span><span class="body"><span class="between"><span class="t">${title}</span>${trail}</span>${meta ? `<span class="m" data-wf-gon>${meta}</span>` : ""}</span></div>`;
+      return { body: `<div class="appbar" data-wf-block="1" style="border:0;background:transparent;padding-left:12px"><h1>Mầm 3A<span class="muted" style="font-weight:500" data-wf-lap> · ${TODAY}</span></h1>${bell(3)}</div>
+          <div class="page" style="gap:16px">
+          <div class="card pad" data-wf-block="2" style="display:grid;gap:8px"><div class="between"><span class="fw6">Hôm nay đã xong 0/6 việc</span><span class="fs13 muted">28 bé</span></div><div class="bar"><i style="width:4%"></i></div></div>
+          ${sec("Lịch việc", "", S(`<div class="card pad"><div class="tl">
+            ${tl("08:30", true, "orange", "Điểm danh & báo ăn", "0/28 bé", chip("orange", "Còn 10 phút", "clock"))}
+            ${tl("Trong ngày", false, "blue", "Đơn xin nghỉ", "Minh Anh, Khánh Linh", chip("blue", "2 mới"))}
+            ${tl("", false, "teal", "Đo sức khỏe tháng 10", "12/28 bé", chip("teal", "Còn 16"))}
+            ${tl("", false, "gray", "Cơ sở vật chất", "Kiểm kê 1 · báo hỏng 1", chip("gray", "2 việc"))}
+            ${tl("16:30", false, "gray", "Đón trẻ", "Xác minh người đón", "")}
+            ${tl("Cuối ngày", false, "gray", "Đánh giá hằng ngày", "Giáo án: Tô màu chiếc lá", "")}
+          </div></div>`, { skel: skelRows(5), empty: emptyT }), 3)}</div>`, nav: nav("gv") };
+    },
+  },
+
+  /* ===== Giáo viên: Điểm danh ===== */
+  "gv-dd": {
+    label: "Điểm danh", rec: "a",
+    opts: {
+      a: { name: "A · Tổng số + danh sách hai nút", why: "Cô cần đếm nhanh và sửa từng bé: bốn ô tổng số trên đầu, mỗi dòng bé có Có mặt / Vắng, Có phép tự theo đơn.",
+        pros: ["Giữ cách thao tác cô đã quen ở bản hiện tại", "Tổng số đổi màu theo trạng thái, đọc một lượt", "Nút Lưu kèm số đã điểm danh"],
+        cons: ["28 dòng phải cuộn khá dài"], fit: "Lớp đông, phần lớn bé có mặt." },
+      b: { name: "B · Lưới thẻ bé", why: "Mỗi bé một thẻ chữ cái tên, chạm đổi trạng thái; lọc theo ô tổng số.",
+        pros: ["Thấy 9–12 bé một màn, ít cuộn", "Chạm lọc 'Vắng' để rà nhanh"],
+        cons: ["Tên dài bị cắt hai dòng", "Chạm lặp để đổi trạng thái khó đoán với người mới"], fit: "Cô nhớ mặt bé theo vị trí, lớp nhỏ." },
+      c: { name: "C · Chỉ xử lý ngoại lệ", why: "Mặc định cả lớp có mặt; trên cùng là các bé cần chú ý (có đơn, vắng, chưa rõ), phần có mặt thu gọn.",
+        pros: ["Thường chỉ chạm 2–3 bé", "Bé có đơn nghỉ không bị bỏ sót"],
+        cons: ["Cần BE trả sẵn danh sách 'cần chú ý' hoặc client lọc theo đơn (cần thống nhất)", "Khó rà lại cả lớp"], fit: "Đa số ngày, vắng rất ít." },
+    },
+    tips: ["Bỏ nút đánh dấu tất cả", "Thêm ô tìm tên bé", "Nút Có mặt / Vắng to hơn", "Đưa khoá 08:30 vào thanh đáy"],
+    render(v) {
+      const ctx = `<div class="between" data-wf-block="2"><span class="fw6">Mầm 3A<span class="muted" style="font-weight:500" data-wf-lap> · ${TODAY}</span></span>${chip("orange", "Khoá lúc 08:30", "lock")}</div>`;
+      const sums = `<div class="grid4" data-wf-block="3">${mini("green", 24, "Có mặt")}${mini("approval", 2, "Có phép")}${mini("red", 1, "Vắng")}${mini("gray", 1, "Chưa ĐD")}</div>`;
+      const loading = state.tt === "dang-tai";
+      const dock = `<div class="dock" data-wf-block="7"><button class="btn pri block"${state.tt === "rong" || loading ? " disabled" : ""}>${loading ? "Lưu điểm danh" : "Lưu điểm danh (27/28)"}</button></div>`;
+      const emptyK = empty("users", "Lớp chưa có bé nào", "Danh sách bé do nhà trường xếp lớp. Liên hệ Phó hiệu trưởng nếu thiếu bé.");
+      const tag = (s) => ({ leave: chip("approval", "Có phép", "file-text"), absent: "", present: "", unset: "" })[s];
+      if (v === "a") {
+        const pair = (s) => s === "leave" ? chip("approval", "Có phép", "file-text") : `<span class="pair"><button class="opt" data-t="green"${s === "present" ? ' aria-pressed="true"' : ""}>Có mặt</button><button class="opt" data-t="red"${s === "absent" ? ' aria-pressed="true"' : ""}>Vắng</button></span>`;
+        return { body: `${appbar("Điểm danh & báo ăn")}<div class="page" style="gap:14px;padding-top:14px">${ctx}${S(sums, { skel: skelBlock(64), empty: "" })}
+          <button class="btn soft block" data-wf-block="4" data-wf-gon>${I("check-check")}Đánh dấu tất cả có mặt</button>
+          <div data-wf-block="5">${S(`<div class="card">${KIDS.map(([n, m, s]) => `<div class="row" style="padding:10px 12px 10px 16px"><span class="tx"><span class="t" style="font-size:15px">${n}</span>${m ? `<span class="m" data-wf-gon>${m}</span>` : ""}</span>${pair(s)}</div>`).join("")}</div>`, { skel: skelRows(6), empty: emptyK })}</div></div>`, dock };
+      }
+      if (v === "b") {
+        const tone = { present: "green", leave: "approval", absent: "red", unset: "" };
+        const lab = { present: chip("green", "Có mặt"), leave: chip("approval", "Có phép"), absent: chip("red", "Vắng"), unset: chip("gray", "Chưa ĐD") };
+        const kids = [...KIDS, ["Lý Thảo Vy", "", "present"], ["Ngô Bảo Ngọc", "", "present"]];
+        return { body: `${appbar("Điểm danh & báo ăn")}<div class="page" style="gap:14px;padding-top:14px">${ctx}
+          <div data-wf-block="3"><div class="hscroll" style="padding-bottom:4px"><button class="cchip" aria-pressed="true">Tất cả 28</button><button class="cchip">Có mặt 24</button><button class="cchip">Có phép 2</button><button class="cchip">Vắng 1</button><button class="cchip">Chưa ĐD 1</button></div></div>
+          <p class="fs13 muted" style="margin:0" data-wf-gon>Chạm thẻ để đổi: Có mặt → Vắng. Bé có đơn tự là Có phép.</p>
+          <div data-wf-block="5">${S(`<div class="grid3">${kids.map(([n, , s]) => `<button class="kid"${tone[s] ? ` data-t="${tone[s]}"` : ""}><span class="av">${ini(n)}</span><span class="n">${n}</span>${lab[s]}</button>`).join("")}</div>`, { skel: `<div class="grid3">${Array.from({ length: 6 }, () => skelBlock(128)).join("")}</div>`, empty: emptyK })}</div></div>`, dock };
+      }
+      const three = (s) => `<span class="pair"><button class="opt" data-t="green"${s === "present" ? ' aria-pressed="true"' : ""} style="min-width:0;padding:0 10px">Có mặt</button><button class="opt" data-t="approval"${s === "leave" ? ' aria-pressed="true"' : ""} style="min-width:0;padding:0 10px">Phép</button><button class="opt" data-t="red"${s === "absent" ? ' aria-pressed="true"' : ""} style="min-width:0;padding:0 10px">Vắng</button></span>`;
+      const attn = [["Nguyễn Minh Anh", "Đơn nghỉ 13/10 · hôm nay đi học", "present"], ["Phạm Khánh Linh", "Ốm · đơn 11–13/10", "leave"], ["Vũ Đức Huy", "Chưa có đơn", "absent"], ["Hoàng Gia Bảo", "Chưa điểm danh", "unset"]];
+      return { body: `${appbar("Điểm danh & báo ăn")}<div class="page" style="gap:16px;padding-top:14px">${ctx}
+        <div class="inp" data-wf-block="4" style="height:44px">${I("search")}<input placeholder="Tìm tên bé"></div>
+        ${S(`${sec("Cần chú ý (4)", "", `<div class="card">${attn.map(([n, m, s]) => `<div class="row" style="flex-wrap:wrap;gap:8px 12px"><span class="tx" style="flex-basis:100%"><span class="t" style="font-size:15px">${n}</span><span class="m">${m}</span></span>${three(s)}</div>`).join("")}</div>`, 5)}
+        ${sec("Có mặt (23)", "Mở", `<div class="card pad"><p class="m" style="margin:0;font-size:14px;line-height:1.6;color:var(--text-2)">Lê Hoàng Nam, Trần Ngọc Bảo Châu Nguyễn, Đỗ Tuấn Kiệt, Lý Thảo Vy, Ngô Bảo Ngọc <span class="muted">và 18 bé khác</span></p></div>`, 6)}`, { skel: skelRows(4), empty: emptyK })}</div>`,
+        dock: `<div class="dock" data-wf-block="7"><div class="sum"><span><b>24</b> có mặt · <b>2</b> phép · <b>1</b> vắng</span><span>Còn 1 chưa ĐD</span></div><button class="btn pri block">Lưu điểm danh</button></div>` };
+    },
+  },
+
+  /* ===== Bếp: Trang chủ ===== */
+  bep: {
+    label: "Bếp", rec: "a",
+    opts: {
+      a: { name: "A · Số suất to + danh sách việc", why: "Bếp mở app để biết nấu bao nhiêu suất: số đã chốt to nhất màn, ngay dưới là việc còn chờ.",
+        pros: ["Số 182 đọc được từ xa khi đang đứng bếp", "Thường / thay thế tách rõ", "Cùng họ thẻ số liệu FE"],
+        cons: ["Chưa thấy số theo lớp, phải mở màn Suất ăn"], fit: "Bếp một cơ sở, cần một con số chính." },
+      b: { name: "B · Dòng bữa trong ngày", why: "Ba bữa trượt ngang với trạng thái nấu, rồi số suất và lưới việc.",
+        pros: ["Thấy ngay bữa nào đang nấu", "Tranh bữa ăn FE, gần gũi"],
+        cons: ["Số suất xuống dưới, kém nổi hơn A", "Trạng thái từng bữa cần BE trả (đang có cho bữa trưa)"], fit: "Bếp theo dõi tiến độ nấu nhiều bữa." },
+      c: { name: "C · Bảng suất theo lớp", why: "Tổng suất dính đầu, việc cần làm trước, rồi bảng số theo lớp do BE trả.",
+        pros: ["Chia suất cho từng lớp không cần mở màn khác", "Việc cần làm luôn ở trên"],
+        cons: ["Bảng nhiều số, chữ nhỏ hơn", "Màn dài khi trường nhiều lớp"], fit: "Bếp chia suất tới từng lớp." },
+    },
+    tips: ["Số suất to hơn nữa", "Bỏ dòng mô tả các việc", "Đưa Nhận nguyên liệu lên đầu", "Thêm số theo nhóm tuổi"],
+    render(v) {
+      const ctx = `<div class="card ctx" data-wf-block="2"><span class="tile">${I("chef-hat")}</span><span class="tx"><span class="t">Bếp cơ sở chính</span><span class="m" data-wf-lap>${TODAY}/2026</span></span>${chip("blue", "Đang nấu", "flame")}</div>`;
+      const count = `<div class="stat" data-t="primary" data-wf-block="3" style="min-height:0;padding:18px 20px;gap:12px"><span class="l" style="font-weight:500;color:var(--text-2)">Suất ăn đã chốt · Bữa trưa<span data-wf-gon> · chốt 08:30</span></span>
+        <div class="between" style="align-items:flex-end"><span class="v" style="font-size:44px">182<small style="font-size:15px">suất</small></span><span style="display:grid;gap:2px;text-align:right;font-size:14px"><span>175 thường</span><span class="fw6" style="color:var(--tone-teal-fg)">7 thay thế</span></span></div>${I("utensils", "bg")}</div>`;
+      const tasks = [
+        { ic: "truck", t: "orange", title: "Nhận nguyên liệu", meta: "2 lô chờ xác nhận", trail: chip("orange", "Cần làm") },
+        { ic: "flame", t: "blue", title: "Cập nhật trạng thái nấu", meta: "Bữa trưa: Đang nấu", trail: chip("blue", "Cập nhật") },
+        { ic: "users", t: "approval", title: "Suất ăn theo lớp", meta: "6 lớp · cập nhật 09:05", trail: chip("approval", "+1 suất") },
+        { ic: "clipboard-list", t: "green", title: "Định lượng & phiếu xuất kho", meta: "PXK-1012 · Phó HT đã duyệt", trail: chip("green", "Đã duyệt", "check") },
+        { ic: "book-open", t: "gray", title: "Thực đơn hôm nay", meta: "Đã công bố · 2 thực đơn thay thế", trail: "", chev: true },
+      ];
+      const emptyB = empty("utensils", "Chưa có suất ăn được chốt", "Số suất hiện sau khi Phó hiệu trưởng chốt (thường 08:30–09:00).");
+      const hello = `<div class="hello" data-wf-block="1"><div><p>Chào cô,</p><h1>Nguyễn Thị Mai</h1></div>${bell(2)}</div>`;
+      if (v === "a") return { body: `<div class="page">${hello}${ctx}${S(count, { skel: skelBlock(132), empty: emptyB })}
+          ${sec("Việc của bếp hôm nay", "", S(`<div class="card">${tasks.map((t) => row(t)).join("")}</div>`, { skel: skelRows(4), empty: "" }), 4)}</div>`, nav: nav("bep") };
+      if (v === "b") return { body: `<div class="scene" style="height:150px" data-wf-block="1"><img src="img/bua-an.webp" alt=""><div class="over"><div class="frost"><p>Chào cô,</p><h1>Nguyễn Thị Mai</h1></div>${bell(2)}</div></div>
+          <div class="page" style="padding-top:0">${ctx}
+          ${sec("Bữa hôm nay", "", S(`<div class="hscroll">
+            <div style="width:148px">${stat("green", "Bữa sáng · 07:45", "Xong", "", "circle-check")}</div>
+            <div style="width:148px">${stat("blue", "Bữa trưa · 10:45", "Đang nấu", "", "flame")}</div>
+            <div style="width:148px">${stat("gray", "Bữa chiều · 14:30", "Chưa", "", "clock")}</div></div>`, { skel: `<div class="grid2">${skelBlock(96)}${skelBlock(96)}</div>`, empty: emptyB }), 6)}
+          ${S(`<div class="card pad between" data-wf-block="3"><span><span class="fs13 muted">Suất trưa đã chốt</span><br><b style="font-size:28px">182</b> <span class="muted">suất</span></span><span style="text-align:right;font-size:14px">175 thường<br><b style="color:var(--tone-teal-fg)">7 thay thế</b></span></div>`, { skel: skelBlock(84), empty: "" })}
+          ${sec("Việc của bếp", "", S(`<div class="grid2">${tasks.slice(0, 4).map((t) => `<a class="utile" href="#">${tile(t.ic, t.t)}<span>${t.title}</span>${t.trail}</a>`).join("")}</div>`, { skel: "", empty: "" }), 4)}</div>`, nav: nav("bep") };
+      const classes = [["Nhà trẻ 1A", 18, 0], ["Nhà trẻ 1B", 20, 1], ["Mầm 3A", 27, 1], ["Mầm 3B", 30, 2], ["Chồi 2", 38, 2], ["Lá 1", 42, 1]];
+      return { body: `<div class="appbar" data-wf-block="1"><span style="width:12px"></span><h1>Bếp cơ sở chính<span class="muted fs13" style="font-weight:500;display:block" data-wf-lap>${TODAY} · Bữa trưa</span></h1>${bell(2)}</div>
+          <div style="position:sticky;top:0;z-index:3;padding:10px 16px;background:var(--bg)" data-wf-block="3">${S(`<div class="card pad between"><span><b style="font-size:26px">182</b> <span class="muted">suất · chốt 08:30</span></span>${chip("teal", "7 thay thế", "replace")}</div>`, { skel: skelBlock(72), empty: "" })}</div>
+          <div class="page" style="padding-top:8px;gap:20px">
+          ${sec("Cần làm", "", S(`<div class="card">${row(tasks[0])}${row(tasks[1])}</div>`, { skel: skelRows(2), empty: emptyB }), 4)}
+          ${sec("Suất theo lớp", "Định lượng", S(`<div class="card" style="overflow:hidden"><table class="tbl"><thead><tr><th>Lớp</th><th class="num">Thường</th><th class="num">Thay thế</th></tr></thead>
+            <tbody>${classes.map(([c, a, b]) => `<tr><td>${c}</td><td class="num">${a}</td><td class="num">${b || "—"}</td></tr>`).join("")}</tbody><tfoot><tr><td>Tổng</td><td class="num">175</td><td class="num">7</td></tr></tfoot></table></div>`, { skel: skelRows(4), empty: "" }), 6)}
+          </div>`, nav: nav("bep") };
+    },
+  },
+
+  /* ===== Phó Hiệu trưởng: Trang chủ ===== */
+  pht: {
+    label: "PHT", rec: "a",
+    opts: {
+      a: { name: "A · Số liệu cơ sở + việc cần xử lý", why: "PHT cần biết cơ sở hôm nay ra sao và việc gì đang chờ mình: bốn ô số, rồi danh sách việc có hạn.",
+        pros: ["Giữ cấu trúc quen của bản hiện tại, chỉ bỏ dải xanh", "Ô số tô màu theo vai FE (vắng đỏ, chờ duyệt vàng)"],
+        cons: ["Yêu cầu chờ duyệt chỉ là một dòng, phải mở thêm màn"], fit: "Việc chờ duyệt ít, cần nhìn toàn cảnh." },
+      b: { name: "B · Việc có hạn lên đầu, hàng chờ ngay trên trang", why: "Chốt suất ăn (hạn 09:00) thành thẻ lớn có nút; các yêu cầu chờ duyệt hiện thẳng, không qua màn khác.",
+        pros: ["Chốt suất một chạm, không quên hạn", "Thấy luôn từng yêu cầu (lớp, số suất)"],
+        cons: ["Số liệu chuyên cần xuống dưới", "Hàng chờ dài thì trang dài"], fit: "Sáng nào cũng có việc chốt và duyệt." },
+      c: { name: "C · Chuyên cần theo lớp", why: "Bảng lớp × có mặt / vắng ở giữa màn, việc chờ gom thành hàng chip trên cùng.",
+        pros: ["Thấy lớp nào vắng nhiều", "Hàng chip việc gọn"],
+        cons: ["Chip việc dễ bị lướt qua", "Bảng chữ nhỏ trên điện thoại"], fit: "PHT theo dõi chuyên cần hằng ngày." },
+    },
+    tips: ["Gộp bốn ô số thành một hàng", "Đưa Chờ duyệt lên trước số liệu", "Bỏ dòng Trẻ của cơ sở", "Thêm thanh tiến độ chuyên cần"],
+    render(v) {
+      const ctx = `<div class="card ctx" data-wf-block="2"><span class="tile">${I("building-2")}</span><span class="tx"><span class="t">Cơ sở chính – Thượng Hồng</span><span class="m">6 lớp · 196 bé</span></span>${chip("blue", "Hôm nay")}</div>`;
+      const sums = `<div class="grid4" data-wf-block="3">${mini("green", 182, "Có mặt")}${mini("approval", 9, "Có phép")}${mini("red", 5, "Vắng")}${mini("orange", 3, "Chờ duyệt")}</div>`;
+      const tasks = [
+        { ic: "utensils", t: "orange", title: "Chốt suất ăn hôm nay", meta: "Tổng hợp 08:45 · hạn 09:00", trail: chip("orange", "Cần làm") },
+        { ic: "stamp", t: "approval", title: "Yêu cầu chờ duyệt", meta: "2 suất ăn · 1 đề xuất khen thưởng", trail: chip("approval", "3 mới") },
+        { ic: "chef-hat", t: "teal", title: "Trạng thái bếp", meta: "Bữa trưa: Đang nấu (09:10)", trail: chip("teal", "Theo dõi") },
+        { ic: "book-open", t: "green", title: "Thực đơn tuần này", meta: "12–16/10 · đã công bố", trail: chip("green", "Đã công bố") },
+        { ic: "smile", t: "gray", title: "Trẻ của cơ sở", meta: "196 bé · 6 bé dị ứng / ăn kiêng", trail: "", chev: true },
+      ];
+      const emptyP = empty("circle-check", "Không còn việc cần xử lý", "Yêu cầu mới từ giáo viên và bếp sẽ hiện ở đây.");
+      const hello = `<div class="hello" data-wf-block="1"><div><p>Chào thầy,</p><h1>Lê Văn Bình</h1></div>${bell(0)}</div>`;
+      if (v === "a") return { body: `<div class="page">${hello}<div class="sec">${ctx}${S(sums, { skel: skelBlock(64), empty: "" })}</div>
+          ${sec("Việc cần làm hôm nay", "", S(`<div class="card">${tasks.map((t) => row(t)).join("")}</div>`, { skel: skelRows(5), empty: emptyP }), 4)}</div>`, nav: nav("pht") };
+      if (v === "b") return { body: `<div class="page">${hello}${ctx}
+          ${S(`<div class="card pad20" data-wf-block="5" style="display:grid;gap:12px;background:linear-gradient(135deg,color-mix(in srgb,var(--tone-orange) 14%, var(--surface)),var(--surface) 70%)">
+            <div class="between"><span class="fw6" style="font-size:17px">Chốt suất ăn hôm nay</span>${chip("orange", "Còn 40 phút", "clock")}</div>
+            <span><b style="font-size:28px">182</b> <span class="muted">suất · tổng hợp 08:45</span></span><button class="btn pri block">Xem & chốt suất</button></div>`, { skel: skelBlock(150), empty: emptyP })}
+          ${sec("Chờ duyệt (3)", "Tất cả", S(`<div class="card">${row({ ic: "utensils", t: "approval", title: "Điều chỉnh suất · Mầm 3A", meta: "+1 suất · GV sửa điểm danh 09:05", trail: chip("approval", "Suất ăn") })}${row({ ic: "utensils", t: "approval", title: "Điều chỉnh suất · Chồi 2", meta: "−2 suất · GV báo vắng 09:10", trail: chip("approval", "Suất ăn") })}${row({ ic: "award", t: "approval", title: "Đề xuất khen thưởng", meta: "8 đề xuất từ giáo viên", trail: chip("approval", "Khen thưởng") })}</div>`, { skel: skelRows(3), empty: "" }), 4)}
+          ${S(`<div class="grid4" data-wf-block="3">${mini("green", 182, "Có mặt")}${mini("approval", 9, "Có phép")}${mini("red", 5, "Vắng")}${mini("teal", "Nấu", "Bếp")}</div>`, { skel: "", empty: "" })}</div>`, nav: nav("pht") };
+      const cls = [["Nhà trẻ 1A", 18, 1, 0], ["Nhà trẻ 1B", 21, 2, 1], ["Mầm 3A", 25, 2, 1], ["Mầm 3B", 30, 1, 1], ["Chồi 2", 40, 2, 2], ["Lá 1", 48, 1, 0]];
+      return { body: `<div class="appbar" data-wf-block="1"><span style="width:12px"></span><h1>Cơ sở chính<span class="muted fs13" style="font-weight:500;display:block">${TODAY} · 196 bé</span></h1>${bell(0)}</div>
+          <div class="page" style="gap:18px;padding-top:14px">
+          <div data-wf-block="4"><div class="hscroll" style="padding-bottom:4px"><a class="qa" href="#" style="border-color:var(--warning-border);background:var(--warning-bg);color:var(--warning-fg)">${I("utensils")}Chốt suất · 09:00</a><a class="qa" href="#">${I("stamp")}Chờ duyệt 3</a><a class="qa" href="#">${I("chef-hat")}Bếp: đang nấu</a><a class="qa" href="#">${I("book-open")}Thực đơn tuần</a></div></div>
+          ${sec("Chuyên cần theo lớp", "", S(`<div class="card" style="overflow:hidden"><table class="tbl"><thead><tr><th>Lớp</th><th class="num">Có mặt</th><th class="num">Phép</th><th class="num">Vắng</th></tr></thead><tbody>
+            ${cls.map(([c, a, b, d]) => `<tr><td>${c}</td><td class="num">${a}</td><td class="num">${b}</td><td class="num" style="${d > 1 ? "color:var(--danger-fg);font-weight:600" : ""}">${d}</td></tr>`).join("")}</tbody>
+            <tfoot><tr><td>Tổng</td><td class="num">182</td><td class="num">9</td><td class="num">5</td></tr></tfoot></table></div>`, { skel: skelRows(5), empty: emptyP }), 3)}</div>`, nav: nav("pht") };
+    },
+  },
+
+  /* ===== Hiệu trưởng: Tổng quan ===== */
+  ht: {
+    label: "HT", rec: "a",
+    opts: {
+      a: { name: "A · Thẻ số liệu FE + chờ duyệt", why: "HT xem toàn trường rồi duyệt: bốn thẻ số liệu kiểu FE, ngay sau là mục chờ duyệt, đánh giá xuống cuối.",
+        pros: ["Thẻ số liệu giống hệt dashboard FE (nền chuyển nhẹ, icon mờ)", "Chờ duyệt lên trên đánh giá tháng"],
+        cons: ["Hai cơ sở gộp chung, không so được"], fit: "HT xem nhanh mỗi sáng." },
+      b: { name: "B · Chờ duyệt lên đầu", why: "Mục cần HT quyết định đứng đầu, rồi hai cơ sở cạnh nhau, rồi đánh giá.",
+        pros: ["Việc chỉ HT làm được nổi nhất", "So nhanh hai cơ sở"],
+        cons: ["Ngày không có gì duyệt thì đầu màn trống, cần khối rỗng gọn"], fit: "HT mở app chủ yếu để duyệt." },
+      c: { name: "C · Chuyển theo cơ sở", why: "Tab Toàn trường / từng cơ sở, mỗi tab cùng một bộ chỉ số dạng danh sách.",
+        pros: ["Một bố cục cho cả trường và từng cơ sở", "Dễ thêm chỉ số sau này"],
+        cons: ["Chờ duyệt chỉ còn ở thanh dưới", "Thêm một lớp điều hướng"], fit: "HT hay xem riêng từng cơ sở." },
+    },
+    tips: ["Bỏ đánh giá trẻ khỏi trang chủ", "Thẻ số liệu một hàng ngang", "Thêm so sánh hai cơ sở vào A", "Đưa chờ duyệt lên đầu"],
+    render(v) {
+      const school = `<div class="card ctx" data-wf-block="2"><span class="tile">${I("school")}</span><span class="tx"><span class="t">Trường MN Thượng Hồng · 2 cơ sở</span><span class="m" data-wf-gon>Năm học 2026–2027<span data-wf-lap> · ${TODAY}</span></span></span></div>`;
+      const stats = `<div class="grid2" data-wf-block="3">${stat("green", "Trẻ có mặt", "312", "/334 · 93%", "smile")}${stat("blue", "Suất ăn đã chốt", "306", "2 cơ sở", "utensils")}${stat("approval", "Cơ sở", "2", "đang hoạt động", "building-2")}${stat("teal", "Thực đơn tuần", "2/2", "đã công bố", "book-open")}</div>`;
+      const pend = `<div class="card">${row({ ic: "award", t: "approval", title: "Khen thưởng cuối năm · 7 bé", meta: "Cơ sở chính · đã qua Phó HT", trail: chip("approval", "Mới") })}${row({ ic: "award", t: "approval", title: "Khen thưởng cuối năm · 5 bé", meta: "Cơ sở 2 · đã qua Phó HT", trail: chip("approval", "Mới") })}</div>`;
+      const evals = `<div class="card pad" style="display:grid;gap:12px">${[["Nhà trẻ", 86], ["Mầm", 91], ["Chồi", 88], ["Lá", 94]].map(([n, p]) => `<div style="display:grid;grid-template-columns:64px 1fr 40px;gap:10px;align-items:center;font-size:14px"><span>${n}</span><span class="bar"><i style="width:${p}%"></i></span><span class="fw6" style="text-align:right">${p}%</span></div>`).join("")}</div>`;
+      const emptyH = empty("circle-check", "Không có mục chờ duyệt", "Đề xuất từ Phó hiệu trưởng và đơn nghỉ nhân sự sẽ hiện ở đây.");
+      const hello = `<div class="hello" data-wf-block="1"><div><p>Chào cô,</p><h1>Nguyễn Thị Hồng</h1></div>${bell(0)}</div>`;
+      if (v === "a") return { body: `<div class="page">${hello}${school}${S(stats, { skel: `<div class="grid2">${skelBlock(96)}${skelBlock(96)}${skelBlock(96)}${skelBlock(96)}</div>`, empty: "" })}
+          ${sec("Chờ Hiệu trưởng duyệt", "Tất cả", S(pend, { skel: skelRows(2), empty: emptyH }), 4)}
+          ${sec("Đánh giá trẻ tháng 9", "", S(evals, { skel: skelBlock(140), empty: "" }), 6)}</div>`, nav: nav("ht") };
+      if (v === "b") {
+        const camp = (n, a, b, p) => `<div class="card pad" style="display:grid;gap:8px"><span class="fw6" style="font-size:15px">${n}</span><span><b style="font-size:24px">${a}</b><span class="muted">/${b}</span></span><div class="bar"><i style="width:${p}%"></i></div><span class="fs13 muted">${p}% có mặt</span></div>`;
+        return { body: `<div class="page">${hello}
+          ${sec("Chờ Hiệu trưởng duyệt (2)", "Tất cả", S(pend, { skel: skelRows(2), empty: emptyH }), 4)}
+          ${sec(`Hôm nay<span data-wf-lap class="muted" style="font-weight:500"> · ${TODAY}</span>`, "", S(`<div class="grid2">${camp("Cơ sở chính", 182, 196, 93)}${camp("Cơ sở 2", 130, 138, 94)}</div>
+            <div class="card" style="margin-top:12px">${row({ ic: "utensils", t: "blue", title: "Suất ăn đã chốt", meta: "", trail: `<b>306</b>` })}${row({ ic: "book-open", t: "teal", title: "Thực đơn tuần", meta: "", trail: chip("green", "2/2 công bố") })}</div>`, { skel: `<div class="grid2">${skelBlock(120)}${skelBlock(120)}</div>`, empty: "" }), 3)}
+          ${sec("Đánh giá trẻ tháng 9", "", S(evals, { skel: skelBlock(140), empty: "" }), 6)}</div>`, nav: nav("ht") };
+      }
+      return { body: `<div class="appbar" data-wf-block="1"><span style="width:12px"></span><h1>Tổng quan</h1>${bell(0)}</div>
+          <div class="page" style="gap:18px;padding-top:14px">
+          <div class="seg" data-wf-block="2"><button aria-pressed="true">Toàn trường</button><button>Cơ sở chính</button><button>Cơ sở 2</button></div>
+          ${sec(TODAY, "", S(`<div class="card">${row({ ic: "smile", t: "green", title: "Trẻ có mặt", meta: "93% · 22 vắng/phép", trail: `<b>312<span class="muted" style="font-weight:400">/334</span></b>` })}${row({ ic: "utensils", t: "blue", title: "Suất ăn đã chốt", meta: "2/2 cơ sở đã chốt", trail: "<b>306</b>" })}${row({ ic: "building-2", t: "approval", title: "Cơ sở", meta: "Cơ sở chính · Cơ sở 2", trail: "<b>2</b>" })}${row({ ic: "book-open", t: "teal", title: "Thực đơn tuần", meta: "12–16/10", trail: chip("green", "Đã công bố") })}</div>`, { skel: skelRows(4), empty: "" }), 3)}
+          ${sec("Đánh giá trẻ tháng 9", "", S(evals, { skel: skelBlock(140), empty: "" }), 6)}</div>`, nav: nav("ht", 0) };
+    },
+  },
+};
+
+/* ---------- Concept trang chủ D/E/F: khác chiến lược, không chỉ khác trang trí ---------- */
+const extendHome = (id, rec, opts, renders) => {
+  const s = SCREENS[id];
+  Object.assign(s.opts, opts);
+  s.rec = rec;
+  const base = s.render;
+  s.render = function (v) { return renders[v] ? renders[v]() : base.call(this, v); };
+};
+const ring = (p, big, small, cls = "", rc = "") => `<span class="ring ${cls}" style="--p:${p}${rc ? `;--rc:${rc}` : ""}"><span><b>${big}</b><small>${small}</small></span></span>`;
+const step = (st, ic, label) => `<span class="step ${st}"><span class="dot">${I(ic)}</span>${label}</span>`;
+const checkRow = (done, time, title, meta, trail = "") => `<div class="check-row${done ? " done" : ""}"><span class="time">${time}</span><span class="box">${done ? I("check") : ""}</span><span class="tx"><span class="t">${title}</span>${meta ? `<span class="m" data-wf-gon>${meta}</span>` : ""}</span>${trail}</div>`;
+const taskAct = (ic, t, title, meta, btn) => `<div class="task-act">${tile(ic, t)}<span class="tx"><span class="t">${title}</span><span class="m">${meta}</span></span>${btn}</div>`;
+
+/* ===== Phụ huynh ===== */
+extendHome("ph-chu", "d", {
+  d: { name: "D · Thẻ bé là nhân vật chính", why: "Bé là thứ phụ huynh mở app để xem: thẻ lớn tên bé, nhấn tên để đổi bé (không còn nút Đổi bé), ba con số hôm nay nằm ngay trong thẻ.",
+    pros: ["Mở app thấy ngay bé + tình hình hôm nay trong một thẻ", "Đổi bé bằng chạm vào tên, bớt một nút", "Tên phụ huynh lùi xuống một dòng nhỏ, không tranh chỗ"],
+    cons: ["Người mới có thể không biết chạm tên để đổi (cần mũi tên ▾ + gợi ý lần đầu)"], fit: "Phần lớn phụ huynh có 1–2 bé, xem hằng ngày." },
+  e: { name: "E · Vòng tròn các bé (kiểu story)", why: "Hàng ảnh tròn các bé trên cùng, chạm để chuyển; dưới là tiến trình trong ngày của bé đang chọn theo 4 mốc.",
+    pros: ["Thấy luôn mình có mấy bé, chuyển một chạm", "Tiến trình 4 mốc dễ hiểu với mọi phụ huynh"], cons: ["Một bé thì hàng tròn thừa (ẩn khi chỉ một bé)", "Ít chỗ cho thông tin chi tiết"], fit: "Gia đình nhiều bé, hay chuyển qua lại." },
+  f: { name: "F · Bảng tin của lớp + nút Xin nghỉ nổi", why: "Trang chủ là dòng tin theo giờ (đến lớp, hoạt động cô đăng, thực đơn), nút Xin nghỉ nổi luôn trong tầm ngón cái.",
+    pros: ["Cảm giác 'có gì mới' mỗi lần mở", "Việc phụ huynh làm nhiều nhất (xin nghỉ) luôn một chạm"], cons: ["Dài, phải cuộn để thấy thực đơn", "Ảnh hoạt động cần chính sách ảnh trẻ (dùng ảnh minh hoạ, không mặt trẻ)"], fit: "Muốn app giống mạng xã hội của lớp." },
+}, {
+  d: () => ({ body: `<div class="page">
+      <div class="between" data-wf-block="1"><span class="fs13 muted">Phụ huynh · <b style="color:var(--text)">Chị Nguyễn Thu Lan</b></span>${bell(2)}</div>
+      ${S(`<div class="hero" data-wf-block="2"><div style="display:flex;align-items:center;gap:14px"><span class="av xl">MA</span><div style="display:grid;gap:2px;min-width:0">
+        <button class="name-switch" aria-haspopup="dialog" aria-label="Minh Anh, chạm để đổi bé">Minh Anh${I("chevron-down")}</button>
+        <span class="fs13 muted">Nguyễn Minh Anh · Mầm 3A · 4 tuổi</span><span class="fs13" style="color:var(--primary);font-weight:600" data-wf-gon>Chạm tên để chọn bé khác (2 bé)</span></div></div>
+        <div class="today-strip"><div><span class="k">Điểm danh</span><span class="v" style="color:var(--tone-green-fg)">Có mặt</span><span class="k" data-wf-gon>07:42</span></div>
+          <div><span class="k">Bữa trưa</span><span class="v">10:45</span><span class="k" data-wf-gon>Cơm, cá basa</span></div><div><span class="k">Hoạt động</span><span class="v">09:30</span><span class="k" data-wf-gon>Tô màu lá</span></div></div></div>`,
+        { skel: skelBlock(210), empty: empty("calendar-days", "Hôm nay chưa có cập nhật", "Thông tin sẽ hiện khi cô giáo cập nhật.") })}
+      ${sec("Lối tắt", "", `<div class="between" style="align-items:flex-start">${[["calendar-x", "Xin nghỉ", "orange"], ["images", "Hoạt động", "blue"], ["book-open", "Thực đơn", "green"], ["heart-pulse", "Sức khỏe", "red"]].map(([ic, l, t]) => `<a class="roundbtn" href="#">${tile(ic, t)}${l}</a>`).join("")}</div>`, 4)}
+      ${sec("Hoạt động mới", "Tất cả", S(`<div class="feed-card"><img src="img/lop-hoc.webp" alt="Tranh minh hoạ lớp học"><div class="fb"><div class="feed-head"><span class="av">TH</span><span class="tx"><span class="t">Cô Thu Hà · Mầm 3A</span><span class="m">09:50 hôm nay</span></span></div><span>Các bé tô màu chiếc lá mùa thu, cả lớp rất hào hứng.</span></div></div>`, { skel: skelBlock(220), empty: "" }), 5)}
+    </div>`, nav: nav("ph") }),
+  e: () => ({ body: `<div class="appbar" data-wf-block="1" style="border:0;background:transparent;padding-left:16px"><h1 style="font-size:22px;font-weight:700">Con của tôi</h1>${bell(2)}</div>
+    <div class="page" style="gap:20px">
+      <div data-wf-block="2"><div class="stories"><button class="story" aria-current="true"><span class="av">MA</span>Minh Anh</button><button class="story"><span class="av" style="background:#fce7f3;color:#be185d">MK</span>Minh Khôi</button></div></div>
+      ${S(`<div class="card pad20" data-wf-block="3" style="display:grid;gap:16px"><div class="between"><span><span class="fw6" style="font-size:17px">Hôm nay của Minh Anh</span><br><span class="fs13 muted">Mầm 3A<span data-wf-lap> · ${TODAY}</span></span></span>${chip("green", "Có mặt", "check")}</div>
+        <div class="steps">${step("done", "school", "Đến lớp<br>07:42")}${step("done", "palette", "Hoạt động<br>09:30")}${step("now", "utensils", "Bữa trưa<br>10:45")}${step("", "cookie", "Bữa chiều<br>14:30")}</div>
+        <div class="banner" data-wf-gon>${I("utensils")}<span><b>Bữa trưa:</b> cơm, canh bí đỏ thịt bằm, cá basa sốt cà chua, chuối.</span></div></div>`,
+        { skel: skelBlock(230), empty: empty("calendar-days", "Hôm nay chưa có cập nhật", "Thông tin sẽ hiện khi cô giáo cập nhật.") })}
+      ${sec("Việc của phụ huynh", "", `<div class="grid2">${[["calendar-x", "Xin nghỉ cho bé", "orange"], ["images", "Hoạt động & đánh giá", "blue"], ["book-open", "Thực đơn tuần", "green"], ["heart-pulse", "Sức khỏe", "red"]].map(([ic, l, t]) => `<a class="utile" href="#" style="min-height:0;grid-template-columns:auto 1fr;align-items:center">${tile(ic, t)}${l}</a>`).join("")}</div>`, 4)}
+    </div>`, nav: nav("ph") }),
+  f: () => ({ body: `<div class="appbar" data-wf-block="1" style="padding:8px 8px 8px 12px;border:0;background:transparent"><button class="pick" style="flex:1"><span class="av">MA</span><span>Minh Anh · Mầm 3A</span>${I("chevron-down")}</button>${bell(2)}</div>
+    <div class="page" style="gap:14px;padding-bottom:96px" data-wf-block="3">${S(`
+      <p class="fs13 muted fw6" style="margin:4px 0 0">HÔM NAY<span data-wf-lap> · ${TODAY}</span></p>
+      <div class="event">${tile("circle-check", "green")}<span class="tx"><b>Bé đã đến lớp</b><br><span class="fs13 muted">Cô Thu Hà điểm danh</span></span><span class="fs13 muted">07:42</span></div>
+      <div class="feed-card"><img src="img/lop-hoc.webp" alt="Tranh minh hoạ lớp học"><div class="fb"><div class="feed-head"><span class="av">TH</span><span class="tx"><span class="t">Cô Thu Hà đăng hoạt động</span><span class="m">09:50</span></span></div><span>Tô màu chiếc lá mùa thu. Bé Minh Anh chọn màu cam và vàng.</span><a class="link" href="#">Xem đánh giá trong ngày${I("chevron-right")}</a></div></div>
+      <div class="feed-card" style="display:flex"><img src="img/bua-an.webp" alt="" style="width:110px;height:auto"><div class="fb"><span class="fw6">Thực đơn trưa · 10:45</span><span class="fs13 muted">Cơm, canh bí đỏ thịt bằm, cá basa sốt cà chua, chuối tráng miệng</span></div></div>`,
+      { skel: `${skelBlock(64)}${skelBlock(240)}`, empty: empty("newspaper", "Chưa có tin hôm nay", "Điểm danh, hoạt động và thực đơn sẽ hiện ở đây trong ngày.") })}
+    </div>`, nav: nav("ph"), extra: `<button class="fab" data-wf-block="5">${I("calendar-x")}Xin nghỉ</button>` }),
+});
+
+/* ===== Giáo viên ===== */
+extendHome("gv-chu", "d", {
+  d: { name: "D · Thẻ lớp + vòng điểm danh", why: "Lớp là đối tượng chính: thẻ lớn có vòng tiến độ điểm danh, đếm ngược hạn và nút làm ngay; các việc khác trượt ngang bên dưới.",
+    pros: ["Việc gấp nhất làm được ngay từ trang chủ", "Vòng 0/28 cho biết tiến độ không cần đọc chữ", "Chạm tên lớp để đổi lớp (khi cô dạy nhiều lớp)"], cons: ["Việc khác nằm ngang, phải vuốt mới thấy hết"], fit: "Sáng nào cũng điểm danh trước 08:30." },
+  e: { name: "E · Hộp việc có nút làm ngay", why: "Như hộp thư: tab Cần làm / Sắp tới / Đã xong, mỗi việc có nút hành động ngay trên dòng.",
+    pros: ["Làm xong việc nào thì việc đó rời tab, thấy rõ còn bao nhiêu", "Không cần mở màn trung gian"], cons: ["Cần BE trả trạng thái xong/chưa xong cho từng việc", "Ít ngữ cảnh lớp"], fit: "Cô xử lý việc theo danh sách." },
+  f: { name: "F · Tập trung một việc", why: "Cả màn dành cho việc gấp nhất: đồng hồ đếm ngược lớn và một nút to; các việc khác gom thành chip nhỏ.",
+    pros: ["Không thể bỏ lỡ hạn điểm danh", "Rất dễ dùng một tay"], cons: ["Qua hạn thì màn trống trải, cần chọn việc gấp kế tiếp (logic BE)"], fit: "Giờ cao điểm buổi sáng." },
+}, {
+  d: () => ({ body: `<div class="page">
+      <div class="between" data-wf-block="1"><span class="fs13 muted">Chào cô <b style="color:var(--text)">Trần Thu Hà</b></span>${bell(3)}</div>
+      ${S(`<div class="hero" data-wf-block="2"><div class="between" style="align-items:center"><div style="display:grid;gap:4px;min-width:0"><button class="name-switch">Mầm 3A${I("chevron-down")}</button><span class="fs13 muted">28 bé<span data-wf-lap> · ${TODAY}</span></span>${chip("orange", "Khoá lúc 08:30 · còn 10 phút", "clock")}</div>${ring(0, "0/28", "đã điểm danh", "", "var(--tone-orange)")}</div>
+        <button class="btn pri block">${I("clipboard-check")}Điểm danh ngay</button></div>`, { skel: skelBlock(200), empty: "" })}
+      ${sec("Việc tiếp theo", "", S(`<div class="hcards">
+        <a class="w" href="#"><span class="k">Đơn xin nghỉ ${chip("blue", "2 mới")}</span><span class="avstack"><span class="av">MA</span><span class="av" style="background:#fce7f3;color:#be185d">KL</span></span><span class="fs13 muted">Minh Anh, Khánh Linh</span></a>
+        <a class="w" href="#"><span class="k">Đo sức khỏe tháng 10</span><span class="v">12<span class="fs13 muted" style="font-weight:500">/28 bé</span></span><span class="bar"><i style="width:43%"></i></span></a>
+        <a class="w" href="#"><span class="k">Đón trẻ</span><span class="v">16:30</span><span class="fs13 muted">Xác minh người đón</span></a>
+        <a class="w" href="#"><span class="k">Cơ sở vật chất ${chip("gray", "2 việc")}</span><span class="fs13 muted">Kiểm kê 1 · báo hỏng 1</span></a></div>`, { skel: skelBlock(120), empty: empty("party-popper", "Không còn việc nào khác", "Việc mới sẽ hiện ở đây.") }), 3)}
+      ${sec("Cuối ngày", "", `<div class="card">${row({ ic: "notebook-pen", t: "gray", title: "Đánh giá hằng ngày", meta: "Giáo án: Tô màu chiếc lá", trail: chip("gray", "0/28") })}</div>`, 4)}
+    </div>`, nav: nav("gv") }),
+  e: () => ({ body: `<div class="appbar" data-wf-block="1" style="border:0;background:transparent;padding-left:16px"><h1 style="font-size:22px;font-weight:700">Việc của cô<span class="fs13 muted" style="display:block;font-weight:500">Mầm 3A · ${TODAY}</span></h1>${bell(3)}</div>
+    <div class="page" style="gap:12px;padding-top:0">
+      <div class="tabs-line" data-wf-block="2"><button aria-selected="true">Cần làm · 3</button><button>Sắp tới · 2</button><button>Đã xong · 0</button></div>
+      ${S(`<div class="card" data-wf-block="3">
+        ${taskAct("clipboard-check", "orange", "Điểm danh & báo ăn", `<span style="color:var(--tone-orange-fg);font-weight:600">Còn 10 phút</span> · 0/28 bé`, `<button class="btn sm pri">Điểm danh</button>`)}
+        ${taskAct("calendar-x", "blue", "2 đơn xin nghỉ mới", "Minh Anh, Khánh Linh", `<button class="btn sm soft">Xem</button>`)}
+        ${taskAct("ruler", "teal", "Đo sức khỏe tháng 10", "Còn 16/28 bé", `<button class="btn sm soft">Nhập</button>`)}</div>`,
+        { skel: skelRows(3), empty: empty("party-popper", "Đã xong hết việc cần làm", "Xem tab Sắp tới cho việc chiều nay.") })}
+      <p class="fs13 muted" style="margin:4px 4px 0" data-wf-gon>Sắp tới: Đón trẻ 16:30 · Đánh giá cuối ngày</p>
+    </div>`, nav: nav("gv") }),
+  f: () => ({ body: `<div class="appbar" data-wf-block="1" style="border:0;background:transparent;padding-left:16px"><h1>Mầm 3A<span class="muted" style="font-weight:500" data-wf-lap> · ${TODAY}</span></h1>${bell(3)}</div>
+    <div class="page" style="gap:20px">
+      ${S(`<div class="hero" data-wf-block="2" style="justify-items:center;text-align:center;padding:28px 20px;gap:10px;background:linear-gradient(160deg,color-mix(in srgb,var(--tone-orange) 18%,var(--surface)),var(--surface) 75%)">
+        <span class="fs13 fw6" style="color:var(--tone-orange-fg)">VIỆC GẤP NHẤT</span><span class="fw6" style="font-size:20px">Điểm danh & báo ăn</span>
+        <span class="countdown">10:00</span><span class="fs13 muted">phút còn lại tới 08:30 · 0/28 bé</span>
+        <button class="btn pri block" style="margin-top:8px;height:60px;font-size:17px">Bắt đầu điểm danh</button></div>`, { skel: skelBlock(300), empty: "" })}
+      ${sec("Sau đó", "", `<div class="wrap">${[["calendar-x", "Đơn nghỉ · 2"], ["ruler", "Đo sức khỏe · 16"], ["footprints", "Đón trẻ 16:30"], ["notebook-pen", "Đánh giá cuối ngày"], ["wrench", "CSVC · 2"]].map(([ic, l]) => `<a class="qa" href="#">${I(ic)}${l}</a>`).join("")}</div>`, 3)}
+    </div>`, nav: nav("gv") }),
+});
+
+/* ===== Bếp ===== */
+extendHome("bep", "d", {
+  d: { name: "D · Chữ lớn đọc từ xa", why: "Bếp xem điện thoại khi tay bận: số suất 76px đọc từ xa, suất thay thế theo nhóm chế độ ăn, thanh tiến độ nấu và một nút cập nhật.",
+    pros: ["Đứng cách 1–2 m vẫn đọc được số", "Tiến độ nấu nhìn một lần là hiểu", "Không tên trẻ, đúng phạm vi bếp"], cons: ["Ít việc khác trên màn (chỉ một dòng)"], fit: "Đặt điện thoại trên kệ khi nấu." },
+  e: { name: "E · Tab theo bữa", why: "Ba tab Sáng / Trưa / Chiều; mỗi tab đủ số suất, món, món thay thế và việc của riêng bữa đó.",
+    pros: ["Mọi thứ của một bữa ở một chỗ", "Không lẫn số giữa các bữa"], cons: ["Việc chung cả ngày (nhận nguyên liệu) bị lặp ở nhiều tab"], fit: "Bếp chia việc theo bữa." },
+  f: { name: "F · Danh sách ca bếp theo giờ", why: "Cả ca thành một checklist theo giờ, việc đã xong gạch đi, việc đang chờ nổi màu.",
+    pros: ["Thấy cả ca từ sáng tới chiều", "Hợp nhân viên mới"], cons: ["Mốc giờ là dữ liệu cấu hình, cần BE trả", "Số suất nằm trong một dòng, kém nổi"], fit: "Ca bếp làm theo lịch giờ cố định." },
+}, {
+  d: () => ({ body: `<div class="page">
+      <div class="between" data-wf-block="1"><span><span class="fw6" style="font-size:17px">Bếp cơ sở chính</span><br><span class="fs13 muted">Bữa trưa<span data-wf-lap> · ${TODAY}</span></span></span>${bell(2)}</div>
+      ${S(`<div class="hero" data-wf-block="2" style="gap:10px"><span class="fs13 muted">Suất trưa đã chốt · 08:30</span><span class="huge">182</span>
+        <div class="wrap">${chip("gray", "Thường 175")}${chip("teal", "Hải sản → món thay 2", "replace")}${chip("green", "Ăn chay 1", "leaf")}${chip("teal", "Thay thế khác 4")}</div></div>`,
+        { skel: skelBlock(190), empty: empty("utensils", "Chưa có suất ăn được chốt", "Số suất hiện sau khi chốt (thường 08:30–09:00).") })}
+      <div class="card pad20" data-wf-block="3" style="display:grid;gap:16px"><span class="fw6">Tiến độ bữa trưa</span>
+        <div class="steps">${step("done", "carrot", "Sơ chế")}${step("now", "flame", "Đang nấu")}${step("", "soup", "Chia suất")}${step("", "truck", "Giao lớp")}</div>
+        <button class="btn soft block">${I("refresh-cw")}Cập nhật trạng thái nấu</button></div>
+      <div class="card" data-wf-block="4">${row({ ic: "truck", t: "orange", title: "Nhận nguyên liệu", meta: "2 lô chờ xác nhận", trail: chip("orange", "Cần làm") })}</div>
+    </div>`, nav: nav("bep") }),
+  e: () => ({ body: `<div class="appbar" data-wf-block="1"><span style="width:12px"></span><h1>Bếp cơ sở chính<span class="fs13 muted" style="display:block;font-weight:500" data-wf-lap>${TODAY}</span></h1>${bell(2)}</div>
+    <div class="page" style="gap:16px;padding-top:14px">
+      <div class="seg" data-wf-block="2"><button>Sáng · Xong</button><button aria-pressed="true">Trưa · Đang nấu</button><button>Chiều</button></div>
+      ${S(`<div class="card pad20" data-wf-block="3" style="display:grid;gap:12px"><div class="between"><span><b style="font-size:32px">182</b> <span class="muted">suất · 10:45</span></span>${chip("blue", "Đang nấu", "flame")}</div>
+        <div style="display:grid;gap:6px;font-size:15px"><span>${I("wheat")} Cơm · 80 g/suất</span><span>${I("soup")} Canh bí đỏ thịt bằm</span><span>${I("fish")} Cá basa sốt cà chua · 45 g</span></div>
+        <div class="banner" style="padding:10px 12px">${I("replace")}<span><b>Thay thế 7 suất:</b> hải sản → thịt gà rim (2), chay → đậu sốt cà (1), khác (4)</span></div></div>`,
+        { skel: skelBlock(220), empty: empty("utensils", "Bữa trưa chưa có số suất", "Số suất hiện sau khi chốt.") })}
+      ${sec("Việc cho bữa trưa", "", `<div class="card">${row({ ic: "truck", t: "orange", title: "Nhận nguyên liệu", meta: "2 lô chờ xác nhận", trail: chip("orange", "Cần làm") })}${row({ ic: "clipboard-list", t: "green", title: "Định lượng & phiếu xuất kho", meta: "PXK-1012", trail: chip("green", "Đã duyệt", "check") })}</div>`, 4)}
+    </div>`, nav: nav("bep") }),
+  f: () => ({ body: `<div class="appbar" data-wf-block="1"><span style="width:12px"></span><h1>Ca bếp hôm nay<span class="fs13 muted" style="display:block;font-weight:500">Cơ sở chính · ${TODAY}</span></h1>${bell(2)}</div>
+    <div class="page" style="gap:14px;padding-top:14px">
+      <div class="card pad" data-wf-block="2" style="display:grid;gap:8px"><div class="between"><span class="fw6">Đã xong 3/7 việc</span><span class="fs13 muted">182 suất trưa</span></div><div class="bar"><i style="width:43%"></i></div></div>
+      ${S(`<div class="card" data-wf-block="3">
+        ${checkRow(true, "06:30", "Nhận nguyên liệu đợt sáng", "Đã xác nhận 3 lô")}
+        ${checkRow(true, "07:45", "Bữa sáng", "Cháo thịt bằm, sữa tươi")}
+        ${checkRow(true, "08:30", "Nhận số suất đã chốt", "182 suất · 7 thay thế")}
+        ${checkRow(false, "09:00", "Nhận nguyên liệu bữa trưa", "2 lô chờ xác nhận", chip("orange", "Cần làm"))}
+        ${checkRow(false, "10:45", "Bữa trưa", "Đang nấu", chip("blue", "Đang nấu", "flame"))}
+        ${checkRow(false, "13:30", "Phiếu xuất kho bữa chiều", "")}
+        ${checkRow(false, "14:30", "Bữa chiều", "Bánh flan, nước cam")}</div>`, { skel: skelRows(6), empty: empty("list-checks", "Chưa có lịch ca hôm nay", "Lịch ca hiện khi thực đơn ngày đã công bố.") })}
+    </div>`, nav: nav("bep") }),
+});
+
+/* ===== Phó Hiệu trưởng ===== */
+extendHome("pht", "f", {
+  d: { name: "D · Duyệt từng thẻ", why: "Hàng chờ duyệt thành chồng thẻ lớn 1/3: đọc đủ ngữ cảnh rồi Duyệt / Từ chối ngay, số liệu cơ sở xuống dưới.",
+    pros: ["Duyệt nhanh nhất, không mở màn khác", "Mỗi yêu cầu có đủ chỗ ghi lý do, giờ, người gửi"], cons: ["Từ chối vẫn cần sheet nhập lý do", "Ít tổng quan cơ sở"], fit: "Ngày nhiều yêu cầu điều chỉnh suất." },
+  e: { name: "E · Thẻ cơ sở + vòng có mặt", why: "Cơ sở là đối tượng chính: vòng tỉ lệ có mặt, chạm tên cơ sở để đổi (nếu được phân công nhiều cơ sở), bốn ô việc lớn.",
+    pros: ["Nhìn một lần biết cơ sở hôm nay ra sao", "Ô việc lớn, dễ chạm"], cons: ["Đổi cơ sở phụ thuộc P-14 (cố định hay luân phiên) còn PENDING"], fit: "PHT theo dõi chuyên cần là chính." },
+  f: { name: "F · Mốc giờ buổi sáng", why: "Buổi sáng của PHT là chuỗi mốc: khoá điểm danh → tổng hợp → chốt suất → bếp nhận số. Màn đi theo chuỗi đó, mốc hiện tại nổi lên.",
+    pros: ["Biết ngay đang ở bước nào, bước nào trễ", "Chốt suất (hạn 09:00) đứng đúng chỗ trong chuỗi"], cons: ["Buổi chiều chuỗi đã xong, màn ít giá trị hơn", "Chốt suất còn PENDING P-05"], fit: "Sáng nào cũng chạy cùng một chuỗi việc." },
+}, {
+  d: () => ({ body: `<div class="page">
+      <div class="between" data-wf-block="1"><span class="fs13 muted">Chào thầy <b style="color:var(--text)">Lê Văn Bình</b> · Cơ sở chính</span>${bell(0)}</div>
+      ${sec("Chờ thầy duyệt · 1/3", "Tất cả", S(`<div class="hero" style="gap:12px"><div class="between">${chip("approval", "Suất ăn", "utensils")}<span class="fs13 muted">09:05</span></div>
+        <span class="fw6" style="font-size:19px">Điều chỉnh suất · Mầm 3A</span><span class="huge" style="font-size:44px;color:var(--tone-approval-fg)">+1 suất</span>
+        <span class="fs13 muted" data-wf-gon>Cô Thu Hà sửa điểm danh: bé Hoàng Gia Bảo đến muộn. Bếp: còn kịp chia thêm.</span>
+        <div class="grid2"><button class="btn">Từ chối</button><button class="btn pri">Duyệt</button></div><div class="pager"><i class="on"></i><i></i><i></i></div></div>`,
+        { skel: skelBlock(280), empty: empty("circle-check", "Không còn yêu cầu chờ duyệt", "Yêu cầu mới từ giáo viên và bếp sẽ hiện ở đây.") }), 2)}
+      ${S(`<div class="grid4" data-wf-block="3">${mini("green", 182, "Có mặt")}${mini("approval", 9, "Có phép")}${mini("red", 5, "Vắng")}${mini("teal", "Nấu", "Bếp")}</div>`, { skel: "", empty: "" })}
+      <div class="banner warn" data-wf-block="4">${I("clock")}<span><b>Chốt suất ăn trước 09:00</b> · 182 suất đã tổng hợp</span></div>
+    </div>`, nav: nav("pht") }),
+  e: () => ({ body: `<div class="page">
+      <div class="between" data-wf-block="1"><span class="fs13 muted">Chào thầy <b style="color:var(--text)">Lê Văn Bình</b></span>${bell(0)}</div>
+      ${S(`<div class="hero" data-wf-block="2"><div class="between" style="align-items:center"><div style="display:grid;gap:4px;min-width:0"><button class="name-switch md">Cơ sở chính${I("chevron-down")}</button><span class="fs13 muted">6 lớp · 196 bé<span data-wf-lap> · ${TODAY}</span></span>
+        <span class="fs13"><b style="color:var(--tone-approval-fg)">9</b> có phép · <b style="color:var(--tone-red-fg)">5</b> vắng</span></div>${ring(93, "93%", "182/196", "", "var(--tone-green)")}</div></div>`, { skel: skelBlock(150), empty: "" })}
+      ${sec("Việc hôm nay", "", S(`<div class="bento">
+        <a class="w" href="#" style="background:linear-gradient(135deg,color-mix(in srgb,var(--tone-orange) 16%,var(--surface)),var(--surface) 70%)"><span class="k">Chốt suất ăn ${I("chevron-right")}</span><span class="v">182</span><span class="fs13" style="color:var(--tone-orange-fg);font-weight:600">Hạn 09:00</span></a>
+        <a class="w" href="#"><span class="k">Chờ duyệt ${I("chevron-right")}</span><span class="v">3</span><span class="fs13 muted">2 suất ăn · 1 khen thưởng</span></a>
+        <a class="w" href="#"><span class="k">Bếp ${I("chevron-right")}</span>${chip("blue", "Đang nấu", "flame")}<span class="fs13 muted">Bữa trưa · 09:10</span></a>
+        <a class="w" href="#"><span class="k">Thực đơn tuần ${I("chevron-right")}</span>${chip("green", "Đã công bố")}<span class="fs13 muted">12–16/10</span></a></div>`, { skel: skelBlock(240), empty: empty("circle-check", "Không còn việc cần xử lý", "Việc mới sẽ hiện ở đây.") }), 3)}
+    </div>`, nav: nav("pht") }),
+  f: () => {
+    const tl = (time, on, t, title, meta, trail) => `<div class="tl-i" data-t="${t}"><span class="time">${time}</span><span class="rail${on ? " on" : ""}"></span><span class="body"><span class="between"><span class="t">${title}</span>${trail}</span>${meta ? `<span class="m">${meta}</span>` : ""}</span></div>`;
+    return { body: `<div class="appbar" data-wf-block="1"><span style="width:12px"></span><h1>Sáng nay<span class="fs13 muted" style="display:block;font-weight:500">Cơ sở chính · ${TODAY}</span></h1>${bell(0)}</div>
+    <div class="page" style="gap:20px;padding-top:14px">
+      ${S(`<div class="card pad" data-wf-block="2"><div class="tl">
+        ${tl("08:30", true, "green", "Khoá điểm danh", "6/6 lớp đã điểm danh", chip("green", "Xong", "check"))}
+        ${tl("08:45", true, "green", "Tổng hợp suất ăn", "182 suất · 7 thay thế", chip("green", "Xong", "check"))}
+        <div class="tl-i" data-t="orange"><span class="time">09:00</span><span class="rail on"></span><span class="body"><span class="between"><span class="t">Chốt suất ăn</span>${chip("orange", "Còn 40 phút", "clock")}</span><button class="btn sm pri" style="justify-self:start;margin-top:4px">Xem & chốt</button></span></div>
+        ${tl("09:10", false, "gray", "Bếp nhận số", "Sau khi chốt", "")}
+        ${tl("10:45", false, "gray", "Bữa trưa", "Bếp đang sơ chế", "")}</div></div>`, { skel: skelRows(5), empty: "" })}
+      ${sec("Chờ duyệt (3)", "Tất cả", S(`<div class="card">${row({ ic: "utensils", t: "approval", title: "Điều chỉnh suất · Mầm 3A", meta: "+1 suất · 09:05", trail: chip("approval", "Suất ăn") })}${row({ ic: "utensils", t: "approval", title: "Điều chỉnh suất · Chồi 2", meta: "−2 suất · 09:10", trail: chip("approval", "Suất ăn") })}${row({ ic: "award", t: "approval", title: "Đề xuất khen thưởng", meta: "8 đề xuất", trail: chip("approval", "Khen thưởng") })}</div>`, { skel: skelRows(3), empty: empty("circle-check", "Không có yêu cầu chờ duyệt", "Yêu cầu mới sẽ hiện ở đây.") }), 3)}
+    </div>`, nav: nav("pht") };
+  },
+});
+
+/* ===== Hiệu trưởng ===== */
+extendHome("ht", "d", {
+  d: { name: "D · Hai cơ sở cạnh nhau", why: "Trường có đúng 2 cơ sở: hai thẻ cao đứng cạnh nhau với vòng có mặt, suất đã chốt, bếp; chờ duyệt ngay dưới.",
+    pros: ["So hai cơ sở không cần chuyển tab", "Mục cần HT duyệt vẫn ở nửa trên màn"], cons: ["Chỉ hợp khi có 2 cơ sở (đúng phạm vi hiện tại)"], fit: "HT so sánh hai cơ sở mỗi sáng." },
+  e: { name: "E · Bản tin bằng câu", why: "Đọc như một bản tin: một đoạn tóm tắt hôm nay (số BE trả), vài vòng chỉ số, một nút tới mục chờ duyệt.",
+    pros: ["Rất dễ đọc với người không quen dashboard", "Gọn, không lưới số"], cons: ["Câu chữ phải BE/APP ghép từ số — cần mẫu câu cố định", "Khó quét nhanh khi số nhiều"], fit: "HT xem trên điện thoại vài giây mỗi sáng." },
+  f: { name: "F · Hộp duyệt là màn chính", why: "Màn chính là hộp duyệt khen thưởng; số toàn trường thu về một dòng trên đầu.",
+    pros: ["Việc chỉ HT làm được đứng đầu", "Có cả lịch sử đã xử lý"], cons: ["Tổng quan chỉ còn một dòng", "Gần như trùng tab Duyệt"], fit: "HT mở app chủ yếu để duyệt." },
+}, {
+  d: () => {
+    const camp = (n, p, a, b, meals) => `<div class="card pad" style="display:grid;gap:12px;justify-items:start"><span class="fw6" style="font-size:16px">${n}</span>${ring(p, `${p}%`, `${a}/${b}`, "sm", "var(--tone-green)")}
+      <span class="fs13"><span class="muted">Suất đã chốt</span><br><b style="font-size:18px">${meals}</b></span>${chip("blue", "Bếp đang nấu", "flame")}</div>`;
+    return { body: `<div class="page">
+      <div class="hello" data-wf-block="1"><div><p>Chào cô,</p><h1>Nguyễn Thị Hồng</h1></div>${bell(0)}</div>
+      ${S(`<div class="grid2" data-wf-block="2">${camp("Cơ sở chính", 93, 182, 196, 182)}${camp("Cơ sở 2", 94, 130, 138, 124)}</div>`, { skel: `<div class="grid2">${skelBlock(210)}${skelBlock(210)}</div>`, empty: "" })}
+      ${sec("Chờ Hiệu trưởng duyệt (2)", "Tất cả", S(`<div class="card">${row({ ic: "award", t: "approval", title: "Khen thưởng cuối năm · 7 bé", meta: "Cơ sở chính · đã qua Phó HT", trail: chip("approval", "Mới") })}${row({ ic: "award", t: "approval", title: "Khen thưởng cuối năm · 5 bé", meta: "Cơ sở 2 · đã qua Phó HT", trail: chip("approval", "Mới") })}</div>`, { skel: skelRows(2), empty: empty("circle-check", "Không có mục chờ duyệt", "Đề xuất từ Phó hiệu trưởng sẽ hiện ở đây.") }), 4)}
+    </div>`, nav: nav("ht") };
+  },
+  e: () => ({ body: `<div class="appbar" data-wf-block="1" style="border:0;background:transparent;padding-left:16px"><h1 style="font-size:22px;font-weight:700">Sáng nay<span class="fs13 muted" style="display:block;font-weight:500">Trường MN Thượng Hồng · ${TODAY}</span></h1>${bell(0)}</div>
+    <div class="page" style="gap:20px">
+      ${S(`<div class="card pad20" data-wf-block="2"><p class="narr">Toàn trường có <b>312/334</b> bé đến lớp (<b>93%</b>). Cả <b>2 cơ sở</b> đã chốt <b>306 suất</b>, thực đơn tuần đã công bố. Có <b>2 đề xuất khen thưởng</b> chờ cô duyệt.</p></div>
+      <div class="between" data-wf-block="3" style="justify-content:space-around">${ring(93, "93%", "có mặt", "sm", "var(--tone-green)")}${ring(100, "2/2", "chốt suất", "sm")}${ring(100, "2/2", "thực đơn", "sm", "var(--tone-teal)")}</div>`, { skel: skelBlock(200), empty: "" })}
+      <button class="btn pri block" data-wf-block="4">${I("stamp")}Xem 2 mục chờ duyệt</button>
+      ${sec("Đánh giá trẻ tháng 9", "", `<div class="card pad" style="display:grid;gap:12px">${[["Nhà trẻ", 86], ["Mầm", 91], ["Chồi", 88], ["Lá", 94]].map(([n, p]) => `<div style="display:grid;grid-template-columns:64px 1fr 40px;gap:10px;align-items:center;font-size:14px"><span>${n}</span><span class="bar"><i style="width:${p}%"></i></span><span class="fw6" style="text-align:right">${p}%</span></div>`).join("")}</div>`, 6)}
+    </div>`, nav: nav("ht") }),
+  f: () => ({ body: `<div class="appbar" data-wf-block="1"><span style="width:12px"></span><h1>Chờ cô duyệt</h1>${bell(0)}</div>
+    <div class="page" style="gap:14px;padding-top:12px">
+      <div class="card pad" data-wf-block="2" style="padding:10px 14px;font-size:13px;display:flex;flex-wrap:wrap;gap:4px 14px"><span><b>312</b>/334 có mặt</span><span><b>306</b> suất</span><span><b>2/2</b> thực đơn</span></div>
+      <div class="tabs-line" data-wf-block="3"><button aria-selected="true">Chờ duyệt · 2</button><button>Đã xử lý</button></div>
+      ${S(`<div class="card" data-wf-block="4">${taskAct("award", "approval", "Khen thưởng cuối năm · 7 bé", "Cơ sở chính · Phó HT đã xét", `<button class="btn sm soft">Xem</button>`)}${taskAct("award", "approval", "Khen thưởng cuối năm · 5 bé", "Cơ sở 2 · Phó HT đã xét", `<button class="btn sm soft">Xem</button>`)}</div>`, { skel: skelRows(2), empty: empty("circle-check", "Không có mục chờ duyệt", "Đề xuất từ Phó hiệu trưởng sẽ hiện ở đây.") })}
+      ${sec("Đã xử lý gần đây", "", `<div class="card">${row({ ic: "award", t: "green", title: "Khen thưởng HK1 · Mầm 3A", meta: "Đã duyệt 08/10", trail: chip("green", "Đã duyệt", "check") })}${row({ ic: "award", t: "red", title: "Khen thưởng HK1 · Chồi 2", meta: "Trả về 05/10 · thiếu minh chứng", trail: chip("red", "Trả về") })}</div>`, 5)}
+    </div>`, nav: nav("ht") }),
+});
+
+
+/* ---------- Concept khác hẳn: Đăng nhập, Xin nghỉ, Điểm danh (D/E/F) + trang chủ PH, HT (G/H) ---------- */
+const brandMark = (size = 56) => `<img src="img/logo-mark.png" alt="CareNest" style="width:${size}px;height:${size}px;object-fit:contain">`;
+
+/* ===== Đăng nhập ===== */
+extendHome("login", "a", {
+  d: { name: "D · Hai bước: số điện thoại rồi mật khẩu", why: "Mỗi bước một việc: bước 1 chỉ nhập số điện thoại, bước 2 nhập mật khẩu và thấy lại số vừa nhập để sửa.",
+    pros: ["Ô to, ít chữ, hợp phụ huynh lớn tuổi", "Lỗi sai số được bắt trước khi gõ mật khẩu"], cons: ["Thêm một lần bấm", "Nếu BE muốn kiểm tra số tồn tại ở bước 1 thì cần endpoint riêng (chưa có, không giả định)"], fit: "Người dùng ít quen điện thoại." },
+  e: { name: "E · Người dùng quay lại: đăng nhập một chạm", why: "Lần sau mở app: hiện tên tài khoản đã dùng, nút lớn đăng nhập bằng vân tay / khuôn mặt, mật khẩu là lối phụ.",
+    pros: ["Vào app trong một chạm, mỗi ngày", "Không phải gõ mật khẩu nơi đông người"], cons: ["Cần thư viện sinh trắc và cách lưu token an toàn — chưa chốt, phải hỏi trước khi thêm", "Chỉ là màn quay lại; lần đầu vẫn cần màn A/D/F"], fit: "Giáo viên, bếp đăng nhập mỗi sáng." },
+  f: { name: "F · Tiêu đề lớn, ô gạch chân, nút mũi tên", why: "Kiểu app hiện đại: tiêu đề hai dòng lớn, ô nhập dạng gạch chân, nút tròn mũi tên nằm ngay trên bàn phím.",
+    pros: ["Trông mới, khác hẳn form card", "Nút tròn luôn trong tầm ngón cái"], cons: ["Ô gạch chân khó nhận ra là ô nhập với người lớn tuổi", "Lệch kiểu ô nhập của FE (FE bo tròn)"], fit: "Muốn ấn tượng hiện đại, người dùng trẻ." },
+}, {
+  d: () => {
+    const err = state.tt === "loi", loading = state.tt === "dang-tai";
+    return { body: `<div class="page" style="padding-top:20px;gap:22px">
+      <div class="between" data-wf-block="1"><button class="back" style="border:0;background:none;padding:0">${I("arrow-left")}</button>${brandMark(36)}<span style="width:24px"></span></div>
+      <div class="wiz" style="grid-template-columns:repeat(2,1fr)" data-wf-block="2"><span class="done">1. Số điện thoại</span><span class="now">2. Mật khẩu</span></div>
+      <div><h1 style="margin:0 0 6px;font-size:24px">Nhập mật khẩu</h1><div class="between" style="justify-content:flex-start;gap:8px"><span class="muted">cho số</span><b>0912 345 678</b><a class="link" href="#">Sửa</a></div></div>
+      ${err ? `<div class="banner err" role="alert">${I("circle-alert")}<span><b>Mật khẩu chưa đúng.</b> Kiểm tra lại hoặc dùng Quên mật khẩu.</span></div>` : ""}
+      <div class="field" data-wf-block="3"><label>Mật khẩu</label><div class="inp${err ? " err" : " is-focus"}" style="height:60px"><input type="password" value="${state.tt === "rong" ? "" : "••••••••"}" placeholder="Nhập mật khẩu" style="font-size:18px">${I("eye-off")}</div>
+        <a class="link" href="#" style="justify-self:end">Quên mật khẩu?</a></div></div>`,
+      dock: `<div class="dock" data-wf-block="5"><button class="btn pri block"${state.tt === "rong" ? " disabled" : ""}>${loading ? `${I("loader-circle")}Đang đăng nhập…` : "Đăng nhập"}</button><p class="ver" style="margin:0" data-wf-gon>Tài khoản do nhà trường cấp qua SMS</p></div>` };
+  },
+  e: () => ({ body: `<div class="page" style="padding-top:56px;gap:28px;justify-items:center;text-align:center">
+      <div data-wf-block="1" style="display:grid;justify-items:center;gap:6px">${brandMark(44)}<span class="fs13 muted">CareNest · Trường Mầm non Thượng Hồng</span></div>
+      <div data-wf-block="2" style="display:grid;justify-items:center;gap:10px"><span class="big-av">TH</span><span class="fs13 muted">Chào mừng trở lại</span><h1 style="margin:0;font-size:24px">Trần Thu Hà</h1><span class="fs13 muted">0912 ••• 678 · Giáo viên Mầm 3A</span></div>
+      ${state.tt === "loi" ? `<div class="banner err" role="alert" style="text-align:left">${I("fingerprint")}<span><b>Không nhận ra vân tay.</b> Thử lại hoặc dùng mật khẩu.</span></div>` : ""}
+      <button class="btn pri block" data-wf-block="3" style="height:60px;font-size:17px"${state.tt === "dang-tai" ? " disabled" : ""}>${I("fingerprint")}${state.tt === "dang-tai" ? "Đang xác thực…" : "Đăng nhập bằng vân tay"}</button>
+      <div data-wf-block="4" style="display:grid;gap:4px"><a class="link" href="#" style="justify-content:center">Dùng mật khẩu</a><a class="link" href="#" style="justify-content:center;color:var(--text-2)">Không phải bạn? Đổi tài khoản</a></div></div>` }),
+  f: () => {
+    const err = state.tt === "loi", blank = state.tt === "rong", loading = state.tt === "dang-tai";
+    return { body: `<div class="page" style="padding-top:32px;gap:28px">
+      <div data-wf-block="1">${brandMark(40)}</div>
+      <h1 style="margin:0;font-size:32px;line-height:1.2;letter-spacing:-.02em">Đăng nhập<br><span style="color:var(--primary)">CareNest</span></h1>
+      ${err ? `<div class="banner err" role="alert">${I("circle-alert")}<span><b>Số điện thoại hoặc mật khẩu chưa đúng.</b></span></div>` : ""}
+      <div data-wf-block="2" style="display:grid;gap:22px"><div class="uline${err ? " err" : ""}"><label>Số điện thoại</label><input value="${blank ? "" : "0912 345 678"}" placeholder="09xx xxx xxx"></div>
+        <div class="uline${err ? " err" : " is-focus"}"><label>Mật khẩu</label><div class="between"><input type="password" value="${blank ? "" : "••••••••"}" placeholder="Mật khẩu">${I("eye-off")}</div></div></div>
+      <div class="between" data-wf-block="5"><a class="link" href="#">Quên mật khẩu?</a><button class="go-btn" aria-label="Đăng nhập"${blank ? " disabled" : ""}>${I(loading ? "loader-circle" : "arrow-right")}</button></div>
+      <p class="fs13 muted" style="margin:0" data-wf-gon>Tài khoản do nhà trường cấp qua SMS. Lần đầu đăng nhập, bạn cần đổi mật khẩu.</p></div>` };
+  },
+});
+
+/* ===== Phụ huynh: Xin nghỉ ===== */
+extendHome("ph-nghi", "d", {
+  d: { name: "D · Lịch tháng, kéo chọn khoảng ngày", why: "Ngày nghỉ là thứ quan trọng nhất: lịch tháng chọn từ–đến một lần, thấy luôn ngày nào đã báo nghỉ trước đó.",
+    pros: ["Nghỉ nhiều ngày, qua tuần, qua tháng đều chọn được", "Thấy ngày đã báo nghỉ để không báo trùng", "Cuối tuần và ngày đã qua tự khoá"], cons: ["Lịch chiếm nửa màn, lý do phải cuộn xuống"], fit: "Đơn nghỉ thường từ 1 đến vài ngày." },
+  e: { name: "E · Ba bước: Ngày → Lý do → Xem lại", why: "Chia đơn thành ba bước, bước cuối là bản xem lại đủ hệ quả (huỷ suất, cô nhận thông báo) trước khi gửi.",
+    pros: ["Mỗi màn rất ít việc, khó sai", "Bước xem lại cho phụ huynh chắc chắn trước khi gửi"], cons: ["Ba lần bấm cho một đơn nghỉ đơn giản"], fit: "Muốn phụ huynh đọc kỹ hệ quả trước khi gửi." },
+  f: { name: "F · Hỏi đáp từng câu", why: "Màn như một cuộc hỏi đáp: app hỏi 'Bé nghỉ ngày nào?', phụ huynh chạm câu trả lời; câu đã trả lời hiện thành bong bóng bên phải.",
+    pros: ["Thân thiện, như nhắn tin", "Câu trả lời nhanh bằng chip (Hôm nay, Ngày mai)"], cons: ["Không phải chat thật (không trả lời tự do, không AI) — cần nói rõ để không bị hiểu là chat", "Sửa câu trước phải chạm lại bong bóng"], fit: "Phụ huynh quen nhắn tin hơn điền form." },
+}, {
+  d: () => {
+    const blank = state.tt === "rong";
+    const days = [];
+    for (let i = 0; i < 3; i++) days.push(`<span></span>`);
+    for (let d = 1; d <= 31; d++) {
+      const dow = (d + 2) % 7; // 0 = T2
+      const weekend = dow === 5 || dow === 6;
+      const cls = blank ? "" : d === 13 ? "s" : d === 15 ? "e" : d === 14 ? "in" : "";
+      days.push(`<button class="${[cls, d === 12 ? "today" : "", d === 22 ? "dot" : ""].join(" ")}"${d < 12 || weekend ? " disabled" : ""}><span>${d}</span></button>`);
+    }
+    return { body: `${appbar("Xin nghỉ cho bé", `<a class="link" href="#" style="padding:0 8px">Đơn đã gửi</a>`)}
+      <div class="page" style="gap:18px;padding-top:14px">
+      <div class="card ctx" data-wf-block="2" style="padding:10px 14px"><span class="av">MA</span><span class="tx"><span class="t">Minh Anh · Mầm 3A</span></span>${I("chevron-down")}</div>
+      <div class="card pad" data-wf-block="3" style="display:grid;gap:8px"><div class="between"><button class="ibtn" style="border:0">${I("chevron-left")}</button><b>Tháng 10, 2026</b><button class="ibtn" style="border:0">${I("chevron-right")}</button></div>
+        <div class="cal">${["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map((d) => `<span class="dow">${d}</span>`).join("")}${days.join("")}</div>
+        <div class="between fs13"><span class="muted"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--tone-approval);margin-right:6px"></span>Đã báo nghỉ: 22/10</span><b>${blank ? "Chưa chọn ngày" : "13–15/10 · 3 ngày"}</b></div></div>
+      <div class="field" data-wf-block="4"><label>Buổi</label><div class="seg"><button aria-pressed="true">Cả ngày</button><button>Sáng</button><button>Chiều</button></div></div>
+      <div class="field" data-wf-block="5"><label>Lý do <b>*</b></label><div class="inp area" style="min-height:84px"><textarea placeholder="Ví dụ: bé bị sốt">${blank ? "" : "Gia đình đưa bé về quê"}</textarea></div></div>
+      ${blank ? "" : `<div class="banner warn" data-wf-block="6">${I("info")}<span><b>Suất ăn 13–15/10 sẽ được huỷ tự động.</b> <span data-wf-gon>Cô Hà sẽ nhận được thông báo.</span></span></div>`}</div>`,
+      dock: `<div class="dock" data-wf-block="7"><button class="btn pri block"${blank ? " disabled" : ""}>${state.tt === "dang-tai" ? `${I("loader-circle")}Đang gửi…` : `${I("send")}Gửi đơn nghỉ 3 ngày`}</button></div>` };
+  },
+  e: () => {
+    const blank = state.tt === "rong";
+    const line = (k, v) => `<div class="between" style="padding:12px 0;border-top:1px solid var(--border);align-items:flex-start"><span class="muted fs13">${k}</span><span style="text-align:right;font-weight:600;max-width:65%">${v}</span></div>`;
+    return { body: `${appbar("Xin nghỉ cho bé")}
+      <div class="page" style="gap:18px;padding-top:14px">
+      <div class="wiz" data-wf-block="2"><span class="done">1. Ngày nghỉ</span><span class="done">2. Lý do</span><span class="now">3. Xem lại</span></div>
+      <h2 style="margin:0;font-size:22px">Kiểm tra trước khi gửi</h2>
+      ${state.tt === "loi" ? `<div class="banner err" role="alert">${I("wifi-off")}<span><b>Chưa gửi được.</b> Nội dung vẫn giữ, gửi lại khi có mạng.</span></div>` : ""}
+      <div class="card pad20" data-wf-block="3" style="padding-top:8px">${line("Bé", "Nguyễn Minh Anh · Mầm 3A")}${line("Ngày nghỉ", blank ? "—" : "Thứ Ba 13/10/2026<br>Cả ngày")}${line("Lý do", blank ? "—" : "Gia đình đưa bé đi khám răng định kỳ.")}<a class="link" href="#">${I("pencil")}Sửa</a></div>
+      <div class="card pad" data-wf-block="6" style="display:grid;gap:10px"><span class="fw6">Khi gửi đơn</span>
+        <span style="display:flex;gap:10px">${tile("utensils", "orange")}<span class="fs13">Suất ăn ngày 13/10 của bé được huỷ tự động.</span></span>
+        <span style="display:flex;gap:10px">${tile("bell", "blue")}<span class="fs13">Cô Hà (GV Mầm 3A) nhận thông báo. Đơn nghỉ là thông báo, không cần duyệt.</span></span></div></div>`,
+      dock: `<div class="dock" data-wf-block="7"><div class="grid2"><button class="btn">Quay lại</button><button class="btn pri"${blank ? " disabled" : ""}>${state.tt === "dang-tai" ? "Đang gửi…" : "Gửi đơn"}</button></div></div>` };
+  },
+  f: () => {
+    const blank = state.tt === "rong";
+    return { body: `${appbar("Xin nghỉ cho bé")}
+      <div class="page" style="gap:14px;padding-top:16px">
+      <div class="ask" data-wf-block="3"><span class="q">Bé nghỉ ngày nào?</span>${blank ? `<div class="choicechips"><button class="cchip">Hôm nay</button><button class="cchip">Ngày mai (13/10)</button><button class="cchip">${I("calendar")}Chọn ngày</button></div>` : `<span class="a">Ngày mai · Thứ Ba 13/10</span>`}</div>
+      ${blank ? "" : `<div class="ask" data-wf-block="4"><span class="q">Bé nghỉ buổi nào?</span><span class="a">Cả ngày</span></div>
+      <div class="ask" data-wf-block="5"><span class="q">Lý do nghỉ là gì?</span><div class="choicechips"><button class="cchip">Ốm, sốt</button><button class="cchip" aria-pressed="true">Khám bệnh</button><button class="cchip">Việc gia đình</button><button class="cchip">Khác</button></div>
+        <div class="inp" style="height:48px"><input placeholder="Ghi thêm cho cô (không bắt buộc)" value="Khám răng định kỳ"></div></div>
+      <div class="banner warn" data-wf-block="6">${I("info")}<span><b>Suất ăn 13/10 sẽ được huỷ tự động.</b> <span data-wf-gon>Cô Hà sẽ nhận được thông báo.</span></span></div>`}</div>`,
+      dock: `<div class="dock" data-wf-block="7"><button class="btn pri block"${blank ? " disabled" : ""}>${state.tt === "dang-tai" ? "Đang gửi…" : `${I("send")}Gửi đơn xin nghỉ`}</button></div>` };
+  },
+});
+
+/* ===== Giáo viên: Điểm danh ===== */
+extendHome("gv-dd", "a", {
+  d: { name: "D · Từng bé một thẻ, chạm lớn", why: "Mỗi bé một thẻ lớn giữa màn với hai nút to Có mặt / Vắng; chạm xong tự sang bé kế, thanh trên đếm tiến độ.",
+    pros: ["Nút rất to, dùng một tay khi bế trẻ", "Không bỏ sót bé nào (đi lần lượt)"], cons: ["28 bé là 28 lần chạm, chậm hơn 'đánh dấu tất cả'", "Khó nhìn tổng thể cả lớp"], fit: "Cô đứng cửa lớp đón từng bé." },
+  e: { name: "E · Chỉ chọn bé vắng", why: "Hỏi một câu: 'Hôm nay ai vắng?'. Cô tích các bé vắng trong danh sách có chữ cái, các bé khác tự là có mặt; bé có đơn đã xếp sẵn.",
+    pros: ["Ngày bình thường chỉ 1–3 chạm", "Danh sách chữ cái tìm tên nhanh"], cons: ["Mặc định 'có mặt' cần BE đồng ý cách hiểu này (cần thống nhất)", "Dễ quên bé đến muộn"], fit: "Lớp đông, vắng rất ít." },
+  f: { name: "F · Hai tab: Điểm danh | Báo ăn", why: "Tách báo ăn thành tab riêng: mỗi bé có mặt có ba nút bữa Sáng / Trưa / Chiều, tổng suất do BE tính hiện ở thanh đáy.",
+    pros: ["Ca ăn 1 bữa (về sớm) báo rõ ràng", "Điểm danh và báo ăn không lẫn vào nhau"], cons: ["Thêm một tab phải nhớ làm", "Cách báo theo bữa phải khớp quy tắc suất ăn của BE (không tự tính ở APP)"], fit: "Nhiều bé ăn không đủ bữa." },
+}, {
+  d: () => ({ body: `${appbar("Điểm danh & báo ăn", chip("orange", "08:30", "lock"))}
+      <div class="page" style="gap:18px;padding-top:14px">
+      <div data-wf-block="2" style="display:grid;gap:6px"><div class="between fs13"><span class="fw6">Bé 13 / 28</span><span class="muted">12 có mặt · 0 vắng</span></div><div class="bar"><i style="width:46%"></i></div></div>
+      ${S(`<div class="stackwrap" data-wf-block="5"><div class="hero" style="justify-items:center;text-align:center;padding:28px 20px;gap:12px">
+        <span class="big-av">VH</span><span class="fw6" style="font-size:24px">Vũ Đức Huy</span><span class="fs13 muted">Chưa có đơn nghỉ · Hôm qua có mặt</span>
+        <div class="grid2" style="width:100%;margin-top:8px"><button class="btn" style="height:64px;border-color:color-mix(in srgb,var(--tone-red) 50%,var(--surface));color:var(--tone-red-fg)">${I("x")}Vắng</button><button class="btn pri" style="height:64px">${I("check")}Có mặt</button></div>
+        <div class="between" style="width:100%"><a class="link" href="#">${I("chevron-left")}Bé trước</a><a class="link" href="#">Bỏ qua${I("chevron-right")}</a></div></div></div>`, { skel: skelBlock(340), empty: empty("users", "Lớp chưa có bé nào", "Danh sách bé do nhà trường xếp lớp.") })}
+      <p class="fs13 muted" style="margin:0;text-align:center" data-wf-gon>Bé có đơn nghỉ (Khánh Linh) tự là Có phép, không hiện ở đây.</p></div>`,
+    dock: `<div class="dock" data-wf-block="7"><button class="btn block soft"${state.tt === "dang-tai" ? " disabled" : ""}>Xem cả lớp & lưu (13/28)</button></div>` }),
+  e: () => {
+    const all = [["Đỗ Tuấn Kiệt", 0], ["Hoàng Gia Bảo", 0], ["Lê Hoàng Nam", 0], ["Lý Thảo Vy", 0], ["Ngô Bảo Ngọc", 0], ["Nguyễn Minh Anh", 0], ["Trần Ngọc Bảo Châu Nguyễn", 0], ["Vũ Đức Huy", 1]];
+    return { body: `${appbar("Điểm danh & báo ăn", chip("orange", "08:30", "lock"))}
+      <div class="page" style="gap:14px;padding-top:14px">
+      <h2 style="margin:0;font-size:22px" data-wf-block="2">Hôm nay ai vắng?</h2>
+      <div data-wf-block="3" style="display:grid;gap:8px"><span class="fs13 muted">Đã chọn vắng</span><div class="wrap"><span class="selchip"><span class="av">VH</span>Vũ Đức Huy<span class="x">${I("x")}</span></span></div>
+        <span class="fs13 muted" data-wf-gon>Có phép theo đơn: Phạm Khánh Linh, Đinh Gia Hân</span></div>
+      <div class="inp" data-wf-block="4" style="height:44px">${I("search")}<input placeholder="Tìm tên bé"></div>
+      ${S(`<div style="display:flex;gap:8px" data-wf-block="5"><div class="card" style="flex:1">${all.map(([n, on]) => `<div class="row" style="min-height:52px;padding:8px 14px"><span class="av" style="width:32px;height:32px;font-size:12px">${ini(n)}</span><span class="tx"><span class="t" style="font-size:15px">${n}</span></span><span class="cbx${on ? " on" : ""}">${on ? I("check") : ""}</span></div>`).join("")}</div>
+        <div class="alpha">${"ABCDĐGHKLMNPTV".split("").map((c) => `<span>${c}</span>`).join("")}</div></div>`, { skel: skelRows(5), empty: empty("users", "Lớp chưa có bé nào", "Danh sách bé do nhà trường xếp lớp.") })}</div>`,
+      dock: `<div class="dock" data-wf-block="7"><div class="sum"><span><b>25</b> có mặt · <b>2</b> có phép · <b>1</b> vắng</span></div><button class="btn pri block"${state.tt === "dang-tai" ? " disabled" : ""}>Lưu điểm danh (28/28)</button></div>` };
+  },
+  f: () => {
+    const kids = [["Nguyễn Minh Anh", [1, 1, 1]], ["Lê Hoàng Nam", [1, 1, 1]], ["Trần Ngọc Bảo Châu Nguyễn", [0, 1, 0]], ["Đỗ Tuấn Kiệt", [1, 1, 1]], ["Hoàng Gia Bảo", [0, 1, 1]], ["Lý Thảo Vy", [1, 1, 1]]];
+    return { body: `${appbar("Điểm danh & báo ăn", chip("orange", "08:30", "lock"))}
+      <div class="page" style="gap:14px;padding-top:14px">
+      <div class="tabs-line" data-wf-block="2"><button>Điểm danh · 27/28</button><button aria-selected="true">Báo ăn</button></div>
+      <div class="between fs13" data-wf-block="3"><span class="muted">25 bé có mặt · chạm bữa để bỏ</span><a class="link" href="#">Đủ 3 bữa cho tất cả</a></div>
+      ${S(`<div class="card" data-wf-block="5">${kids.map(([n, m]) => `<div class="row" style="min-height:56px;padding:10px 12px 10px 16px"><span class="tx"><span class="t" style="font-size:15px">${n}</span>${m.join("") !== "111" ? `<span class="m" style="color:var(--tone-orange-fg)">Ăn ${m.filter(Boolean).length} bữa</span>` : ""}</span><span class="meal3">${["Sáng", "Trưa", "Chiều"].map((b, i) => `<button${m[i] ? ' aria-pressed="true"' : ""}>${b}</button>`).join("")}</span></div>`).join("")}</div>`,
+        { skel: skelRows(5), empty: empty("utensils", "Chưa có bé có mặt", "Điểm danh trước, rồi báo ăn cho các bé có mặt.") })}</div>`,
+      dock: `<div class="dock" data-wf-block="7"><div class="sum"><span>Sáng <b>23</b> · Trưa <b>25</b> · Chiều <b>24</b></span><span data-wf-gon>BE tính lại khi lưu</span></div><button class="btn pri block"${state.tt === "dang-tai" ? " disabled" : ""}>Lưu báo ăn</button></div>` };
+  },
+});
+
+/* ===== Phụ huynh: Trang chủ G/H ===== */
+extendHome("ph-chu", "d", {
+  g: { name: "G · Lịch tuần của bé", why: "Phụ huynh hay hỏi 'hôm qua bé ăn gì, có đi học không': dải 5 ngày trong tuần, mỗi ngày một chấm màu đi học; chọn ngày nào hiện ngày đó.",
+    pros: ["Xem lại ngày trước không cần mở màn khác", "Chấm màu cho thấy cả tuần đi học ra sao"], cons: ["Cần BE trả tóm tắt theo ngày cho cả tuần", "Đổi bé chuyển lên góc phải, nhỏ hơn"], fit: "Phụ huynh xem lại cả tuần, cuối tuần." },
+  h: { name: "H · Thẻ ví xếp chồng các bé", why: "Mỗi bé là một thẻ như thẻ trong ví: thẻ trên cùng mở đủ thông tin hôm nay, thẻ bé kia ló ra bên dưới, chạm để đưa lên.",
+    pros: ["Thấy ngay có mấy bé và đang xem bé nào", "Đổi bé không cần menu"], cons: ["Ba bé trở lên thì phần ló ra dài", "Hiệu ứng đổi thẻ cần dựng cẩn thận"], fit: "Gia đình 2 bé." },
+}, {
+  g: () => {
+    const wk = [["T2", 12, "green", true], ["T3", 13, "approval"], ["T4", 14, ""], ["T5", 15, ""], ["T6", 16, ""]];
+    const prev = [["T2", 5, "green"], ["T3", 6, "green"], ["T4", 7, "red"], ["T5", 8, "green"], ["T6", 9, "green"]];
+    return { body: `<div class="appbar" data-wf-block="1" style="border:0;background:transparent;padding-left:16px"><h1 style="font-size:22px;font-weight:700">Tuần của Minh Anh<span class="fs13 muted" style="display:block;font-weight:500">12–16/10 · Mầm 3A</span></h1><span class="av" title="Đổi bé">MA</span>${bell(2)}</div>
+      <div class="page" style="gap:18px">
+      <div data-wf-block="2" style="display:grid;gap:8px"><div class="weekdots">${wk.map(([d, n, t, on]) => `<button class="wd"${on ? ' aria-pressed="true"' : ""}${t ? ` data-t="${t}"` : ""}>${d}<b>${n}</b><i></i></button>`).join("")}</div>
+        <div class="between fs13"><a class="link" href="#">${I("chevron-left")}Tuần trước</a><span class="muted"><span style="color:var(--tone-green-fg)">●</span> đi học <span style="color:var(--tone-approval-fg)">●</span> báo nghỉ</span></div></div>
+      ${S(`<div class="card pad20" data-wf-block="3" style="display:grid;gap:14px"><div class="between"><span class="fw6" style="font-size:17px">Thứ Hai 12/10 · Hôm nay</span>${chip("green", "Có mặt 07:42", "check")}</div>
+        <div class="tl">
+          <div class="tl-i" data-t="blue"><span class="time">09:30</span><span class="rail on"></span><span class="body"><span class="t">Tô màu chiếc lá mùa thu</span></span></div>
+          <div class="tl-i"><span class="time">10:45</span><span class="rail"></span><span class="body"><span class="t">Bữa trưa</span><span class="m" data-wf-gon>Cơm, canh bí đỏ thịt bằm, cá basa sốt cà chua</span></span></div>
+          <div class="tl-i"><span class="time">14:30</span><span class="rail"></span><span class="body"><span class="t">Bữa chiều</span><span class="m" data-wf-gon>Bánh flan, nước cam</span></span></div></div></div>`, { skel: skelBlock(220), empty: empty("calendar-days", "Ngày này chưa có cập nhật", "Thông tin sẽ hiện khi cô giáo cập nhật.") })}
+      <div class="banner" data-wf-block="4">${I("calendar-x")}<span>Thứ Ba 13/10 đã báo nghỉ · <a class="link" href="#" style="display:inline;min-height:0">Xem đơn</a></span></div>
+      <p class="fs13 muted" style="margin:0" data-wf-gon>Tuần trước: ${prev.map(([d, n, t]) => `${d} ${t === "red" ? "vắng" : "✓"}`).join(" · ")}</p></div>`, nav: nav("ph") };
+  },
+  h: () => ({ body: `<div class="page">
+      <div class="between" data-wf-block="1"><span><span class="fs13 muted">Xin chào,</span><br><b style="font-size:18px">Chị Nguyễn Thu Lan</b></span>${bell(2)}</div>
+      ${S(`<div class="wallet" data-wf-block="2"><div class="hero" style="gap:16px"><div class="between"><span style="display:flex;align-items:center;gap:12px"><span class="av lg">MA</span><span><b style="font-size:20px">Minh Anh</b><br><span class="fs13 muted">Mầm 3A · 4 tuổi</span></span></span>${chip("green", "Có mặt", "check")}</div>
+        <div class="today-strip"><div><span class="k">Đến lớp</span><span class="v">07:42</span></div><div><span class="k">Bữa trưa</span><span class="v">10:45</span></div><div><span class="k">Hoạt động</span><span class="v">09:30</span></div></div>
+        <a class="link" href="#">Xem hôm nay của Minh Anh${I("chevron-right")}</a></div>
+        <button class="peek" style="border:0;text-align:left"><span class="av" style="background:#fce7f3;color:#be185d">MK</span><span style="flex:1">Minh Khôi · Nhà trẻ 1B</span>${chip("gray", "Chưa điểm danh")}</button></div>`, { skel: skelBlock(240), empty: empty("calendar-days", "Hôm nay chưa có cập nhật", "Thông tin sẽ hiện khi cô giáo cập nhật.") })}
+      ${sec("Việc nhanh", "", `<div class="grid2">${[["calendar-x", "Xin nghỉ cho bé", "orange"], ["images", "Hoạt động & đánh giá", "blue"], ["book-open", "Thực đơn tuần", "green"], ["heart-pulse", "Sức khỏe", "red"]].map(([ic, l, t]) => `<a class="utile" href="#" style="min-height:0;grid-template-columns:auto 1fr;align-items:center">${tile(ic, t)}${l}</a>`).join("")}</div>`, 4)}
+    </div>`, nav: nav("ph") }),
+});
+
+/* ===== Hiệu trưởng: Trang chủ G/H ===== */
+extendHome("ht", "d", {
+  g: { name: "G · Bản đồ màu các lớp", why: "Toàn trường trong một màn: mỗi lớp một ô, màu đậm nhạt theo tỉ lệ có mặt (số BE trả), nhóm theo cơ sở; lớp vắng nhiều nổi lên ngay.",
+    pros: ["Thấy lớp bất thường trong vài giây", "Chạm ô để xem lớp"], cons: ["Màu theo tỉ lệ cần ngưỡng do BE/nhà trường quy định, APP không tự đặt", "Ô nhỏ khi trường nhiều lớp (24 lớp thật)"], fit: "HT muốn phát hiện lớp có vấn đề." },
+  h: { name: "H · Thẻ chỉ số lớn vuốt ngang", why: "Mỗi chỉ số một thẻ lớn có đường xu hướng 7 ngày, vuốt ngang để xem chỉ số khác; mục chờ duyệt ở dưới.",
+    pros: ["Số rất to, có xu hướng, hiểu ngay đang tốt lên hay xấu đi", "Màn gọn"], cons: ["Cần BE trả số liệu 7 ngày (chưa có endpoint)", "Chỉ thấy một chỉ số mỗi lần"], fit: "HT quan tâm xu hướng hơn số trong ngày." },
+}, {
+  g: () => {
+    const camp = (name, cls) => `<div style="display:grid;gap:8px"><div class="between"><span class="fw6">${name}</span><span class="fs13 muted">${cls.reduce((a, c) => a + c[1], 0)}/${cls.reduce((a, c) => a + c[2], 0)} có mặt</span></div>
+      <div class="heat">${cls.map(([n, a, b]) => { const p = Math.round((a / b) * 100); const t = p < 85 ? "var(--tone-red)" : p < 92 ? "var(--tone-approval)" : "var(--tone-green)"; return `<button class="ht" style="--t:${t};--k:${p < 85 ? 30 : p < 92 ? 24 : 18};border:0;text-align:left"><span>${n}</span><b>${p}%</b><span class="muted">${a}/${b}</span></button>`; }).join("")}</div></div>`;
+    return { body: `<div class="appbar" data-wf-block="1" style="border:0;background:transparent;padding-left:16px"><h1 style="font-size:22px;font-weight:700">Hôm nay<span class="fs13 muted" style="display:block;font-weight:500">Toàn trường · 312/334 có mặt (93%)</span></h1>${bell(0)}</div>
+      <div class="page" style="gap:20px">
+      ${S(`<div class="card pad" data-wf-block="2" style="display:grid;gap:18px">${camp("Cơ sở chính", [["Nhà trẻ 1A", 18, 19], ["Nhà trẻ 1B", 21, 24], ["Mầm 3A", 25, 28], ["Mầm 3B", 30, 32], ["Chồi 2", 40, 44], ["Lá 1", 48, 49]])}
+        ${camp("Cơ sở 2", [["Nhà trẻ 2A", 20, 21], ["Mầm 4A", 26, 27], ["Chồi 3", 28, 30], ["Lá 2", 30, 31], ["Lá 3", 26, 29]])}
+        <span class="fs13 muted"><span style="color:var(--tone-green-fg)">■</span> ≥ 92% · <span style="color:var(--tone-approval-fg)">■</span> 85–91% · <span style="color:var(--tone-red-fg)">■</span> &lt; 85% <span data-wf-gon>(ngưỡng minh hoạ, chờ nhà trường chốt)</span></span></div>`, { skel: skelBlock(300), empty: "" })}
+      ${sec("Chờ Hiệu trưởng duyệt (2)", "Tất cả", `<div class="card">${row({ ic: "award", t: "approval", title: "Khen thưởng cuối năm · 7 bé", meta: "Cơ sở chính · đã qua Phó HT", trail: chip("approval", "Mới") })}${row({ ic: "award", t: "approval", title: "Khen thưởng cuối năm · 5 bé", meta: "Cơ sở 2 · đã qua Phó HT", trail: chip("approval", "Mới") })}</div>`, 4)}
+    </div>`, nav: nav("ht") };
+  },
+  h: () => ({ body: `<div class="page">
+      <div class="hello" data-wf-block="1"><div><p>Chào cô,</p><h1>Nguyễn Thị Hồng</h1></div>${bell(0)}</div>
+      ${S(`<div data-wf-block="2" style="display:grid;gap:10px"><div class="hcards" style="padding-bottom:4px">
+        <div class="kpi-big" style="flex-basis:300px"><span class="between fs13"><span class="fw6">Trẻ có mặt</span>${chip("green", "↑ 2% so với tuần trước")}</span><span class="num">93<span style="font-size:24px">%</span></span><span class="fs13 muted">312/334 bé · 2 cơ sở</span>
+          <svg class="spark" viewBox="0 0 280 56" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="0,40 46,34 93,44 140,30 186,26 233,22 280,18"/></svg><span class="between fs13 muted"><span>T2 05/10</span><span>Hôm nay</span></span></div>
+        <div class="kpi-big" style="flex-basis:300px"><span class="fs13 fw6">Suất ăn đã chốt</span><span class="num">306</span><span class="fs13 muted">2/2 cơ sở đã chốt</span></div>
+        <div class="kpi-big" style="flex-basis:300px"><span class="fs13 fw6">Thực đơn tuần</span><span class="num">2/2</span><span class="fs13 muted">cơ sở đã công bố · 12–16/10</span></div></div>
+        <div class="pager"><i class="on"></i><i></i><i></i></div></div>`, { skel: skelBlock(240), empty: "" })}
+      ${sec("Chờ Hiệu trưởng duyệt (2)", "Tất cả", `<div class="card">${row({ ic: "award", t: "approval", title: "Khen thưởng cuối năm · 7 bé", meta: "Cơ sở chính · đã qua Phó HT", trail: chip("approval", "Mới") })}${row({ ic: "award", t: "approval", title: "Khen thưởng cuối năm · 5 bé", meta: "Cơ sở 2 · đã qua Phó HT", trail: chip("approval", "Mới") })}</div>`, 4)}
+    </div>`, nav: nav("ht") }),
+});
+
+/* ---------- 7 style: chỉ đổi dáng, brand xanh trời/mint và Be Vietnam Pro giữ nguyên ---------- */
+const STYLES = [
+  { id: "fe", name: "FE mềm",
+    why: "Giống FE hiện tại: card trắng bo 24, bóng xanh mờ, badge viên thuốc có viền nhạt.",
+    spec: { "Nền": "Xanh trời rất nhạt #F1F9FE", "Card": "Trắng, bo 24, bóng xanh mờ một lớp", "Nút chính": "Viên thuốc nền sky-400, chữ xanh đậm", "Badge": "Viên thuốc nền tông 16% + viền 34%", "Đầu màn": "Lời chào trên nền, chuông viền mảnh", "Thanh dưới": "Dính đáy, viên chỉ báo xanh nhạt" },
+    pros: ["Đồng bộ FE sát nhất", "Ít rủi ro, ít đổi widget"], cons: ["Ít điểm nhấn, dễ thấy 'giống bản cũ'"], fit: "Ưu tiên APP và FE là một." },
+  { id: "clay", name: "Clay nổi",
+    why: "Card và nút phồng nhẹ như đất nặn (FE đã có token --shadow-clay), thanh dưới nổi bo tròn, ô icon có chiều sâu.",
+    spec: { "Nền": "Xanh nhạt hơi đậm #EAF4FD để card nổi", "Card": "Bo 28, viền sáng phía trên + bóng xanh mềm", "Nút chính": "Sky-400, gờ tối ở đáy + quầng xanh", "Badge": "Không viền, bóng nhẹ màu tông", "Ô nhập": "Lõm vào (bóng trong), focus vòng xanh", "Thanh dưới": "Nổi, cách mép 12, bo 28" },
+    pros: ["Hiện đại, có cảm giác bấm được", "Hợp trường mầm non mà vẫn gọn", "Dùng lại token FE, không thêm màu"], cons: ["Nhiều bóng: danh sách dài trông dày", "Bóng nhiều lớp tốn công vẽ hơn trên máy yếu"], fit: "Muốn đẹp, vui mà vẫn đọc nhanh — khuyên dùng." },
+  { id: "glass", name: "Kính trên tranh",
+    why: "Tranh sáp màu của FE mờ sau nền, card kính trong suốt có làm mờ, thanh dưới kính nổi.",
+    spec: { "Nền": "Tranh hero-scene của FE + lớp trắng 30–60%", "Card": "Trắng 66%, làm mờ 18px, viền trắng", "Nút chính": "Như FE", "Badge": "Như FE", "Đầu màn": "Lời chào trong khối kính", "Thanh dưới": "Kính nổi, bo 28" },
+    pros: ["Không khí giống FE nhất (FE đặt card kính trên tranh)", "Ấn tượng ở màn ít dữ liệu"], cons: ["BackdropFilter của Flutter tốn GPU, cuộn danh sách dài có thể giật", "Độ tương phản chữ phụ thuộc chỗ tranh"], fit: "Màn Phụ huynh, đăng nhập; không hợp màn tác nghiệp dài." },
+  { id: "grad", name: "Gradient thương hiệu",
+    why: "Dải đầu gradient xanh đậm → xanh trời bo đáy, card ngữ cảnh đè lên mép; nút chính và thẻ số đầu tiên cũng gradient.",
+    spec: { "Nền": "Xanh trời rất nhạt", "Đầu màn": "Gradient 125° primary → blue, bo đáy 32, chữ trắng", "Card": "Như FE, card đầu đè lên dải", "Nút chính": "Gradient, chữ trắng, bóng xanh", "Thẻ số": "Thẻ đầu tô gradient, chữ trắng", "Thanh dưới": "Viên chỉ báo gradient" },
+    pros: ["Nhận diện mạnh, trông 'app' ngay", "Thứ bậc rõ: đầu màn là ngữ cảnh"], cons: ["Lại có dải màu chiếm đầu màn (đẩy nội dung xuống ~40px)", "Chữ trắng chỉ đạt tương phản ở đầu đậm của dải"], fit: "Muốn nhận diện thương hiệu nổi bật." },
+  { id: "bento", name: "Bento pastel",
+    why: "Nền kem, các ô màu pastel (vàng, xanh, lá, hồng, tím) từ bảng màu vui của FE, thanh dưới tối nổi, sao vẽ cạnh lời chào.",
+    spec: { "Nền": "Kem ấm #FFFAF0", "Card": "Không bóng, viền kem 1,5px, bo 28", "Ô tiện ích": "Mỗi ô một màu pastel", "Badge": "Nền tông 24%, không viền", "Đầu màn": "Lời chào + sao vẽ tay (doodle FE)", "Thanh dưới": "Viên tối #1B2433, mục chọn nền sky" },
+    pros: ["Tươi, trẻ trung, rất hợp Phụ huynh", "Nhóm theo màu, dễ nhớ vị trí"], cons: ["Màu trang trí dễ lẫn với màu trạng thái", "Màn tác nghiệp (GV, Bếp, BGH) kém nghiêm túc"], fit: "Ưu tiên cảm xúc ở app Phụ huynh." },
+  { id: "mini", name: "Tối giản",
+    why: "Không bóng, viền 1px, bo 16, badge thành chấm màu + chữ, tiêu đề lớn, tiêu đề mục viết hoa nhỏ.",
+    spec: { "Nền": "Xám rất nhạt #F6F7F9", "Card": "Trắng, viền 1px, không bóng, bo 16", "Nút chính": "Sky-400, bo 12 (không viên thuốc)", "Badge": "Chấm màu + chữ màu tông", "Đầu màn": "Tên 28px, lời chào viết hoa nhỏ", "Thanh dưới": "Vạch xanh trên mục đang chọn" },
+    pros: ["Sạch, dữ liệu dày vẫn đọc tốt", "Nhẹ nhất khi vẽ, dễ dựng"], cons: ["Khô, ít chất mầm non", "Xa FE nhất (bo góc, badge khác)"], fit: "Ưu tiên màn tác nghiệp của nhân viên." },
+  { id: "dark", name: "Đêm",
+    why: "Nền xanh đen, card xám xanh, chữ sáng, màu trạng thái sáng hơn để đủ tương phản.",
+    spec: { "Nền": "#0B1220", "Card": "#131C2E, viền sáng mờ", "Chữ": "#E7EDF6 / #B7C2D4", "Link": "Xanh sáng #6CC0FF", "Badge": "Chữ tông sáng trên nền tông 18%", "Ghi chú": "Là chế độ thêm, không thay light" },
+    pros: ["Dịu mắt khi Phụ huynh xem buổi tối", "Trông hiện đại"], cons: ["Thêm cả bộ token tối, phải kiểm tương phản mọi tông", "Plan hiện chỉ có light: cần quyết định riêng"], fit: "Muốn có thêm dark mode bên cạnh light." },
+];
+const REC_ST = "clay";
+const STYLE_TIPS = ["Trộn: thanh dưới kiểu 2, card kiểu 1", "Bo góc nhỏ hơn", "Bóng nhẹ hơn", "Tiêu đề to và đậm hơn"];
+
+const ORDER = ["login", "ph-chu", "ph-nghi", "gv-chu", "gv-dd", "bep", "pht", "ht"];
+const MAN_LABEL = { ...Object.fromEntries(ORDER.map((id) => [id, SCREENS[id].label])), kit: "Từng mục" };
+if (!MAN_LABEL[state.man]) state.man = "ph-chu";
+const isKit = state.man === "kit";
+const screen = SCREENS[state.man];
+const LKEYS = screen ? Object.keys(screen.opts) : [];
+if (!STYLES.some((s) => s.id === state.st)) state.st = REC_ST;
+if (!LKEYS.includes(state.v)) state.v = screen ? screen.rec : "a";
+if (!["mot", "pa", "style"].includes(state.xem)) state.xem = "style";
+Object.assign(document.body.dataset, state);
+const stIdx = (id) => STYLES.findIndex((s) => s.id === id);
+const stName = (s) => `${stIdx(s.id) + 1} · ${s.name}`;
+const curSt = STYLES[stIdx(state.st)];
+
+/* ---------- Thanh công cụ ---------- */
+document.getElementById("wf-man").innerHTML = [...ORDER, "kit"].map((id) => `<a data-value="${id}">${MAN_LABEL[id]}</a>`).join("");
+document.getElementById("wf-v").innerHTML = LKEYS.map((k) => `<a data-value="${k}" title="${screen ? screen.opts[k].name : ""}"${screen?.rec === k ? " data-recommended" : ""}>${k.toUpperCase()}</a>`).join("");
+document.getElementById("wf-st").innerHTML = STYLES.map((s, i) => `<a data-value="${s.id}" title="${i + 1} · ${s.name}"${s.id === REC_ST ? " data-recommended" : ""}>${i + 1}</a>`).join("");
+
+/* ---------- Khung lý do: bố cục + style, mỗi style có spec từng mục ---------- */
+const list = (arr) => `<ul>${arr.map((p) => `<li>${p}</li>`).join("")}</ul>`;
+const proCon = (o) => `<h3><i data-tone="uu"></i>Ưu</h3>${list(o.pros)}<h3><i data-tone="nhuoc"></i>Nhược</h3>${list(o.cons)}<h3><i></i>Hợp khi</h3><p>${o.fit}</p>`;
+const layoutSec = (k) => { const o = screen.opts[k]; return `<section><h4>Bố cục ${o.name}${k === screen.rec ? " ★" : ""}</h4><p class="why">${o.why}</p>${proCon(o)}</section>`; };
+const styleSec = (s) => `<section><h4>Style ${stName(s)}${s.id === REC_ST ? " ★" : ""}</h4><p class="why">${s.why}</p><dl class="spec">${Object.entries(s.spec).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>${proCon(s)}</section>`;
+const recSt = STYLES[stIdx(REC_ST)];
+let rsName, rsWhy, rsTag, rsCols;
+if (isKit) {
+  rsName = "Từng mục · 13 thành phần × 7 style"; rsTag = false;
+  rsWhy = "Mỗi mục vẽ ở cả 7 style. Chọn riêng từng mục, trộn được, ví dụ “Thanh dưới 2, Badge 6, Card 1”.";
+  rsCols = STYLES.map(styleSec);
+} else if (state.xem === "style") {
+  const o = screen.opts[state.v];
+  rsName = `${o.name} · trong 7 style`; rsTag = state.v === screen.rec;
+  rsWhy = `Khuyên dùng style ${stName(recSt)}: ${recSt.why}`;
+  rsCols = [layoutSec(state.v), ...STYLES.map(styleSec)];
+} else if (state.xem === "pa") {
+  rsName = `${LKEYS.length} bố cục · style ${stName(curSt)}`; rsTag = true;
+  rsWhy = screen.opts[screen.rec].why;
+  rsCols = [...LKEYS.map(layoutSec), styleSec(curSt)];
+} else {
+  const o = screen.opts[state.v];
+  rsName = `${o.name} · style ${stName(curSt)}`; rsTag = state.v === screen.rec && state.st === REC_ST;
+  rsWhy = o.why;
+  rsCols = [layoutSec(state.v), styleSec(curSt)];
+}
+document.getElementById("rs-name").textContent = rsName;
+document.getElementById("rs-tag").hidden = !rsTag;
+document.getElementById("rs-why").textContent = rsWhy;
+document.getElementById("rs-cols").innerHTML = rsCols.join("");
+const copySvg = `<svg data-icon="chep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><svg data-icon="da-chep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>`;
+document.getElementById("rs-tips").innerHTML = `<h3>Gợi ý góp ý</h3>` + [...(screen?.tips || []), ...STYLE_TIPS].map((t) => `<button type="button" data-copy="${MAN_LABEL[state.man]} – ${t}">${t}${copySvg}</button>`).join("");
+
+/* ---------- Trang "Từng mục": mỗi thành phần × 7 style ---------- */
+const KIT = [
+  ["Đầu màn chào", "Lời chào, chuông thông báo, card ngữ cảnh ngay dưới (bé / lớp / cơ sở).", () =>
+    `<div class="hello"><div><p>Xin chào,</p><h1>Chị Nguyễn Thu Lan</h1></div>${bell(2)}</div>
+     <div class="card ctx"><span class="av">MA</span><span class="tx"><span class="t">Bé Nguyễn Minh Anh</span><span class="m">Mầm 3A · 4 tuổi</span></span><a class="link" href="#">${I("arrow-left-right")}Đổi bé</a></div>`],
+  ["Thanh tiêu đề màn con", "Nút quay lại, tiêu đề, hành động phụ bên phải.", () =>
+    `${appbar("Xin nghỉ cho bé", `<a class="link" href="#" style="padding:0 8px">Đơn đã gửi</a>`)}<p class="fs13 muted" style="margin:0">Nội dung màn bắt đầu ở đây…</p>`],
+  ["Dòng danh sách việc", "Ô icon theo tông, tiêu đề, mô tả, badge trạng thái bên phải.", () =>
+    `<div class="card">${row({ ic: "clipboard-check", t: "orange", title: "Điểm danh & báo ăn", meta: "0/28 bé · trước 08:30", trail: chip("orange", "Cần làm") })}${row({ ic: "calendar-x", t: "blue", title: "Đơn xin nghỉ", meta: "Minh Anh, Khánh Linh", trail: chip("blue", "2 mới") })}${row({ ic: "ruler", t: "teal", title: "Đo sức khỏe tháng 10", meta: "12/28 bé", trail: chip("teal", "Còn 16") })}</div>`],
+  ["Badge trạng thái", "Bảy tông trạng thái của FE StatusBadge; màu luôn kèm chữ hoặc icon.", () =>
+    `<div class="wrap">${chip("green", "Có mặt", "check")}${chip("orange", "Cần làm")}${chip("blue", "Đang nấu", "flame")}${chip("approval", "Chờ duyệt")}${chip("red", "Vắng")}${chip("teal", "Theo dõi")}${chip("gray", "Cuối ngày")}</div>`],
+  ["Nút", "Nút chính, nút phụ viền, nút nhạt, link chữ, nút đang khoá.", () =>
+    `<button class="btn pri block">${I("send")}Gửi đơn xin nghỉ</button>
+     <div class="wrap"><button class="btn sm">Huỷ</button><button class="btn sm soft">${I("eye")}Xem chi tiết</button><a class="link" href="#">Quên mật khẩu?</a></div>
+     <button class="btn pri block" disabled>Lưu điểm danh</button>`],
+  ["Ô nhập & chọn một", "Ô thường, ô đang focus, ô lỗi kèm câu lỗi, segmented.", () =>
+    `<div class="field"><label>Số điện thoại</label><div class="inp"><input value="0912 345 678"></div></div>
+     <div class="field"><label>Mật khẩu</label><div class="inp is-focus"><input type="password" value="••••••••">${I("eye-off")}</div></div>
+     <div class="field"><label>Lý do <b>*</b></label><div class="inp err"><input placeholder="Nhập lý do nghỉ"></div><span class="help err">Vui lòng nhập lý do.</span></div>
+     <div class="seg"><button aria-pressed="true">Cả ngày</button><button>Buổi sáng</button><button>Buổi chiều</button></div>`],
+  ["Thẻ số liệu", "Thẻ số lớn kiểu FE (nhãn trên, số to, icon mờ góc) và hàng số nhỏ.", () =>
+    `<div class="grid2">${stat("green", "Trẻ có mặt", "312", "/334", "smile")}${stat("blue", "Suất đã chốt", "306", "suất", "utensils")}</div>
+     <div class="grid4">${mini("green", 24, "Có mặt")}${mini("approval", 2, "Có phép")}${mini("red", 1, "Vắng")}${mini("gray", 1, "Chưa ĐD")}</div>`],
+  ["Ô tiện ích", "Lối tắt trên trang chủ Phụ huynh.", () =>
+    `<div class="grid2">${[["calendar-x", "Xin nghỉ cho bé", "orange"], ["images", "Hoạt động & đánh giá", "blue"], ["book-open", "Thực đơn tuần", "green"], ["heart-pulse", "Sức khỏe", "red"]].map(([ic, l, t]) => `<a class="utile" href="#">${tile(ic, t)}${l}</a>`).join("")}</div>`],
+  ["Banner thông báo trong màn", "Thông tin, cần chú ý (hệ quả của thao tác), lỗi.", () =>
+    `<div class="banner">${I("info")}<span>Tài khoản do nhà trường cấp qua SMS.</span></div>
+     <div class="banner warn">${I("clock")}<span><b>Hạn điểm danh 08:30 · còn 10 phút</b></span></div>
+     <div class="banner err">${I("circle-alert")}<span><b>Chưa gửi được đơn.</b> Kiểm tra mạng rồi gửi lại.</span></div>`],
+  ["Trạng thái rỗng / lỗi", "Khối thay danh sách khi chưa có dữ liệu hoặc tải lỗi.", () =>
+    `${empty("calendar-days", "Hôm nay chưa có cập nhật", "Thông tin sẽ hiện khi cô giáo cập nhật.")}${skelRows(2)}`],
+  ["Thanh điều hướng đáy", "Bốn mục, mục đang chọn, số chưa đọc.", () => `<div style="height:8px"></div>${nav("ph")}`],
+  ["Ô icon, avatar, nút tròn", "Ô icon theo tông, avatar chữ cái, nút icon (chuông).", () =>
+    `<div class="wrap" style="align-items:center">${tile("utensils", "orange")}${tile("calendar-x", "blue")}${tile("circle-check", "green")}${tile("stamp", "approval")}${tile("school")}<span class="av">MA</span><span class="av">HN</span>${bell(3)}</div>`],
+  ["Chip lọc & chọn ngày", "Hàng chip lọc có số, dải ngày trong tuần.", () =>
+    `<div class="choicechips"><button class="cchip" aria-pressed="true">Tất cả 28</button><button class="cchip">Có mặt 24</button><button class="cchip">Vắng 1</button></div>
+     <div class="days">${[["T2", 12, "dis"], ["T3", 13, "on"], ["T4", 14, "on"], ["T5", 15], ["T6", 16], ["T7", 17, "dis"], ["CN", 18, "dis"]].map(([d, n, s]) => `<button class="day"${s === "on" ? ' aria-pressed="true"' : ""}${s === "dis" ? ' aria-disabled="true"' : ""}>${d}<b>${n}</b></button>`).join("")}</div>`],
+];
+const renderKit = () => `<div class="kit">${KIT.map(([t, d, fn], i) => `<section class="kit-sec"><h2>${i + 1}. ${t}</h2><p>${d}</p><div class="kit-grid">${STYLES.map((s) =>
+  `<div class="cell"><div class="cell-lab">${stName(s)}${s.id === REC_ST ? "<em>Khuyên dùng</em>" : ""}<button type="button" class="pick-btn" data-kind="muc" data-muc="${t}" data-style="${s.id}">${I("check")}<span>Chọn</span></button></div><div class="cell-body" data-st="${s.id}">${fn()}</div></div>`).join("")}</div></section>`).join("")}</div>`;
+
+/* ---------- Vẽ điện thoại ---------- */
+const phone = (k, st) => { errShown = false; const r = screen.render(k); return `<div class="phone" data-st="${st}">${sb()}<div class="scroll">${r.body}</div>${r.dock || ""}${r.nav || ""}${r.extra || ""}</div>`; };
+const slot = (k, st, label, rec, go) => `<div class="slot"><div class="slot-head"><a class="slot-label" data-go='${JSON.stringify(go)}' href="${linkTo(go)}">${label}${rec ? "<em>Khuyên dùng</em>" : ""}</a><button type="button" class="pick-btn" data-kind="man" data-layout="${k}" data-style="${st}">${I("check")}<span>Chọn</span></button></div>${phone(k, st)}</div>`;
+let stageHtml;
+if (isKit) stageHtml = renderKit();
+else if (state.xem === "pa") stageHtml = `<div class="stage">${LKEYS.map((k) => slot(k, state.st, screen.opts[k].name, k === screen.rec, { v: k, xem: "mot" })).join("")}</div>`;
+else if (state.xem === "style") stageHtml = `<div class="stage">${STYLES.map((s) => slot(state.v, s.id, `Style ${stName(s)}`, s.id === REC_ST, { st: s.id, xem: "mot" })).join("")}</div>`;
+else stageHtml = `<div class="stage">${slot(state.v, state.st, `${screen.opts[state.v].name} · style ${stName(curSt)}`, false, { xem: "style" })}</div>`;
+document.getElementById("wf-design").innerHTML = stageHtml;
+
+/* ---------- Link giữ trạng thái ---------- */
+function updateLinks() {
+  for (const set of document.querySelectorAll("[data-wf-param]")) {
+    for (const link of set.querySelectorAll("a")) {
+      link.href = linkTo({ [set.dataset.wfParam]: link.dataset.value });
+      if (state[set.dataset.wfParam] !== link.dataset.value) { link.removeAttribute("aria-current"); continue; }
+      link.setAttribute("aria-current", "page");
+      const currentLabel = document.querySelector(`[data-wf-current="${set.dataset.wfParam}"]`);
+      if (currentLabel) currentLabel.textContent = link.textContent;
+    }
+  }
+  for (const toggle of document.querySelectorAll("[data-wf-toggle]")) {
+    const param = toggle.dataset.wfToggle;
+    const isOn = state[param] === toggle.dataset.on;
+    toggle.setAttribute(toggle.getAttribute("role") === "switch" ? "aria-checked" : "aria-pressed", String(isOn));
+    toggle.href = linkTo({ [param]: isOn ? toggle.dataset.off : toggle.dataset.on });
+  }
+  for (const a of document.querySelectorAll(".slot-label")) a.href = linkTo(JSON.parse(a.dataset.go));
+}
+updateLinks();
+const reasonBox = document.querySelector("[data-wf-reason]");
+reasonBox.open = state.uu === "1";
+reasonBox.addEventListener("toggle", () => { state.uu = reasonBox.open ? "1" : "0"; history.replaceState(null, "", linkTo({})); updateLinks(); });
+/* Menu thả: thanh cuộn ngang cắt khối absolute, nên popover là fixed ngay dưới nút */
+const menus = [...document.querySelectorAll(".wf-menu")];
+for (const menu of menus) menu.addEventListener("toggle", () => {
+  if (menu.open) menus.filter((m) => m !== menu).forEach((m) => (m.open = false));
+  const r = menu.querySelector("summary").getBoundingClientRect();
+  Object.assign(menu.querySelector(".wf-popover").style, { top: `${r.bottom + 6}px`, left: `${r.left}px` });
+});
+document.addEventListener("click", (e) => { for (const m of menus) if (!m.contains(e.target)) m.open = false; });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") menus.forEach((m) => (m.open = false)); });
+for (const b of document.querySelectorAll("[data-copy]")) b.addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText(b.dataset.copy); } catch {}
+  b.setAttribute("data-copied", ""); setTimeout(() => b.removeAttribute("data-copied"), 1500);
+});
+/* Control tĩnh trong mockup: chặn điều hướng, cho segmented/chip đổi chọn để xem trạng thái */
+document.getElementById("wf-design").addEventListener("click", (e) => {
+  const a = e.target.closest("a:not(.slot-label)"); if (a) e.preventDefault();
+  const b = e.target.closest(".seg button, .opt, .cchip, .day:not([aria-disabled])");
+  if (!b) return;
+  if (b.classList.contains("day")) {
+    if (b.hasAttribute("aria-pressed")) b.removeAttribute("aria-pressed"); else b.setAttribute("aria-pressed", "true");
+    return;
+  }
+  b.closest(".seg, .pair, .choicechips, .hscroll, .days")?.querySelectorAll("[aria-pressed]").forEach((x) => x.removeAttribute("aria-pressed"));
+  b.setAttribute("aria-pressed", "true");
+});
+
+/* ---------- Tích chọn: lưu tạm trong trình duyệt (mỗi lần bấm link là tải lại trang), hiện ở góc trên phải để chép ---------- */
+const PICK_KEY = "carenest-wf-chon";
+let picks = { man: {}, muc: {} };
+try { picks = { man: {}, muc: {}, ...JSON.parse(localStorage.getItem(PICK_KEY) || "{}") }; } catch {}
+const savePicks = () => { try { localStorage.setItem(PICK_KEY, JSON.stringify(picks)); } catch {} };
+const styleLabel = (id) => { const s = STYLES[stIdx(id)]; return s ? `style ${stName(s)}` : ""; };
+const layoutLabel = (man, k) => `bố cục ${SCREENS[man].opts[k].name}`;
+
+/* Xem 3 bố cục: tích chọn bố cục · Xem 7 style: tích chọn style · Xem một: chọn cả hai */
+function isPicked(btn) {
+  if (btn.dataset.kind === "muc") return picks.muc[btn.dataset.muc] === btn.dataset.style;
+  const p = picks.man[state.man];
+  if (!p) return false;
+  if (state.xem === "pa") return p.layout === btn.dataset.layout;
+  if (state.xem === "style") return p.style === btn.dataset.style;
+  return p.layout === btn.dataset.layout && p.style === btn.dataset.style;
+}
+function togglePick(btn) {
+  if (btn.dataset.kind === "muc") {
+    if (isPicked(btn)) delete picks.muc[btn.dataset.muc]; else picks.muc[btn.dataset.muc] = btn.dataset.style;
+  } else {
+    const on = isPicked(btn);
+    const p = { ...(picks.man[state.man] || {}) };
+    if (state.xem !== "style") { if (on) delete p.layout; else p.layout = btn.dataset.layout; }
+    if (state.xem !== "pa") { if (on) delete p.style; else p.style = btn.dataset.style; }
+    if (p.layout || p.style) picks.man[state.man] = p; else delete picks.man[state.man];
+  }
+  savePicks();
+  renderPicks();
+}
+function pickLines() {
+  const lines = [];
+  for (const id of ORDER) {
+    const p = picks.man[id];
+    if (p) lines.push({ key: `man:${id}`, text: `${MAN_LABEL[id]}: ${[p.layout && layoutLabel(id, p.layout), p.style && styleLabel(p.style)].filter(Boolean).join(" · ")}` });
+  }
+  for (const [t] of KIT) if (picks.muc[t]) lines.push({ key: `muc:${t}`, text: `${t}: ${styleLabel(picks.muc[t])}`, muc: true });
+  return lines;
+}
+function pickText() {
+  const lines = pickLines();
+  const man = lines.filter((l) => !l.muc).map((l) => `- ${l.text}`);
+  const muc = lines.filter((l) => l.muc).map((l) => `- ${l.text}`);
+  return ["CareNest – lựa chọn thiết kế", ...(man.length ? ["[Màn]", ...man] : []), ...(muc.length ? ["[Từng mục]", ...muc] : [])].join("\n");
+}
+const panel = document.createElement("details");
+panel.className = "wf-picks";
+try { panel.open = localStorage.getItem(PICK_KEY + "-open") !== "0"; } catch { panel.open = true; }
+panel.addEventListener("toggle", () => { try { localStorage.setItem(PICK_KEY + "-open", panel.open ? "1" : "0"); } catch {} });
+document.body.append(panel);
+function renderPicks() {
+  const lines = pickLines();
+  panel.innerHTML = `<summary><span>Đã chọn</span><b>${lines.length}</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+    <div class="wf-picks-body">${lines.length
+      ? `<ul>${lines.map((l) => `<li><span>${l.text}</span><button type="button" data-unpick="${l.key}" aria-label="Bỏ chọn">×</button></li>`).join("")}</ul>`
+      : `<p>Bấm <b>✓ Chọn</b> cạnh tên phương án / style (hoặc ô ở trang Từng mục). Lựa chọn hiện ở đây.</p>`}
+      <div class="wf-picks-act"><button type="button" data-copy-picks${lines.length ? "" : " disabled"}>Chép kết quả</button><button type="button" data-clear-picks${lines.length ? "" : " disabled"}>Xoá hết</button></div></div>`;
+  for (const btn of document.querySelectorAll(".pick-btn")) btn.setAttribute("aria-pressed", String(isPicked(btn)));
+}
+document.addEventListener("click", async (e) => {
+  const pick = e.target.closest(".pick-btn");
+  if (pick) { e.preventDefault(); togglePick(pick); return; }
+  const un = e.target.closest("[data-unpick]");
+  if (un) { const [kind, id] = un.dataset.unpick.split(/:(.*)/s); delete picks[kind][id]; savePicks(); renderPicks(); return; }
+  if (e.target.closest("[data-clear-picks]")) { picks = { man: {}, muc: {} }; savePicks(); renderPicks(); return; }
+  const copy = e.target.closest("[data-copy-picks]");
+  if (copy) {
+    try { await navigator.clipboard.writeText(pickText()); copy.textContent = "Đã chép ✓"; }
+    catch { copy.textContent = "Không chép được – bôi đen để chép"; }
+    setTimeout(() => (copy.textContent = "Chép kết quả"), 1500);
+  }
+});
+renderPicks();
+function placeBlockNumbers() {
+  const isOverlap = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+  for (const block of document.querySelectorAll("[data-wf-block]")) {
+    const br = block.getBoundingClientRect();
+    const nr = { left: br.left + 4, top: br.top + 4, right: br.left + 22, bottom: br.top + 22 };
+    const rects = [...block.querySelectorAll("svg, img")].map((n) => n.getBoundingClientRect());
+    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.textContent.trim()) continue;
+      const range = document.createRange(); range.selectNodeContents(node); rects.push(...range.getClientRects());
+    }
+    block.toggleAttribute("data-wf-block-out", rects.some((r) => r.width > 0 && isOverlap(r, nr)));
+  }
+}
+setTimeout(placeBlockNumbers, 300);
+addEventListener("resize", placeBlockNumbers);
+</script>
+</body>
+</html>

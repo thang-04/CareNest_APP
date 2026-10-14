@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import 'package:carenest_app/features/cooking_status/domain/cooking_status.dart';
 import 'package:carenest_app/features/reward_proposals/domain/reward_batch.dart';
 
 /// Tỉ lệ đánh giá một khối BE trả (thang và tiêu chí theo P-11, PENDING).
@@ -21,6 +22,37 @@ class GroupEvaluation {
   final String percent;
 }
 
+/// Hôm nay của một cơ sở trên Tổng quan HT (PROPOSED, chưa có trong contract). Mọi số do BE trả.
+@immutable
+class CampusSnapshot {
+  const CampusSnapshot({
+    required this.name,
+    required this.present,
+    required this.enrolled,
+    required this.presentRatio,
+    required this.presentRate,
+    this.confirmedMeals,
+    this.kitchenStage,
+  });
+
+  /// "Cơ sở chính"
+  final String name;
+  final int present;
+  final int enrolled;
+
+  /// 0–1, chỉ để vẽ vòng.
+  final double presentRatio;
+
+  /// "93%"
+  final String presentRate;
+
+  /// Null ⇒ cơ sở chưa chốt suất hôm nay.
+  final int? confirmedMeals;
+
+  /// Bữa trưa; null ⇒ bếp chưa cập nhật.
+  final CookingStage? kitchenStage;
+}
+
 /// Tổng quan toàn trường cho Hiệu trưởng (AUTH-01) — mockup H01. Mọi số do BE tổng hợp (AUTH-08).
 @immutable
 class SchoolOverview {
@@ -39,6 +71,7 @@ class SchoolOverview {
     required this.evaluationTitle,
     required this.evaluations,
     required this.pending,
+    this.campuses = const [],
   });
 
   /// "Nguyễn Thị Hồng"
@@ -70,6 +103,9 @@ class SchoolOverview {
 
   /// Đợt đang chờ Hiệu trưởng duyệt.
   final List<RewardBatch> pending;
+
+  /// Từng cơ sở, theo thứ tự BE trả.
+  final List<CampusSnapshot> campuses;
 }
 
 abstract interface class SchoolOverviewSource {

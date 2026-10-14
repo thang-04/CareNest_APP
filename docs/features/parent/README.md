@@ -9,6 +9,7 @@ Không có chat (PAR-04) — trao đổi tức thời vẫn qua Zalo.
 - BE: card `BE:docs/modules/child.md`, `BE:docs/modules/identity-access.md` · rule AUTH-04, PAR-01, PAR-02
 - Endpoint: chưa có
 - PENDING: P-13b — tóm tắt gồm field nào
+- Giao diện (bố cục H, user 2026-10-14, `docs/design/mobile-redesign-clay.md`): thẻ bé đang chọn là thẻ lớn; bé khác ló ra dưới thẻ, chạm để đổi; từ 3 bé thì phần ló ghi "+N bé khác" mở sheet chọn bé. Ba ô hôm nay chỉ hiện field đang có (điểm danh, thực đơn đã công bố hay chưa, tên hoạt động); trạng thái của bé đang ló không hiện vì cần thêm một lần gọi dữ liệu.
 
 ### Lịch sử điểm danh
 - BE: card `BE:docs/modules/attendance.md` · flow `BE:docs/business/flows/attendance.md` · rule PAR-01, ATT-03 (trẻ đến muộn ⇒ dữ liệu có thể đổi sau lần nhập đầu)
@@ -40,9 +41,10 @@ Không có chat (PAR-04) — trao đổi tức thời vẫn qua Zalo.
 - Trạng thái: `SUBMITTED → CANCELLED` (phụ huynh hủy). Ảnh hưởng điểm danh/suất ăn (ATT-04) và ngày đã qua cut-off/đã xác nhận suất (ATT-05b) do BE xử lý — APP hiển thị kết quả/lỗi BE trả, không tự tính.
 - Endpoint: chưa có. PENDING: P-03 (giờ cut-off — BE quyết định, APP không khóa theo giờ máy).
 - Mockup P03–P04 (user 2026-10-13) thêm **buổi nghỉ** (cả ngày / sáng / chiều), **lý do tự nhập** (≤500 ký tự) và trạng thái **GV đã xem / GV chưa xem** — BE chưa có field `session`, `seenByTeacher` ⇒ đề xuất BE. Nghỉ nửa buổi xử lý suất ăn ra sao chưa có rule ⇒ form chỉ báo huỷ suất khi nghỉ cả ngày (ATT-04). Mockup chưa có thao tác huỷ đơn; danh sách vẫn hiển thị "Đã huỷ" nếu BE trả.
+- Giao diện form (bố cục D, user 2026-10-14): lịch tháng chạm ngày đầu rồi ngày cuối để chọn khoảng; ngày đã qua và quá 180 ngày không chọn được (hỗ trợ nhập, BE vẫn kiểm tra cut-off); ngày đã có đơn nghỉ có chấm + nhãn "Đã báo nghỉ" lấy từ danh sách đơn BE trả.
 
 ### Nhận thông báo
 - `docs/integration/PUSH_NOTIFICATION.md` — nội dung chung + deep link, không dữ liệu sức khỏe.
 
 ## Known pitfalls
-- Chưa có. Thêm 1 dòng/bẫy, link incident (`docs/knowledge/incidents/`).
+- Lời chào đặt cạnh nút chuông (không còn hero): `Semantics` phải có `container: true`, không thì gộp thành một câu đọc — `docs/knowledge/incidents/APP-BUG-261014-greeting-bell-semantics-merge.md`.

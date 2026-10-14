@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
+import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_filter_chip.dart';
@@ -160,51 +161,59 @@ class _NotificationCard extends StatelessWidget {
         notificationMeta(item),
       ].join(', '),
       excludeSemantics: true,
-      child: Material(
-        color: unread ? AppColors.primarySoft : AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          side: BorderSide(
-            color: unread ? AppColors.primaryBorder : AppColors.border,
-          ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          boxShadow: AppShadows.card,
         ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.space4),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  notificationIcon(item.kind),
-                  size: AppSizes.iconTile,
-                  color: unread ? AppColors.primary : AppColors.textMuted,
-                ),
-                const SizedBox(width: AppSpacing.space3),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.title,
-                        style: textTheme.bodyLarge?.copyWith(
-                          fontWeight: unread
-                              ? FontWeight.w700
-                              : FontWeight.w400,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.space1),
-                      Text(
-                        notificationMeta(item),
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    ],
+        child: Material(
+          color: unread ? AppColors.primarySoft : AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            side: BorderSide(
+              color: unread
+                  ? AppColors.primaryBorder
+                  : AppColors.surface.withValues(alpha: 0.85),
+            ),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.space4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    notificationIcon(item.kind),
+                    size: AppSizes.iconTile,
+                    color: unread ? AppColors.primary : AppColors.textMuted,
                   ),
-                ),
-              ],
+                  const SizedBox(width: AppSpacing.space3),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.title,
+                          style: textTheme.bodyLarge?.copyWith(
+                            fontWeight: unread
+                                ? FontWeight.w700
+                                : FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.space1),
+                        Text(
+                          notificationMeta(item),
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

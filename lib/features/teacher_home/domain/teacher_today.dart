@@ -36,6 +36,7 @@ class TeacherToday {
     required this.tasks,
     this.currentActivity,
     this.deadlineNote,
+    this.attendanceRecorded,
   });
 
   /// "Trần Thu Hà"
@@ -49,6 +50,10 @@ class TeacherToday {
 
   /// "Hạn điểm danh: 08:30 · còn 47 phút" — cut-off P-03, BE trả.
   final String? deadlineNote;
+
+  /// Số bé đã điểm danh hôm nay — BE trả, APP không đếm; null ⇒ không vẽ vòng tiến độ.
+  /// Field chưa có trong contract BE (đề xuất khi viết endpoint trang chủ GV).
+  final int? attendanceRecorded;
   final List<TeacherTask> tasks;
 }
 

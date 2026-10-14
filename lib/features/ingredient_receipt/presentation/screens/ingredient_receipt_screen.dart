@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
+import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
@@ -224,11 +225,14 @@ class _ItemRow extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
-          color: short ? danger.main : AppColors.border,
+          color: short
+              ? danger.main
+              : AppColors.surface.withValues(alpha: 0.85),
           width: short ? 1.5 : 1,
         ),
+        boxShadow: AppShadows.card,
       ),
       child: Row(
         children: [

@@ -54,15 +54,16 @@ ThemeData buildLightTheme() {
   return base.copyWith(
     textTheme: textTheme,
     extensions: [AppStatusColors.light],
+    // Clay: thanh tiêu đề cùng nền màn, không kẻ dưới; card bên dưới tự tách bằng bóng
     appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.background,
+      surfaceTintColor: Colors.transparent,
       foregroundColor: AppColors.textPrimary,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
       toolbarHeight: AppSizes.appBarHeight,
       titleTextStyle: textTheme.titleLarge,
-      shape: const Border(bottom: BorderSide(color: AppColors.border)),
     ),
     dividerTheme: const DividerThemeData(
       color: AppColors.border,

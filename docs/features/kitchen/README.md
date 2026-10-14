@@ -10,6 +10,7 @@ Nguồn chung: card `BE:docs/modules/nutrition.md` · flow `BE:docs/business/flo
 - PENDING: **P-06** bếp riêng từng campus hay trung tâm ⇒ màn hình phải chịu được cả 1 campus và 2 campus (hiển thị theo dữ liệu BE, không hard-code) · P-05 ai xác nhận.
 - Chỉ hiển thị MealCount **CONFIRMED**; DRAFT không phải số để nấu.
 - Mockup K01 / K03 (user 2026-10-13): Trang chủ bếp có số suất đã chốt + giờ chốt; màn "Suất ăn đã chốt" theo lớp (thường / thay thế, ghi chú dị ứng ở mức nấu, không tên trẻ). Điều chỉnh sau giờ chốt hiện **banner chờ duyệt**, bếp vẫn nấu theo số đã xác nhận (NUT-03).
+- Trang chủ bố cục D (user 2026-10-14, `docs/design/mobile-redesign-clay.md`): số suất đã chốt chữ rất lớn để đọc từ xa, badge Thường / Thay thế, thẻ tiến độ nấu theo bốn bước `CookingStage` + nút cập nhật, rồi danh sách việc. Wireframe tách thay thế theo chế độ ăn (hải sản, chay…) nhưng dữ liệu hiện chỉ có tổng thay thế ⇒ chưa tách; cần BE trả nếu muốn hiện.
 
 ### Thực đơn đã duyệt
 - BE: rule NUT-08 (chỉ APPROVED), NUT-13 / **P-07** (thực đơn chung hay theo campus/nhóm tuổi)

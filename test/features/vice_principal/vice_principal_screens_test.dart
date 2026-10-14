@@ -54,10 +54,11 @@ FakeCampusTodaySource homeSource({FakeMode mode = FakeMode.data}) =>
       meals: FakeMealAdjustmentSource(),
       rewards: FakeRewardProposalSource(),
       mealCount: FakeMealCountConfirmSource(),
+      cooking: FakeCookingStatusSource(),
     );
 
 void main() {
-  testWidgets('V01 (AUTH-08): số trong ngày của cơ sở và 5 việc', (
+  testWidgets('V01 (AUTH-08): mốc buổi sáng, chốt suất là mốc cần làm', (
     tester,
   ) async {
     await pumpScreen(
@@ -68,13 +69,77 @@ void main() {
       ),
       inScaffold: true,
     );
-    expect(find.text('Lê Văn Bình'), findsOneWidget);
-    expect(find.text('6 lớp · 182 bé có mặt / 196'), findsOneWidget);
-    expect(find.bySemanticsLabel('Có phép: 9'), findsOneWidget);
-    expect(find.bySemanticsLabel('Chờ duyệt: 3'), findsOneWidget);
+    expect(find.text('Sáng nay'), findsOneWidget);
+    expect(
+      find.text('Cơ sở chính – Thượng Hồng · Thứ Hai, 12/10'),
+      findsOneWidget,
+    );
+    expect(
+      labelOf('08:00, Khoá điểm danh'),
+      '08:00, Khoá điểm danh, 6/6 lớp đã điểm danh · 182/196 bé có mặt, đã xong',
+    );
+    expect(labelOf('08:30, Chốt suất ăn'), endsWith(', cần làm'));
+    expect(
+      labelOf('08:40, Bếp nhận số'),
+      '08:40, Bếp nhận số, Sau khi chốt suất, chưa tới',
+    );
+    expect(find.text('Xem & chốt'), findsOneWidget);
+    expect(find.text('Xem bếp'), findsNothing);
+    await tester.scrollUntilVisible(find.text('Điều chỉnh suất · Mầm 3A'), 200);
+    expect(find.text('Chờ duyệt (3)'), findsOneWidget);
+    expect(find.text('+1 suất · 09:05'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Trẻ của cơ sở'), 200);
     expect(find.text('Bữa trưa: Đang nấu'), findsOneWidget);
-    expect(find.text('2 suất ăn · 1 đề xuất khen thưởng'), findsOneWidget);
+    // Chốt suất và duyệt đã nằm ở mốc và mục chờ duyệt ⇒ không lặp thành việc
+    expect(find.text('Chốt suất ăn hôm nay'), findsNothing);
+    expect(find.text('Yêu cầu chờ duyệt'), findsNothing);
+  });
+
+  testWidgets(
+    'V01: đã chốt suất ⇒ hết nút chốt, bữa trưa là mốc đang diễn ra',
+    (tester) async {
+      final mealCount = FakeMealCountConfirmSource();
+      await mealCount.confirm();
+      await pumpScreen(
+        tester,
+        VicePrincipalHomeScreen(
+          source: FakeCampusTodaySource(
+            delay: Duration.zero,
+            meals: FakeMealAdjustmentSource(),
+            rewards: FakeRewardProposalSource(),
+            mealCount: mealCount,
+            cooking: FakeCookingStatusSource(),
+          ),
+          cookingSource: FakeCookingStatusSource(),
+        ),
+        inScaffold: true,
+      );
+      expect(find.text('Xem & chốt'), findsNothing);
+      expect(labelOf('08:30, Chốt suất ăn'), contains('Đã gửi bếp 08:25'));
+      expect(
+        labelOf('10:45, Bữa trưa'),
+        endsWith('Bếp: Đang nấu, đang diễn ra'),
+      );
+      expect(find.text('Xem bếp'), findsOneWidget);
+    },
+  );
+
+  testWidgets('V01: không có yêu cầu ⇒ trạng thái rỗng, không còn việc lặp', (
+    tester,
+  ) async {
+    await pumpScreen(
+      tester,
+      VicePrincipalHomeScreen(
+        source: homeSource(mode: FakeMode.empty),
+        cookingSource: FakeCookingStatusSource(),
+      ),
+      inScaffold: true,
+    );
+    await tester.scrollUntilVisible(
+      find.text('Không có yêu cầu chờ duyệt'),
+      200,
+    );
+    expect(find.text('Theo dõi khác'), findsNothing);
   });
 
   testWidgets('V01: lỗi tải ⇒ Thử lại, không để khung chờ chạy mãi', (

@@ -28,19 +28,41 @@ Future<void> pumpTeacherHome(
 }
 
 void main() {
-  testWidgets('T01 (AUTH-03): hero, thẻ lớp, hạn điểm danh, việc cần làm', (
-    tester,
-  ) async {
-    await pumpTeacherHome(tester);
-    expect(find.text('Trần Thu Hà'), findsOneWidget);
-    expect(find.text('Lớp Mầm 3A · 28 bé'), findsOneWidget);
-    expect(find.text('Lịch hoạt động ›'), findsOneWidget);
-    expect(find.text('Hạn điểm danh: 08:30 · còn 47 phút'), findsOneWidget);
-    expect(find.text('Điểm danh & báo ăn'), findsOneWidget);
-    expect(find.text('0/28 bé · trước 08:30'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Đo sức khỏe tháng 10'), 200);
-    expect(find.text('Còn 15'), findsOneWidget);
-  });
+  testWidgets(
+    'Bố cục D (AUTH-03): thẻ lớp có vòng điểm danh, hạn, nút làm ngay',
+    (tester) async {
+      await pumpTeacherHome(tester);
+      expect(find.text('Trần Thu Hà'), findsOneWidget);
+      expect(find.text('Lớp Mầm 3A'), findsOneWidget);
+      expect(find.text('28 bé · Đang diễn ra: 08:00 Tạo hình'), findsOneWidget);
+      expect(find.bySemanticsLabel('0/28 đã điểm danh'), findsOneWidget);
+      expect(find.text('Hạn điểm danh: 08:30 · còn 47 phút'), findsOneWidget);
+      expect(
+        find.widgetWithText(FilledButton, 'Điểm danh ngay'),
+        findsOneWidget,
+      );
+      expect(find.text('Lịch hoạt động ›'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Bố cục D: Việc tiếp theo trượt ngang, không lặp việc điểm danh',
+    (tester) async {
+      await pumpTeacherHome(tester);
+      expect(find.text('Việc tiếp theo'), findsOneWidget);
+      expect(find.text('Điểm danh & báo ăn'), findsNothing);
+      for (final title in [
+        'Đơn xin nghỉ',
+        'Đánh giá hằng ngày',
+        'Ảnh bữa ăn',
+        'Đón trẻ',
+        'Đo sức khỏe tháng 10',
+      ]) {
+        expect(find.text(title), findsOneWidget);
+      }
+      expect(find.text('Còn 15'), findsOneWidget);
+    },
+  );
 
   testWidgets('AC-7 (OBS-08): trang chủ không nhắc giáo án', (tester) async {
     await pumpTeacherHome(tester);
@@ -50,6 +72,8 @@ void main() {
   testWidgets('Không còn việc ⇒ trạng thái rỗng', (tester) async {
     await pumpTeacherHome(tester, mode: FakeMode.empty);
     expect(find.text('Không còn việc nào'), findsOneWidget);
+    expect(find.bySemanticsLabel('28/28 đã điểm danh'), findsOneWidget);
+    expect(find.text('Điểm danh ngay'), findsNothing);
   });
 
   testWidgets('Lỗi ⇒ Thử lại', (tester) async {

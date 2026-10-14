@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/config/app_info.dart';
-import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
+import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_text_field.dart';
 import 'package:carenest_app/core/widgets/brand/app_logo.dart';
 import 'package:carenest_app/features/auth/presentation/widgets/auth_not_connected.dart';
 
-/// Đăng nhập — mockup P01 (`docs/design/figma/parent-01-02-login-home.png`): logo, số điện thoại, mật khẩu.
+/// Đăng nhập — bố cục A Clay (`docs/design/mobile-redesign-clay.md`): logo giữa, form trong card, ghi chú SMS dưới card.
 /// Chưa có AUTH_CONTRACT ⇒ `onSubmit`/`onForgotPassword` do tầng auth nối sau.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({
@@ -70,7 +70,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -84,7 +83,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Center(child: AppLogo()),
+                    // Ảnh logo có nền trắng: đặt trong ô trắng bo góc để không lộ khối vuông trên nền màn
+                    Center(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(AppRadius.xxl),
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(AppSpacing.space2),
+                          child: AppLogo(size: 140),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.space2),
                     Text(
                       AppInfo.schoolName,
                       textAlign: TextAlign.center,
@@ -93,57 +105,71 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.space6),
-                    if (widget.errorMessage != null) ...[
-                      AppBanner(
-                        kind: AppBannerKind.danger,
-                        message: widget.errorMessage!,
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              'Đăng nhập',
+                              style: textTheme.titleLarge,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.space4),
+                          if (widget.errorMessage != null) ...[
+                            AppBanner(
+                              kind: AppBannerKind.danger,
+                              message: widget.errorMessage!,
+                            ),
+                            const SizedBox(height: AppSpacing.space4),
+                          ],
+                          if (_showNotConnected) ...[
+                            authNotConnectedBanner,
+                            const SizedBox(height: AppSpacing.space4),
+                          ],
+                          AppTextField(
+                            label: 'Số điện thoại',
+                            hint: 'Nhập số điện thoại',
+                            controller: _account,
+                            errorText: _accountError,
+                            enabled: !widget.isSubmitting,
+                            keyboardType: TextInputType.phone,
+                            textInputAction: TextInputAction.next,
+                            autofillHints: const [AutofillHints.username],
+                          ),
+                          const SizedBox(height: AppSpacing.space4),
+                          AppTextField(
+                            label: 'Mật khẩu',
+                            hint: 'Nhập mật khẩu',
+                            controller: _passwordInput,
+                            errorText: _passwordError,
+                            isPassword: true,
+                            enabled: !widget.isSubmitting,
+                            textInputAction: TextInputAction.done,
+                            autofillHints: const [AutofillHints.password],
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: AppButton(
+                              label: 'Quên mật khẩu?',
+                              variant: AppButtonVariant.text,
+                              onPressed:
+                                  widget.onForgotPassword ??
+                                  () =>
+                                      setState(() => _showNotConnected = true),
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.space2),
+                          AppButton(
+                            label: 'Đăng nhập',
+                            loadingLabel: 'Đang đăng nhập',
+                            isLoading: widget.isSubmitting,
+                            expand: true,
+                            onPressed: _submit,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: AppSpacing.space4),
-                    ],
-                    if (_showNotConnected) ...[
-                      authNotConnectedBanner,
-                      const SizedBox(height: AppSpacing.space4),
-                    ],
-                    AppTextField(
-                      label: 'Số điện thoại',
-                      hint: 'Nhập số điện thoại',
-                      leadingIcon: AppIcons.phone,
-                      controller: _account,
-                      errorText: _accountError,
-                      enabled: !widget.isSubmitting,
-                      keyboardType: TextInputType.phone,
-                      textInputAction: TextInputAction.next,
-                      autofillHints: const [AutofillHints.username],
-                    ),
-                    const SizedBox(height: AppSpacing.space4),
-                    AppTextField(
-                      label: 'Mật khẩu',
-                      hint: 'Nhập mật khẩu',
-                      controller: _passwordInput,
-                      errorText: _passwordError,
-                      isPassword: true,
-                      leadingIcon: AppIcons.lock,
-                      enabled: !widget.isSubmitting,
-                      textInputAction: TextInputAction.done,
-                      autofillHints: const [AutofillHints.password],
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: AppButton(
-                        label: 'Quên mật khẩu?',
-                        variant: AppButtonVariant.text,
-                        onPressed:
-                            widget.onForgotPassword ??
-                            () => setState(() => _showNotConnected = true),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.space2),
-                    AppButton(
-                      label: 'Đăng nhập',
-                      loadingLabel: 'Đang đăng nhập',
-                      isLoading: widget.isSubmitting,
-                      expand: true,
-                      onPressed: _submit,
                     ),
                     const SizedBox(height: AppSpacing.space5),
                     const AppBanner(

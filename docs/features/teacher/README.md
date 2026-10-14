@@ -6,6 +6,10 @@ Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scop
 - BE: card `BE:docs/modules/school-structure.md`, `BE:docs/modules/identity-access.md` · rule AUTH-03
 - Endpoint: chưa có
 
+### Trang chủ giáo viên (bố cục D)
+- Giao diện (user 2026-10-14, `docs/design/mobile-redesign-clay.md`): lời chào → thẻ lớp nổi bật (tên lớp, sĩ số, hoạt động đang diễn ra, vòng "x/N đã điểm danh", hạn điểm danh, nút "Điểm danh ngay") → "Việc tiếp theo" trượt ngang. Hết việc điểm danh ⇒ không còn nút và hạn.
+- Vòng tiến độ cần **số bé đã điểm danh** do BE trả (`attendanceRecorded` ở `TeacherToday`, chưa có trong contract) ⇒ đề xuất khi viết endpoint trang chủ GV; APP không tự đếm. Không có số ⇒ không vẽ vòng.
+
 ### Điểm danh + báo ăn (nhập hàng loạt)
 - Mục đích: nhập có mặt + tham gia ăn cho cả lớp/ngày cùng lúc; cập nhật trẻ đến muộn.
 - BE: card `BE:docs/modules/attendance.md` · flow `BE:docs/business/flows/attendance.md` · rule ATT-01, ATT-02, ATT-03, ATT-07

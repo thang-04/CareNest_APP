@@ -49,27 +49,76 @@ String? labelOf(String prefix) => find
     ?.label;
 
 void main() {
-  testWidgets('H01 (AUTH-08, K5): số toàn trường, không có nghỉ phép nhân sự', (
+  testWidgets(
+    'H01 (AUTH-08, K5): hai cơ sở cạnh nhau, không có nghỉ phép nhân sự',
+    (tester) async {
+      await pumpScreen(
+        tester,
+        PrincipalOverviewScreen(
+          source: FakeSchoolOverviewSource(
+            delay: Duration.zero,
+            rewards: FakePrincipalRewardSource(),
+          ),
+        ),
+        inScaffold: true,
+      );
+      expect(find.text('Nguyễn Thị Hồng'), findsOneWidget);
+      expect(
+        find.text('Trường MN Thượng Hồng · Thứ Hai, 12/10'),
+        findsOneWidget,
+      );
+      expect(
+        labelOf('Cơ sở chính'),
+        'Cơ sở chính, có mặt 182/196, 93%, 182 suất đã chốt, bếp đang nấu',
+      );
+      expect(
+        labelOf('Cơ sở 2'),
+        'Cơ sở 2, có mặt 130/138, 94%, 124 suất đã chốt, bếp đang nấu',
+      );
+      // Hai thẻ cùng một hàng
+      final main = tester.getTopLeft(
+        find.bySemanticsLabel(RegExp('^Cơ sở chính')),
+      );
+      final second = tester.getTopLeft(
+        find.bySemanticsLabel(RegExp('^Cơ sở 2')),
+      );
+      expect(main.dy, second.dy);
+      expect(main.dx, lessThan(second.dx));
+      await tester.scrollUntilVisible(
+        find.text('Khen thưởng cuối năm · 7 bé'),
+        200,
+      );
+      await tester.scrollUntilVisible(find.bySemanticsLabel('Mầm: 91%'), 200);
+      await tester.scrollUntilVisible(find.text('312/334 bé · 93%'), 200);
+      expect(find.textContaining('Nghỉ phép'), findsNothing);
+    },
+  );
+
+  testWidgets('H01: khổ 320 hai thẻ cơ sở vẫn cạnh nhau, không tràn', (
     tester,
   ) async {
-    await pumpScreen(
-      tester,
-      PrincipalOverviewScreen(
-        source: FakeSchoolOverviewSource(
-          delay: Duration.zero,
-          rewards: FakePrincipalRewardSource(),
+    usePhoneSize(tester);
+    tester.view.physicalSize = const Size(320, 800);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildLightTheme(),
+        home: Scaffold(
+          body: PrincipalOverviewScreen(
+            source: FakeSchoolOverviewSource(
+              delay: Duration.zero,
+              rewards: FakePrincipalRewardSource(),
+            ),
+          ),
         ),
       ),
-      inScaffold: true,
     );
-    expect(find.text('Trường MN Thượng Hồng · 2 cơ sở'), findsOneWidget);
-    expect(labelOf('Trẻ có mặt'), 'Trẻ có mặt: 312/334, 93%');
-    expect(find.bySemanticsLabel('Mầm: 91%'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text('Khen thưởng cuối năm · 7 bé'),
-      200,
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    final main = tester.getTopLeft(
+      find.bySemanticsLabel(RegExp('^Cơ sở chính')),
     );
-    expect(find.textContaining('Nghỉ phép'), findsNothing);
+    final second = tester.getTopLeft(find.bySemanticsLabel(RegExp('^Cơ sở 2')));
+    expect(main.dy, second.dy);
   });
 
   testWidgets('H01: lỗi tải ⇒ Thử lại', (tester) async {

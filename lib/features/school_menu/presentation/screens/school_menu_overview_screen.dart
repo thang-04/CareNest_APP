@@ -209,7 +209,7 @@ class _GroupCard extends StatelessWidget {
       flush: true,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.space4),
           child: Row(

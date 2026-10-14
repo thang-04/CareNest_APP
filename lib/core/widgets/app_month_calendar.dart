@@ -15,12 +15,15 @@ class AppDayMarker {
 }
 
 /// Lịch tháng, thứ Hai đầu tuần; chấm dưới số theo `markers` do màn truyền vào.
-/// Chú giải màu do màn tự đặt bên dưới.
+/// Chọn một ngày (`selected`) hoặc một khoảng (`rangeStart`–`rangeEnd`). Chú giải màu do màn tự đặt bên dưới.
 class AppMonthCalendar extends StatelessWidget {
   const AppMonthCalendar({
     super.key,
     required this.month,
     this.selected,
+    this.rangeStart,
+    this.rangeEnd,
+    this.isDayEnabled,
     this.markers = const {},
     this.onSelected,
   });
@@ -28,6 +31,13 @@ class AppMonthCalendar extends StatelessWidget {
   /// Bất kỳ ngày nào trong tháng cần hiện.
   final DateTime month;
   final DateTime? selected;
+
+  /// Khoảng đang chọn; hai đầu tô nền `brand`, giữa tô `primarySoft`.
+  final DateTime? rangeStart;
+  final DateTime? rangeEnd;
+
+  /// Ngày không chọn được (vd. đã qua) ⇒ chữ mờ, không bấm; null ⇒ mọi ngày bấm được.
+  final bool Function(DateTime day)? isDayEnabled;
 
   /// Khoá là số ngày trong tháng.
   final Map<int, AppDayMarker> markers;
@@ -77,12 +87,31 @@ class AppMonthCalendar extends StatelessWidget {
       return const SizedBox(height: AppSizes.minimumTapTarget);
     }
     final date = DateTime(month.year, month.month, day);
-    final isSelected =
-        selected != null &&
-        selected!.year == date.year &&
-        selected!.month == date.month &&
-        selected!.day == day;
+    bool same(DateTime? other) =>
+        other != null &&
+        other.year == date.year &&
+        other.month == date.month &&
+        other.day == day;
+    final start = rangeStart;
+    final end = rangeEnd ?? rangeStart;
+    final isEndpoint = same(start) || same(end);
+    final inRange =
+        start != null &&
+        end != null &&
+        !date.isBefore(start) &&
+        !date.isAfter(end);
+    final isSelected = same(selected) || isEndpoint;
+    final enabled = isDayEnabled?.call(date) ?? true;
     final isWeekend = date.weekday >= DateTime.saturday;
+    // Dải nền nối hai đầu khoảng: đầu khoảng tô nửa phải, cuối khoảng tô nửa trái
+    final hasRange = !DateUtils.isSameDay(start, end);
+    final band = !inRange || !hasRange
+        ? null
+        : same(start)
+        ? const [Colors.transparent, AppColors.primarySoft]
+        : same(end)
+        ? const [AppColors.primarySoft, Colors.transparent]
+        : const [AppColors.primarySoft, AppColors.primarySoft];
     final marker = markers[day];
     final textTheme = Theme.of(context).textTheme;
     final markerColor = marker == null
@@ -91,14 +120,23 @@ class AppMonthCalendar extends StatelessWidget {
     return Semantics(
       container: true,
       button: onSelected != null,
-      selected: isSelected,
+      selected: isSelected || inRange,
+      enabled: enabled,
       label: [DateLabels.weekdayDate(date), ?marker?.label].join(', '),
       excludeSemantics: true,
       child: InkResponse(
-        onTap: onSelected == null ? null : () => onSelected!(date),
+        onTap: onSelected == null || !enabled ? null : () => onSelected!(date),
         radius: 22,
-        child: SizedBox(
+        child: Container(
           height: AppSizes.minimumTapTarget,
+          decoration: band == null
+              ? null
+              : BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: band,
+                    stops: const [0.5, 0.5],
+                  ),
+                ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -106,7 +144,12 @@ class AppMonthCalendar extends StatelessWidget {
                 width: 32,
                 height: 32,
                 alignment: Alignment.center,
-                decoration: isSelected
+                decoration: isEndpoint
+                    ? const BoxDecoration(
+                        color: AppColors.brand,
+                        shape: BoxShape.circle,
+                      )
+                    : isSelected
                     ? const BoxDecoration(
                         color: AppColors.primary,
                         shape: BoxShape.circle,
@@ -118,9 +161,11 @@ class AppMonthCalendar extends StatelessWidget {
                     '$day',
                     style: textTheme.bodyMedium?.copyWith(
                       fontWeight: isSelected ? FontWeight.w700 : null,
-                      color: isSelected
+                      color: isEndpoint
+                          ? AppColors.onBrand
+                          : isSelected
                           ? AppColors.surface
-                          : isWeekend
+                          : !enabled || isWeekend
                           ? AppColors.textDisabled
                           : AppColors.textPrimary,
                     ),

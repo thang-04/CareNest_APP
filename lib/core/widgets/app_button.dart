@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_loading_dots.dart';
 
 enum AppButtonVariant { primary, secondary, text, danger }
 
-/// Nút viên thuốc cao 52 (nhỏ 44), chữ 16/700, không bóng (DESIGN.md §7.1).
+/// Nút viên thuốc cao 52 (nhỏ 44), chữ 16/700; bóng clay khi bấm được (DESIGN.md §5.5, §7.1).
 class AppButton extends StatelessWidget {
   const AppButton({
     super.key,
@@ -99,7 +100,23 @@ class AppButton extends StatelessWidget {
         content,
       ),
     };
-    return button;
+    // Gờ đáy + quầng chỉ khi bấm được: nút khoá phẳng để thấy rõ là không bấm được
+    final shadows = handler == null
+        ? null
+        : switch (variant) {
+            AppButtonVariant.primary => AppShadows.buttonPrimary,
+            AppButtonVariant.secondary ||
+            AppButtonVariant.danger => AppShadows.buttonSecondary,
+            AppButtonVariant.text => null,
+          };
+    if (shadows == null) return button;
+    return DecoratedBox(
+      decoration: ShapeDecoration(
+        shape: const StadiumBorder(),
+        shadows: shadows,
+      ),
+      child: button,
+    );
   }
 
   // Danger dùng nền nhạt + chữ đậm, không nền đỏ đặc chữ trắng (§4.2)

@@ -25,6 +25,7 @@ class FakeTeacherHomeSource implements TeacherHomeSource {
       childCount: count,
       currentActivity: '08:00 Tạo hình',
       deadlineNote: 'Hạn điểm danh: 08:30 · còn 47 phút',
+      attendanceRecorded: mode == FakeMode.empty ? count : 0,
       tasks: mode == FakeMode.empty
           ? const []
           : [

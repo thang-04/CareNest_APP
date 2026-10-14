@@ -9,7 +9,6 @@ import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_bottom_sheet.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
-import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_stat_tile.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
@@ -198,25 +197,24 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              AppCard(
-                dense: true,
-                child: Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: AppSpacing.space2,
-                  runSpacing: AppSpacing.space2,
-                  children: [
-                    Text(
-                      '${sheet.classSummary.name} · ${DateLabels.weekdayDayMonth(sheet.date)}',
-                      style: textTheme.titleSmall,
+              // Bố cục A: dòng lớp/ngày trơn trên nền, badge khoá cam có icon
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: AppSpacing.space2,
+                runSpacing: AppSpacing.space2,
+                children: [
+                  Text(
+                    '${sheet.classSummary.name} · ${DateLabels.weekdayDayMonth(sheet.date)}',
+                    style: textTheme.titleSmall,
+                  ),
+                  if (sheet.lockAt != null)
+                    AppStatusBadge(
+                      label: 'Khoá lúc ${sheet.lockAt}',
+                      tone: AppStatusTone.orange,
+                      icon: AppIcons.lock,
                     ),
-                    if (sheet.lockAt != null)
-                      AppStatusBadge(
-                        label: 'Khoá lúc ${sheet.lockAt}',
-                        tone: AppStatusTone.approval,
-                      ),
-                  ],
-                ),
+                ],
               ),
               const SizedBox(height: AppSpacing.space3),
               AppStatRow(

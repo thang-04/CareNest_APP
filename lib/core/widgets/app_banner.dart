@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/app_icons.dart';
+import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 
 enum AppBannerKind { info, warning, danger, success, neutral }
 
-/// Banner nền nhạt theo nghĩa, không viền, bo 16 (DESIGN.md §7.1).
+/// Banner nền nhạt theo nghĩa, không viền, bo 16, nổi nhẹ (DESIGN.md §7.1).
 class AppBanner extends StatelessWidget {
   const AppBanner({
     super.key,
@@ -49,6 +50,7 @@ class AppBanner extends StatelessWidget {
         decoration: BoxDecoration(
           color: colors.background,
           borderRadius: BorderRadius.circular(AppRadius.lg),
+          boxShadow: AppShadows.soft,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -44,7 +44,7 @@ String? labelOf(String prefix) => find
     ?.label;
 
 void main() {
-  testWidgets('K01: thẻ bếp có trạng thái nấu, suất đã chốt, việc của bếp', (
+  testWidgets('K01 bố cục D: số suất chữ lớn, tiến độ nấu, việc của bếp', (
     tester,
   ) async {
     await pumpScreen(
@@ -55,9 +55,14 @@ void main() {
       ),
       inScaffold: true,
     );
-    expect(find.text('Nguyễn Thị Mai'), findsOneWidget);
-    expect(find.text('Đang nấu'), findsOneWidget);
-    expect(labelOf('Suất ăn đã chốt lúc 08:30'), contains('182 suất'));
+    expect(find.text('Bếp cơ sở chính'), findsOneWidget);
+    expect(labelOf('Bữa trưa đã chốt lúc 08:30'), contains('182 suất'));
+    expect(labelOf('Bữa trưa đã chốt lúc 08:30'), contains('7 thay thế'));
+    expect(find.bySemanticsLabel('Đang nấu, đang ở bước này'), findsOneWidget);
+    expect(find.bySemanticsLabel('Chờ nấu, đã xong'), findsOneWidget);
+    // Tiến độ nấu đã có thẻ riêng ⇒ không lặp việc cập nhật trạng thái nấu
+    expect(find.text('Cập nhật trạng thái'), findsOneWidget);
+    expect(find.text('Cập nhật trạng thái nấu'), findsNothing);
     await tester.scrollUntilVisible(find.text('Nhận nguyên liệu'), 200);
     expect(find.text('Cần làm'), findsOneWidget);
   });

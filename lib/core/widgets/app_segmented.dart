@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/motion.dart';
+import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 
-/// Segmented: rãnh `track`, ô chọn trắng (DESIGN.md §7.1).
+/// Segmented Clay: rãnh lõm (gradient tối dần lên trên), ô chọn trắng nổi (DESIGN.md §7.1).
 class AppSegmented<T> extends StatelessWidget {
   const AppSegmented({
     super.key,
@@ -23,7 +24,13 @@ class AppSegmented<T> extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space1),
       decoration: BoxDecoration(
-        color: AppColors.track,
+        // Flutter không có bóng trong ⇒ rãnh lõm bằng nền đậm hơn ở mép trên
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppColors.border, AppColors.track],
+          stops: [0, 0.45],
+        ),
         borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Row(
@@ -51,13 +58,7 @@ class AppSegmented<T> extends StatelessWidget {
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(AppRadius.pill),
                       boxShadow: value == selected
-                          ? const [
-                              BoxShadow(
-                                color: Color(0x14101828),
-                                blurRadius: 2,
-                                offset: Offset(0, 1),
-                              ),
-                            ]
+                          ? AppShadows.buttonSecondary
                           : null,
                     ),
                     child: Text(

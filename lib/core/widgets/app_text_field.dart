@@ -200,7 +200,7 @@ class AppSelectField extends StatelessWidget {
   }
 }
 
-/// Khung chung của ô nhập: viền, vòng focus 3 `focusRing`, nhãn, dòng gợi ý/lỗi.
+/// Khung chung của ô nhập Clay: nền lõm nhẹ, viền mảnh, focus viền 2 + vòng 3 `focusRing`, nhãn, dòng gợi ý/lỗi.
 class AppFieldFrame extends StatelessWidget {
   const AppFieldFrame({
     super.key,
@@ -243,6 +243,7 @@ class AppFieldFrame extends StatelessWidget {
         : focused
         ? status.link
         : AppColors.borderStrong;
+    final borderWidth = focused || hasError ? 2.0 : 1.0;
     final radius = BorderRadius.circular(
       multiline ? AppRadius.xl : AppRadius.pill,
     );
@@ -260,9 +261,21 @@ class AppFieldFrame extends StatelessWidget {
         bottom: multiline ? AppSpacing.space3 + 2 : 0,
       ),
       decoration: BoxDecoration(
-        color: enabled ? AppColors.surface : AppColors.surfaceMuted,
+        color: enabled ? null : AppColors.surfaceMuted,
+        // Ô lõm vào: mép trên hơi tối, thay bóng trong của wireframe
+        gradient: enabled
+            ? const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [AppColors.surfaceMuted, AppColors.surface],
+                stops: [0, 0.4],
+              )
+            : null,
         borderRadius: radius,
-        border: Border.all(color: enabled ? borderColor : AppColors.border),
+        border: Border.all(
+          color: enabled ? borderColor : AppColors.border,
+          width: enabled ? borderWidth : 1,
+        ),
         boxShadow: focused && enabled
             ? [BoxShadow(color: status.focusRing, spreadRadius: 3)]
             : null,

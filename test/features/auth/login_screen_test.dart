@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
+import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 
 import '../../helpers/pump_app.dart';
@@ -28,6 +29,22 @@ void main() {
       expect(find.text('Phiên bản v1.0.0'), findsOneWidget);
     },
   );
+
+  testWidgets('Bố cục A: form trong card, ghi chú SMS ngoài card', (
+    tester,
+  ) async {
+    usePhoneSize(tester);
+    await pumpLogin(tester, const LoginScreen());
+    Finder inCard(Finder finder) =>
+        find.descendant(of: find.byType(AppCard), matching: finder);
+    expect(inCard(find.text('Số điện thoại')), findsOneWidget);
+    expect(inCard(find.text('Mật khẩu')), findsOneWidget);
+    expect(
+      inCard(find.widgetWithText(FilledButton, 'Đăng nhập')),
+      findsOneWidget,
+    );
+    expect(inCard(find.textContaining('cấp qua SMS')), findsNothing);
+  });
 
   testWidgets('AC-3: để trống ⇒ báo lỗi dưới ô, không gọi onSubmit', (
     tester,

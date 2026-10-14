@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
+import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/theme/app_text_styles.dart';
@@ -18,7 +19,7 @@ class AppStatTile extends StatelessWidget {
   final String value;
   final String label;
 
-  /// Không có tông ⇒ ô trắng viền nhạt.
+  /// Không có tông ⇒ ô trắng, bóng card.
   final AppStatusTone? tone;
 
   @override
@@ -38,8 +39,11 @@ class AppStatTile extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: colors?.background ?? AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: colors?.border ?? AppColors.border),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          // Clay: ô có tông nổi bằng quầng cùng màu, ô trắng dùng bóng card
+          boxShadow: colors == null
+              ? AppShadows.card
+              : AppShadows.tinted(colors.main, strength: 0.4),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

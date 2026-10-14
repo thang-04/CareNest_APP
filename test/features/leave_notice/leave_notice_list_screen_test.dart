@@ -90,6 +90,11 @@ void main() {
     await pumpForm(tester, source, onSubmitted: () => submitted = true);
     await tester.tap(find.text('Gửi đơn xin nghỉ'));
     await tester.pump();
+    await tester.scrollUntilVisible(
+      find.text('Nhập lý do nghỉ.'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Nhập lý do nghỉ.'), findsOneWidget);
     expect(submitted, isFalse);
   });
@@ -98,9 +103,10 @@ void main() {
     'P03 (ATT-04): nghỉ cả ngày báo huỷ suất; nửa buổi không tự suy',
     (tester) async {
       await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
-      expect(
+      await tester.scrollUntilVisible(
         find.textContaining('Suất ăn ngày 13/10 sẽ được huỷ tự động'),
-        findsOneWidget,
+        200,
+        scrollable: find.byType(Scrollable).first,
       );
       expect(find.textContaining('Cô Hà (GV lớp Mầm 3A)'), findsOneWidget);
 
@@ -116,6 +122,11 @@ void main() {
     final source = FakeLeaveNoticeSource(delay: Duration.zero);
     var submitted = false;
     await pumpForm(tester, source, onSubmitted: () => submitted = true);
+    await tester.scrollUntilVisible(
+      find.byType(TextField),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.enterText(find.byType(TextField), 'Bé đi khám mắt');
     await tester.pump();
     expect(find.text('14/500 ký tự'), findsOneWidget);
@@ -128,6 +139,44 @@ void main() {
     ))!;
     expect(notices.first.reason, 'Bé đi khám mắt');
     expect(notices.first.seenByTeacher, isFalse);
+  });
+
+  testWidgets(
+    'Bố cục D: chạm ngày đầu rồi ngày cuối ⇒ chọn khoảng, báo huỷ suất cả khoảng',
+    (tester) async {
+      await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
+      await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Tư, 14/10/2026')));
+      await tester.pump();
+      await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Sáu, 16/10/2026')));
+      await tester.pump();
+      expect(find.text('Nghỉ từ 14/10 đến 16/10/2026'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.textContaining('Suất ăn từ 14/10 đến 16/10 sẽ được huỷ tự động'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+    },
+  );
+
+  testWidgets('Bố cục D: ngày đã qua không chọn được', (tester) async {
+    await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
+    await tester.tap(
+      find.bySemanticsLabel(RegExp(r'^Thứ Sáu, 09/10/2026')),
+      warnIfMissed: false,
+    );
+    await tester.pump();
+    expect(find.text('Nghỉ ngày 13/10/2026'), findsOneWidget);
+  });
+
+  testWidgets('Bố cục D: ngày đã có đơn nghỉ được đánh dấu có chữ', (
+    tester,
+  ) async {
+    await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
+    expect(
+      find.bySemanticsLabel('Thứ Ba, 13/10/2026, Đã báo nghỉ'),
+      findsOneWidget,
+    );
+    expect(find.text('Ngày đã báo nghỉ'), findsOneWidget);
   });
 
   testWidgets('AC-10: danh sách và form chữ 2.0 không tràn', (tester) async {
