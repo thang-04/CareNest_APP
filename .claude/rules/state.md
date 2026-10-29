@@ -2,6 +2,7 @@
 paths:
   - "lib/features/**/presentation/controllers/**/*.dart"
   - "lib/features/**/presentation/providers/**/*.dart"
+  - "lib/features/**/presentation/screens/**/*.dart"
 ---
 
 # State & cache rules
@@ -15,4 +16,4 @@ paths:
 - Optimistic update chỉ cho thao tác idempotent và có rollback rõ; không dùng cho xác nhận/duyệt.
 - Không persist dữ liệu sức khỏe/dị ứng/ảnh xuống storage thường; persist (nếu cần offline) theo `.claude/rules/security-storage.md`.
 - Response đến muộn của request cũ không được ghi đè state của ngữ cảnh mới (hủy hoặc so khớp key).
-- Không derive quyết định nghiệp vụ từ state client (vd. "đã quá giờ chốt" — cut-off P-03 PENDING, BE quyết định).
+- Không derive quyết định nghiệp vụ từ state client (vd. "đã quá giờ chốt" — giờ chốt do HT cấu hình, ATT-06; BE quyết định).

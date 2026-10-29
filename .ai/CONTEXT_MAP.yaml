@@ -4,40 +4,42 @@
 # Chỉ đường dẫn trong `available` (và app_docs dưới đây) đã tồn tại; `planned` thì chưa.
 version: 2
 repository: CareNest_APP
-role: Mobile client (Parent, Teacher, Kitchen Staff) — sở hữu UI, navigation, client state, API integration, nhận push. KHÔNG sở hữu business rule/authz/contract.
+role: Mobile client (Parent, Teacher, Kitchen Staff; Ban giám hiệu không dùng App — BE AUTH-21) — sở hữu UI, navigation, client state, API integration, nhận push. KHÔNG sở hữu business rule/authz/contract.
 
 keywords:
   # từ khóa (VN|EN, regex-friendly) -> {app_docs, be_module_card}
   "điểm danh|attendance|đi muộn|đến muộn|late|vắng|có mặt":
     {app_docs: [docs/features/teacher/README.md, docs/features/parent/README.md], be_module_card: [BE:docs/modules/attendance.md]}
   "báo ăn|tham gia ăn|meal participation":
-    {app_docs: [docs/features/teacher/README.md], be_module_card: [BE:docs/modules/attendance.md, BE:docs/modules/nutrition.md]}
+    {app_docs: [docs/features/teacher/README.md], be_module_card: [BE:docs/modules/attendance.md, BE:docs/modules/nutrition.md]}   # ATT-02 (28/10): có mặt là ăn mọi bữa, GV không nhập tham gia ăn riêng
   "đơn nghỉ|báo nghỉ|xin nghỉ|leave request|leave":
-    {app_docs: [docs/features/parent/README.md, docs/features/teacher/README.md], be_module_card: [BE:docs/modules/attendance.md]}   # ATT-05: thông báo, không duyệt (P-15 đã đóng)
+    {app_docs: [docs/features/parent/README.md, docs/features/teacher/README.md], be_module_card: [BE:docs/modules/attendance.md]}   # ATT-05: thông báo, không duyệt (P-15 đã đóng); chỉ phụ huynh tạo, GV không tạo thay
   "suất ăn|số suất|meal count|chốt suất|adjustment|điều chỉnh suất":
     {app_docs: [docs/features/kitchen/README.md], be_module_card: [BE:docs/modules/nutrition.md]}
   "thực đơn|menu|món|dish|bữa ăn|meal":
     {app_docs: [docs/features/kitchen/README.md, docs/features/parent/README.md], be_module_card: [BE:docs/modules/nutrition.md]}
-  "định lượng|food quantity|thực phẩm tươi|fresh|kho khô|stored|bếp|kitchen":
-    {app_docs: [docs/features/kitchen/README.md], be_module_card: [BE:docs/modules/nutrition.md]}
+  "định lượng|food quantity|thực phẩm tươi|fresh|kho khô|stored|bếp|kitchen|ảnh mẫu|lưu mẫu|food sample":
+    {app_docs: [docs/features/kitchen/README.md], be_module_card: [BE:docs/modules/nutrition.md]}   # kho khô, kiểm nhận hàng tươi do PHT ghi trên Web (NUT-11, NUT-12); bếp ghi ảnh mẫu, sổ lưu mẫu (NUT-16, NUT-21)
   "dị ứng|allergy":
     {app_docs: [docs/features/kitchen/README.md, docs/features/parent/README.md], be_module_card: [BE:docs/modules/child.md, BE:docs/modules/nutrition.md]}
   "trẻ|child|hồ sơ trẻ|tổng quan con|child overview|chọn con":
     {app_docs: [docs/features/parent/README.md], be_module_card: [BE:docs/modules/child.md]}
-  "sức khỏe|health|chiều cao|cân nặng|measurement|tăng trưởng|biểu đồ|trend":
-    {app_docs: [docs/features/parent/README.md, docs/features/teacher/README.md], be_module_card: [BE:docs/modules/health.md]}
-  "quan sát|observation|tiêu chí|nhận xét|summary|phát triển|development|hoạt động|activity":
-    {app_docs: [docs/features/teacher/README.md, docs/features/parent/README.md], be_module_card: [BE:docs/modules/learning-observation.md]}   # "Hoạt động hằng ngày" cho phụ huynh chỉ hiển thị khi OBS-07 được chốt (ADR-0006 OPEN)
+  "sức khỏe|health|chiều cao|cân nặng|measurement|tăng trưởng|biểu đồ|trend|nhiệt độ|temperature|sức khỏe đầu ngày|sức khỏe trong ngày|cân đo|who":
+    {app_docs: [docs/features/parent/README.md, docs/features/teacher/README.md], be_module_card: [BE:docs/modules/health.md]}   # HLT-08..14 chốt 29/10: GV cân đo, công bố mới hiện cho phụ huynh, sức khỏe trong ngày báo ngay
+  "quan sát|observation|tiêu chí|nhận xét|summary|phát triển|development|đánh giá|bé ngoan|khen thưởng|hoạt động|activity|kế hoạch ngày":
+    {app_docs: [docs/features/teacher/README.md, docs/features/parent/README.md], be_module_card: [BE:docs/modules/learning-observation.md]}   # OBS-01..14 chốt 29/10; hoạt động lấy từ kế hoạch ngày (OBS-07, EDU-09) — card education-plan của BE chưa merge nhánh chính BE
+  "đón trẻ|pickup|người đón|trả trẻ|về sớm":
+    {app_docs: [docs/features/teacher/README.md, docs/features/parent/README.md], be_module_card: [BE:docs/modules/attendance.md]}   # PCK-01..04 (29/10); ảnh đối chiếu P-33; flow pickup của BE chưa merge nhánh chính BE
   "cơ sở vật chất|csvc|thiết bị hỏng|sự cố|facility":
-    {app_docs: [docs/features/teacher/README.md], be_module_card: [BE:docs/modules/facility-issue.md]}
+    {app_docs: [docs/features/teacher/README.md], be_module_card: []}   # BE FAC REMOVED 29/10 — ngoài scope, không làm màn
   "đăng nhập|login|logout|token|refresh|session|phiên|401|role|permission|phân quyền|403":
     {app_docs: [docs/integration/AUTH_FLOW.md, docs/integration/BACKEND_INTEGRATION.md], be_module_card: [BE:docs/modules/identity-access.md]}
   "điểm trường|campus|lớp|classroom|phân công|assignment":
     {app_docs: [docs/architecture/NAVIGATION.md], be_module_card: [BE:docs/modules/school-structure.md]}
   "thông báo|notification|push|deep link|device token|fcm|apns":
-    {app_docs: [docs/integration/PUSH_NOTIFICATION.md], be_module_card: [BE:docs/modules/notification.md]}
+    {app_docs: [docs/integration/PUSH_NOTIFICATION.md], be_module_card: [BE:docs/modules/notification.md]}   # PAR-05: thông báo trường do BGH gửi, push + trong App, không theo dõi đã đọc
   "phụ huynh xem|parent view|hiển thị phụ huynh|được công bố|published":
-    {app_docs: [docs/features/parent/README.md], be_module_card: [BE:docs/modules/child.md, BE:docs/modules/identity-access.md]}   # ADR-0010
+    {app_docs: [docs/features/parent/README.md], be_module_card: [BE:docs/modules/child.md, BE:docs/modules/identity-access.md]}   # ADR-0010; danh sách PAR-01, công bố PAR-03, một tài khoản mọi con PAR-06
   "api|endpoint|dto|error code|problemdetail|traceId|timeout|retry|offline|mất mạng":
     {app_docs: [docs/integration/BACKEND_INTEGRATION.md], be_module_card: []}
   "navigation|điều hướng|màn hình|screen|tab|route":

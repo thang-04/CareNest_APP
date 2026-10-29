@@ -1,6 +1,8 @@
 # Principal (Hiệu trưởng) — màn hình Mobile
 
-User chốt 2026-10-13: BGH có trên app, tách Phó Hiệu trưởng và Hiệu trưởng (plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`). `BE:docs/business/USER_ROLES.md:20` còn ghi Principal chỉ dùng Web ⇒ cần BE cập nhật trước khi nối API.
+> **Ngoài phạm vi App theo AUTH-21 (user chốt 27/10): BGH chỉ dùng Web. Màn hình hiện có giữ làm tham khảo, không phát triển tiếp.**
+
+User chốt 2026-10-13: BGH có trên app, tách Phó Hiệu trưởng và Hiệu trưởng (plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`) — đã thay bởi AUTH-21; `BE:docs/business/USER_ROLES.md` ghi Principal chỉ dùng Web là đúng.
 
 Hiệu trưởng có scope toàn trường, mọi campus (`BE:` AUTH-01). Số tổng hợp chỉ trong scope (AUTH-08). Mockup: `docs/design/figma/principal-*.png`.
 
@@ -11,7 +13,7 @@ Hiệu trưởng có scope toàn trường, mọi campus (`BE:` AUTH-01). Số t
 - Thẻ cơ sở cần BE trả số theo từng cơ sở (`CampusSnapshot`: có mặt, sĩ số, tỉ lệ, suất đã chốt, trạng thái bếp bữa trưa) ⇒ **PROPOSED**, đề xuất khi viết endpoint tổng quan HT. APP không tự tính tỉ lệ.
 
 ### Chờ Hiệu trưởng duyệt (H02) + Khen thưởng cuối năm (H04) — **PROPOSED**
-- BE: rule OBS-10 (PROPOSED), tiêu chí PENDING P-11 · luồng Phó HT xét → Hiệu trưởng duyệt theo mockup, BE chưa ghi.
+- BE: rule OBS-10, OBS-14 (chốt 29/10: GV đề xuất → PHT xét → HT duyệt), tiêu chí P-11; làm cả hai: P-31.
 - Mockup H02: bỏ tab và mục "Nghỉ phép" (K5) ⇒ không còn bộ lọc; danh sách đợt chờ duyệt + "Đã xử lý gần đây".
 - Mockup H04: chọn sẵn mọi đề xuất hợp lệ; bỏ chọn ⇒ đề xuất đó trả về Phó HT, **cần ghi chú**; "Trả về Phó HT" trả cả đợt, bắt buộc ghi chú. Duyệt từng phần là đề xuất của APP theo mockup (có ô chọn) — cần BE xác nhận khi viết OBS-10.
 - Contract cần đề xuất: đợt đề xuất (batch) gửi Hiệu trưởng, trạng thái đợt, ghi chú khi trả về.
@@ -24,7 +26,7 @@ Hiệu trưởng có scope toàn trường, mọi campus (`BE:` AUTH-01). Số t
 - Mockup H06: lọc theo cơ sở, danh sách lớp kèm sĩ số; gõ tìm ⇒ thêm trẻ khớp tên. Chạm lớp ⇒ màn trẻ của lớp (dùng lại màn V10, cơ sở + lớp ở query); chạm bé ⇒ "Sắp có".
 
 ### Thực đơn tuần (H07)
-- BE: rule NUT-08 (chỉ đã duyệt), NUT-13 / P-07 (chung hay theo campus) · chỉ xem.
+- BE: rule NUT-08 (chỉ đã công bố), NUT-13 (một thực đơn chung hai cơ sở — đóng P-07) · chỉ xem.
 - Mockup H07: chọn cơ sở và ngày, mỗi nhóm tuổi một thẻ bữa trưa + năng lượng ngày; tóm tắt dinh dưỡng tuần là chuỗi BE trả (APP không tự tổng hợp). Chạm thẻ ⇒ cân đối dinh dưỡng (V07) của cơ sở đó.
 
 ### Cơ sở & Phó HT phụ trách (H08)

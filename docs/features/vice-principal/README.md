@@ -1,8 +1,10 @@
 # Vice Principal (Phó Hiệu trưởng) — màn hình Mobile
 
-User chốt 2026-10-13: BGH có trên app, tách Phó Hiệu trưởng và Hiệu trưởng (plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`). `BE:docs/business/USER_ROLES.md:21` còn ghi Vice Principal chỉ dùng Web ⇒ cần BE cập nhật trước khi nối API.
+> **Ngoài phạm vi App theo AUTH-21 (user chốt 27/10): BGH chỉ dùng Web. Màn hình hiện có giữ làm tham khảo, không phát triển tiếp.**
 
-Phó HT chỉ thấy campus được phân công qua StaffAssignment (`BE:` AUTH-02; cố định hay luân phiên PENDING P-14). Số tổng hợp chỉ trong scope (AUTH-08). Mockup: `docs/design/figma/vice-principal-*.png`.
+User chốt 2026-10-13: BGH có trên app, tách Phó Hiệu trưởng và Hiệu trưởng (plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`) — đã thay bởi AUTH-21; `BE:docs/business/USER_ROLES.md` ghi Vice Principal chỉ dùng Web là đúng.
+
+Phó HT chỉ thấy campus được phân công qua StaffAssignment, mỗi người một mảng; quyền theo mảng là mã quyền (`BE:` AUTH-02, AUTH-20; đóng P-14). Số tổng hợp chỉ trong scope (AUTH-08). Mockup: `docs/design/figma/vice-principal-*.png`.
 
 ### Trang chủ cơ sở (V01)
 - BE: rule AUTH-02, AUTH-08 · Endpoint: chưa có
@@ -12,18 +14,18 @@ Phó HT chỉ thấy campus được phân công qua StaffAssignment (`BE:` AUTH
 - Dòng mốc tự dựng trong màn, không dùng `AppTimeline`: widget chung chưa có trạng thái "đã xong", badge và nút trong mốc, và gộp hết semantics nên sẽ che nút.
 
 ### Yêu cầu chờ duyệt (V02) + Duyệt điều chỉnh suất (V03)
-- BE: rule NUT-03 (ACCEPTED), ATT-07 · **P-04** cách xử lý thay đổi muộn (NUT-04)
+- BE: rule NUT-03 (ACCEPTED), ATT-07 · NUT-04 (đóng P-04 28/10: không có điều chỉnh chờ duyệt; thay đổi qua mở lại điểm danh — ATT-08 — rồi xác nhận lại)
 - Endpoint: chưa có. Số "sau khi duyệt" là BE tính; APP không cộng/trừ.
 - Mockup V02–V03: tab Duyệt lọc Tất cả / Suất ăn / Khen thưởng. Chi tiết điều chỉnh có trẻ liên quan (Phó HT thấy tên trong cơ sở phụ trách), tình trạng bếp ("còn kịp chia thêm"), tổng hiện tại / sau khi duyệt / thường – thay thế. **Từ chối bắt buộc lý do** (trả về người gửi); duyệt xong BE gửi số mới tới bếp.
 - Contract cần đề xuất: field tình trạng bếp trong yêu cầu điều chỉnh (đang nấu, còn kịp hay không) — chưa có ở BE.
 
-### Chốt suất ăn trong ngày (V04) — **PENDING P-05**
+### Chốt suất ăn trong ngày (V04) — **đã chốt NUT-02 (đóng P-05): PHT xác nhận trên Web**
 - BE: rule NUT-01, NUT-02 · permission `meal-count:confirm` chưa gán role
 - Mockup giao Phó HT; chưa chốt ⇒ chỉ dữ liệu giả ở bản debug.
 - Mockup V04: bảng theo lớp dùng chung với bếp (`MealCountTable`), nút "Xác nhận gửi bếp (N suất)", xác nhận xong hiện "Đã gửi bếp lúc …" và ẩn nút. Bản giả: tổng hợp 08:15, giờ chốt 08:30 (khớp K03); mockup ghi 08:45 / 09:00 và có banner điều chỉnh 09:05 — bỏ banner vì điều chỉnh chỉ có sau khi chốt.
 
 ### Trạng thái bếp (V05) — **PROPOSED**
-- BE: rule NUT-14 (PROPOSED) · Phiếu xuất kho và báo thiếu: nghiệp vụ mới PROPOSED (`docs/features/kitchen/README.md`)
+- BE: rule NUT-14 (REMOVED 28/10) · Phiếu xuất kho và báo thiếu: nghiệp vụ mới PROPOSED (`docs/features/kitchen/README.md`)
 - Mockup V05: màn K07 ở chế độ chỉ xem + thẻ bếp / phiếu xuất kho + banner báo thiếu gần nhất. Câu "Giáo viên không cần nhận suất" lệch NUT-15 (như K07).
 
 ### Thực đơn tuần (V06) + Cân đối dinh dưỡng (V07)
@@ -36,7 +38,7 @@ Phó HT chỉ thấy campus được phân công qua StaffAssignment (`BE:` AUTH
 - Mockup V10: tìm tên, chọn lớp, lọc Dị ứng / Ăn kiêng (số trong chip đếm theo danh sách đang xem), nhãn dị ứng có chữ. Chạm bé ⇒ "Sắp có" (hồ sơ cho Phó HT chưa có mockup). Bản giả 196 trẻ, Mầm 3A dùng chung danh sách lớp của Giáo viên.
 
 ### Đề xuất khen thưởng (V12) — **PROPOSED**
-- BE: rule OBS-10 (PROPOSED), tiêu chí PENDING P-11 · "Hợp lệ / Không hợp lệ" là kết quả BE trả.
+- BE: rule OBS-10, OBS-14 (chốt 29/10), tiêu chí P-11 · "Hợp lệ / Không hợp lệ" là kết quả BE trả.
 - Mockup V12: tab Chờ xét / Đã gửi HT / Trả lại; nút "Trả lại (n)" trả mọi đề xuất không hợp lệ (lý do BE ghi), "Gửi HT (n)" gửi mọi đề xuất hợp lệ. Thẻ `RewardProposalCard` dùng lại cho Hiệu trưởng.
 
 ## Known pitfalls

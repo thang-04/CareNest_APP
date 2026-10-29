@@ -11,7 +11,7 @@ Làn M/L: các mục dưới.
 
 ## Code
 - [ ] Không business rule ở client (suất ăn, định lượng, dị ứng, trend, field phụ huynh); dẫn chiếu rule ID BE khi màn hình phụ thuộc rule.
-- [ ] Không implement rule PENDING/OPEN như đã chốt (P-03, P-04, P-05, P-06, P-07, P-13b, OBS-07...).
+- [ ] Không implement rule PENDING/OPEN như đã chốt (P-13b, P-20, P-21, P-22, P-23, P-26, OBS-07...).
 - [ ] Ẩn UI không thay phân quyền; 401/403/404 xử lý đúng.
 - [ ] Gọi API qua lớp client chung; xử lý envelope `{code, desc, data}` theo HTTP status (`docs/integration/BACKEND_INTEGRATION.md`).
 - [ ] Không thêm dependency/thư viện nền khi chưa được duyệt.
