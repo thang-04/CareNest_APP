@@ -25,15 +25,17 @@ Nền tảng Web + Mobile cho **Trường Mầm non Thượng Hồng (Hải Phò
 
 ## Người dùng Mobile
 
+App chỉ cho Phụ huynh, Giáo viên, Bếp; Ban giám hiệu không dùng App (`BE:` AUTH-21, user chốt 27/10).
+
 | Role | Dùng app để | Chi tiết |
 | --- | --- | --- |
-| Parent | Xem thông tin **được nhà trường cho phép** của con (default-deny, ADR-0010); gửi/hủy báo nghỉ cho con, không cần duyệt (ATT-05) | `docs/features/parent/` |
-| Teacher | Nhập điểm danh + báo ăn, quan sát hằng ngày, báo sự cố CSVC, xem báo nghỉ của lớp, (duyệt summary nếu làm trên mobile) | `docs/features/teacher/` |
-| Kitchen Staff | Xem suất đã chốt, thực đơn đã duyệt, định lượng, dị ứng cần cho nấu | `docs/features/kitchen/` |
-| Principal / Vice Principal | Chủ yếu Web; mobile chỉ khi có yêu cầu sau | — |
+| Parent | Đăng nhập bằng SĐT (AUTH-18); một tài khoản xem mọi con (PAR-06); xem thông tin **được nhà trường cho phép** của con (default-deny, ADR-0010; danh sách PAR-01, dữ liệu có công bố PAR-03), thực đơn tuần/ngày kèm ảnh suất (PAR-01); nhận thông báo trường, sức khỏe trong ngày, đã đón con (PAR-05, HLT-14, PCK-04); gửi/hủy báo nghỉ cho con, không cần duyệt (ATT-05); sửa thông tin liên lạc của mình (CHD-05) | `docs/features/parent/` |
+| Teacher | Điểm danh chủ yếu trên App (ATT-01; có mặt là ăn — ATT-02) + nhiệt độ đầu ngày (HLT-07), đón trẻ = xác nhận trả trẻ (PCK-02, PCK-04, ATT-10), đánh giá hằng ngày (OBS-01, OBS-02), sức khỏe trong ngày, cân đo (HLT-14, HLT-09), xem báo nghỉ của lớp (không tạo thay — ATT-05), (xác nhận nhận xét định kỳ nếu làm trên mobile — OBS-05) | `docs/features/teacher/` |
+| Kitchen Staff | Chỉ App, màn tối thiểu (AUTH-21, user chốt 29/10), 1 tài khoản chung mỗi cơ sở (AUTH-22). Xem thực đơn đã công bố, số suất đã xác nhận theo lớp từng bữa, định lượng, số suất dị ứng/thay thế theo món và lớp không tên trẻ (AUTH-05, NUT-17, NUT-23); chụp ảnh mẫu bữa, ghi sổ lưu mẫu (NUT-16, NUT-21) | `docs/features/kitchen/` |
+| Principal / Vice Principal | Không dùng App — chỉ Web (AUTH-21). Màn đã dựng giữ làm tham khảo | `docs/features/principal/`, `docs/features/vice-principal/` |
 
 ## Ngoài scope
-Chat/nhắn tin (Zalo vẫn dùng), kho/NCC (OPEN — BE ADR-0009, chưa làm), giáo án (GoKids giữ), chẩn đoán y tế, thanh toán, multi-school.
+Chat/nhắn tin (Zalo vẫn dùng), kho/NCC và kiểm nhận hàng (PHT làm trên Web — NUT-11, NUT-12), báo thiếu nguyên liệu/suất (Zalo/điện thoại — NUT-22), soạn/duyệt kế hoạch giáo dục (Web — EDU), CSVC (BE FAC REMOVED 29/10), đăng ký trước người đón hộ (PCK-03), chẩn đoán y tế, thanh toán, multi-school.
 
 ## Stack
 

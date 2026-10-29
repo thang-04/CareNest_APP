@@ -764,11 +764,11 @@ Design System nguồn nêu Phụ huynh, Giáo viên, Bếp; tab giáo viên là 
 | Phụ huynh | `PARENT` | **Trang chủ · Bé của tôi · Thông báo · Tài khoản** | Theo mockup (user 2026-10-13); quyền/field cần backend chốt |
 | Giáo viên | `TEACHER` | **Trang chủ · Lớp học · Thông báo · Tài khoản** | Theo mockup (user 2026-10-13); màn con theo SRS |
 | Nhân viên bếp | `KITCHEN_STAFF` | **Trang chủ · Thực đơn · Thông báo · Tài khoản** | Theo mockup (user 2026-10-13); quyền theo AUTH-05 |
-| Phó Hiệu trưởng | Vice Principal (mã BE chưa có) | **Trang chủ · Duyệt · Thông báo · Tài khoản** | User chốt có trên app 2026-10-13; BE `USER_ROLES.md:21` còn ghi chỉ Web; scope campus AUTH-02 |
-| Hiệu trưởng | Principal (mã BE chưa có) | **Tổng quan · Duyệt · Thông báo · Tài khoản** | User chốt có trên app 2026-10-13; BE `USER_ROLES.md:20` còn ghi chỉ Web; scope toàn trường AUTH-01 |
-| Tổ trưởng | `TEAM_LEADER` hoặc quyền/cờ của `TEACHER` | Khung giáo viên + chức năng được phép | OPEN; không mặc định tạo role riêng |
+| Phó Hiệu trưởng | Vice Principal (mã BE chưa có) | **Trang chủ · Duyệt · Thông báo · Tài khoản** | Ngoài phạm vi App theo AUTH-21 (user chốt 27/10, thay quyết định 2026-10-13): chỉ Web; màn đã dựng giữ tham khảo |
+| Hiệu trưởng | Principal (mã BE chưa có) | **Tổng quan · Duyệt · Thông báo · Tài khoản** | Ngoài phạm vi App theo AUTH-21 (user chốt 27/10, thay quyết định 2026-10-13): chỉ Web; màn đã dựng giữ tham khảo |
+| Tổ trưởng | `TEAM_LEADER` hoặc quyền/cờ của `TEACHER` | Khung giáo viên + chức năng được phép | Không phải role đăng nhập: phân công trên tài khoản GV (AUTH-23); không tạo role riêng |
 
-Chỉ đăng ký cấu hình của nhóm đã được duyệt. Phó Hiệu trưởng và Hiệu trưởng được user chốt đưa lên app (2026-10-13, plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`); nhân viên văn phòng vẫn không có. User không chọn role ở login; role không hỗ trợ có thông báo rõ, không mặc định Teacher.
+Chỉ đăng ký cấu hình của nhóm đã được duyệt. Phó Hiệu trưởng và Hiệu trưởng được user chốt đưa lên app (2026-10-13, plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`), nay ngoài phạm vi App theo AUTH-21 (user chốt 27/10) — App chỉ cho Phụ huynh, Giáo viên, Bếp; nhân viên văn phòng vẫn không có. User không chọn role ở login; role không hỗ trợ có thông báo rõ, không mặc định Teacher.
 
 `route_access_policy.dart` kiểm tra cả route trực tiếp/deep link và dữ liệu đích còn tồn tại; ẩn tab/nút chỉ là UX, BE vẫn kiểm quyền từng API. Bản mobile trước ghi tài khoản phụ huynh do Phó hiệu trưởng tạo và SMS mời: giữ là NEEDS VERIFICATION; không thêm tự đăng ký. Kích hoạt/đặt mật khẩu ban đầu tách khỏi OTP login.
 
