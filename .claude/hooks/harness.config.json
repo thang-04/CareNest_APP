@@ -2,7 +2,6 @@
   "repo": "APP",
   "siblings": {
     "BE": [
-      "../CareNest_BE-main",
       "../CareNest_BE"
     ],
     "FE": [
@@ -29,7 +28,10 @@
       "android/gradle.properties",
       "ios/Podfile*",
       "pubspec.yaml",
-      "pubspec.lock"
+      "pubspec.lock",
+      "lib/core/**",
+      "lib/routing/**",
+      "lib/app.dart"
     ]
   },
   "verify": {
@@ -71,24 +73,19 @@
     ],
     "immutableGlobs": [],
     "contractGlobs": [],
-    "highRisk": []
+    "highRisk": [],
+    "sharedGlobs": [
+      "lib/core/**",
+      "lib/routing/**",
+      "lib/app.dart"
+    ],
+    "autonomous": true
   },
   "checkAiLayer": {
     "pathRoots": [
       "docs",
       ".ai"
     ],
-    "incidentIdPattern": "^APP-(BUG|CASE|ENV|CTR)-\\d{6}-[a-z0-9-]+$",
-    "sharedFiles": [
-      ".claude/settings.json",
-      ".claude/hooks/*.mjs",
-      ".claude/hooks/lib/**",
-      ".claude/hooks/__tests__/**",
-      ".githooks/**",
-      "scripts/**",
-      ".gitattributes",
-      ".editorconfig",
-      "docs/plans/_TEMPLATE.md"
-    ]
+    "incidentIdPattern": "^APP-(BUG|CASE|ENV|CTR)-\\d{6}-[a-z0-9-]+$"
   }
 }
