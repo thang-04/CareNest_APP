@@ -35,7 +35,20 @@ Mobile framework: **Flutter — CONFIRMED** (user, 2026-10-08); package `carenes
 
 ## Quy tắc chung CareNest (bắt buộc)
 
-Khối này giống nhau ở cả ba repo `CareNest_BE`, `CareNest_FE`, `CareNest_APP`; chỉ mục "Hỏi trước khi làm" và "Phạm vi" khác theo repo. Sửa ở một repo thì đồng bộ sang hai repo còn lại.
+Khối này giống nhau ở cả ba repo `CareNest_BE`, `CareNest_FE`, `CareNest_APP`; chỉ mục "Hỏi trước khi làm" và "Phạm vi" khác theo repo. Khối này và file harness dùng chung (hook, githook, `scripts/ai-layer/`): sửa ở `CareNest_BE` rồi trong FE/APP chạy `node scripts/ai-layer/sync-shared.mjs --from ../CareNest_BE`.
+
+### Chế độ làm việc — tự chạy, có điểm dừng
+
+Áp dụng cho mọi công cụ AI (Claude, Codex, công cụ khác); Claude hook chỉ là lớp chặn thêm.
+
+- Việc trong module mình phụ trách, làn S/M: làm một mạch tới bàn giao, không dừng hỏi yes/no. Kỹ thuật đã có convention ⇒ tự chọn. Mọi giả định ghi ở báo cáo bàn giao.
+- **Điểm dừng cứng** — dừng, trình bày, chờ người làm trả lời rồi mới sửa:
+  1. Các việc ở mục "Hỏi trước khi làm".
+  2. File thuộc **vùng dùng chung** (`guard.sharedGlobs` trong `.claude/hooks/harness.config.json`).
+  3. File thuộc module do thành viên khác phụ trách (`ownership` cùng file).
+  4. Nghiệp vụ `PENDING` / `OPEN` / lệch tài liệu.
+- Ở điểm dừng 2 và 3, in **bản tác động** (≤12 dòng) trước khi sửa: thay đổi gì · màn hình/route/role hoặc endpoint/client bị ảnh hưởng (dán output `node scripts/ai-layer/impact.mjs <file>`) · luồng người dùng đổi thế nào · module của ai · 2–3 phương án và đề xuất · cách kiểm. Mẫu: `.ai/workflows/clarify-business.md`.
+- Làn L: viết plan, trình bày tóm tắt kèm bản tác động, chờ duyệt rồi mới code.
 
 ### Git — nhánh và mã công việc
 
@@ -75,7 +88,7 @@ G94-182: Add lesson plan validation
 ### Cổng chất lượng
 
 - **Iron Law:** chưa có output `node scripts/verify.mjs` chạy sau lần sửa cuối ⇒ không báo "xong/pass/đã sửa"; skip = chưa kiểm chứng (`docs/quality/VERIFICATION.md`).
-- Làn L ⇒ plan user duyệt mới code. Sửa bug thất bại 3 lần ⇒ dừng, ghi Attempts, hỏi.
+- Làn L ⇒ plan được duyệt mới code (mục "Chế độ làm việc"). Sửa bug thất bại 3 lần ⇒ dừng, ghi Attempts, hỏi.
 - Sửa `.ai/ .claude/ .agents/ docs/` ⇒ `node scripts/check-ai-layer.mjs`. Cổng fail ⇒ sửa nguyên nhân, không lách.
 
 ### Hỏi trước khi làm
@@ -92,4 +105,4 @@ G94-182: Add lesson plan validation
 
 ### Giao tiếp
 
-- Trả lời user tiếng Việt; commit, branch, identifier tiếng Anh. Yêu cầu chưa rõ ⇒ hỏi trước. Báo kết quả đúng sự thật (test fail/skip/chưa chạy phải nói rõ).
+- Trả lời user tiếng Việt; commit, branch, identifier tiếng Anh. Yêu cầu chưa rõ về nghiệp vụ ⇒ hỏi trước. Báo kết quả đúng sự thật (test fail/skip/chưa chạy phải nói rõ).

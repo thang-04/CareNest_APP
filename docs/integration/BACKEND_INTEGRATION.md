@@ -5,7 +5,7 @@ BE (`CareNest_BE`) là **nguồn duy nhất** của contract. File này chỉ n�
 ## Nguồn contract (theo thứ tự ưu tiên)
 
 1. **Source BE đã implement** — `BE:src/main/java/com/carenest/utils/ResponseJson.java`, `ApiCode.java`, `exception/GlobalExceptionHandler.java`, `dto/common/PageResponse.java`.
-2. **OpenAPI** sinh bởi springdoc — Swagger UI `/swagger-ui/index.html` khi chạy BE. Endpoint nghiệp vụ: chưa có.
+2. **OpenAPI** sinh bởi springdoc — Swagger UI `/swagger-ui/index.html` khi chạy BE. Danh sách endpoint BE đã có: grep `docs/integration/BE_API_INDEX.md` (ảnh chụp sinh tự động, mỗi dòng `METHOD /path · controller#method`; cập nhật: `node scripts/ai-layer/api-index.mjs` khi có repo BE cạnh bên). APP hiện chưa gọi endpoint nào (data source giả, `USE_MOCK=true`).
 3. `BE:docs/backend-coding-guide.md` §7 (API), §8 (response chuẩn), §11 (exception).
 4. `BE:docs/contracts/API_CONVENTIONS.md`, `ERROR_CONTRACT.md` — tóm tắt guide (`{code, desc, data}`, prefix `/api`). Mâu thuẫn ⇒ theo 1–3.
 
