@@ -13,6 +13,7 @@ Lệnh chuẩn: `node scripts/verify.mjs`. Repo Flutter (có `pubspec.yaml`): ki
 | Khớp contract BE | Đối chiếu `BE:docs/api/openapi.yaml` (snapshot BE khóa bằng test) + source DTO BE, dẫn `file:line` |
 | Chạy trên emulator/máy thật | Bước + kết quả `x/y`, môi trường (BE thật hay mock) |
 | AI layer nhất quán | `node scripts/check-ai-layer.mjs` exit 0 |
+| Không dính file rác | `node scripts/ai-layer/junk-files.mjs` exit 0 (verify tự chạy; cảnh báo `[JUNK] WARN` ⇒ commit hoặc thêm `.gitignore`) |
 
 ## Báo cáo cuối task
 ```text
