@@ -57,3 +57,11 @@ windows/flutter/ephemeral/
 android/.gradle/
 android/local.properties
 android/**/GeneratedPluginRegistrant.java
+
+# Ghi chú/đầu ra tạm của công cụ AI và script một lần (không thuộc source)
+.superpowers/
+.playwright-mcp/
+.continues-handoff.md
+.claude/worktrees/
+__pycache__/
+*.pyc
