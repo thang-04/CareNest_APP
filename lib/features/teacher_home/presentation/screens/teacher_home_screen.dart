@@ -54,7 +54,6 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
     TeacherTaskKind.review => AppIcons.review,
     TeacherTaskKind.pickup => AppIcons.walk,
     TeacherTaskKind.health => AppIcons.heart,
-    TeacherTaskKind.mealPhotos => AppIcons.camera,
   };
 
   static String _path(TeacherTaskKind kind) => switch (kind) {
@@ -63,7 +62,6 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
     TeacherTaskKind.review => RoutePaths.teacherReviews,
     TeacherTaskKind.pickup => RoutePaths.teacherPickup,
     TeacherTaskKind.health => RoutePaths.teacherHealth,
-    TeacherTaskKind.mealPhotos => RoutePaths.teacherMealPhotos,
   };
 
   static AppStatusTone _tone(TaskBadgeLevel level) => switch (level) {

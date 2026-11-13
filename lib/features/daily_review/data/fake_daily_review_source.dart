@@ -9,22 +9,25 @@ class FakeDailyReviewSource implements DailyReviewSource {
 
   static final shared = FakeDailyReviewSource();
 
-  static const criteria = [
-    ReviewCriterionDef(
-      id: 'health',
-      title: 'Sức khỏe',
-      options: ['Tốt', 'Bình thường', 'Cần chú ý'],
-    ),
-    ReviewCriterionDef(
-      id: 'emotion',
-      title: 'Cảm xúc',
-      options: ['Vui vẻ', 'Bình thường', 'Cần chú ý'],
-    ),
-    ReviewCriterionDef(
-      id: 'learning',
-      title: 'Kỹ năng học tập',
-      options: ['Tốt', 'Đạt', 'Cần hỗ trợ'],
-    ),
+  static const levels = ['Đạt', 'Cần cố gắng', 'Chưa đạt'];
+
+  // 7 mặt theo OBS-02, mặc định Đạt (OBS-01)
+  static final criteria = [
+    for (final (id, title) in [
+      ('eating', 'Ăn uống'),
+      ('sleep', 'Ngủ'),
+      ('emotion', 'Cảm xúc'),
+      ('behavior', 'Hành vi'),
+      ('participation', 'Tham gia hoạt động'),
+      ('learning', 'Kiến thức – kỹ năng'),
+      ('health', 'Sức khỏe'),
+    ])
+      ReviewCriterionDef(
+        id: id,
+        title: title,
+        options: levels,
+        defaultOption: 'Đạt',
+      ),
   ];
 
   static const _absent = {
@@ -61,10 +64,9 @@ class FakeDailyReviewSource implements DailyReviewSource {
               presenceLine:
                   'Có mặt 07:${((42 + i) % 60).toString().padLeft(2, '0')}',
               answers: _done.contains(kid.id)
-                  ? const {
-                      'health': 'Tốt',
-                      'emotion': 'Vui vẻ',
-                      'learning': 'Đạt',
+                  ? {
+                      for (final criterion in criteria)
+                        criterion.id: criterion.defaultOption,
                     }
                   : const {},
             ),

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/features/leave_notice/data/fake_leave_notice_source.dart';
+import 'package:carenest_app/features/leave_notice/domain/leave_notice.dart';
 import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_form_screen.dart';
 import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_list_screen.dart';
 import 'package:carenest_app/features/parent_home/data/fake_parent_home_source.dart';
@@ -52,17 +53,45 @@ Future<void> pumpForm(
 
 void main() {
   testWidgets(
-    'AC-4 (ATT-05): P04 chỉ có GV đã xem / chưa xem, không có duyệt',
+    'Redraw AC-3 (ATT-05): P04 không GV đã xem, không duyệt; đơn còn hủy được có Hủy đơn',
     (tester) async {
       await pumpList(tester, FakeLeaveNoticeSource(delay: Duration.zero));
-      expect(find.text('13/10/2026 · Cả ngày'), findsOneWidget);
+      expect(find.text('13/10/2026'), findsOneWidget);
       expect(find.text('Khám răng định kỳ'), findsOneWidget);
-      expect(find.text('GV chưa xem'), findsOneWidget);
-      expect(find.text('GV đã xem'), findsNWidgets(2));
+      expect(find.text('Đã gửi'), findsNWidgets(2));
+      expect(find.text('Đã hủy'), findsOneWidget);
+      expect(find.textContaining('GV đã xem'), findsNothing);
+      expect(find.textContaining('GV chưa xem'), findsNothing);
       expect(find.textContaining('duyệt'), findsNothing);
       expect(find.textContaining('Từ chối'), findsNothing);
+      expect(find.textContaining('huỷ suất'), findsNothing);
+      expect(find.widgetWithText(OutlinedButton, 'Hủy đơn'), findsOneWidget);
+      expect(
+        find.text(
+          'Hủy đơn được trước giờ chốt của ngày nghỉ; ngày nghỉ ghi Vắng có phép.',
+        ),
+        findsOneWidget,
+      );
     },
   );
+
+  testWidgets('Redraw AC-3: Hủy đơn ⇒ xác nhận ⇒ đơn hiện Đã hủy', (
+    tester,
+  ) async {
+    final source = FakeLeaveNoticeSource(delay: Duration.zero);
+    await pumpList(tester, source);
+    await tester.tap(find.text('Hủy đơn'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hủy đơn nghỉ 13/10/2026?'), findsOneWidget);
+    await tester.tap(find.text('Hủy đơn').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Đã hủy'), findsNWidgets(2));
+    expect(find.text('Hủy đơn'), findsNothing);
+    final notices = (await tester.runAsync(
+      () => source.loadNotices('child-1'),
+    ))!;
+    expect(notices.first.status, LeaveNoticeStatus.cancelled);
+  });
 
   testWidgets('P04: danh sách rỗng ⇒ lời mời tạo đơn', (tester) async {
     await pumpList(
@@ -100,23 +129,55 @@ void main() {
   });
 
   testWidgets(
-    'P03 (ATT-04): nghỉ cả ngày báo huỷ suất; nửa buổi không tự suy',
+    'Redraw AC-2 (ATT-04, ATT-05): không chọn buổi; ghi chú Vắng có phép, tối đa 30 ngày',
     (tester) async {
       await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
       await tester.scrollUntilVisible(
-        find.textContaining('Suất ăn ngày 13/10 sẽ được huỷ tự động'),
+        find.textContaining(
+          'Ngày nghỉ ghi Vắng có phép. Tối đa 30 ngày mỗi đơn.',
+        ),
         200,
         scrollable: find.byType(Scrollable).first,
       );
       expect(find.textContaining('Cô Hà (GV lớp Mầm 3A)'), findsOneWidget);
-
-      await tester.tap(find.text('Buổi sáng'));
-      await tester.pump();
+      expect(find.text('Buổi nghỉ'), findsNothing);
+      expect(find.text('Buổi sáng'), findsNothing);
+      expect(find.text('Cả ngày'), findsNothing);
       expect(find.textContaining('Suất ăn'), findsNothing);
     },
   );
 
-  testWidgets('P03: nhập lý do, gửi ⇒ đơn mới ở đầu danh sách, GV chưa xem', (
+  testWidgets('Redraw AC-2 (ATT-05): khoảng quá 30 ngày ⇒ báo lỗi, không gửi', (
+    tester,
+  ) async {
+    var submitted = false;
+    await pumpForm(
+      tester,
+      FakeLeaveNoticeSource(delay: Duration.zero),
+      onSubmitted: () => submitted = true,
+    );
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Tư, 14/10/2026')));
+    await tester.pump();
+    await tester.tap(find.byTooltip('Tháng sau'));
+    await tester.pump();
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Sáu, 13/11/2026')));
+    await tester.pump();
+    await tester.scrollUntilVisible(
+      find.byType(TextField),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.enterText(find.byType(TextField), 'Về quê');
+    await tester.tap(find.text('Gửi đơn xin nghỉ'));
+    await tester.pumpAndSettle();
+    expect(submitted, isFalse);
+    expect(
+      find.text('Mỗi đơn tối đa 30 ngày. Chọn lại ngày kết thúc.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('P03: nhập lý do, gửi ⇒ đơn mới ở đầu danh sách, còn hủy được', (
     tester,
   ) async {
     final source = FakeLeaveNoticeSource(delay: Duration.zero);
@@ -138,25 +199,20 @@ void main() {
       () => source.loadNotices('child-1'),
     ))!;
     expect(notices.first.reason, 'Bé đi khám mắt');
-    expect(notices.first.seenByTeacher, isFalse);
+    expect(notices.first.status, LeaveNoticeStatus.submitted);
+    expect(notices.first.canCancel, isTrue);
   });
 
-  testWidgets(
-    'Bố cục D: chạm ngày đầu rồi ngày cuối ⇒ chọn khoảng, báo huỷ suất cả khoảng',
-    (tester) async {
-      await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
-      await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Tư, 14/10/2026')));
-      await tester.pump();
-      await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Sáu, 16/10/2026')));
-      await tester.pump();
-      expect(find.text('Nghỉ từ 14/10 đến 16/10/2026'), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.textContaining('Suất ăn từ 14/10 đến 16/10 sẽ được huỷ tự động'),
-        200,
-        scrollable: find.byType(Scrollable).first,
-      );
-    },
-  );
+  testWidgets('Bố cục D: chạm ngày đầu rồi ngày cuối ⇒ chọn khoảng', (
+    tester,
+  ) async {
+    await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Tư, 14/10/2026')));
+    await tester.pump();
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Sáu, 16/10/2026')));
+    await tester.pump();
+    expect(find.text('Nghỉ từ 14/10 đến 16/10/2026'), findsOneWidget);
+  });
 
   testWidgets('Bố cục D: ngày đã qua không chọn được', (tester) async {
     await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));

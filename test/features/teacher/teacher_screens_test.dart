@@ -54,22 +54,33 @@ void main() {
     expect(find.text('Nguyễn Minh Anh'), findsNothing);
   });
 
-  testWidgets('T03 / AC-4 (ATT-05): GV chỉ xem, đánh dấu đã xem, không duyệt', (
-    tester,
-  ) async {
-    await pumpScreen(tester, const ClassLeaveScreen());
-    expect(find.text('Mới'), findsNWidgets(2));
-    expect(find.textContaining('duyệt'), findsNothing);
-    await tester.tap(find.text('Đánh dấu đã xem (2 đơn)'));
-    await tester.pump();
-    expect(find.text('Mới'), findsNothing);
-    await tester.tap(find.text('Tất cả'));
-    await tester.pump();
-    await tester.scrollUntilVisible(find.text('Lê Hoàng Nam'), 200);
-  });
+  testWidgets(
+    'Redraw AC-11 (ATT-05): GV chỉ xem; không Mới / Đã xem, không đánh dấu, không duyệt',
+    (tester) async {
+      await pumpScreen(tester, const ClassLeaveScreen());
+      expect(find.text('Mới'), findsNothing);
+      expect(find.text('Đã xem'), findsNothing);
+      expect(find.textContaining('Đánh dấu'), findsNothing);
+      expect(find.textContaining('duyệt'), findsNothing);
+      expect(find.textContaining('Cả ngày'), findsNothing);
+      expect(find.textContaining('Buổi'), findsNothing);
+      expect(find.text('Vắng có phép'), findsNWidgets(3));
+      expect(find.byType(FilledButton), findsNothing);
+      await tester.scrollUntilVisible(
+        find.text(
+          'Ngày có đơn tự ghi Vắng có phép, không có suất. GV chỉ xem đơn.',
+        ),
+        200,
+      );
+      await tester.scrollUntilVisible(find.text('Tất cả'), -200);
+      await tester.tap(find.text('Tất cả'));
+      await tester.pump();
+      await tester.scrollUntilVisible(find.text('Lê Hoàng Nam'), 200);
+    },
+  );
 
   testWidgets(
-    'T04 → T04.1 / AC-7: chọn đủ tiêu chí mới lưu; không nhắc giáo án',
+    'Redraw AC-12 (OBS-01, OBS-02): 7 mặt, mức Đạt / Cần cố gắng / Chưa đạt, mặc định Đạt; không nhắc giáo án',
     (tester) async {
       final source = FakeDailyReviewSource();
       await pumpScreen(
@@ -88,25 +99,132 @@ void main() {
         ),
       );
       expect(find.textContaining('iáo án'), findsNothing);
-      await tester.tap(find.text('Lưu & về danh sách'));
-      await tester.pump();
-      await tester.scrollUntilVisible(
-        find.text('Chọn đủ các tiêu chí trước khi lưu.'),
-        200,
-        scrollable: find.byType(Scrollable).first,
-      );
-      for (final option in ['Tốt', 'Vui vẻ', 'Đạt']) {
-        final chip = find.widgetWithText(AppFilterChip, option).first;
-        await tester.ensureVisible(chip);
-        await tester.pumpAndSettle();
-        await tester.tap(chip);
-        await tester.pump();
+      for (final old in [
+        'Tốt',
+        'Vui vẻ',
+        'Bình thường',
+        'Cần chú ý',
+        'Cần hỗ trợ',
+      ]) {
+        expect(find.text(old, skipOffstage: false), findsNothing);
       }
+      final aspects = [
+        'Ăn uống',
+        'Ngủ',
+        'Cảm xúc',
+        'Hành vi',
+        'Tham gia hoạt động',
+        'Kiến thức – kỹ năng',
+        'Sức khỏe',
+      ];
+      for (final aspect in aspects) {
+        await tester.scrollUntilVisible(
+          find.text(aspect),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        // Mỗi mặt chỉ có 3 mức, mặc định chọn Đạt (bé chưa đánh giá)
+        final chips = tester
+            .widgetList<AppFilterChip>(find.byType(AppFilterChip))
+            .where((chip) => chip.icon == null);
+        expect(chips.map((chip) => chip.label).toSet(), {
+          'Đạt',
+          'Cần cố gắng',
+          'Chưa đạt',
+        });
+        expect(
+          chips.where((chip) => chip.selected).map((c) => c.label).toSet(),
+          {'Đạt'},
+        );
+      }
+      // Đang ở mặt cuối (Sức khỏe): GV chỉ sửa mặt khác thường
+      await tester.tap(find.widgetWithText(AppFilterChip, 'Cần cố gắng').last);
+      await tester.pump();
       await tester.tap(find.text('Lưu & về danh sách'));
       await tester.pumpAndSettle();
       expect(saved, isTrue);
       final day = (await tester.runAsync(() => source.loadDay('x')))!;
-      expect(day.kids.first.answers['emotion'], 'Vui vẻ');
+      final answers = day.kids.first.answers;
+      expect(answers.length, 7);
+      expect(answers['health'], 'Cần cố gắng');
+      expect(answers.values.where((v) => v == 'Đạt').length, 6);
+    },
+  );
+
+  testWidgets(
+    'Redraw AC-13 (PCK-02, PCK-04): không khớp bắt ghi cuộc gọi rồi Trả bé / Không trả bé',
+    (tester) async {
+      final source = FakePickupSource();
+      var done = 0;
+      Future<void> open(String childId) => pumpScreen(
+        tester,
+        PickupVerifyScreen(
+          childId: childId,
+          source: source,
+          onDone: () => done++,
+        ),
+      );
+      Future<void> tapText(String text) async {
+        final target = find.text(text).last;
+        await tester.scrollUntilVisible(
+          target,
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.tap(target);
+        await tester.pumpAndSettle();
+      }
+
+      await open('child-1');
+      await tester.scrollUntilVisible(
+        find.text(
+          'Không khớp: gọi phụ huynh, ghi nội dung cuộc gọi rồi chọn Trả bé / Không trả bé. Hệ thống ghi người đón, giờ đón và báo phụ huynh.',
+        ),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.textContaining('Chỉ giao bé khi'), findsNothing);
+      expect(find.text('Trả bé', skipOffstage: false), findsNothing);
+      await tapText('Không khớp – gọi phụ huynh');
+      await tester.scrollUntilVisible(
+        find.text('Trả bé'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Không trả bé'), findsOneWidget);
+
+      // Thiếu nội dung cuộc gọi ⇒ không ghi
+      await tapText('Không trả bé');
+      expect(find.text('Ghi nội dung cuộc gọi.'), findsOneWidget);
+      expect(done, 0);
+
+      // Không trả bé ⇒ ghi lần đón, bé vẫn chờ
+      final fields = find.byType(TextField);
+      await tester.enterText(fields.at(0), 'Gọi mẹ không nghe máy');
+      await tapText('Không trả bé');
+      expect(done, 1);
+      expect(source.calls.single.handedOver, isFalse);
+      var kids = (await tester.runAsync(() => source.loadClass('x')))!;
+      expect(kids.firstWhere((k) => k.childId == 'child-1').pickedUp, isFalse);
+
+      // Trả bé ⇒ bắt người đón, ghi người đón + giờ đón
+      await open('child-1');
+      await tapText('Không khớp – gọi phụ huynh');
+      await tester.enterText(
+        find.byType(TextField).at(0),
+        'Mẹ xác nhận nhờ chú Tâm đón',
+      );
+      await tapText('Trả bé');
+      expect(find.text('Ghi người đến đón.'), findsOneWidget);
+      expect(done, 1);
+      await tester.enterText(find.byType(TextField).at(1), 'Chú Tâm');
+      await tapText('Trả bé');
+      expect(done, 2);
+      expect(source.calls.last.handedOver, isTrue);
+      kids = (await tester.runAsync(() => source.loadClass('x')))!;
+      final kid = kids.firstWhere((k) => k.childId == 'child-1');
+      expect(kid.pickedUpBy, 'Chú Tâm');
+      expect(kid.pickedUpAt, isNotNull);
     },
   );
 
@@ -136,7 +254,7 @@ void main() {
   });
 
   testWidgets(
-    'T07 → T07.1 / AC-8 (HLT-04): số đo, kết quả BE, không chẩn đoán',
+    'Redraw AC-14 (HLT-11, HLT-12): lưu là công bố, phân loại chỉ hiển thị; không chẩn đoán',
     (tester) async {
       final source = FakeHealthMeasureSource();
       await pumpScreen(
@@ -154,19 +272,85 @@ void main() {
           onSaved: () {},
         ),
       );
-      expect(find.text('Kết quả tính theo quy tắc của trường'), findsNothing);
+      expect(
+        find.text('Kết quả do hệ thống tính (chỉ hiển thị)'),
+        findsNothing,
+      );
+      expect(find.byType(Switch), findsNothing);
+      expect(find.textContaining('Công bố cho phụ huynh'), findsNothing);
+      expect(
+        find.textContaining('Lý do sửa', findRichText: true),
+        findsNothing,
+      );
       await tester.enterText(find.byType(TextField).at(0), '102');
       await tester.enterText(find.byType(TextField).at(1), '16,5');
       await tester.pumpAndSettle();
-      expect(find.text('Bình thường'), findsWidgets);
+      expect(
+        find.text('Kết quả do hệ thống tính (chỉ hiển thị)'),
+        findsOneWidget,
+      );
+      expect(find.bySemanticsLabel('Phân loại: Bình thường'), findsOneWidget);
+      for (final level in ['Thiếu cân', 'Bình thường', 'Thừa cân']) {
+        expect(find.text(level), findsOneWidget);
+      }
+      // Chip phân loại không bấm được
+      expect(find.byType(FilterChip), findsNothing);
+      expect(find.byType(AppFilterChip), findsNothing);
       await tester.scrollUntilVisible(
-        find.text('Không phải chẩn đoán y tế. Lịch sử chỉnh sửa được lưu lại.'),
+        find.text(
+          'Không phải chẩn đoán y tế. Sửa số đo phải nhập lý do, lịch sử được lưu.',
+        ),
         200,
         scrollable: find.byType(Scrollable).first,
+      );
+      expect(
+        find.textContaining('Lưu là công bố cho phụ huynh'),
+        findsOneWidget,
       );
       expect(find.textContaining('điều trị'), findsNothing);
     },
   );
+
+  testWidgets('Redraw AC-14 (HLT-13): sửa số đo đã lưu bắt buộc lý do', (
+    tester,
+  ) async {
+    final source = FakeHealthMeasureSource();
+    var saved = false;
+    await pumpScreen(
+      tester,
+      HealthMeasureDetailScreen(
+        childId: 'child-1',
+        source: source,
+        onSaved: () => saved = true,
+      ),
+    );
+    expect(
+      find.textContaining('Lý do sửa', findRichText: true),
+      findsOneWidget,
+    );
+    await tester.enterText(find.byType(TextField).at(1), '17,4');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lưu & về danh sách'));
+    await tester.pumpAndSettle();
+    expect(saved, isFalse);
+    await tester.scrollUntilVisible(
+      find.text('Nhập lý do sửa số đo.'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.enterText(
+      find.byType(TextField).at(2),
+      'Cân lại không áo khoác',
+    );
+    await tester.tap(find.text('Lưu & về danh sách'));
+    await tester.pumpAndSettle();
+    expect(saved, isTrue);
+    expect(source.history.single.weight, '17,2');
+    final month = (await tester.runAsync(() => source.loadMonth('x')))!;
+    final kid = month.kids.firstWhere((k) => k.childId == 'child-1');
+    expect(kid.weight, '17,4');
+    expect(kid.editReason, 'Cân lại không áo khoác');
+  });
 
   testWidgets('T10 / AC-7 (OBS-08): lịch hoạt động không có duyệt giáo án', (
     tester,

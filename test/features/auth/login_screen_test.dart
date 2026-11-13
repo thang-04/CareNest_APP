@@ -30,6 +30,21 @@ void main() {
     },
   );
 
+  testWidgets(
+    'Redraw AC-1: ghi chú đổi mật khẩu lần đầu, không nhắc ảnh chân dung',
+    (tester) async {
+      usePhoneSize(tester);
+      await pumpLogin(tester, const LoginScreen());
+      expect(
+        find.text(
+          'Tài khoản do nhà trường cấp qua SMS. Lần đầu đăng nhập: đổi mật khẩu.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('chân dung'), findsNothing);
+    },
+  );
+
   testWidgets('Bố cục A: form trong card, ghi chú SMS ngoài card', (
     tester,
   ) async {

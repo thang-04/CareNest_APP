@@ -16,16 +16,11 @@ class MenuMeal {
   final String dishes;
 }
 
-/// Ảnh bữa ăn GV đăng khi nhận suất (quyết định 8, PROPOSED); ảnh thật tải qua URL có auth.
+/// Ảnh mẫu bữa ăn do bếp cơ sở chụp (NUT-16, PAR-01), không phải ảnh GV; ảnh thật tải qua URL có auth.
 @immutable
 class MealPhotoSet {
-  const MealPhotoSet({
-    required this.postedBy,
-    required this.postedAt,
-    required this.slots,
-  });
+  const MealPhotoSet({required this.postedAt, required this.slots});
 
-  final String postedBy;
   final DateTime postedAt;
 
   /// Nhãn từng ảnh, vd. "Bữa trưa".

@@ -174,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: AppSpacing.space5),
                     const AppBanner(
                       message:
-                          'Tài khoản do nhà trường cấp qua SMS. Lần đầu đăng nhập, bạn cần đổi mật khẩu.',
+                          'Tài khoản do nhà trường cấp qua SMS. Lần đầu đăng nhập: đổi mật khẩu.',
                     ),
                     const SizedBox(height: AppSpacing.space6),
                     Text(

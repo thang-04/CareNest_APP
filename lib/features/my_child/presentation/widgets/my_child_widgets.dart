@@ -7,18 +7,17 @@ import 'package:carenest_app/core/theme/app_text_styles.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/my_child/domain/my_child.dart';
 
-/// Nhãn đánh giá hằng ngày; tông theo tiêu chí, nghĩa nằm ở chữ (không chỉ màu).
+/// Nhãn đánh giá hằng ngày; tông theo mức (OBS-02), nghĩa nằm ở chữ (không chỉ màu).
 class ReviewTagWrap extends StatelessWidget {
   const ReviewTagWrap({super.key, required this.tags});
 
   final List<ReviewTag> tags;
 
-  static AppStatusTone toneOf(ReviewCriterion criterion) => switch (criterion) {
-    // Không dùng tông blue: badge blue không icon tự có chấm, lệch với các nhãn khác
-    ReviewCriterion.health ||
-    ReviewCriterion.emotion ||
-    ReviewCriterion.behavior => AppStatusTone.green,
-    ReviewCriterion.learning => AppStatusTone.teal,
+  // Không dùng tông blue: badge blue không icon tự có chấm, lệch với các nhãn khác
+  static AppStatusTone toneOf(ReviewLevel level) => switch (level) {
+    ReviewLevel.achieved => AppStatusTone.green,
+    ReviewLevel.needsEffort => AppStatusTone.orange,
+    ReviewLevel.notAchieved => AppStatusTone.red,
   };
 
   @override
@@ -28,7 +27,7 @@ class ReviewTagWrap extends StatelessWidget {
       runSpacing: AppSpacing.space2,
       children: [
         for (final tag in tags)
-          AppStatusBadge(label: tag.label, tone: toneOf(tag.criterion)),
+          AppStatusBadge(label: tag.label, tone: toneOf(tag.level)),
       ],
     );
   }

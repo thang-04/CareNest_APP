@@ -244,12 +244,7 @@ class _TodayTab extends StatelessWidget {
                 ),
                 title: leave.title,
                 subtitle: Text(leave.detail),
-                trailing: AppStatusBadge(
-                  label: leave.seenByTeacher ? 'GV đã xem' : 'GV chưa xem',
-                  tone: leave.seenByTeacher
-                      ? AppStatusTone.green
-                      : AppStatusTone.approval,
-                ),
+                showChevron: true,
                 onTap: () => push(RoutePaths.parentLeaveNotices),
               ),
             ),
@@ -424,11 +419,8 @@ class _DevelopmentTab extends StatelessWidget {
                   spacing: AppSpacing.space2,
                   runSpacing: AppSpacing.space2,
                   children: [
-                    Text(
-                      'Nhận xét tuần ${dev.weekRange}',
-                      style: textTheme.titleSmall,
-                    ),
-                    if (dev.weekConfirmed)
+                    Text(dev.commentTitle, style: textTheme.titleSmall),
+                    if (dev.commentConfirmed)
                       const AppStatusBadge(
                         label: 'Đã xác nhận',
                         tone: AppStatusTone.green,
@@ -436,9 +428,9 @@ class _DevelopmentTab extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.space2),
-                Text(dev.weekNote, style: textTheme.bodyLarge),
+                Text(dev.commentNote, style: textTheme.bodyLarge),
                 const SizedBox(height: AppSpacing.space1),
-                Text(dev.weekAuthor, style: muted),
+                Text(dev.commentAuthor, style: muted),
               ],
             ),
           ),
@@ -451,9 +443,9 @@ class _DevelopmentTab extends StatelessWidget {
                 size: AppSizes.iconTile,
                 color: AppColors.primary,
               ),
-              title: dev.monthlyTitle,
+              title: dev.previousCommentTitle,
               showChevron: true,
-              onTap: () => openComingSoon(context, dev.monthlyTitle),
+              onTap: () => openComingSoon(context, dev.previousCommentTitle),
             ),
           ),
           const SizedBox(height: AppSpacing.space3),

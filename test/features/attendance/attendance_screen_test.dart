@@ -41,18 +41,23 @@ String countOf(String label) => find
     .split(': ')
     .last;
 
+/// Danh sách chính; ô nhiệt độ cũng có Scrollable riêng nên phải chọn rõ.
+final listScrollable = find.byType(Scrollable).first;
+
 /// Cuộn tới nút theo nhãn đọc màn hình rồi bấm (danh sách dựng lười).
 Future<void> tapLabel(WidgetTester tester, String label) async {
   // Nhãn khớp đầu chuỗi: node có thể gộp thêm chữ con
   final finder = find.bySemanticsLabel(RegExp('^${RegExp.escape(label)}'));
-  await tester.scrollUntilVisible(finder, 150);
+  await tester.scrollUntilVisible(finder, 150, scrollable: listScrollable);
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
   await tester.tap(finder);
   await tester.pump();
 }
 
 /// Về đầu danh sách để đọc các ô đếm.
 Future<void> scrollToTop(WidgetTester tester) async {
-  await tester.drag(find.byType(Scrollable).first, const Offset(0, 3000));
+  await tester.drag(listScrollable, const Offset(0, 3000));
   await tester.pumpAndSettle();
 }
 
@@ -84,32 +89,72 @@ void main() {
   });
 
   testWidgets(
-    'T02 (ATT-04): bé có đơn bấm Vắng vẫn là có phép; không đơn là vắng',
+    'Redraw AC-10 (ATT-04, ATT-09): bé có đơn khóa ở Có phép (theo đơn); không đơn bấm Vắng là vắng',
     (tester) async {
       await pumpAttendance(tester);
-      await tapLabel(tester, 'Phạm Khánh Linh: vắng');
+      final locked = find.bySemanticsLabel(
+        'Phạm Khánh Linh: có phép theo đơn, không đổi được',
+      );
+      await tester.scrollUntilVisible(locked, 150, scrollable: listScrollable);
+      expect(locked, findsOneWidget);
+      expect(find.bySemanticsLabel('Phạm Khánh Linh: vắng'), findsNothing);
+      expect(find.bySemanticsLabel('Phạm Khánh Linh: có mặt'), findsNothing);
+      expect(find.text('Có phép (theo đơn)'), findsWidgets);
       await scrollToTop(tester);
+      await tester.tap(find.text('Đánh dấu tất cả có mặt'));
+      await tester.pump();
       expect(countOf('Có phép'), '2');
       await tapLabel(tester, 'Nguyễn Minh Anh: vắng');
       await scrollToTop(tester);
       expect(countOf('Vắng'), '2');
+      expect(countOf('Có phép'), '2');
     },
   );
 
-  testWidgets('T02 (ATT-02): bấm tên bé có mặt để báo không ăn', (
-    tester,
-  ) async {
-    await pumpAttendance(tester);
-    await tapLabel(tester, 'Nguyễn Minh Anh: có mặt');
-    await tapLabel(tester, 'Báo ăn cho Nguyễn Minh Anh');
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Không ăn'));
-    await tester.pumpAndSettle();
-    expect(
-      find.text('Đơn nghỉ 13/10 · Không ăn ▾', skipOffstage: false),
-      findsOneWidget,
-    );
-  });
+  testWidgets(
+    'Redraw AC-10 (ATT-02, HLT-07): không báo ăn; bé có mặt nhập nhiệt độ đầu ngày',
+    (tester) async {
+      await pumpAttendance(tester);
+      expect(find.text('Điểm danh & nhiệt độ'), findsOneWidget);
+      expect(
+        find.text(
+          'Chạm 1 lần cho cả lớp, rồi nhập nhiệt độ đầu ngày từng bé có mặt.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Ăn 1 bữa', skipOffstage: false),
+        findsNothing,
+      );
+      expect(find.textContaining('báo ăn', skipOffstage: false), findsNothing);
+      expect(find.textContaining('Báo ăn', skipOffstage: false), findsNothing);
+      // Chưa có mặt ⇒ chưa có ô nhiệt độ
+      expect(find.byType(TextField), findsNothing);
+      await tapLabel(tester, 'Nguyễn Minh Anh: có mặt');
+      final input = find.descendant(
+        of: find.byKey(const ValueKey('temperature-child-1')),
+        matching: find.byType(TextField),
+      );
+      await tester.scrollUntilVisible(input, 150, scrollable: listScrollable);
+      expect(
+        find.bySemanticsLabel(RegExp('Nhiệt độ đầu ngày của Nguyễn Minh Anh')),
+        findsWidgets,
+      );
+      await tester.enterText(input, '36,6');
+      await tester.pump();
+      expect(tester.widget<TextField>(input).controller!.text, '36,6');
+      expect(find.text('°C'), findsOneWidget);
+      await tester.enterText(input, '39.85');
+      await tester.pump();
+      expect(tester.widget<TextField>(input).controller!.text, '39.8');
+      await tester.enterText(input, '30');
+      await tester.pump();
+      expect(find.text('Nhập từ 34,0 đến 42,0'), findsOneWidget);
+      // Bấm Vắng ⇒ bỏ ô nhiệt độ
+      await tapLabel(tester, 'Nguyễn Minh Anh: vắng');
+      expect(find.byType(TextField), findsNothing);
+    },
+  );
 
   testWidgets('Lưu lỗi ⇒ banner, giữ nguyên lựa chọn, nút Lưu lại', (
     tester,

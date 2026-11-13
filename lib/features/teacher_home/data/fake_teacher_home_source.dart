@@ -2,7 +2,7 @@ import 'package:carenest_app/features/class_roster/data/fake_class_roster_source
 import 'package:carenest_app/features/parent_home/data/fake_parent_home_source.dart';
 import 'package:carenest_app/features/teacher_home/domain/teacher_today.dart';
 
-/// Dữ liệu giả mockup T01, khớp các màn: lớp Mầm 3A 28 bé, chưa điểm danh, 2 đơn nghỉ mới,
+/// Dữ liệu giả mockup T01, khớp các màn: lớp Mầm 3A 28 bé, chưa điểm danh, 3 đơn nghỉ hôm nay & sắp tới,
 /// đo sức khỏe 13/28, đón trẻ từ 16:30.
 class FakeTeacherHomeSource implements TeacherHomeSource {
   FakeTeacherHomeSource({
@@ -31,7 +31,7 @@ class FakeTeacherHomeSource implements TeacherHomeSource {
           : [
               TeacherTask(
                 kind: TeacherTaskKind.attendance,
-                title: 'Điểm danh & báo ăn',
+                title: 'Điểm danh & nhiệt độ',
                 subtitle: '0/$count bé · trước 08:30',
                 badge: 'Cần làm',
                 badgeLevel: TaskBadgeLevel.todo,
@@ -40,22 +40,15 @@ class FakeTeacherHomeSource implements TeacherHomeSource {
               const TeacherTask(
                 kind: TeacherTaskKind.leave,
                 title: 'Đơn xin nghỉ',
-                subtitle: '2 đơn mới · Minh Anh, Khánh Linh',
-                badge: '2 mới',
-                badgeLevel: TaskBadgeLevel.fresh,
+                subtitle: 'Hôm nay & sắp tới: Minh Anh, Khánh Linh, Bảo Ngọc',
+                badge: '3 đơn',
+                badgeLevel: TaskBadgeLevel.info,
               ),
               const TeacherTask(
                 kind: TeacherTaskKind.review,
                 title: 'Đánh giá hằng ngày',
                 subtitle: 'Hoạt động: Tô màu chiếc lá',
                 badge: 'Cuối ngày',
-                badgeLevel: TaskBadgeLevel.info,
-              ),
-              const TeacherTask(
-                kind: TeacherTaskKind.mealPhotos,
-                title: 'Ảnh bữa ăn',
-                subtitle: 'Bữa sáng đã gửi · bữa trưa chưa chụp',
-                badge: 'Bữa trưa',
                 badgeLevel: TaskBadgeLevel.info,
               ),
               const TeacherTask(

@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
-import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
-import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_filter_chip.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
@@ -15,7 +13,7 @@ import 'package:carenest_app/features/class_leave_notices/data/fake_class_leave_
 import 'package:carenest_app/features/class_leave_notices/domain/class_leave_notice.dart';
 import 'package:carenest_app/features/class_roster/data/fake_class_roster_source.dart';
 
-/// Đơn xin nghỉ của lớp — mockup T03. GV chỉ xem/ghi nhận, không có duyệt (ATT-05).
+/// Đơn xin nghỉ của lớp — mockup T03. GV chỉ xem: không duyệt, không đánh dấu đã xem (ATT-05).
 class ClassLeaveScreen extends StatefulWidget {
   const ClassLeaveScreen({
     super.key,
@@ -51,26 +49,15 @@ class _ClassLeaveScreenState extends State<ClassLeaveScreen> {
     }
   }
 
-  // Ghi nhận đã xem là thao tác BE; bản giả chỉ đổi trên màn
-  void _markSeen() => setState(
-    () => _entries = [for (final entry in _entries!) entry.markSeen()],
-  );
-
   static (String, AppStatusTone) _badge(ClassLeaveState state) =>
       switch (state) {
-        ClassLeaveState.fresh => ('Mới', AppStatusTone.blue),
-        ClassLeaveState.seen => ('Đã xem', AppStatusTone.green),
+        ClassLeaveState.notice => ('Vắng có phép', AppStatusTone.blue),
         ClassLeaveState.absentNoNotice => ('Vắng', AppStatusTone.red),
       };
 
   @override
   Widget build(BuildContext context) {
     final entries = _entries;
-    final fresh =
-        entries
-            ?.where((entry) => entry.state == ClassLeaveState.fresh)
-            .length ??
-        0;
     final visible = entries == null
         ? const <ClassLeaveEntry>[]
         : _upcomingOnly
@@ -118,20 +105,9 @@ class _ClassLeaveScreenState extends State<ClassLeaveScreen> {
             ],
             const AppBanner(
               message:
-                  'Hệ thống đã tự huỷ suất ăn các ngày nghỉ và báo cho bếp.',
+                  'Ngày có đơn tự ghi Vắng có phép, không có suất. GV chỉ xem đơn.',
             ),
           ],
-        ],
-      ),
-      bottomNavigationBar: AppBottomDock(
-        children: [
-          AppButton(
-            label: fresh == 0
-                ? 'Đã xem hết đơn mới'
-                : 'Đánh dấu đã xem ($fresh đơn)',
-            expand: true,
-            onPressed: fresh == 0 ? null : _markSeen,
-          ),
         ],
       ),
     );
@@ -147,19 +123,13 @@ class _EntryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final fresh = entry.state == ClassLeaveState.fresh;
     final muted = textTheme.bodyMedium?.copyWith(color: AppColors.textMuted);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space4),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(
-          color: fresh
-              ? AppColors.primary
-              : AppColors.surface.withValues(alpha: 0.85),
-          width: fresh ? 1.5 : 1,
-        ),
+        border: Border.all(color: AppColors.surface.withValues(alpha: 0.85)),
         boxShadow: AppShadows.card,
       ),
       child: Column(

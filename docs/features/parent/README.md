@@ -19,8 +19,7 @@ Không có chat (PAR-04) — trao đổi tức thời vẫn qua Zalo.
 - BE: card `BE:docs/modules/nutrition.md` · flow `BE:docs/business/flows/meal-management.md` · rule PAR-01 (thực đơn tuần + thực đơn ngày, ngày có ảnh suất ăn hôm đó), NUT-08 (chỉ thực đơn đã công bố), NUT-13 (một thực đơn chung hai cơ sở — đóng P-07), NUT-16
 - Endpoint: chưa có
 - Field: PAR-01 (thực đơn tuần/ngày, ảnh suất ăn — chốt 29/10, đóng P-13b).
-- Ảnh bữa ăn — **PROPOSED** (user 2026-10-13): (1) bếp chụp ảnh món khi nấu xong; (2) giáo viên chụp khay khi bếp giao tới lớp rồi đăng; phụ huynh xem ảnh món ăn trong thực đơn/lịch của con. BE NUT-16 hiện chỉ ghi bếp chụp ⇒ đề xuất cập nhật BE. Ảnh chỉ tải qua URL có auth; ảnh chụp khay suất ăn, không chụp mặt trẻ.
-- Lệch BE (28/10): NUT-16 CONFIRMED chỉ bếp chụp ảnh mẫu mỗi bữa, dùng chung toàn trường; dữ liệu giả `MealPhotoSet` ghi ảnh "GV đăng khi nhận suất" — cần sửa khi tích hợp.
+- Ảnh bữa ăn (Figma sửa 13/11, NUT-16, PAR-01): ảnh mẫu của bếp cơ sở, ghi "Ảnh mẫu của bếp cơ sở · HH:mm"; không có ảnh GV đăng. Ảnh chỉ tải qua URL có auth; ảnh suất ăn, không chụp mặt trẻ.
 
 ### Sức khỏe (đã công bố)
 - BE: card `BE:docs/modules/health.md` · flow `BE:docs/business/flows/health-check.md` · rule HLT-02 (trend do BE tính), HLT-04, HLT-05 (diễn giải AI chỉ hiện khi đã duyệt), PAR-02
@@ -36,14 +35,14 @@ Không có chat (PAR-04) — trao đổi tức thời vẫn qua Zalo.
 - Đã chốt 29/10: phụ huynh nhận mọi kỳ nhận xét (OBS-06, đóng P-12); đánh giá ngày hiện sau khi GV lưu (OBS-13); dữ liệu có công bố chỉ hiện sau khi công bố (PAR-03, đóng P-13b).
 - "Hoạt động hằng ngày": phụ huynh thấy tên các hoạt động trong ngày của lớp (EDU-09), lấy từ kế hoạch ngày (OBS-07, ADR-0019). UI dữ liệu giả `/parent/activities` chỉ có ở bản debug (user cho dựng giả 2026-10-13, plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md` K1); bật ở release khi BE có API kế hoạch ngày.
 - Phiếu bé ngoan / khen thưởng cuối năm (tab Phát triển): OBS-10 (phiếu tuần, phụ huynh thấy ngay khi GV xác nhận), OBS-14 (khen cuối năm); làm cả hai: P-31 — số phiếu và ngưỡng là BE trả.
+- Figma sửa 13/11: đánh giá ngày (Hôm nay, Hoạt động) dùng mức Đạt / Cần cố gắng / Chưa đạt theo các mặt OBS-02; tab Phát triển chỉ có nhận xét tháng / học kỳ / cuối năm, không nhận xét tuần (OBS-06). Lịch điểm danh không ghi từng bữa, không ô "Suất huỷ" (có mặt là ăn đủ bữa — ATT-02); đơn nghỉ ở Hôm nay ghi "Vắng có phép dd/MM", không "GV chưa xem".
 
 ### Báo nghỉ (đơn nghỉ)
 - BE: card `BE:docs/modules/attendance.md` · flow `BE:docs/business/flows/leave-request.md` · rule ATT-05 (CONFIRMED), ATT-04, ATT-09, ATT-05b (PROPOSED) · permission `leave:create`
 - Mục đích: phụ huynh gửi **thông báo nghỉ** cho con (từ ngày, đến ngày, lý do), xem danh sách đã gửi, hủy thông báo. **Không có bước duyệt** — không hiển thị trạng thái chờ duyệt/duyệt/từ chối. Chỉ phụ huynh tạo; GV không tạo thay (ATT-05).
 - Trạng thái: `SUBMITTED → CANCELLED` (phụ huynh hủy). Ngày có đơn ⇒ trẻ Vắng có phép tự động, không có suất (ATT-04, ATT-09); ngày đã qua giờ chốt/đã xác nhận suất (ATT-05b) do BE xử lý — APP hiển thị kết quả/lỗi BE trả, không tự tính.
 - Endpoint: chưa có. Giờ chốt: một giờ chung toàn trường, HT cấu hình (ATT-06, đóng P-03) — BE quyết định, APP không khóa theo giờ máy. PENDING: P-20 (con có đơn nghỉ vẫn đến lớp).
-- Mockup P03–P04 (user 2026-10-13) thêm **buổi nghỉ** (cả ngày / sáng / chiều), **lý do tự nhập** (≤500 ký tự) và trạng thái **GV đã xem / GV chưa xem** — BE chưa có field `session`, `seenByTeacher` ⇒ đề xuất BE. Nghỉ nửa buổi xử lý suất ăn ra sao chưa có rule ⇒ form chỉ báo huỷ suất khi nghỉ cả ngày (ATT-04). Mockup chưa có thao tác huỷ đơn; danh sách vẫn hiển thị "Đã huỷ" nếu BE trả.
-- Lệch BE (28/10): ATT-05 chỉ có ngày bắt đầu–kết thúc + lý do, không có buổi nghỉ; suất tính theo điểm danh cả ngày (ATT-02) — field `session` (`LeaveSession`) cần bỏ hoặc đề xuất BE khi tích hợp.
+- Figma sửa 13/11 (plan `docs/plans/active/2026-11-13-app-ui-redraw.md`): form chỉ có từ ngày, đến ngày, lý do (≤500 ký tự), không chọn buổi; ghi chú "Ngày nghỉ ghi Vắng có phép. Tối đa 30 ngày mỗi đơn." — 30 ngày kiểm ở client chỉ để hỗ trợ nhập (ATT-05), BE kiểm lại. Danh sách không có "GV đã xem / chưa xem": trạng thái Đã gửi / Đã hủy; đơn còn hủy được có nút "Hủy đơn" (cờ `canCancel` do BE trả — trước giờ chốt của ngày nghỉ; bản giả: ngày bắt đầu sau hôm nay).
 
 ### Tài khoản phụ huynh
 - BE: card `BE:docs/modules/identity-access.md` · rule AUTH-18 (tên đăng nhập = SĐT; tài khoản + mật khẩu tạm gửi qua SMS, in phiếu dự phòng — code BE hiện chỉ có in phiếu), CHD-05 (chỉ sửa thông tin liên lạc của mình; thông tin trẻ do trường sửa), CHD-04 (trẻ thôi học ⇒ mất quyền xem trẻ đó ngay; tài khoản vẫn dùng cho trẻ khác) · PENDING P-28 (số tài khoản mỗi trẻ)

@@ -50,17 +50,28 @@ void main() {
     (tester) async {
       await pumpTeacherHome(tester);
       expect(find.text('Việc tiếp theo'), findsOneWidget);
-      expect(find.text('Điểm danh & báo ăn'), findsNothing);
+      expect(find.text('Điểm danh & nhiệt độ'), findsNothing);
       for (final title in [
         'Đơn xin nghỉ',
         'Đánh giá hằng ngày',
-        'Ảnh bữa ăn',
         'Đón trẻ',
         'Đo sức khỏe tháng 10',
       ]) {
         expect(find.text(title), findsOneWidget);
       }
       expect(find.text('Còn 15'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Redraw AC-9: không có việc Cơ sở vật chất, không lối vào ảnh bữa ăn',
+    (tester) async {
+      await pumpTeacherHome(tester);
+      expect(find.textContaining('Cơ sở vật chất'), findsNothing);
+      expect(find.textContaining('CSVC'), findsNothing);
+      expect(find.textContaining('Ảnh bữa'), findsNothing);
+      expect(find.textContaining('chụp'), findsNothing);
+      expect(find.text('2 mới'), findsNothing);
     },
   );
 

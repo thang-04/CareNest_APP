@@ -82,6 +82,23 @@ void main() {
     expect(bar.selectedIndex, 1);
   });
 
+  testWidgets('Redraw AC-9: GV không còn route chụp/gửi ảnh bữa ăn', (
+    tester,
+  ) async {
+    final router = await pumpRouter(tester, enablePreview: true);
+    router.go(RoutePaths.teacherToday);
+    await tester.pumpAndSettle();
+    expect(find.text('Không tìm thấy trang'), findsNothing);
+    for (final path in [
+      '/teacher/meal-photos',
+      '/teacher/meal-photos/send?slot=lunch',
+    ]) {
+      router.go(path);
+      await tester.pumpAndSettle();
+      expect(find.text('Không tìm thấy trang'), findsOneWidget, reason: path);
+    }
+  });
+
   testWidgets('Phó HT: màn con ẩn thanh đáy, ngữ cảnh lấy từ query', (
     tester,
   ) async {

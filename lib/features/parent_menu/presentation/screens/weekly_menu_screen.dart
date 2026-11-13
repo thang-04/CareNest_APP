@@ -161,7 +161,7 @@ class _WeeklyMenuScreenState extends State<WeeklyMenuScreen> {
                     style: textTheme.titleSmall,
                   ),
                   Text(
-                    '${photos.postedBy} đăng ${DateLabels.time24(photos.postedAt)}',
+                    'Ảnh mẫu của bếp cơ sở · ${DateLabels.time24(photos.postedAt)}',
                     style: textTheme.bodyMedium?.copyWith(
                       color: AppColors.textMuted,
                     ),

@@ -38,9 +38,6 @@ import 'package:carenest_app/features/kitchen_meals/presentation/screens/kitchen
 import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_form_screen.dart';
 import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_list_screen.dart';
 import 'package:carenest_app/features/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
-import 'package:carenest_app/features/meal_photos/domain/meal_photos.dart';
-import 'package:carenest_app/features/meal_photos/presentation/screens/meal_photo_capture_screen.dart';
-import 'package:carenest_app/features/meal_photos/presentation/screens/meal_photo_send_screen.dart';
 import 'package:carenest_app/features/my_child/presentation/screens/child_activities_screen.dart';
 import 'package:carenest_app/features/my_child/presentation/screens/child_attendance_screen.dart';
 import 'package:carenest_app/features/my_child/presentation/screens/child_profile_screen.dart';
@@ -273,31 +270,6 @@ List<GoRoute> _teacherRoutes() {
         initialDay: FakeParentHomeSource.today,
         onReviewToday: () => context.pushReplacement(RoutePaths.teacherReviews),
       ),
-    ),
-    GoRoute(
-      path: RoutePaths.teacherMealPhotos,
-      builder: (context, state) => MealPhotoCaptureScreen(
-        onNext: (slot) => context.push(
-          Uri(
-            path: RoutePaths.teacherMealPhotosSend,
-            queryParameters: {'slot': slot.name},
-          ).toString(),
-        ),
-      ),
-    ),
-    GoRoute(
-      path: RoutePaths.teacherMealPhotosSend,
-      builder: (context, state) {
-        final slot = MealSlot.values
-            .where((item) => item.name == state.uri.queryParameters['slot'])
-            .firstOrNull;
-        if (slot == null) return const NotFoundScreen();
-        // Gửi xong ⇒ về Trang chủ, bỏ hai màn chụp/gửi khỏi back stack
-        return MealPhotoSendScreen(
-          slot: slot,
-          onSent: () => context.go(RoutePaths.teacherToday),
-        );
-      },
     ),
   ];
 }

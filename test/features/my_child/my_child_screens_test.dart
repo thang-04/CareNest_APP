@@ -33,13 +33,20 @@ void main() {
   setUp(SelectedChild.reset);
 
   testWidgets(
-    'P08: Hôm nay có dòng thời gian, đánh giá, đơn nghỉ GV chưa xem',
+    'Redraw AC-5 (OBS-02, ATT-04): Hôm nay có mức Đạt / Cần cố gắng, đơn nghỉ Vắng có phép',
     (tester) async {
       await pumpScreen(tester, const MyChildScreen(), inScaffold: true);
       expect(find.text('07:42 · Điểm danh – Có mặt'), findsOneWidget);
-      expect(find.text('Sức khỏe: Tốt'), findsOneWidget);
+      expect(find.text('Sức khỏe: Đạt'), findsOneWidget);
+      expect(find.text('Cảm xúc: Đạt'), findsOneWidget);
+      expect(find.text('Kiến thức – kỹ năng: Cần cố gắng'), findsOneWidget);
+      expect(find.textContaining('Tốt'), findsNothing);
+      expect(find.textContaining('Vui vẻ'), findsNothing);
       await tester.scrollUntilVisible(find.text('Đơn xin nghỉ 13/10'), 200);
-      expect(find.text('GV chưa xem'), findsOneWidget);
+      expect(find.text('Vắng có phép 13/10'), findsOneWidget);
+      expect(find.textContaining('GV chưa xem'), findsNothing);
+      expect(find.textContaining('GV đã xem'), findsNothing);
+      expect(find.textContaining('Suất ăn'), findsNothing);
     },
   );
 
@@ -62,16 +69,20 @@ void main() {
     },
   );
 
-  testWidgets('P12: Phát triển có nhận xét tuần, phiếu bé ngoan, khen thưởng', (
-    tester,
-  ) async {
-    await pumpScreen(tester, const MyChildScreen(), inScaffold: true);
-    await tester.tap(find.text('Phát triển'));
-    await tester.pumpAndSettle();
-    expect(find.text('Nhận xét tuần 05/10 – 09/10'), findsOneWidget);
-    expect(find.bySemanticsLabel('2 trên 4 phiếu tuần'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Khen thưởng cuối năm'), 200);
-  });
+  testWidgets(
+    'Redraw AC-8 (OBS-06, OBS-10): Phát triển có nhận xét tháng, phiếu bé ngoan tuần, khen thưởng',
+    (tester) async {
+      await pumpScreen(tester, const MyChildScreen(), inScaffold: true);
+      await tester.tap(find.text('Phát triển'));
+      await tester.pumpAndSettle();
+      expect(find.text('Nhận xét tháng 9/2026'), findsOneWidget);
+      expect(find.text('Cô Trần Thu Hà · 30/09/2026'), findsOneWidget);
+      expect(find.text('Nhận xét tháng 8/2026'), findsOneWidget);
+      expect(find.textContaining('Nhận xét tuần'), findsNothing);
+      expect(find.bySemanticsLabel('2 trên 4 phiếu tuần'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Khen thưởng cuối năm'), 200);
+    },
+  );
 
   testWidgets('Đổi bé ở chỗ khác ⇒ tab Bé của tôi đổi theo', (tester) async {
     await pumpScreen(tester, const MyChildScreen(), inScaffold: true);
@@ -85,31 +96,54 @@ void main() {
     tester,
   ) async {
     await pumpScreen(tester, const ChildActivitiesScreen(childId: 'child-1'));
-    expect(find.text('Hành vi tốt'), findsOneWidget);
+    expect(find.text('Hành vi: Đạt'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('+1'), 200);
     expect(find.byType(Image), findsNothing);
   });
 
-  testWidgets('P10: số đếm tháng, chọn ngày nghỉ có phép hiện suất đã huỷ', (
-    tester,
-  ) async {
-    await pumpScreen(
-      tester,
-      ChildAttendanceScreen(childId: 'child-1', initialDay: today),
-    );
-    expect(find.bySemanticsLabel('Có mặt: 8'), findsOneWidget);
-    expect(find.bySemanticsLabel('Suất huỷ: 1'), findsOneWidget);
-    await tester.tap(find.bySemanticsLabel('Thứ Ba, 13/10/2026, Nghỉ có phép'));
-    await tester.pumpAndSettle();
-    expect(
-      find.textContaining(
-        'Đã huỷ theo đơn xin nghỉ',
-        findRichText: true,
-        skipOffstage: false,
-      ),
-      findsOneWidget,
-    );
-  });
+  testWidgets(
+    'Redraw AC-6 (OBS-02): Hoạt động & đánh giá dùng mức Đạt / Cần cố gắng / Chưa đạt',
+    (tester) async {
+      await pumpScreen(tester, const ChildActivitiesScreen(childId: 'child-1'));
+      expect(find.text('Sức khỏe: Đạt'), findsOneWidget);
+      expect(find.text('Kiến thức – kỹ năng: Cần cố gắng'), findsOneWidget);
+      expect(find.textContaining('Tốt'), findsNothing);
+      expect(find.textContaining('Vui vẻ'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'Redraw AC-7 (ATT-02): số đếm tháng không có Suất huỷ, không ghi từng bữa',
+    (tester) async {
+      await pumpScreen(
+        tester,
+        ChildAttendanceScreen(childId: 'child-1', initialDay: today),
+      );
+      expect(find.bySemanticsLabel('Có mặt: 8'), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('Suất huỷ')), findsNothing);
+      expect(find.textContaining('Suất', findRichText: true), findsNothing);
+      expect(
+        find.textContaining('ăn sáng', findRichText: true, skipOffstage: false),
+        findsNothing,
+      );
+      await tester.tap(
+        find.bySemanticsLabel('Thứ Ba, 13/10/2026, Vắng có phép'),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining(
+          'Theo đơn xin nghỉ',
+          findRichText: true,
+          skipOffstage: false,
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Đã huỷ', findRichText: true, skipOffstage: false),
+        findsNothing,
+      );
+    },
+  );
 
   testWidgets('P13: hồ sơ có GV chủ nhiệm, người đưa đón; chỉ xem', (
     tester,
@@ -120,23 +154,28 @@ void main() {
     expect(find.byType(TextField), findsNothing);
   });
 
-  testWidgets('P05: đổi ngày trong tuần, hôm nay có ảnh bữa ăn GV đăng', (
-    tester,
-  ) async {
-    await pumpScreen(
-      tester,
-      WeeklyMenuScreen(childId: 'child-1', initialDay: today),
-    );
-    expect(find.textContaining('Cháo thịt bằm'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Cô Hà đăng 11:05'), 200);
-    expect(find.byType(Image), findsNothing);
+  testWidgets(
+    'Redraw AC-4 (NUT-16): đổi ngày trong tuần, hôm nay có ảnh mẫu của bếp cơ sở',
+    (tester) async {
+      await pumpScreen(
+        tester,
+        WeeklyMenuScreen(childId: 'child-1', initialDay: today),
+      );
+      expect(find.textContaining('Cháo thịt bằm'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Ảnh mẫu của bếp cơ sở · 11:05'),
+        200,
+      );
+      expect(find.textContaining('đăng'), findsNothing);
+      expect(find.byType(Image), findsNothing);
 
-    await tester.scrollUntilVisible(find.text('T3'), -200);
-    await tester.tap(find.text('T3'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('Bún bò'), findsOneWidget);
-    expect(find.text('Cô Hà đăng 11:05'), findsNothing);
-  });
+      await tester.scrollUntilVisible(find.text('T3'), -200);
+      await tester.tap(find.text('T3'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Bún bò'), findsOneWidget);
+      expect(find.text('Ảnh mẫu của bếp cơ sở · 11:05'), findsNothing);
+    },
+  );
 
   testWidgets('P05: bé có dị ứng ⇒ cảnh báo suất thay thế', (tester) async {
     await pumpScreen(

@@ -28,7 +28,6 @@ class FakeAttendanceSource implements AttendanceSource {
     'k-02': 'Dị ứng hải sản',
     'k-03': 'Ốm · đơn 11–13/10',
     'k-04': 'Chưa có đơn',
-    'k-05': 'Ăn 1 bữa · Trưa',
     'k-08': 'Việc gia đình · đơn 12/10',
   };
   static const _onLeave = {'k-03', 'k-08'};
@@ -43,7 +42,6 @@ class FakeAttendanceSource implements AttendanceSource {
             : kid.id == 'k-04'
             ? AttendanceStatus.unexcused
             : AttendanceStatus.notRecorded,
-        eats: !_onLeave.contains(kid.id) && kid.id != 'k-04',
         note: _notes[kid.id],
         hasLeaveNotice: _onLeave.contains(kid.id),
       ),

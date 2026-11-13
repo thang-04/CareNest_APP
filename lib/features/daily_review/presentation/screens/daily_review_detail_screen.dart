@@ -16,7 +16,8 @@ import 'package:carenest_app/features/class_roster/data/fake_class_roster_source
 import 'package:carenest_app/features/daily_review/data/fake_daily_review_source.dart';
 import 'package:carenest_app/features/daily_review/domain/daily_review.dart';
 
-/// Đánh giá hằng ngày — một bé (mockup T04.1): tiêu chí có cấu trúc + ghi chú (OBS-01).
+/// Đánh giá hằng ngày — một bé (mockup T04.1): 7 mặt, mức Đạt / Cần cố gắng / Chưa đạt (OBS-02),
+/// mặc định Đạt, GV chỉ sửa bé khác thường; ghi chú không bắt buộc (OBS-01).
 /// Không hiển thị giáo án (OBS-08); dòng hoạt động chỉ là ngữ cảnh.
 class DailyReviewDetailScreen extends StatefulWidget {
   const DailyReviewDetailScreen({
@@ -59,7 +60,10 @@ class _DailyReviewDetailScreenState extends State<DailyReviewDetailScreen> {
       setState(() {
         _day = day;
         _kid = kid;
-        _answers = {...?kid?.answers};
+        _answers = {
+          for (final criterion in day.criteria)
+            criterion.id: kid?.answers[criterion.id] ?? criterion.defaultOption,
+        };
         _flagged = kid?.flagged ?? false;
         _note.text = kid?.note ?? '';
       });

@@ -7,7 +7,6 @@ import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
-import 'package:carenest_app/core/widgets/app_bottom_sheet.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_stat_tile.dart';
@@ -19,8 +18,8 @@ import 'package:carenest_app/features/attendance/presentation/widgets/attendance
 
 enum _SaveState { idle, saving, saved, failed }
 
-/// Điểm danh & báo ăn cả lớp — mockup T02. APP không tính số suất (NUT-01): các ô đếm chỉ là
-/// tổng lựa chọn đang nhập; ngoài mặc định "có ăn", bấm tên bé để báo ăn (ATT-02).
+/// Điểm danh & nhiệt độ đầu ngày cả lớp — mockup T02. Có mặt là ăn đủ các bữa, không báo ăn riêng
+/// (ATT-02); APP không tính số suất (NUT-01): các ô đếm chỉ là tổng lựa chọn đang nhập.
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key, required this.classId, this.source});
 
@@ -78,54 +77,31 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   void _setPresent(KidAttendance kid) => _update(
     kid.childId,
-    (item) => item.copyWith(status: AttendanceStatus.present, eats: true),
+    (item) => item.copyWith(status: AttendanceStatus.present),
   );
 
-  // Có đơn nghỉ ⇒ vắng vẫn là có phép (ATT-04); không đơn ⇒ vắng không phép
+  // GV chỉ có Có mặt / Vắng không phép; có phép do đơn nghỉ đặt (ATT-09)
   void _setAbsent(KidAttendance kid) => _update(
     kid.childId,
     (item) => item.copyWith(
-      status: item.hasLeaveNotice
-          ? AttendanceStatus.excused
-          : AttendanceStatus.unexcused,
-      eats: false,
+      status: AttendanceStatus.unexcused,
+      temperature: () => null,
     ),
   );
+
+  void _setTemperature(KidAttendance kid, double? value) =>
+      _update(kid.childId, (item) => item.copyWith(temperature: () => value));
 
   void _markAllPresent() {
     setState(() {
       _kids = [
         for (final kid in _kids)
           kid.status == AttendanceStatus.notRecorded
-              ? kid.copyWith(status: AttendanceStatus.present, eats: true)
+              ? kid.copyWith(status: AttendanceStatus.present)
               : kid,
       ];
       _saveState = _SaveState.idle;
     });
-  }
-
-  void _pickMeals(KidAttendance kid) {
-    if (kid.status != AttendanceStatus.present) return;
-    showAppBottomSheet<void>(
-      context: context,
-      title: 'Báo ăn: ${kid.fullName}',
-      builder: (sheetContext) => Column(
-        children: [
-          for (final (eats, label) in const [
-            (true, 'Có ăn'),
-            (false, 'Không ăn'),
-          ])
-            AppSheetOption(
-              selected: kid.eats == eats,
-              onTap: () {
-                Navigator.of(sheetContext).pop();
-                _update(kid.childId, (item) => item.copyWith(eats: eats));
-              },
-              child: Align(alignment: Alignment.centerLeft, child: Text(label)),
-            ),
-        ],
-      ),
-    );
   }
 
   Future<void> _save() async {
@@ -149,7 +125,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Điểm danh & báo ăn')),
+      appBar: AppBar(title: const Text('Điểm danh & nhiệt độ')),
       body: _buildBody(),
       bottomNavigationBar: _loading || _loadError != null || _kids.isEmpty
           ? null
@@ -252,7 +228,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               ),
               const SizedBox(height: AppSpacing.space2),
               Text(
-                'Chạm 1 lần cho cả lớp, sau đó chỉ sửa các bé vắng / có phép. Chạm tên bé để báo ăn.',
+                'Chạm 1 lần cho cả lớp, rồi nhập nhiệt độ đầu ngày từng bé có mặt.',
                 textAlign: TextAlign.center,
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textMuted,
@@ -287,7 +263,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             enabled: !saving,
             onPresent: () => _setPresent(kid),
             onAbsent: () => _setAbsent(kid),
-            onTapMeals: () => _pickMeals(kid),
+            onTemperatureChanged: (value) => _setTemperature(kid, value),
           ),
         );
       },

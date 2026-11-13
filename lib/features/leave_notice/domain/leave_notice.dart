@@ -3,9 +3,7 @@ import 'package:flutter/foundation.dart';
 /// Vòng đời theo ATT-05 (CONFIRMED): `SUBMITTED → CANCELLED`, không có bước duyệt.
 enum LeaveNoticeStatus { submitted, cancelled }
 
-/// Buổi nghỉ theo mockup P03. Nghỉ nửa buổi xử lý suất ăn ra sao chưa có rule BE ⇒ APP không suy.
-enum LeaveSession { fullDay, morning, afternoon }
-
+/// Đơn nghỉ theo ngày (ATT-05): BE chỉ nhận từ ngày, đến ngày, lý do.
 @immutable
 class LeaveNotice {
   const LeaveNotice({
@@ -13,22 +11,31 @@ class LeaveNotice {
     required this.childId,
     required this.from,
     required this.to,
-    required this.session,
     required this.reason,
     required this.status,
-    this.seenByTeacher = false,
+    this.canCancel = false,
   });
 
   final String id;
   final String childId;
   final DateTime from;
   final DateTime to;
-  final LeaveSession session;
   final String reason;
   final LeaveNoticeStatus status;
 
-  /// Giáo viên đã xem/ghi nhận (ATT-05: GV chỉ xem, không duyệt) — BE trả.
-  final bool seenByTeacher;
+  /// Còn hủy được (trước giờ chốt của ngày nghỉ) — BE quyết định, APP chỉ hiện nút.
+  final bool canCancel;
+
+  LeaveNotice copyWith({LeaveNoticeStatus? status, bool? canCancel}) =>
+      LeaveNotice(
+        id: id,
+        childId: childId,
+        from: from,
+        to: to,
+        reason: reason,
+        status: status ?? this.status,
+        canCancel: canCancel ?? this.canCancel,
+      );
 }
 
 /// Dữ liệu phụ huynh nhập; BE kiểm tra lại mọi thứ (ngày qua cut-off, quyền — ATT-05b, AUTH-04).
@@ -38,13 +45,14 @@ class LeaveNoticeDraft {
     required this.childId,
     required this.from,
     required this.to,
-    required this.session,
     required this.reason,
   });
+
+  /// Hỗ trợ nhập: tối đa 30 ngày mỗi đơn (ATT-05); BE vẫn kiểm tra.
+  static const maxDays = 30;
 
   final String childId;
   final DateTime from;
   final DateTime to;
-  final LeaveSession session;
   final String reason;
 }

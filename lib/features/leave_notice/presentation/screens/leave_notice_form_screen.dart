@@ -10,12 +10,10 @@ import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_avatar.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_month_calendar.dart';
-import 'package:carenest_app/core/widgets/app_segmented.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_text_field.dart';
 import 'package:carenest_app/features/leave_notice/data/fake_leave_notice_source.dart';
 import 'package:carenest_app/features/leave_notice/domain/leave_notice.dart';
-import 'package:carenest_app/features/leave_notice/presentation/leave_notice_status.dart';
 import 'package:carenest_app/features/parent_home/domain/parent_today.dart';
 
 /// Xin nghỉ cho bé — bố cục D Clay: lịch tháng chọn khoảng ngày, thấy ngày đã báo nghỉ.
@@ -51,9 +49,9 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
 
   /// Ngày đã có đơn nghỉ (để không báo trùng); tải lỗi ⇒ để trống, không chặn form.
   Set<DateTime> _reportedDays = const {};
-  LeaveSession _session = LeaveSession.fullDay;
   final _reason = TextEditingController();
   String? _reasonError;
+  String? _rangeError;
   String? _submitError;
   bool _submitting = false;
 
@@ -96,6 +94,7 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
 
   void _onDayTap(DateTime day) {
     setState(() {
+      _rangeError = null;
       if (_pickingEnd && !day.isBefore(_from)) {
         _to = day;
         _pickingEnd = false;
@@ -114,13 +113,18 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
       ? 'Nghỉ ngày ${DateLabels.date(_from)}'
       : 'Nghỉ từ ${DateLabels.dayMonth(_from)} đến ${DateLabels.date(_to)}';
 
+  int get _dayCount => _to.difference(_from).inDays + 1;
+
   Future<void> _submit() async {
     final reason = _reason.text.trim();
     setState(() {
       _reasonError = reason.isEmpty ? 'Nhập lý do nghỉ.' : null;
+      _rangeError = _dayCount > LeaveNoticeDraft.maxDays
+          ? 'Mỗi đơn tối đa ${LeaveNoticeDraft.maxDays} ngày. Chọn lại ngày kết thúc.'
+          : null;
       _submitError = null;
     });
-    if (_reasonError != null) return;
+    if (_reasonError != null || _rangeError != null) return;
     setState(() => _submitting = true);
     try {
       await _source.submit(
@@ -128,7 +132,6 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
           childId: widget.child.id,
           from: _from,
           to: _to,
-          session: _session,
           reason: reason,
         ),
       );
@@ -145,16 +148,10 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
     }
   }
 
-  String get _noticeMessage {
-    final teacher =
-        '${widget.child.homeroomTeacher} (GV lớp ${widget.child.className}) sẽ nhận được thông báo về đơn này.';
-    if (_session != LeaveSession.fullDay) return teacher;
-    // ATT-04 CONFIRMED: nghỉ cả ngày ⇒ huỷ suất các ngày đó
-    final days = DateLabels.dayMonth(_from) == DateLabels.dayMonth(_to)
-        ? 'ngày ${DateLabels.dayMonth(_from)}'
-        : 'từ ${DateLabels.dayMonth(_from)} đến ${DateLabels.dayMonth(_to)}';
-    return 'Suất ăn $days sẽ được huỷ tự động. $teacher';
-  }
+  // ATT-04: ngày có đơn ghi Vắng có phép; ATT-05: tối đa 30 ngày mỗi đơn
+  String get _noticeMessage =>
+      'Ngày nghỉ ghi Vắng có phép. Tối đa ${LeaveNoticeDraft.maxDays} ngày mỗi đơn. '
+      '${widget.child.homeroomTeacher} (GV lớp ${widget.child.className}) sẽ nhận được thông báo về đơn này.';
 
   @override
   Widget build(BuildContext context) {
@@ -238,6 +235,15 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
                 ),
                 const SizedBox(height: AppSpacing.space2),
                 Text(_rangeLabel, style: textTheme.titleSmall),
+                if (_rangeError != null)
+                  Text(
+                    _rangeError!,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppStatusColors.of(
+                        context,
+                      ).feedbackOf(AppFeedback.danger).foreground,
+                    ),
+                  ),
                 Text(
                   _pickingEnd
                       ? 'Chạm ngày kết thúc nếu nghỉ nhiều ngày.'
@@ -274,20 +280,6 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
                 ],
               ],
             ),
-          ),
-          const SizedBox(height: AppSpacing.space4),
-          Text(
-            'Buổi nghỉ',
-            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: AppSpacing.space2),
-          AppSegmented<LeaveSession>(
-            segments: [
-              for (final session in LeaveSession.values)
-                (session, session.label),
-            ],
-            selected: _session,
-            onChanged: (value) => setState(() => _session = value),
           ),
           const SizedBox(height: AppSpacing.space4),
           AppTextField(
