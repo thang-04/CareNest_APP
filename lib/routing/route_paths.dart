@@ -58,17 +58,11 @@ abstract final class RoutePaths {
   static const vicePrincipalApprovals = '/vice-principal/approvals';
   static const vicePrincipalNotifications = '/vice-principal/notifications';
   static const vicePrincipalAccount = '/vice-principal/account';
-  static const vicePrincipalAdjustments = '/vice-principal/approvals/meals';
   static const vicePrincipalRewards = '/vice-principal/approvals/rewards';
   static const vicePrincipalMealConfirm = '/vice-principal/meal-confirm';
-  static const vicePrincipalKitchen = '/vice-principal/kitchen';
   static const vicePrincipalMenu = '/vice-principal/menu';
   static const vicePrincipalNutrition = '/vice-principal/menu/nutrition';
   static const vicePrincipalChildren = '/vice-principal/children';
-
-  /// Chi tiết yêu cầu điều chỉnh suất: chỉ mang ID, dữ liệu tải lại.
-  static String vicePrincipalAdjustment(String id) =>
-      '$vicePrincipalAdjustments/$id';
 
   /// Cân đối dinh dưỡng theo nhóm tuổi + ngày đang chọn (ngữ cảnh ở query, không phải dữ liệu).
   static String vicePrincipalNutritionOf(String groupId, DateTime day) => Uri(

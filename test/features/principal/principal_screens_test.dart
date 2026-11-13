@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
+import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/features/approvals/presentation/screens/principal_approvals_screen.dart';
 import 'package:carenest_app/features/campus_children/data/fake_campus_children_source.dart';
 import 'package:carenest_app/features/campus_children/presentation/screens/campus_children_screen.dart';
@@ -11,7 +12,6 @@ import 'package:carenest_app/features/parent_home/data/fake_parent_home_source.d
 import 'package:carenest_app/features/principal_overview/data/fake_school_overview_source.dart';
 import 'package:carenest_app/features/principal_overview/presentation/screens/principal_overview_screen.dart';
 import 'package:carenest_app/features/reward_proposals/data/fake_principal_reward_source.dart';
-import 'package:carenest_app/features/reward_proposals/domain/reward_batch.dart';
 import 'package:carenest_app/features/reward_proposals/presentation/screens/reward_batch_screen.dart';
 import 'package:carenest_app/features/school_children/presentation/screens/school_children_screen.dart';
 import 'package:carenest_app/features/school_menu/presentation/screens/school_menu_overview_screen.dart';
@@ -136,7 +136,7 @@ void main() {
     await tester.scrollUntilVisible(find.text('Thử lại'), 200);
   });
 
-  testWidgets('H02 (K5): đợt chờ duyệt và đã xử lý, không có tab nghỉ phép', (
+  testWidgets('H02 (K5, AUTH-21): chờ xử lý chỉ xem, không có tab nghỉ phép', (
     tester,
   ) async {
     await pumpScreen(
@@ -145,58 +145,36 @@ void main() {
       inScaffold: true,
     );
     expect(find.text('1 mới'), findsOneWidget);
+    expect(find.text('Chờ xử lý'), findsOneWidget);
     expect(find.text('Khen thưởng cuối năm · 7 bé'), findsOneWidget);
+    expect(
+      find.text('Cơ sở chính · Phó HT đã xét · duyệt trên Web'),
+      findsOneWidget,
+    );
     expect(find.text('Đã xử lý gần đây'), findsOneWidget);
     expect(find.text('Trả về'), findsOneWidget);
     expect(find.textContaining('Nghỉ phép'), findsNothing);
   });
 
-  testWidgets('H04 (OBS-10): bỏ chọn ⇒ cần ghi chú; duyệt số đề xuất đã chọn', (
+  testWidgets('H04 (OBS-14, AUTH-21): chỉ xem đề xuất, duyệt trên Web', (
     tester,
   ) async {
-    final source = FakePrincipalRewardSource();
-    var done = 0;
     await pumpScreen(
       tester,
-      RewardBatchScreen(id: batchId, source: source, onDone: () => done++),
+      RewardBatchScreen(id: batchId, source: FakePrincipalRewardSource()),
     );
     expect(find.text('Cơ sở chính · 7 đề xuất hợp lệ'), findsOneWidget);
-    expect(find.text('Duyệt (7)'), findsOneWidget);
-    expect(find.text('+ 2 đề xuất khác · Xem tất cả'), findsOneWidget);
-
-    await tester.tap(find.text('Nguyễn Minh Anh · Mầm 3A', findRichText: true));
+    expect(find.textContaining('duyệt trên CareNest Web'), findsOneWidget);
+    expect(find.text('Trả về Phó HT'), findsNothing);
+    expect(find.textContaining('Duyệt ('), findsNothing);
+    expect(find.byType(Checkbox), findsNothing);
+    expect(find.byType(TextField), findsNothing);
+    expect(find.byType(AppButton), findsNothing);
+    await tester.ensureVisible(find.text('+ 2 đề xuất khác · Xem tất cả'));
     await tester.pumpAndSettle();
-    expect(find.text('Duyệt (6)'), findsOneWidget);
-    await tester.tap(find.text('Duyệt (6)'));
+    await tester.tap(find.text('+ 2 đề xuất khác · Xem tất cả'));
     await tester.pumpAndSettle();
-    expect(done, 0);
-    expect(find.text('Nhập ghi chú cho 1 đề xuất bỏ chọn'), findsOneWidget);
-
-    await tester.enterText(find.byType(TextField), 'Thiếu minh chứng tháng 9');
-    await tester.tap(find.text('Duyệt (6)'));
-    await tester.pumpAndSettle();
-    expect(done, 1);
-    final batch = await source.loadBatch(batchId);
-    expect(batch?.status, RewardBatchStatus.approved);
-    expect(batch?.decisionNote, 'Đã duyệt 12/10 · 6 bé');
-  });
-
-  testWidgets('H04: trả về Phó HT bắt buộc ghi chú', (tester) async {
-    final source = FakePrincipalRewardSource();
-    await pumpScreen(
-      tester,
-      RewardBatchScreen(id: batchId, source: source, onDone: () {}),
-    );
-    await tester.tap(find.text('Trả về Phó HT'));
-    await tester.pumpAndSettle();
-    expect(
-      find.text('Nhập ghi chú để Phó HT biết vì sao trả về'),
-      findsOneWidget,
-    );
-    expect(
-      (await source.loadBatch(batchId))?.status,
-      RewardBatchStatus.pending,
-    );
+    expect(find.text('+ 2 đề xuất khác · Xem tất cả'), findsNothing);
   });
 
   testWidgets('H06 (AUTH-01): lớp theo cơ sở, tìm tên bé', (tester) async {
@@ -292,17 +270,13 @@ void main() {
       true,
     ),
     (
-      'Chờ Hiệu trưởng duyệt',
+      'Chờ xử lý (Hiệu trưởng)',
       PrincipalApprovalsScreen(source: FakePrincipalRewardSource()),
       true,
     ),
     (
       'Khen thưởng cuối năm',
-      RewardBatchScreen(
-        id: batchId,
-        source: FakePrincipalRewardSource(),
-        onDone: () {},
-      ),
+      RewardBatchScreen(id: batchId, source: FakePrincipalRewardSource()),
       false,
     ),
     (

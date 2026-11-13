@@ -142,8 +142,8 @@ class _PrincipalOverviewScreenState extends State<PrincipalOverviewScreen> {
               header: true,
               child: Text(
                 overview.pending.isEmpty
-                    ? 'Chờ Hiệu trưởng duyệt'
-                    : 'Chờ Hiệu trưởng duyệt (${overview.pending.length})',
+                    ? 'Chờ xử lý'
+                    : 'Chờ xử lý (${overview.pending.length})',
                 style: textTheme.titleMedium,
               ),
             ),
@@ -158,8 +158,9 @@ class _PrincipalOverviewScreenState extends State<PrincipalOverviewScreen> {
       if (overview.pending.isEmpty)
         const AppEmptyState(
           icon: AppIcons.checkCircle,
-          title: 'Không có yêu cầu chờ duyệt',
-          message: 'Đề xuất Phó HT gửi lên sẽ hiện ở đây.',
+          title: 'Không có việc chờ xử lý',
+          message:
+              'Đề xuất Phó HT gửi lên sẽ hiện ở đây, duyệt trên CareNest Web.',
         )
       else
         for (final batch in overview.pending) ...[
