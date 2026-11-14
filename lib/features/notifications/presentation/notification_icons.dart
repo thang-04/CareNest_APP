@@ -10,6 +10,7 @@ IconData notificationIcon(NotificationType type) => switch (type) {
   NotificationType.childWithdrawn => AppIcons.child,
   NotificationType.healthResultPublished ||
   NotificationType.healthResultUpdated ||
+  NotificationType.healthTrendApproved ||
   NotificationType.healthCheckOpened ||
   NotificationType.dailyHealthNoted ||
   NotificationType.childTbContact ||
@@ -43,7 +44,8 @@ String? notificationAction(NotificationType type) => switch (type) {
   NotificationType.childPickedUp ||
   NotificationType.dailyHealthNoted => 'Xem hôm nay của bé',
   NotificationType.healthResultPublished ||
-  NotificationType.healthResultUpdated => 'Xem sức khỏe của bé',
+  NotificationType.healthResultUpdated ||
+  NotificationType.healthTrendApproved => 'Xem sức khỏe của bé',
   NotificationType.weeklyCommentSent => 'Xem nhận xét của bé',
   NotificationType.leaveRequestChanged => 'Xem đơn nghỉ của lớp',
   NotificationType.childPlaced => 'Xem lớp học',
