@@ -14,7 +14,6 @@ import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/core/widgets/app_task_card.dart';
-import 'package:carenest_app/features/cooking_status/domain/cooking_status.dart';
 import 'package:carenest_app/features/principal_overview/data/fake_school_overview_source.dart';
 import 'package:carenest_app/features/principal_overview/domain/school_overview.dart';
 import 'package:carenest_app/routing/route_paths.dart';
@@ -168,7 +167,7 @@ class _PrincipalOverviewScreenState extends State<PrincipalOverviewScreen> {
             icon: AppIcons.trophy,
             tone: AppStatusTone.approval,
             title: '${batch.title} · ${batch.proposals.length} bé',
-            subtitle: '${batch.campusName} · đã qua Phó HT',
+            subtitle: '${batch.campusName} · đã qua Phó HT · duyệt trên Web',
             trailing: const AppStatusBadge(
               label: 'Mới',
               tone: AppStatusTone.approval,
@@ -288,19 +287,11 @@ class _CampusCard extends StatelessWidget {
   /// Xếp dọc ⇒ vòng nằm phải, thông tin bên trái.
   final bool wide;
 
-  static AppStatusTone _kitchenTone(CookingStage stage) => switch (stage) {
-    CookingStage.waiting => AppStatusTone.gray,
-    CookingStage.cooking => AppStatusTone.blue,
-    CookingStage.ready => AppStatusTone.teal,
-    CookingStage.delivered => AppStatusTone.green,
-  };
-
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final green = AppStatusColors.of(context).tone(AppStatusTone.green);
     final meals = campus.confirmedMeals;
-    final stage = campus.kitchenStage;
     final ring = AppProgressRing(
       value: campus.presentRatio,
       label: campus.presentRate,
@@ -321,20 +312,11 @@ class _CampusCard extends StatelessWidget {
             fontFeatures: AppTextStyles.tabularFigures,
           ),
         ),
-      if (stage != null) ...[
-        const SizedBox(height: AppSpacing.space2),
-        AppStatusBadge(
-          label: stage.label,
-          tone: _kitchenTone(stage),
-          icon: AppIcons.kitchen,
-        ),
-      ],
     ];
     final label = [
       campus.name,
       'có mặt ${campus.present}/${campus.enrolled}, ${campus.presentRate}',
       meals == null ? 'chưa chốt suất' : '$meals suất đã chốt',
-      if (stage != null) 'bếp ${stage.label.toLowerCase()}',
     ].join(', ');
     return Semantics(
       container: true,

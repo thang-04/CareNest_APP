@@ -99,6 +99,44 @@ void main() {
     }
   });
 
+  testWidgets(
+    'Redraw AC-19 (NUT-11, NUT-12, NUT-14, NUT-22): gỡ route nhận nguyên liệu, báo thiếu, trạng thái nấu',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      for (final path in [
+        '/kitchen/receipts',
+        '/kitchen/receipts/shortage',
+        '/kitchen/cooking',
+      ]) {
+        router.go(path);
+        await tester.pumpAndSettle();
+        expect(find.text('Không tìm thấy trang'), findsOneWidget, reason: path);
+      }
+    },
+  );
+
+  testWidgets(
+    'Bếp: Trang chủ mở Ảnh mẫu bữa và Sổ lưu mẫu, màn con ẩn thanh đáy',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      router.go(RoutePaths.kitchenHome);
+      await tester.pumpAndSettle();
+      for (final (task, title) in [
+        ('Ảnh mẫu bữa', 'Lưu ảnh mẫu'),
+        ('Sổ lưu mẫu', 'Ghi lưu mẫu'),
+      ]) {
+        await tester.scrollUntilVisible(find.text(task), 200);
+        await tester.tap(find.text(task));
+        await tester.pumpAndSettle();
+        expect(find.text(title), findsOneWidget, reason: task);
+        expect(find.byType(NavigationBar), findsNothing, reason: task);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+        expect(find.byType(NavigationBar), findsOneWidget, reason: task);
+      }
+    },
+  );
+
   testWidgets('Phó HT: màn con ẩn thanh đáy, ngữ cảnh lấy từ query', (
     tester,
   ) async {
@@ -314,6 +352,9 @@ void main() {
 
       await tester.ensureVisible(find.text('Đăng xuất'));
       await tester.tap(find.text('Đăng xuất'));
+      await tester.pumpAndSettle();
+      // Hỏi lại trước khi đăng xuất (P19)
+      await tester.tap(find.text('Đăng xuất').last);
       await tester.pumpAndSettle();
       expect(find.byType(LoginScreen), findsOneWidget);
     },

@@ -13,6 +13,7 @@ import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/features/account/data/fake_account_source.dart';
 import 'package:carenest_app/features/account/domain/account_profile.dart';
+import 'package:carenest_app/features/account/presentation/widgets/logout_confirm_dialog.dart';
 
 /// Tài khoản — mockup P14, dùng chung 5 vai trò (DESIGN.md §8.5 Tài khoản).
 class AccountScreen extends StatefulWidget {
@@ -49,6 +50,11 @@ class _AccountScreenState extends State<AccountScreen> {
     if (oldWidget.role != widget.role || oldWidget.source != widget.source) {
       _profile = widget.source.loadProfile(widget.role);
     }
+  }
+
+  Future<void> _logout() async {
+    final confirmed = await confirmLogout(context, widget.role);
+    if (confirmed && mounted) widget.onLogout();
   }
 
   @override
@@ -158,7 +164,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 label: 'Đăng xuất',
                 variant: AppButtonVariant.danger,
                 expand: true,
-                onPressed: widget.onLogout,
+                onPressed: _logout,
               ),
               const SizedBox(height: AppSpacing.space3),
               Text(

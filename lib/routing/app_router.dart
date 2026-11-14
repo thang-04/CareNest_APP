@@ -23,17 +23,16 @@ import 'package:carenest_app/features/campus_children/presentation/screens/campu
 import 'package:carenest_app/features/campuses/presentation/screens/campuses_screen.dart';
 import 'package:carenest_app/features/class_leave_notices/presentation/screens/class_leave_screen.dart';
 import 'package:carenest_app/features/class_roster/presentation/screens/class_roster_screen.dart';
-import 'package:carenest_app/features/cooking_status/presentation/screens/cooking_status_screen.dart';
 import 'package:carenest_app/features/daily_review/presentation/screens/daily_review_detail_screen.dart';
 import 'package:carenest_app/features/daily_review/presentation/screens/daily_review_list_screen.dart';
 import 'package:carenest_app/features/dev_preview/presentation/screens/role_preview_screen.dart';
 import 'package:carenest_app/features/food_quantities/presentation/screens/food_quantities_screen.dart';
 import 'package:carenest_app/features/health_measure/presentation/screens/health_measure_detail_screen.dart';
 import 'package:carenest_app/features/health_measure/presentation/screens/health_measure_list_screen.dart';
-import 'package:carenest_app/features/ingredient_receipt/presentation/screens/ingredient_receipt_screen.dart';
-import 'package:carenest_app/features/ingredient_receipt/presentation/screens/shortage_report_screen.dart';
 import 'package:carenest_app/features/kitchen_home/presentation/screens/kitchen_home_screen.dart';
+import 'package:carenest_app/features/kitchen_meal_samples/presentation/screens/meal_sample_screen.dart';
 import 'package:carenest_app/features/kitchen_meals/presentation/screens/kitchen_meals_screen.dart';
+import 'package:carenest_app/features/kitchen_sample_log/presentation/screens/sample_log_screen.dart';
 import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_form_screen.dart';
 import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_list_screen.dart';
 import 'package:carenest_app/features/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
@@ -283,20 +282,12 @@ List<GoRoute> _kitchenRoutes() => [
     builder: (context, state) => const FoodQuantitiesScreen(),
   ),
   GoRoute(
-    path: RoutePaths.kitchenReceipts,
-    builder: (context, state) => IngredientReceiptScreen(
-      onReportShortage: () => context.push(RoutePaths.kitchenShortage),
-      onConfirmed: () => context.pop(),
-    ),
+    path: RoutePaths.kitchenMealSamples,
+    builder: (context, state) => MealSampleScreen(onSaved: () => context.pop()),
   ),
   GoRoute(
-    path: RoutePaths.kitchenShortage,
-    builder: (context, state) =>
-        ShortageReportScreen(onSent: () => context.pop()),
-  ),
-  GoRoute(
-    path: RoutePaths.kitchenCooking,
-    builder: (context, state) => const CookingStatusScreen(),
+    path: RoutePaths.kitchenSampleLog,
+    builder: (context, state) => SampleLogScreen(onSaved: () => context.pop()),
   ),
 ];
 

@@ -82,26 +82,24 @@ class _MealCountConfirmScreenState extends State<MealCountConfirmScreen> {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.space3),
-                if (draft.confirmedAt case final at?) ...[
-                  AppBanner(
-                    kind: AppBannerKind.success,
-                    message:
-                        'Đã xác nhận gửi bếp lúc ${DateLabels.time24(at)} · ${draft.mealLabel} ${draft.total} suất',
-                  ),
-                  const SizedBox(height: AppSpacing.space3),
-                ] else ...[
-                  AppBanner(
-                    kind: AppBannerKind.info,
-                    message:
-                        'Chưa xác nhận · ${draft.mealLabel} · hạn ${DateLabels.time24(draft.deadline)} — xác nhận trên CareNest Web',
-                  ),
-                  const SizedBox(height: AppSpacing.space3),
-                ],
                 MealCountTable(classes: draft.classes),
                 if (draft.adjustmentNote case final note?) ...[
                   const SizedBox(height: AppSpacing.space3),
                   AppBanner(kind: AppBannerKind.warning, message: note),
                 ],
+                const SizedBox(height: AppSpacing.space3),
+                // Trạng thái xác nhận đặt dưới bảng như mockup PHT 04
+                if (draft.confirmedAt case final at?)
+                  AppBanner(
+                    kind: AppBannerKind.success,
+                    message:
+                        'Đã xác nhận gửi bếp lúc ${DateLabels.time24(at)} · ${draft.mealLabel} ${draft.total} suất',
+                  )
+                else
+                  const AppBanner(
+                    kind: AppBannerKind.warning,
+                    message: 'Chưa xác nhận — xác nhận trên CareNest Web',
+                  ),
                 const SizedBox(height: AppSpacing.space3),
                 Text(
                   'Chỉ xem. Số suất tự tổng hợp từ điểm danh; xác nhận gửi bếp và mở lại điểm danh thực hiện trên CareNest Web.',

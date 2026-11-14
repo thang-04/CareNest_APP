@@ -39,7 +39,7 @@ class FakeNotificationSource implements NotificationSource {
         id: 'p4',
         kind: NotificationKind.health,
         title: 'Kết quả đo sức khỏe tháng 10 đã có',
-        sentAt: DateTime(2026, 10, 12, 9, 40),
+        sentAt: DateTime(2026, 10, 5, 15, 20),
       ),
       AppNotification(
         id: 'p5',

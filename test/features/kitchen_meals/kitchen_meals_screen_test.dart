@@ -10,8 +10,13 @@ import 'package:carenest_app/features/ingredient_receipt/presentation/screens/in
 import 'package:carenest_app/features/ingredient_receipt/presentation/screens/shortage_report_screen.dart';
 import 'package:carenest_app/features/kitchen_home/data/fake_kitchen_home_source.dart';
 import 'package:carenest_app/features/kitchen_home/presentation/screens/kitchen_home_screen.dart';
+import 'package:carenest_app/features/kitchen_meal_samples/data/fake_meal_sample_source.dart';
+import 'package:carenest_app/features/kitchen_meal_samples/domain/meal_samples.dart';
+import 'package:carenest_app/features/kitchen_meal_samples/presentation/screens/meal_sample_screen.dart';
 import 'package:carenest_app/features/kitchen_meals/data/fake_kitchen_meals_source.dart';
 import 'package:carenest_app/features/kitchen_meals/presentation/screens/kitchen_meals_screen.dart';
+import 'package:carenest_app/features/kitchen_sample_log/data/fake_sample_log_source.dart';
+import 'package:carenest_app/features/kitchen_sample_log/presentation/screens/sample_log_screen.dart';
 import 'package:carenest_app/features/parent_home/data/fake_parent_home_source.dart';
 import 'package:carenest_app/features/school_menu/presentation/screens/school_menu_screen.dart';
 
@@ -44,28 +49,50 @@ String? labelOf(String prefix) => find
     ?.label;
 
 void main() {
-  testWidgets('K01 bố cục D: số suất chữ lớn, tiến độ nấu, việc của bếp', (
-    tester,
-  ) async {
+  testWidgets('K01 bố cục D: số suất chữ lớn, việc của bếp', (tester) async {
     await pumpScreen(
       tester,
-      KitchenHomeScreen(
-        source: FakeKitchenHomeSource(delay: Duration.zero),
-        cookingSource: FakeCookingStatusSource(),
-      ),
+      KitchenHomeScreen(source: FakeKitchenHomeSource(delay: Duration.zero)),
       inScaffold: true,
     );
     expect(find.text('Bếp cơ sở chính'), findsOneWidget);
     expect(labelOf('Bữa trưa đã chốt lúc 08:30'), contains('182 suất'));
     expect(labelOf('Bữa trưa đã chốt lúc 08:30'), contains('7 thay thế'));
-    expect(find.bySemanticsLabel('Đang nấu, đang ở bước này'), findsOneWidget);
-    expect(find.bySemanticsLabel('Chờ nấu, đã xong'), findsOneWidget);
-    // Tiến độ nấu đã có thẻ riêng ⇒ không lặp việc cập nhật trạng thái nấu
-    expect(find.text('Cập nhật trạng thái'), findsOneWidget);
-    expect(find.text('Cập nhật trạng thái nấu'), findsNothing);
-    await tester.scrollUntilVisible(find.text('Nhận nguyên liệu'), 200);
-    expect(find.text('Cần làm'), findsOneWidget);
   });
+
+  testWidgets(
+    'Redraw AC-15 (NUT-07, AUTH-05, NUT-14): việc bếp theo bản sửa, không trạng thái nấu, nhận nguyên liệu, phiếu xuất kho',
+    (tester) async {
+      await pumpScreen(
+        tester,
+        KitchenHomeScreen(source: FakeKitchenHomeSource(delay: Duration.zero)),
+        inScaffold: true,
+      );
+      await tester.scrollUntilVisible(find.text('Sổ lưu mẫu'), 200);
+      for (final (title, subtitle) in [
+        ('Định lượng thực phẩm', 'Theo 182 suất đã xác nhận'),
+        ('Ảnh mẫu bữa', 'Bữa trưa · chụp 10:30–11:30'),
+        ('Sổ lưu mẫu', 'Bữa trưa chưa ghi mẫu'),
+      ]) {
+        expect(find.text(title), findsOneWidget, reason: title);
+        expect(find.text(subtitle), findsOneWidget, reason: subtitle);
+      }
+      expect(find.text('Ghi'), findsOneWidget);
+      expect(find.text('Xem'), findsNWidgets(2));
+      for (final gone in [
+        'Đang nấu',
+        'Cập nhật trạng thái',
+        'Cập nhật trạng thái nấu',
+        'Nhận nguyên liệu',
+        'Định lượng & phiếu xuất kho',
+        'Đã duyệt',
+      ]) {
+        expect(find.text(gone), findsNothing, reason: gone);
+      }
+      expect(find.textContaining('PXK'), findsNothing);
+      expect(find.textContaining('Tiến độ'), findsNothing);
+    },
+  );
 
   testWidgets('K01: lỗi tải ⇒ Thử lại, không để khung chờ chạy mãi', (
     tester,
@@ -77,7 +104,6 @@ void main() {
           mode: FakeMode.error,
           delay: Duration.zero,
         ),
-        cookingSource: FakeCookingStatusSource(),
       ),
       inScaffold: true,
     );
@@ -108,13 +134,27 @@ void main() {
       KitchenMealsScreen(source: FakeKitchenMealsSource(delay: Duration.zero)),
     );
     expect(find.bySemanticsLabel('Tổng suất: 182'), findsOneWidget);
-    expect(find.textContaining('chờ Phó HT duyệt'), findsOneWidget);
+    expect(
+      find.text('09:05 · Mầm 3A +1 suất (giáo viên sửa điểm danh)'),
+      findsOneWidget,
+    );
     expect(
       labelOf('Mầm 3A'),
-      'Mầm 3A, 24 suất thường, 1 suất thay thế, dị ứng hải sản, có điều chỉnh chờ duyệt',
+      'Mầm 3A, 24 suất thường, 1 suất thay thế, dị ứng hải sản, có điều chỉnh',
     );
     expect(find.textContaining('Nguyễn'), findsNothing);
     expect(find.textContaining('Hoàng Nam'), findsNothing);
+  });
+
+  testWidgets('Figma audit: K03 sửa điểm danh không còn "chờ duyệt" (NUT-04)', (
+    tester,
+  ) async {
+    await pumpScreen(
+      tester,
+      KitchenMealsScreen(source: FakeKitchenMealsSource(delay: Duration.zero)),
+    );
+    expect(find.textContaining('duyệt', skipOffstage: false), findsNothing);
+    expect(find.textContaining(' xin ', skipOffstage: false), findsNothing);
   });
 
   testWidgets('K03 (NUT-02): chưa xác nhận ⇒ không có số để nấu', (
@@ -132,14 +172,106 @@ void main() {
     expect(find.text('Chưa có số suất đã chốt'), findsOneWidget);
   });
 
-  testWidgets('K04 (NUT-07): định lượng 182 suất, phiếu xuất kho đã duyệt', (
-    tester,
-  ) async {
-    await pumpScreen(tester, const FoodQuantitiesScreen());
-    expect(find.text('Phiếu xuất kho PXK-1012 · Đã duyệt'), findsOneWidget);
-    expect(find.textContaining('(182 SUẤT)'), findsOneWidget);
-    expect(find.text('10,5 kg'), findsOneWidget);
-  });
+  testWidgets(
+    'Redraw AC-16 (NUT-07, NUT-11): định lượng theo 182 suất đã xác nhận, không phiếu xuất kho',
+    (tester) async {
+      await pumpScreen(tester, const FoodQuantitiesScreen());
+      expect(find.text('Bữa trưa · 182 suất đã xác nhận'), findsOneWidget);
+      expect(
+        find.text('Định lượng hệ thống tính theo số suất'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('(182 SUẤT)'), findsOneWidget);
+      expect(find.text('10,5 kg'), findsOneWidget);
+      expect(find.text('Xem cách chế biến'), findsOneWidget);
+      expect(find.textContaining('phiếu xuất kho'), findsNothing);
+      expect(find.textContaining('Phiếu xuất kho'), findsNothing);
+      expect(find.textContaining('duyệt'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'Redraw AC-17 (NUT-16, PAR-01): ảnh mẫu suất thường + thay thế trong khung giờ, không tên trẻ',
+    (tester) async {
+      final source = FakeMealSampleSource();
+      var saved = false;
+      await pumpScreen(
+        tester,
+        MealSampleScreen(source: source, onSaved: () => saved = true),
+      );
+      expect(find.text('Ảnh mẫu bữa'), findsOneWidget);
+      expect(find.text('Bếp cơ sở chính · Thứ Hai, 12/10'), findsOneWidget);
+      expect(find.text('Chụp trong 10:30–11:30'), findsOneWidget);
+      expect(find.text('Đã chụp (1/2)'), findsOneWidget);
+      expect(find.text('Mẫu suất thường'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('Mẫu suất thay thế, chưa chụp'),
+        findsOneWidget,
+      );
+      await tester.scrollUntilVisible(
+        find.text('Theo món thay thế, không tên trẻ'),
+        200,
+      );
+      expect(find.text('Theo món thay thế, không tên trẻ'), findsOneWidget);
+      expect(find.textContaining('Hoàng Nam'), findsNothing);
+
+      final shutter = find.bySemanticsLabel('Chụp Mẫu suất thay thế');
+      await tester.ensureVisible(shutter);
+      await tester.tap(shutter);
+      await tester.pump();
+      expect(find.text('Đã chụp (2/2)'), findsOneWidget);
+
+      await tester.tap(find.text('Lưu ảnh mẫu'));
+      await tester.pumpAndSettle();
+      expect(saved, isTrue);
+      expect(source.saved, [MealSlot.lunch]);
+    },
+  );
+
+  testWidgets(
+    'Redraw AC-18 (NUT-21): sổ lưu mẫu bữa · món, khối lượng, nhiệt độ, giờ lấy mẫu; PHT duyệt',
+    (tester) async {
+      final source = FakeSampleLogSource();
+      var saved = false;
+      await pumpScreen(
+        tester,
+        SampleLogScreen(source: source, onSaved: () => saved = true),
+      );
+      expect(find.text('Sổ lưu mẫu'), findsOneWidget);
+      expect(find.text('Bữa trưa · Cá basa sốt cà'), findsOneWidget);
+      for (final label in [
+        'Bữa · món lưu mẫu',
+        'Khối lượng · dụng cụ chứa',
+        'Nhiệt độ bảo quản',
+        'Giờ lấy mẫu',
+      ]) {
+        expect(find.textContaining(label), findsOneWidget, reason: label);
+      }
+      expect(find.text('11:05 · hủy sau ít nhất 24 giờ'), findsOneWidget);
+      expect(find.text('Mẫu đủ món theo thực đơn đã công bố.'), findsOneWidget);
+      expect(
+        find.text('PHT dinh dưỡng duyệt; sau ít nhất 24 giờ bếp ghi hủy mẫu.'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Ghi lưu mẫu'));
+      await tester.pump();
+      expect(find.text('Nhập khối lượng và dụng cụ chứa.'), findsOneWidget);
+      expect(find.text('Nhập nhiệt độ bảo quản.'), findsOneWidget);
+      expect(saved, isFalse);
+
+      final fields = find.byType(TextField);
+      await tester.enterText(fields.at(0), '150 g · hộp inox có nắp');
+      await tester.enterText(fields.at(1), '0–5 °C');
+      await tester.tap(find.text('Ghi lưu mẫu'));
+      await tester.pumpAndSettle();
+      expect(saved, isTrue);
+      final entry = source.entries.single;
+      expect(entry.dishId, 'l-ca');
+      expect(entry.amountAndContainer, '150 g · hộp inox có nắp');
+      expect(entry.storageTemperature, '0–5 °C');
+    },
+  );
 
   testWidgets('K05: số nhận thiếu báo chênh lệch, sửa đủ thì hết', (
     tester,
@@ -217,6 +349,16 @@ void main() {
       false,
     ),
     ('Định lượng', const FoodQuantitiesScreen(), false),
+    (
+      'Ảnh mẫu bữa',
+      MealSampleScreen(source: FakeMealSampleSource(), onSaved: () {}),
+      false,
+    ),
+    (
+      'Sổ lưu mẫu',
+      SampleLogScreen(source: FakeSampleLogSource(), onSaved: () {}),
+      false,
+    ),
     (
       'Nhận nguyên liệu',
       IngredientReceiptScreen(onReportShortage: () {}, onConfirmed: () {}),

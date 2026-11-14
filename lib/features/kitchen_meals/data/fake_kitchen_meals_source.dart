@@ -65,8 +65,7 @@ class FakeKitchenMealsSource implements KitchenMealsSource {
       regular: 175,
       alternative: 7,
       classes: classes,
-      adjustmentNote:
-          '09:05 · Mầm 3A xin +1 suất (giáo viên sửa điểm danh) · chờ Phó HT duyệt',
+      adjustmentNote: '09:05 · Mầm 3A +1 suất (giáo viên sửa điểm danh)',
     );
   }
 }

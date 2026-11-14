@@ -43,6 +43,15 @@ void main() {
     expect(find.text('Không có thông báo chưa đọc'), findsOneWidget);
   });
 
+  testWidgets('Figma audit: P06 kết quả đo sức khỏe ghi ngày đo 05/10', (
+    tester,
+  ) async {
+    usePhoneSize(tester);
+    await pumpList(tester);
+    expect(find.text('Kết quả đo sức khỏe tháng 10 đã có'), findsOneWidget);
+    expect(find.text('05/10/2026 · 15:20'), findsOneWidget);
+  });
+
   testWidgets('P06: mở một thông báo ⇒ trả ID và đánh dấu đã đọc', (
     tester,
   ) async {

@@ -207,6 +207,21 @@ void main() {
     expectNoWriteActions();
   });
 
+  testWidgets('Figma audit: PHT 04 trạng thái chưa xác nhận nằm dưới bảng', (
+    tester,
+  ) async {
+    await pumpScreen(
+      tester,
+      MealCountConfirmScreen(source: FakeMealCountConfirmSource()),
+    );
+    final banner = find.text('Chưa xác nhận — xác nhận trên CareNest Web');
+    await tester.scrollUntilVisible(banner, 200);
+    expect(
+      tester.getTopLeft(banner).dy,
+      greaterThan(tester.getTopLeft(find.text('Lá 2')).dy),
+    );
+  });
+
   testWidgets('V04: đã xác nhận ⇒ hiện giờ xác nhận', (tester) async {
     await pumpScreen(
       tester,

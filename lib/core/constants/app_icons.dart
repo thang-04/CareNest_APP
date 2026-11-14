@@ -21,6 +21,7 @@ abstract final class AppIcons {
   static const calendarOff = Icons.event_busy_rounded;
   static const clock = Icons.schedule_rounded;
   static const lock = Icons.lock_outline_rounded;
+  static const logout = Icons.logout_rounded;
   static const phone = Icons.smartphone_rounded;
   static const info = Icons.info_outline_rounded;
   static const alertCircle = Icons.error_outline_rounded;

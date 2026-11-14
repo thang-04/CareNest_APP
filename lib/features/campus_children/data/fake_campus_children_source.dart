@@ -163,7 +163,7 @@ class FakeCampusChildrenSource implements CampusChildrenSource {
         classId: FakeClassRosterSource.classId,
         className: FakeClassRosterSource.className,
         ageLabel: kid.ageLabel,
-        // Trạng thái trong ngày (nghỉ ốm, ăn 1 bữa) không thuộc danh sách cơ sở
+        // Trạng thái trong ngày (nghỉ ốm) không thuộc danh sách cơ sở
         tag: switch (kid.tag?.kind) {
           RosterTagKind.allergy || RosterTagKind.diet => kid.tag,
           _ => null,

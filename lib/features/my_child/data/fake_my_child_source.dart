@@ -65,7 +65,7 @@ class FakeMyChildSource implements MyChildSource {
 
   @override
   Future<HealthSummary> loadHealth(String childId) async => HealthSummary(
-    measuredOn: DateTime(2026, 10, 12),
+    measuredOn: DateTime(2026, 10, 5),
     height: '104 cm',
     weight: '17,2 kg',
     nutritionLabel: 'Bình thường',
