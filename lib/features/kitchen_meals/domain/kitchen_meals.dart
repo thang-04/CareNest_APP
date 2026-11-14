@@ -15,7 +15,7 @@ class ClassMealCount {
   final int regular;
   final int alternative;
 
-  /// "dị ứng hải sản", "ăn chay"
+  /// "dị ứng hải sản", "dị ứng trứng" — chỉ dị ứng (HLT-06), không có ăn chay
   final String? note;
 
   /// Lớp có số đổi do GV sửa điểm danh khi mở lại (NUT-04) ⇒ tô nhẹ dòng.

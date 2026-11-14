@@ -5,7 +5,7 @@ import 'package:carenest_app/features/parent_home/data/fake_parent_home_source.d
 
 /// Dữ liệu giả mockup V10 / H06: cơ sở chính 6 lớp, 196 trẻ (khớp V01: 182 có mặt + 9 có phép + 5 vắng);
 /// cơ sở 2 có 5 lớp, 138 trẻ (toàn trường 334, khớp H01). Mầm 3A lấy từ danh sách lớp của Giáo viên;
-/// ghi chú dị ứng / ăn chay các lớp cơ sở chính khớp K03. Tên là giả.
+/// ghi chú dị ứng các lớp cơ sở chính khớp K03. Tên là giả.
 class FakeCampusChildrenSource implements CampusChildrenSource {
   FakeCampusChildrenSource({
     this.mode = FakeMode.data,
@@ -47,7 +47,7 @@ class FakeCampusChildrenSource implements CampusChildrenSource {
       'Chồi 1 (CS2)',
       28,
       '5 tuổi',
-      [('Lã Bảo Nhi', RosterTag(RosterTagKind.diet, 'Ăn chay'))],
+      <(String, RosterTag?)>[('Lã Bảo Nhi', null)],
     ),
     ('cs2-la-1', 'Lá 1 (CS2)', 30, '6 tuổi', <(String, RosterTag?)>[]),
     (
@@ -66,10 +66,7 @@ class FakeCampusChildrenSource implements CampusChildrenSource {
       'Chồi 1',
       33,
       '5 tuổi',
-      [
-        ('Vương Thục Anh', RosterTag(RosterTagKind.diet, 'Ăn chay')),
-        ('Hà Minh Quân', RosterTag(RosterTagKind.diet, 'Ăn chay')),
-      ],
+      <(String, RosterTag?)>[('Vương Thục Anh', null), ('Hà Minh Quân', null)],
     ),
     (
       'class-choi-2',
@@ -99,10 +96,7 @@ class FakeCampusChildrenSource implements CampusChildrenSource {
       'Lá 2',
       38,
       '6 tuổi',
-      [
-        ('Phan Đức Mạnh', null),
-        ('Lục Diệu Linh', RosterTag(RosterTagKind.diet, 'Ăn chay')),
-      ],
+      [('Phan Đức Mạnh', null), ('Lục Diệu Linh', null)],
     ),
   ];
 
@@ -165,7 +159,7 @@ class FakeCampusChildrenSource implements CampusChildrenSource {
         ageLabel: kid.ageLabel,
         // Trạng thái trong ngày (nghỉ ốm) không thuộc danh sách cơ sở
         tag: switch (kid.tag?.kind) {
-          RosterTagKind.allergy || RosterTagKind.diet => kid.tag,
+          RosterTagKind.allergy => kid.tag,
           _ => null,
         },
       ),

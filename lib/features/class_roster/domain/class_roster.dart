@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 /// Ghi chú nổi bật của trẻ trong lớp — mã BE trả (dị ứng HLT-06, chế độ ăn, đang nghỉ).
-enum RosterTagKind { allergy, leave, meal, diet }
+enum RosterTagKind { allergy, leave, meal }
 
 @immutable
 class RosterTag {
