@@ -1,4 +1,5 @@
 import 'package:carenest_app/features/account/domain/account_profile.dart';
+import 'package:carenest_app/features/account/domain/app_modes.dart';
 
 /// Dữ liệu giả theo mockup; tên và số điện thoại là giả, không phải người thật.
 class FakeAccountSource implements AccountSource {
@@ -43,6 +44,18 @@ class FakeAccountSource implements AccountSource {
     ),
   };
 
+  /// Cô Hà kiêm phụ huynh (con học lớp khác) ở chế độ phụ huynh — dùng khi xem thử "GV kiêm phụ huynh".
+  static const teacherAsParent = AccountProfile(
+    fullName: 'Trần Thu Hà',
+    phone: '0903 222 111',
+    role: AppRole.parent,
+    contextLabel: 'Con của tôi',
+    contextValue: 'Trần Gia Bảo · Chồi 1',
+  );
+
   @override
-  Future<AccountProfile> loadProfile(AppRole role) async => profiles[role]!;
+  Future<AccountProfile> loadProfile(AppRole role) async =>
+      role == AppRole.parent && AppMode.isTeacherParent
+      ? teacherAsParent
+      : profiles[role]!;
 }
