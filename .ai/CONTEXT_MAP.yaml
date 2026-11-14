@@ -29,7 +29,7 @@ keywords:
   "quan sát|observation|tiêu chí|nhận xét|summary|phát triển|development|đánh giá|bé ngoan|khen thưởng|hoạt động|activity|kế hoạch ngày":
     {app_docs: [docs/features/teacher/README.md, docs/features/parent/README.md], be_module_card: [BE:docs/modules/learning-observation.md]}   # OBS-01..14 chốt 29/10; hoạt động lấy từ kế hoạch ngày (OBS-07, EDU-09) — card education-plan của BE chưa merge nhánh chính BE
   "đón trẻ|pickup|người đón|trả trẻ|về sớm":
-    {app_docs: [docs/features/teacher/README.md, docs/features/parent/README.md], be_module_card: [BE:docs/modules/attendance.md]}   # PCK-01..04 (29/10); ảnh đối chiếu P-33; flow pickup của BE chưa merge nhánh chính BE
+    {app_docs: [docs/features/teacher/README.md, docs/features/parent/README.md], be_module_card: [BE:docs/modules/attendance.md]}   # PCK-01..04 (29/10); ảnh đối chiếu PCK-02 (đóng P-33); flow pickup của BE chưa merge nhánh chính BE
   "cơ sở vật chất|csvc|thiết bị hỏng|sự cố|facility":
     {app_docs: [docs/features/teacher/README.md], be_module_card: []}   # BE FAC REMOVED 29/10 — ngoài scope, không làm màn
   "đăng nhập|login|logout|token|refresh|session|phiên|401|role|permission|phân quyền|403":
@@ -83,6 +83,8 @@ available:
     - docs/features/teacher/README.md
     - docs/features/kitchen/README.md
     - docs/integration/BACKEND_INTEGRATION.md
+    - docs/integration/AUTH_FLOW.md          # một phần: cách đăng nhập, lưu token, quên mật khẩu đã chốt 13–14/11
+    - docs/integration/PUSH_NOTIFICATION.md  # một phần: FCM + danh mục loại thông báo theo role (BE PAR-07, 14/11)
     - docs/knowledge/ISSUE_INDEX.md
     - docs/knowledge/KNOWN_ISSUES.md
     - docs/knowledge/TROUBLESHOOTING.md
@@ -92,8 +94,6 @@ available:
 
 skeleton_only:   # tồn tại nhưng chưa có nội dung chốt — không dùng làm nguồn
   - docs/architecture/STATE_MANAGEMENT.md
-  - docs/integration/AUTH_FLOW.md
-  - docs/integration/PUSH_NOTIFICATION.md
 
 planned:
   - docs/architecture/RELEASE.md          # build/ký app/phát hành — khi có source

@@ -12,6 +12,14 @@
 | Theme | Light theme duy nhất, token ở `lib/core/constants/`, theme ở `lib/core/theme/` | CONFIRMED | `DESIGN.md` §4, §9 |
 | Font | BeVietnamPro đóng gói trong `assets/fonts/` (OFL) | CONFIRMED | user, 2026-10-08 |
 | Verify | `node scripts/verify.mjs` ⇒ `dart format` check + `flutter analyze` + `flutter test` | CONFIRMED | user, 2026-10-08 |
+| State/DI | `flutter_riverpod` | CONFIRMED (chưa thêm vào `pubspec.yaml`) | user, 2026-11-13 |
+| HTTP client · JSON | `dio` · `json_serializable` | CONFIRMED (chưa thêm) | user, 2026-11-13 |
+| Đăng nhập | PKCE qua trang Keycloak (theme CareNest), `flutter_appauth`; không password grant | CONFIRMED (chưa thêm) | user, 2026-11-13 |
+| Lưu token | `flutter_secure_storage` (Keystore/Keychain) | CONFIRMED (chưa thêm) | user, 2026-11-13 |
+| Push | FCM: `firebase_core` + `firebase_messaging` | CONFIRMED (chưa thêm) | user, 2026-11-13 |
+| Nền tảng | Sản phẩm Android + iOS; Capstone chỉ build và kiểm thử Android (iOS cần tài khoản Apple Developer cho APNs) | CONFIRMED | user, 2026-11-14 |
+| Offline | Không hỗ trợ. Mất mạng ⇒ báo lỗi, giữ dữ liệu đã nhập trên màn để gửi lại; không lưu xuống máy, không hàng đợi | CONFIRMED | user, 2026-11-14 |
+| Tài khoản nhiều role | Mở chế độ GV sau đăng nhập; chuyển sang chế độ phụ huynh ở màn Tài khoản; nhớ chế độ lần cuối (`docs/architecture/NAVIGATION.md`) | CONFIRMED | user, 2026-11-14 |
 
 ## Ràng buộc đã biết (dùng được)
 
@@ -20,12 +28,11 @@
 - 1 trường / 2 campus — ngữ cảnh campus/lớp/con là dữ liệu từ BE, không cấu hình tenant.
 - Dữ liệu trẻ, sức khỏe, ảnh, token: lưu tối thiểu, mã hóa, xóa khi logout (`.claude/rules/security-storage.md`).
 - Push không mang dữ liệu nhạy cảm; deep link mở màn hình rồi tải qua API (`docs/integration/PUSH_NOTIFICATION.md`).
-- Thiết bị: Android + iOS (PROPOSED); giáo viên nhập trên điện thoại cá nhân hoặc máy trường — chưa khảo sát.
+- Thiết bị: giáo viên nhập trên điện thoại cá nhân hoặc máy trường — chưa khảo sát.
 
 ## Còn mở (hỏi trước khi chọn)
 
-- [ ] State/DI (DESIGN đề xuất `flutter_riverpod` — PROPOSED)
-- [ ] HTTP client (DESIGN đề xuất `dio` — PROPOSED), secure storage (`flutter_secure_storage` — PROPOSED), push SDK
+- [ ] Thêm dependency đã duyệt 13/11 vào `pubspec.yaml` — làm trong plan nền App (cần mã Jira)
 - [ ] Môi trường (dev/staging/prod), base URL + API prefix (`lib/core/config/env.dart` đọc `--dart-define`)
 - [ ] Integration test/E2E, CI build, phát hành (store/nội bộ)
 - [ ] Crash report/analytics (nếu có) + chính sách dữ liệu

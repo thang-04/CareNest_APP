@@ -11,15 +11,15 @@ Nghiệp vụ, rule, contract nằm ở BE: `BE:docs/INDEX.md` (`BE:` = `../Care
 | context | `context/REPOSITORY_CONTEXT.md` | CareNest, 3 repo, APP sở hữu gì, role mobile, stack | FULL |
 | | `context/CURRENT_STATE.md` | Đã làm / chờ chốt / PENDING ảnh hưởng APP | FULL |
 | architecture | `architecture/NAVIGATION.md` | Cây màn hình theo role, deep link | FULL |
-| | `architecture/MOBILE_ARCHITECTURE.md` | Ràng buộc + mục cần chốt | SKELETON |
+| | `architecture/MOBILE_ARCHITECTURE.md` | Quyết định đã chốt + mục còn mở | FULL |
 | | `architecture/STATE_MANAGEMENT.md` | Nguyên tắc state/cache | SKELETON |
 | features | `features/README.md` | Cách map màn hình → BE; AI trong APP | FULL |
 | | `features/parent/README.md` | Màn hình Parent → BE flow/card/rule | FULL |
 | | `features/teacher/README.md` | Màn hình Teacher → BE | FULL |
 | | `features/kitchen/README.md` | Màn hình Kitchen → BE | FULL |
 | integration | `integration/BACKEND_INTEGRATION.md` | Nguồn contract, envelope, status, retry/offline | FULL |
-| | `integration/AUTH_FLOW.md` | Auth mobile | SKELETON |
-| | `integration/PUSH_NOTIFICATION.md` | Nguyên tắc push + mục cần chốt | SKELETON |
+| | `integration/AUTH_FLOW.md` | Auth mobile: PKCE, token, quên mật khẩu, nhiều role (endpoint chờ BE) | FULL (một phần) |
+| | `integration/PUSH_NOTIFICATION.md` | FCM, danh mục loại thông báo theo role (BE PAR-07), nguyên tắc push | FULL (một phần) |
 | knowledge | `knowledge/ISSUE_INDEX.md` | **Search đầu tiên khi debug** | FULL (chưa có issue) |
 | | `knowledge/incidents/_TEMPLATE.md` | Mẫu incident (có Attempts) | FULL |
 | | `knowledge/KNOWN_ISSUES.md`, `TROUBLESHOOTING.md`, `PATTERNS.md` | Giới hạn, lỗi build/thiết bị, bài học | FULL |
