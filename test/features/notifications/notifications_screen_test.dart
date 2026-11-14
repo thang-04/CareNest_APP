@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/features/account/domain/account_profile.dart';
+import 'package:carenest_app/features/notifications/domain/app_notification.dart';
 import 'package:carenest_app/features/notifications/presentation/screens/notification_detail_screen.dart';
 import 'package:carenest_app/features/notifications/presentation/screens/notifications_screen.dart';
 
@@ -35,7 +36,7 @@ void main() {
 
     await tester.tap(find.text('Chưa đọc (2)'));
     await tester.pump();
-    expect(find.textContaining('Thực đơn tuần'), findsNothing);
+    expect(find.text('Bé Minh Anh đã được đón'), findsNothing);
 
     await tester.tap(find.text('Đánh dấu đã đọc'));
     await tester.pump();
@@ -43,13 +44,43 @@ void main() {
     expect(find.text('Không có thông báo chưa đọc'), findsOneWidget);
   });
 
-  testWidgets('Figma audit: P06 kết quả đo sức khỏe ghi ngày đo 05/10', (
+  testWidgets('Figma audit: P06 kết quả cân đo ghi ngày công bố 05/10', (
     tester,
   ) async {
     usePhoneSize(tester);
     await pumpList(tester);
-    expect(find.text('Kết quả đo sức khỏe tháng 10 đã có'), findsOneWidget);
+    expect(find.text('Kết quả cân đo tháng 10 đã công bố'), findsOneWidget);
     expect(find.text('05/10/2026 · 15:20'), findsOneWidget);
+  });
+
+  testWidgets(
+    'Plan 14/11 (PAR-07): phụ huynh nhận các loại BE gửi; không có thông báo tự chế',
+    (tester) async {
+      usePhoneSize(tester);
+      await pumpList(tester);
+      for (final title in [
+        'Sức khỏe của bé cần lưu ý',
+        'Nhận xét tuần 05/10 – 09/10 của bé',
+        'Bé Minh Anh đã được đón',
+      ]) {
+        expect(find.text(title), findsOneWidget);
+      }
+      expect(find.textContaining('Thực đơn tuần'), findsNothing);
+      expect(find.textContaining('điểm danh: Có mặt'), findsNothing);
+      expect(find.textContaining('huỷ tự động'), findsNothing);
+    },
+  );
+
+  test('Plan 14/11 (PAR-07): loại BE chưa biết ⇒ unknown, không lỗi', () {
+    expect(
+      NotificationType.fromCode('DAILY_HEALTH_NOTED'),
+      NotificationType.dailyHealthNoted,
+    );
+    expect(
+      NotificationType.fromCode('SOMETHING_NEW'),
+      NotificationType.unknown,
+    );
+    expect(NotificationType.fromCode(''), NotificationType.unknown);
   });
 
   testWidgets('P06: mở một thông báo ⇒ trả ID và đánh dấu đã đọc', (
@@ -58,13 +89,13 @@ void main() {
     usePhoneSize(tester);
     String? opened;
     await pumpList(tester, onOpen: (id) => opened = id);
-    await tester.tap(find.text('Bé Minh Anh đã được đánh giá hôm nay'));
+    await tester.tap(find.text('Sức khỏe của bé cần lưu ý'));
     await tester.pump();
     expect(opened, 'p1');
     expect(find.text('Chưa đọc (1)'), findsOneWidget);
   });
 
-  testWidgets('P07 / AC-9: ảnh đính kèm là khối giữ chỗ, không tải ảnh mạng', (
+  testWidgets('P07 (PAR-07): chi tiết không có ảnh, có lối mở màn theo loại', (
     tester,
   ) async {
     usePhoneSize(tester);
@@ -76,9 +107,10 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Bé Nguyễn Minh Anh · Mầm 3A'), findsOneWidget);
-    expect(find.bySemanticsLabel('Ảnh đính kèm'), findsOneWidget);
+    expect(find.bySemanticsLabel('Ảnh đính kèm'), findsNothing);
     expect(find.byType(Image), findsNothing);
-    expect(find.text('Xem đánh giá của bé'), findsOneWidget);
+    expect(find.text('Xem hôm nay của bé'), findsOneWidget);
+    expect(find.textContaining('Sốt'), findsNothing);
   });
 
   testWidgets('P07: ID không có ⇒ báo không tìm thấy', (tester) async {

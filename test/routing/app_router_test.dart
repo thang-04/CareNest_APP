@@ -374,7 +374,7 @@ void main() {
     final router = await pumpRouter(tester, enablePreview: true);
     router.go(RoutePaths.teacherNotifications);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('2 đơn xin nghỉ mới của lớp Mầm 3A'));
+    await tester.tap(find.text('Phụ huynh bé Minh Anh gửi đơn nghỉ 13/10'));
     await tester.pumpAndSettle();
     expect(find.text('Chi tiết thông báo'), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
