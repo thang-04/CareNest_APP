@@ -13,7 +13,8 @@ import 'package:carenest_app/features/notifications/data/fake_notification_sourc
 import 'package:carenest_app/features/notifications/domain/app_notification.dart';
 import 'package:carenest_app/features/notifications/presentation/notification_icons.dart';
 
-/// Chi tiết thông báo — mockup P07. Route chỉ mang ID; nội dung tải lại theo ID.
+/// Chi tiết thông báo — mockup P07. Route chỉ mang ID; nội dung tải lại theo ID. Thông báo BE không có ảnh
+/// hay người gửi; lối mở màn liên quan theo loại (PAR-07).
 class NotificationDetailScreen extends StatelessWidget {
   const NotificationDetailScreen({
     super.key,
@@ -73,7 +74,7 @@ class _DetailBody extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppIconTile(icon: notificationIcon(item.kind), size: 48),
+              AppIconTile(icon: notificationIcon(item.type), size: 48),
               const SizedBox(height: AppSpacing.space4),
               Text(item.title, style: textTheme.titleMedium),
               const SizedBox(height: AppSpacing.space1),
@@ -117,35 +118,14 @@ class _DetailBody extends StatelessWidget {
             ),
           ),
         ],
-        if (item.hasPhoto) ...[
-          const SizedBox(height: AppSpacing.space3),
-          // Ảnh thật chỉ tải qua URL có auth khi có API; bản giả dùng khối giữ chỗ
-          Semantics(
-            label: 'Ảnh đính kèm',
-            excludeSemantics: true,
-            child: AspectRatio(
-              aspectRatio: 4 / 3,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.primarySoft,
-                  borderRadius: BorderRadius.circular(AppRadius.xl),
-                ),
-                child: const Icon(
-                  AppIcons.image,
-                  size: 56,
-                  color: AppColors.primaryBorder,
-                ),
-              ),
-            ),
-          ),
-        ],
-        if (item.actionLabel != null) ...[
+        if (notificationAction(item.type) case final action?) ...[
           const SizedBox(height: AppSpacing.space4),
+          // Deep link theo loại chốt khi nối API (PUSH_NOTIFICATION.md); bản giả báo sắp có
           AppButton(
-            label: item.actionLabel!,
+            label: action,
             variant: AppButtonVariant.secondary,
             expand: true,
-            onPressed: () => openComingSoon(context, item.actionLabel!),
+            onPressed: () => openComingSoon(context, action),
           ),
         ],
       ],

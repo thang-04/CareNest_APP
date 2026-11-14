@@ -185,7 +185,7 @@ class _NotificationCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
-                    notificationIcon(item.kind),
+                    notificationIcon(item.type),
                     size: AppSizes.iconTile,
                     color: unread ? AppColors.primary : AppColors.textMuted,
                   ),
