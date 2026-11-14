@@ -2,7 +2,8 @@ import 'package:carenest_app/features/account/domain/account_profile.dart';
 import 'package:carenest_app/features/notifications/domain/app_notification.dart';
 
 /// Dữ liệu giả theo loại BE `NotificationType` mỗi role nhận (PAR-07); khớp dữ liệu giả các màn khác
-/// (bé Minh Anh, lớp Mầm 3A). Câu chữ mô phỏng nội dung BE soạn, không kèm dữ liệu sức khỏe.
+/// (bé Minh Anh, lớp Mầm 3A). Câu chữ mô phỏng nội dung BE soạn, không kèm dữ liệu sức khỏe — trừ nhận định xu hướng
+/// đã duyệt: BE gửi tổng quan giáo viên đã duyệt (HLT-21), push trên màn khóa vẫn chỉ ghi "Thông tin sức khỏe".
 class FakeNotificationSource implements NotificationSource {
   const FakeNotificationSource();
 
@@ -35,6 +36,16 @@ class FakeNotificationSource implements NotificationSource {
         title: 'Bé Minh Anh đã được đón',
         sentAt: DateTime(2026, 10, 9, 16, 45),
         body: 'Bé đã được trả cho người đón lúc 16:45.',
+        childId: 'child-1',
+        tag: 'Bé Nguyễn Minh Anh · Mầm 3A',
+      ),
+      AppNotification(
+        id: 'p5',
+        type: NotificationType.healthTrendApproved,
+        title: 'Nhận định xu hướng sức khỏe mới',
+        sentAt: DateTime(2026, 10, 8, 10, 15),
+        body:
+            'Trong 6 tháng qua, trẻ phát triển ổn định: cân nặng tăng 0,6 kg, chiều cao tăng 3 cm, các chỉ số trong khoảng chuẩn WHO.',
         childId: 'child-1',
         tag: 'Bé Nguyễn Minh Anh · Mầm 3A',
       ),

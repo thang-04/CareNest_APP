@@ -8,12 +8,13 @@
 - Nội dung push do BE soạn, chung, không dữ liệu nhạy cảm (loại sức khỏe: "Thông tin sức khỏe").
 - Không có: push khi công bố nhận xét tháng/học kỳ/cuối năm (OBS-06; chỉ nhận xét tuần OBS-29) · thông báo của trường do BGH gửi (PAR-05, hoãn — task riêng) · phụ huynh gửi ý kiến (P-32).
 
-Bảng tra màn đích. Cột "BE": `dev` = đã có; `G94-236` = nhánh daily-attendance của BE, chưa vào `dev`. Màn đích ghi "Thông báo" = mở danh sách thông báo; màn đích chi tiết cho loại mới là **đề xuất**, chốt khi làm deep link.
+Bảng tra màn đích. Cột "BE": `dev` = đã có; `G94-236` = nhánh daily-attendance của BE, chưa vào `dev`; `G94-180` = nhánh sức khỏe trẻ của BE, chưa vào `dev`. Màn đích ghi "Thông báo" = mở danh sách thông báo; màn đích chi tiết cho loại mới là **đề xuất**, chốt khi làm deep link.
 
 | Role nhận | Loại (`NotificationType`) | Rule | Màn đích | BE |
 | --- | --- | --- | --- | --- |
 | Phụ huynh | `CHILD_PICKED_UP` | PCK-04 | Bé của tôi › Hôm nay | dev |
 | Phụ huynh | `HEALTH_RESULT_PUBLISHED`, `HEALTH_RESULT_UPDATED` | HLT-11, PAR-03 | Bé của tôi (sức khỏe) — đề xuất | dev |
+| Phụ huynh | `HEALTH_TREND_APPROVED` (GV lớp duyệt nhận định xu hướng; nội dung trong App = tổng quan đã duyệt, push che như loại sức khỏe khác) | HLT-21, PAR-03 | Bé của tôi (sức khỏe) — đề xuất | G94-180 |
 | Phụ huynh | `DAILY_HEALTH_NOTED` (sức khỏe "cần lưu ý") | HLT-14, OBS-31 | Bé của tôi › Hôm nay | G94-236 |
 | Phụ huynh | `WEEKLY_COMMENT_SENT` (nhận xét tuần) | OBS-29 | Bé của tôi › Phát triển | G94-236 |
 | Phụ huynh | `CHILD_PLACED` (con lên lớp/ở lại khi sang năm học) | OBS-31 | Bé của tôi — đề xuất | G94-236 |

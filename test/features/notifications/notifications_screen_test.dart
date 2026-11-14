@@ -81,7 +81,28 @@ void main() {
       NotificationType.unknown,
     );
     expect(NotificationType.fromCode(''), NotificationType.unknown);
+    expect(
+      NotificationType.fromCode('HEALTH_TREND_APPROVED'),
+      NotificationType.healthTrendApproved,
+    );
   });
+
+  testWidgets(
+    'HLT-21: nhận định xu hướng đã duyệt ⇒ chi tiết có tổng quan, mở sức khỏe của bé',
+    (tester) async {
+      usePhoneSize(tester);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildLightTheme(),
+          home: const NotificationDetailScreen(role: AppRole.parent, id: 'p5'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Nhận định xu hướng sức khỏe mới'), findsOneWidget);
+      expect(find.textContaining('Trong 6 tháng qua'), findsOneWidget);
+      expect(find.text('Xem sức khỏe của bé'), findsOneWidget);
+    },
+  );
 
   testWidgets('P06: mở một thông báo ⇒ trả ID và đánh dấu đã đọc', (
     tester,

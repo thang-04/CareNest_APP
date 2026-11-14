@@ -15,6 +15,7 @@ enum NotificationType {
   healthResultPublished('HEALTH_RESULT_PUBLISHED'),
   healthResultUpdated('HEALTH_RESULT_UPDATED'),
   healthCheckOpened('HEALTH_CHECK_OPENED'),
+  healthTrendApproved('HEALTH_TREND_APPROVED'),
   childPlaced('CHILD_PLACED'),
   attendanceDayUnlocked('ATTENDANCE_DAY_UNLOCKED'),
   eduSubmitted('EDU_SUBMITTED'),
