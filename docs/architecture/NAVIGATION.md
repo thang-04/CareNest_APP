@@ -44,7 +44,7 @@ Không có: chat, xem trẻ khác, trẻ đã thôi học (mất quyền xem nga
 | Nhóm màn hình | Nội dung | Ghi chú |
 | --- | --- | --- |
 | Chọn lớp / ngày | Lớp được phân công (AUTH-03) | |
-| Điểm danh + nhiệt độ đầu ngày | Nhập hàng loạt Có mặt / Vắng cả lớp/ngày (có mặt là ăn mọi bữa, không báo ăn riêng — ATT-02; vắng có phép tự động theo đơn nghỉ — ATT-09); nhiệt độ mọi trẻ cùng màn (HLT-07). Sau giờ chốt không nhận trẻ muộn (ATT-03); PHT mở lại có lý do (ATT-08) | Giờ chốt chung HT cấu hình (ATT-06) — BE trả, không hard-code · sức khỏe đầu ngày làm như Web (user 14/11: P-21 danh sách hiện có, P-22 luôn nhận, P-23 Must, thân nhiệt tùy chọn) · ngày nghỉ theo lịch trường khóa điểm danh (P-19, user 14/11) |
+| Điểm danh + sức khỏe đầu ngày | Nhập hàng loạt Có mặt / Vắng cả lớp/ngày (có mặt là ăn mọi bữa, không báo ăn riêng — ATT-02; vắng có phép tự động theo đơn nghỉ — ATT-09); sức khỏe đầu ngày cùng màn như Web: quan sát bắt buộc, thân nhiệt tùy chọn (HLT-07); ngày nghỉ không điểm danh (P-19). Sau giờ chốt không nhận trẻ muộn (ATT-03); PHT mở lại có lý do (ATT-08) | Giờ chốt chung HT cấu hình (ATT-06) — BE trả, không hard-code · sức khỏe đầu ngày làm như Web (user 14/11: P-21 danh sách hiện có, P-22 luôn nhận, P-23 Must, thân nhiệt tùy chọn) · ngày nghỉ theo lịch trường khóa điểm danh (P-19, user 14/11) |
 | Đánh giá hằng ngày | Mọi trẻ có mặt, mặc định bình thường; 7 mặt, 3 mức + nhận xét (OBS-01, OBS-02); cắm cờ bé ngoan (OBS-10); khóa hết ngày (OBS-12) | Tiêu chí [P] P-11 |
 | ~~Báo sự cố CSVC~~ | — | BE FAC REMOVED 29/10; không làm |
 | Báo nghỉ của lớp | Xem thông báo nghỉ của lớp (chỉ xem) | ATT-05; GV không tạo thay phụ huynh |
@@ -120,7 +120,7 @@ Nhãn tab theo mockup `docs/design/figma/` (user 2026-10-13). Chưa có auth ⇒
 | `/parent/leave-notices?child=<id>`, `/parent/leave-notices/new?child=<id>` | Đơn xin nghỉ đã gửi · Xin nghỉ cho bé (P04, P03) | không | Màn con, chỉ mang ID con |
 | `/parent/menu`, `/parent/activities`, `/parent/attendance`, `/parent/child-profile` (đều `?child=<id>`) | Thực đơn tuần · Hoạt động & đánh giá · Điểm danh & bữa ăn · Hồ sơ của bé (P05, P09, P10, P13) | không | ID không thuộc danh sách con ⇒ 404 |
 | `/parent/child?tab=health` | Tab Bé của tôi mở sẵn Sức khỏe | không | Con đang xem là state (`SelectedChild`), không nằm trong route |
-| `/teacher/attendance` | Điểm danh + nhiệt độ đầu ngày lớp đang chọn (T02) | không | Màn con; lớp là state, dữ liệu giả có một lớp. Không báo ăn (ATT-02); bé có đơn nghỉ khóa "Có phép (theo đơn)" (ATT-04, ATT-09) — Figma sửa 13/11 |
+| `/teacher/attendance` | Điểm danh + sức khỏe đầu ngày lớp đang chọn (T02) | không | Màn con; lớp là state, dữ liệu giả có một lớp. Không báo ăn (ATT-02); bé có đơn nghỉ khóa "Có phép (theo đơn)" (ATT-04, ATT-09) — Figma sửa 13/11 |
 | `/teacher/leave-notices`, `/teacher/schedule` | Đơn xin nghỉ của lớp (T03) · Lịch hoạt động (T10) | không | |
 | `/teacher/reviews[/<childId>]`, `/teacher/pickup[/<childId>]`, `/teacher/health[/<childId>]` | Đánh giá hằng ngày (T04, T04.1) · Đón trẻ (T05, T06) · Đo sức khỏe (T07, T07.1) | không | Màn chi tiết mang ID trẻ trên đường dẫn Lệch BE (29/10): đánh giá 3 tiêu chí (OBS-02), đón trẻ theo người đã đăng ký (PCK-03) |
 

@@ -43,7 +43,7 @@ Phó HT chỉ thấy campus được phân công qua StaffAssignment, mỗi ngư
 
 ### Trẻ của cơ sở (V10)
 - BE: card `BE:docs/modules/child.md` · rule AUTH-02, HLT-06 · Endpoint: chưa có
-- Mockup V10: tìm tên, chọn lớp, lọc Dị ứng / Ăn kiêng (số trong chip đếm theo danh sách đang xem), nhãn dị ứng có chữ. Chạm bé ⇒ "Sắp có" (hồ sơ cho Phó HT chưa có mockup). Bản giả 196 trẻ, Mầm 3A dùng chung danh sách lớp của Giáo viên.
+- Mockup V10: tìm tên, chọn lớp, lọc Dị ứng (số trong chip; bỏ lọc Ăn kiêng — HLT-06, user 14/11; đếm theo danh sách đang xem), nhãn dị ứng có chữ. Chạm bé ⇒ "Sắp có" (hồ sơ cho Phó HT chưa có mockup). Bản giả 196 trẻ, Mầm 3A dùng chung danh sách lớp của Giáo viên.
 
 ### Đề xuất khen thưởng (V12) — chỉ xem
 - Từ 13/11: tab Chờ xét / Đã gửi HT / Trả lại chỉ để xem; không có nút "Trả lại (n)", "Gửi HT (n)" (xét trên Web — OBS-14). BE: GET `/assessment/reward-lists`, `/assessment/reward-lists/classes/{classId}`.
