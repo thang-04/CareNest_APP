@@ -9,8 +9,8 @@ Hiệu trưởng có scope toàn trường, mọi campus (`BE:` AUTH-01). Số t
 ### Tổng quan toàn trường (H01)
 - BE: rule AUTH-01, AUTH-08 · Endpoint: chưa có
 - Tỉ lệ đánh giá theo khối là số BE trả. Không có ô "Nghỉ phép nhân sự" (ngoài phạm vi CareNest).
-- Giao diện bố cục D (user chọn 2026-10-14, `docs/design/mobile-redesign-clay.md`): lời chào + trường · ngày → hai thẻ cơ sở cạnh nhau (vòng tỉ lệ có mặt, có mặt/sĩ số, suất đã chốt, trạng thái bếp; chạm mở H08) → "Chờ Hiệu trưởng duyệt (n)" + "Tất cả" sang tab Duyệt → thanh đánh giá theo khối → "Toàn trường" (Trẻ có mặt · Thực đơn tuần · Cơ sở và Phó HT phụ trách). Chữ phóng lớn hoặc thẻ hẹp hơn 136 ⇒ hai thẻ xếp dọc. Thang và tiêu chí đánh giá theo P-11 (PENDING).
-- Thẻ cơ sở cần BE trả số theo từng cơ sở (`CampusSnapshot`: có mặt, sĩ số, tỉ lệ, suất đã chốt, trạng thái bếp bữa trưa) ⇒ **PROPOSED**, đề xuất khi viết endpoint tổng quan HT. APP không tự tính tỉ lệ.
+- Giao diện bố cục D (user chọn 2026-10-14, `docs/design/mobile-redesign-clay.md`): lời chào + trường · ngày → hai thẻ cơ sở cạnh nhau (vòng tỉ lệ có mặt, có mặt/sĩ số, suất đã chốt; chạm mở H08; từ 13/11 bỏ trạng thái bếp — NUT-14 REMOVED) → "Chờ Hiệu trưởng duyệt (n)" + "Tất cả" sang tab Duyệt → thanh đánh giá theo khối → "Toàn trường" (Trẻ có mặt · Thực đơn tuần · Cơ sở và Phó HT phụ trách). Chữ phóng lớn hoặc thẻ hẹp hơn 136 ⇒ hai thẻ xếp dọc. Thang và tiêu chí đánh giá theo P-11 (PENDING).
+- Thẻ cơ sở cần BE trả số theo từng cơ sở (`CampusSnapshot`: có mặt, sĩ số, tỉ lệ, suất đã chốt) ⇒ **PROPOSED**, đề xuất khi viết endpoint tổng quan HT. APP không tự tính tỉ lệ.
 
 ### Chờ xử lý (H02) + Khen thưởng cuối năm (H04) — chỉ xem
 - Từ 13/11: tab "Chờ xử lý" (trước là "Duyệt") liệt kê đợt khen thưởng chờ HT và đã xử lý; H04 chỉ xem danh sách đề xuất và trạng thái — không ô chọn, không "Duyệt (n)", không "Trả về Phó HT" (duyệt trên Web — OBS-14). BE: GET `/assessment/reward-lists`, `/assessment/reward-lists/classes/{classId}`.

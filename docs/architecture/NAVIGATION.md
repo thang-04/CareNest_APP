@@ -19,6 +19,8 @@ App
 
 App cho Parent, Teacher, Kitchen và Ban giám hiệu; **BGH trên App chỉ xem** (`BE:` AUTH-21, ADR-0026, user chốt 13/11 thay câu "BGH chỉ dùng Web" 27/10): không nút duyệt/xác nhận/trả lại/gửi; mọi thao tác làm trên Web. BE chặn lệnh ghi (403 `errorCode` 1301) và chỉ mở các GET của màn BGH. Tổ trưởng chuyên môn là phân công trên tài khoản GV, không phải nhánh role (AUTH-23).
 
+Tài khoản nhiều role (GV kiêm phụ huynh, user chốt 14/11): sau đăng nhập mở nhánh Teacher; màn Tài khoản có nút "Chuyển sang chế độ phụ huynh" (và ngược lại); App nhớ chế độ dùng lần cuối. Chế độ chỉ đổi giao diện — BE vẫn lọc quyền theo token (AUTH-21).
+
 Dùng chung mọi role: Thông báo (danh sách in-app, nếu BE có) · Tài khoản/Đăng xuất · Màn hình lỗi: không có quyền (403) / không tìm thấy (404) / mất mạng.
 
 ## Parent
@@ -30,7 +32,7 @@ Dùng chung mọi role: Thông báo (danh sách in-app, nếu BE có) · Tài kh
 | Bữa ăn | Thực đơn tuần + thực đơn ngày của con; thực đơn ngày có ảnh suất ăn hôm đó do bếp chụp | Chỉ field được phép (PAR-01, PAR-02, NUT-16) |
 | Sức khỏe | Số đo + trend đã **công bố**; diễn giải chỉ khi đã APPROVED | Không hiển thị AI DRAFT |
 | Phát triển & hoạt động | Đánh giá ngày sau khi GV lưu (OBS-13); nhận xét định kỳ mọi kỳ (OBS-06); phiếu bé ngoan, khen thưởng (OBS-10, OBS-14); tên hoạt động trong ngày từ kế hoạch ngày (EDU-09) | Dữ liệu có công bố chỉ hiện sau công bố (PAR-03) |
-| Báo nghỉ | Gửi (ngày bắt đầu–kết thúc + lý do) / hủy / xem thông báo nghỉ của con (`leave:create`); không có bước duyệt | ATT-05; `SUBMITTED → CANCELLED`; con có đơn vẫn đến [P] P-20 |
+| Báo nghỉ | Gửi (ngày bắt đầu–kết thúc + lý do) / hủy / xem thông báo nghỉ của con (`leave:create`); không có bước duyệt | ATT-05; `SUBMITTED → CANCELLED`; con có đơn vẫn đến ⇒ phụ huynh hủy đơn trước giờ chốt (ATT-04, đóng P-20); đơn nhiều ngày hủy phần còn lại (user 14/11) |
 | Đón con | Ai đã đón con, giờ đón; thông báo khi con được đón | PCK-04; không đăng ký trước người đón hộ (PCK-03) |
 | Thông báo của trường | BGH gửi, push + trong App | PAR-05; không có trạng thái đã đọc |
 | Tài khoản | Sửa thông tin liên lạc của mình; thông tin trẻ do trường sửa | CHD-05; tên đăng nhập = SĐT (AUTH-18) |
@@ -42,13 +44,13 @@ Không có: chat, xem trẻ khác, trẻ đã thôi học (mất quyền xem nga
 | Nhóm màn hình | Nội dung | Ghi chú |
 | --- | --- | --- |
 | Chọn lớp / ngày | Lớp được phân công (AUTH-03) | |
-| Điểm danh + nhiệt độ đầu ngày | Nhập hàng loạt Có mặt / Vắng cả lớp/ngày (có mặt là ăn mọi bữa, không báo ăn riêng — ATT-02; vắng có phép tự động theo đơn nghỉ — ATT-09); nhiệt độ mọi trẻ cùng màn (HLT-07). Sau giờ chốt không nhận trẻ muộn (ATT-03); PHT mở lại có lý do (ATT-08) | Giờ chốt chung HT cấu hình (ATT-06) — BE trả, không hard-code · triệu chứng/không nhận/ưu tiên [P] P-21, P-22, P-23 |
+| Điểm danh + nhiệt độ đầu ngày | Nhập hàng loạt Có mặt / Vắng cả lớp/ngày (có mặt là ăn mọi bữa, không báo ăn riêng — ATT-02; vắng có phép tự động theo đơn nghỉ — ATT-09); nhiệt độ mọi trẻ cùng màn (HLT-07). Sau giờ chốt không nhận trẻ muộn (ATT-03); PHT mở lại có lý do (ATT-08) | Giờ chốt chung HT cấu hình (ATT-06) — BE trả, không hard-code · sức khỏe đầu ngày làm như Web (user 14/11: P-21 danh sách hiện có, P-22 luôn nhận, P-23 Must, thân nhiệt tùy chọn) · ngày nghỉ theo lịch trường khóa điểm danh (P-19, user 14/11) |
 | Đánh giá hằng ngày | Mọi trẻ có mặt, mặc định bình thường; 7 mặt, 3 mức + nhận xét (OBS-01, OBS-02); cắm cờ bé ngoan (OBS-10); khóa hết ngày (OBS-12) | Tiêu chí [P] P-11 |
 | ~~Báo sự cố CSVC~~ | — | BE FAC REMOVED 29/10; không làm |
 | Báo nghỉ của lớp | Xem thông báo nghỉ của lớp (chỉ xem) | ATT-05; GV không tạo thay phụ huynh |
-| Đón trẻ (xác nhận trả trẻ) | Danh sách phụ huynh/người giám hộ; người lạ ⇒ gọi phụ huynh, ghi lý do; lưu người đón, giờ đón, về sớm | PCK-02, PCK-04, ATT-10; ảnh đối chiếu [P] P-33 |
+| Đón trẻ (xác nhận trả trẻ) | Danh sách phụ huynh/người giám hộ; người lạ ⇒ gọi phụ huynh, ghi lý do; lưu người đón, giờ đón, về sớm | PCK-02, PCK-04, ATT-10; ảnh đối chiếu theo PCK-02 (đóng P-33) |
 | Nhận xét định kỳ | Sửa nháp, GV xác nhận (không có bước BGH duyệt) | OBS-05 · **[?]** nếu làm trên mobile |
-| Cân đo, sức khỏe trong ngày | Cân đo lớp mình, công bố (HLT-09, HLT-11), chu kỳ BE cấu hình (HLT-01); ghi triệu chứng, xử trí trong ngày (HLT-14) | Phân loại WHO do BE trả, GV chỉnh kèm lý do (HLT-10) |
+| Cân đo, sức khỏe trong ngày | Cân đo lớp mình, công bố (HLT-09, HLT-11), chu kỳ BE cấu hình (HLT-01); ghi triệu chứng, xử trí trong ngày (HLT-14) | Phân loại do BE tính, GV không chỉnh tay mức BMI; sửa phiếu cân đo khi kỳ còn mở (P-40, user 14/11) |
 
 ## Kitchen
 
@@ -61,10 +63,10 @@ Bếp giữ màn tối thiểu (AUTH-21, user chốt 29/10): số suất theo l�
 | Định lượng thực phẩm | Kế hoạch định lượng, tách Fresh / Stored | Chỉ hiển thị BE tính |
 | Dị ứng cần cho nấu | Số suất dị ứng/thay thế theo món và lớp, không tên trẻ | AUTH-05, NUT-23 |
 | Thay đổi số suất | Không có adjustment riêng: PHT mở lại điểm danh rồi xác nhận lại; bếp thấy số đã xác nhận lại | ATT-08, NUT-03, NUT-04 |
-| Ảnh mẫu bữa | Chụp ảnh mẫu mỗi bữa (phụ huynh xem trong thực đơn ngày) | NUT-16 · chưa có màn |
-| Sổ lưu mẫu | Ghi lưu mẫu thức ăn mỗi bữa | NUT-21 · mẫu sổ [P] P-26 · chưa có màn |
+| Ảnh mẫu bữa | Chụp mẫu suất thường + suất thay thế mỗi bữa trong khung giờ (phụ huynh xem trong thực đơn ngày) | NUT-16, PAR-01 · dữ liệu giả, chưa có camera |
+| Sổ lưu mẫu | Ghi lưu mẫu thức ăn mỗi bữa: món, khối lượng · dụng cụ chứa, nhiệt độ bảo quản, giờ lấy mẫu; PHT dinh dưỡng duyệt | NUT-21 · dữ liệu giả |
 
-Không có trên App bếp (BE 28/10): trạng thái nấu (NUT-14 REMOVED), bàn giao suất (NUT-15 REMOVED), nhận nguyên liệu / kho / phiếu (PHT ghi trên Web — NUT-11, NUT-12), báo thiếu (Zalo/điện thoại — NUT-22). Lệch BE (28/10): route K05–K07 vẫn còn ở bản debug — cần sửa khi tích hợp.
+Không có trên App bếp (BE 28/10): trạng thái nấu (NUT-14 REMOVED), bàn giao suất (NUT-15 REMOVED), nhận nguyên liệu / kho / phiếu (PHT ghi trên Web — NUT-11, NUT-12), báo thiếu (Zalo/điện thoại — NUT-22). Route K05–K07 đã gỡ 13/11 (code `ingredient_receipt`, `cooking_status` giữ, không có lối vào).
 
 ## Vice Principal (Phó Hiệu trưởng)
 
@@ -104,12 +106,12 @@ Nhãn tab theo mockup `docs/design/figma/` (user 2026-10-13). Chưa có auth ⇒
 | Route | Màn | Release | Ghi chú |
 | --- | --- | --- | --- |
 | `/login` (`/` chuyển về đây) | Đăng nhập | có | Chưa nối AUTH_CONTRACT; debug có link "Xem thử theo vai trò" |
-| `/forgot-password`, `/forgot-password/otp`, `/forgot-password/new-password` | Quên mật khẩu → Xác thực OTP → Đặt mật khẩu mới | có | Chưa nối AUTH_CONTRACT: release báo "chưa kết nối", debug đi hết luồng bằng dữ liệu giả. Phụ huynh nhận OTP qua SMS (BE AUTH-19, user chốt 13/11; BE chưa có API) |
+| `/forgot-password`, `/forgot-password/otp`, `/forgot-password/new-password` | Quên mật khẩu → Xác thực OTP → Đặt mật khẩu mới | có | Chưa nối API: release báo "chưa kết nối", debug đi hết luồng bằng dữ liệu giả. Phụ huynh, GV, bếp nhận OTP qua SMS (BE AUTH-27); API ở nhánh BE `feature/G94-87-BE-FEAT-0-app-rules-sms-reset` — `docs/integration/AUTH_FLOW.md` |
 | `/preview` | Xem thử theo vai trò | không | Chỉ debug; không phải chọn role khi đăng nhập |
 | `/parent`, `/parent/child`, `/parent/notifications`, `/parent/account` | Tab Phụ huynh: Trang chủ · Bé của tôi · Thông báo · Tài khoản | không | Tab chưa làm hiện "Sắp có" |
 | `/teacher`, `/teacher/class`, `/teacher/notifications`, `/teacher/account` | Tab Giáo viên: Trang chủ (T01) · Lớp học (T09) · Thông báo · Tài khoản | không | |
 | `/kitchen`, `/kitchen/menu`, `/kitchen/notifications`, `/kitchen/account` | Tab Bếp: Trang chủ (K01) · Thực đơn (K02) · Thông báo · Tài khoản | không | |
-| `/kitchen/meals`, `/kitchen/quantities`, `/kitchen/receipts`, `/kitchen/receipts/shortage`, `/kitchen/cooking` | Suất ăn đã chốt (K03) · Định lượng (K04) · Nhận nguyên liệu (K05) · Báo thiếu (K06) · Trạng thái nấu (K07) | không | Lệch BE (28/10): K05 nhận hàng do PHT ghi trên Web (NUT-11, NUT-12), K06 báo thiếu qua Zalo (NUT-22), K07 NUT-14 REMOVED — cần sửa khi tích hợp |
+| `/kitchen/meals`, `/kitchen/quantities`, `/kitchen/meal-samples`, `/kitchen/sample-log` | Suất ăn đã chốt (K03) · Định lượng (K04) · Ảnh mẫu bữa · Sổ lưu mẫu | không | Theo bản sửa Figma 13/11: K04 không phiếu xuất kho (NUT-11); ảnh mẫu NUT-16, sổ lưu mẫu NUT-21. K05–K07 (`/kitchen/receipts`, `/kitchen/receipts/shortage`, `/kitchen/cooking`) đã gỡ (NUT-11, NUT-12, NUT-22, NUT-14 REMOVED) |
 | `/vice-principal`, `/vice-principal/approvals`, `/vice-principal/notifications`, `/vice-principal/account` | Tab Phó HT: Trang chủ (V01) · Chờ xử lý (V02, trước là "Duyệt") · Thông báo · Tài khoản | không | Chỉ xem (AUTH-21, BE ADR-0026) — áp cho mọi route `/vice-principal/*`, `/principal/*`: không có nút ghi (plan `docs/plans/active/2026-11-13-bgh-view-only.md`) |
 | `/vice-principal/approvals/rewards` | Đề xuất khen thưởng (V12, chỉ xem) | không | OBS-10, OBS-14 (chốt 29/10). V03 điều chỉnh suất đã gỡ 13/11 (NUT-04) |
 | `/vice-principal/meal-confirm`, `/vice-principal/menu`, `/vice-principal/menu/nutrition?group=<id>&day=<yyyy-mm-dd>`, `/vice-principal/children` | Số suất hôm nay (V04, chỉ xem) · Thực đơn tuần (V06) · Cân đối dinh dưỡng (V07) · Trẻ của cơ sở (V10) | không | V04 không có nút xác nhận (NUT-02: trên Web); V05 trạng thái bếp đã gỡ 13/11 (NUT-14 REMOVED); nhóm tuổi + ngày là ngữ cảnh ở query |
@@ -122,12 +124,12 @@ Nhãn tab theo mockup `docs/design/figma/` (user 2026-10-13). Chưa có auth ⇒
 | `/teacher/leave-notices`, `/teacher/schedule` | Đơn xin nghỉ của lớp (T03) · Lịch hoạt động (T10) | không | |
 | `/teacher/reviews[/<childId>]`, `/teacher/pickup[/<childId>]`, `/teacher/health[/<childId>]` | Đánh giá hằng ngày (T04, T04.1) · Đón trẻ (T05, T06) · Đo sức khỏe (T07, T07.1) | không | Màn chi tiết mang ID trẻ trên đường dẫn Lệch BE (29/10): đánh giá 3 tiêu chí (OBS-02), đón trẻ theo người đã đăng ký (PCK-03) |
 
-Mọi vai trò dùng chung tab Thông báo (`<tab>/:id` mở chi tiết) và Tài khoản (`<tab>/profile` Thông tin cá nhân, `<tab>/password` Đổi mật khẩu); màn con mở trên navigator gốc nên ẩn thanh đáy. Đăng xuất (chưa có phiên thật) về `/login`.
+Mọi vai trò dùng chung tab Thông báo (`<tab>/:id` mở chi tiết) và Tài khoản (`<tab>/profile` Thông tin cá nhân, `<tab>/password` Đổi mật khẩu); màn con mở trên navigator gốc nên ẩn thanh đáy. Đăng xuất hỏi lại bằng hộp xác nhận (P19: "Ở lại" / "Đăng xuất"), xác nhận xong (chưa có phiên thật) về `/login`.
 
 Đích thanh đáy khai báo một lần ở `lib/routing/navigation_destinations.dart`.
 
 ## Deep link (từ push)
 
-Đích PROPOSED: tổng quan con (Parent) · chi tiết cập nhật mới (Parent) · suất ăn đã xác nhận / xác nhận lại (Kitchen) · trạng thái sự cố (Teacher). Payload chỉ có loại + ID; mở màn hình rồi tải qua API (`docs/integration/PUSH_NOTIFICATION.md`).
+Đích theo loại thông báo (`NotificationType`): bảng ở `docs/integration/PUSH_NOTIFICATION.md`; loại chưa có màn đích riêng mở danh sách Thông báo. Payload chỉ có loại + ID; mở màn hình rồi tải qua API (`docs/integration/PUSH_NOTIFICATION.md`).
 
 Thêm/đổi màn hình ⇒ cập nhật file này + feature doc của role.
