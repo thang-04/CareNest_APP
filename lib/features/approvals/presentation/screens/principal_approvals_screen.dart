@@ -2,19 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/constants/app_icons.dart';
-import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
+import 'package:carenest_app/core/widgets/app_segmented.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/core/widgets/app_task_card.dart';
+import 'package:carenest_app/features/approvals/presentation/widgets/approvals_header.dart';
 import 'package:carenest_app/features/reward_proposals/data/fake_principal_reward_source.dart';
 import 'package:carenest_app/features/reward_proposals/domain/reward_batch.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
-/// Hiệu trưởng · tab Chờ xử lý — H02, chỉ xem (AUTH-21, BE ADR-0026): đợt khen thưởng Phó HT đã xét chờ HT
-/// duyệt trên Web (OBS-14) và mục đã xử lý gần đây. Không có nghỉ phép nhân sự (ngoài phạm vi CareNest, plan K5).
+enum _Filter { all, rewards }
+
+/// Hiệu trưởng · tab Chờ xử lý — Figma HT 02, chỉ xem (AUTH-21, BE ADR-0026): đợt khen thưởng Phó HT đã xét
+/// chờ HT duyệt trên Web (OBS-14) và mục đã xử lý gần đây. Không có nghỉ phép nhân sự (ngoài phạm vi CareNest, plan K5).
 class PrincipalApprovalsScreen extends StatefulWidget {
   const PrincipalApprovalsScreen({super.key, this.source});
 
@@ -29,6 +32,8 @@ class _PrincipalApprovalsScreenState extends State<PrincipalApprovalsScreen> {
   late final PrincipalRewardSource _source =
       widget.source ?? FakePrincipalRewardSource.shared;
   late Future<List<RewardBatch>> _batches = _source.loadBatches();
+  // Hiện chỉ có một loại việc (khen thưởng); lọc giữ như Figma để thêm loại sau không đổi bố cục
+  _Filter _filter = _Filter.all;
 
   // Quay lại từ màn xem ⇒ tải lại theo trạng thái BE mới nhất
   Future<void> _open(String id) async {
@@ -39,93 +44,91 @@ class _PrincipalApprovalsScreenState extends State<PrincipalApprovalsScreen> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return SafeArea(
-      bottom: false,
-      child: FutureBuilder<List<RewardBatch>>(
-        future: _batches,
-        builder: (context, snapshot) {
-          final batches = snapshot.data;
-          final pending = batches
-              ?.where((batch) => batch.status == RewardBatchStatus.pending)
-              .toList();
-          final done = batches
-              ?.where((batch) => batch.status != RewardBatchStatus.pending)
-              .toList();
-          return ListView(
-            padding: const EdgeInsets.all(AppSpacing.pagePadding),
-            children: [
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.end,
-                spacing: AppSpacing.space2,
+    return FutureBuilder<List<RewardBatch>>(
+      future: _batches,
+      builder: (context, snapshot) {
+        final batches = snapshot.data;
+        final pending = batches
+            ?.where((batch) => batch.status == RewardBatchStatus.pending)
+            .toList();
+        final done = batches
+            ?.where((batch) => batch.status != RewardBatchStatus.pending)
+            .toList();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ApprovalsHeader(
+              count: pending?.length,
+              homePath: RoutePaths.principalHome,
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(AppSpacing.pagePadding),
                 children: [
-                  Semantics(
-                    header: true,
-                    child: Text('Chờ xử lý', style: textTheme.headlineSmall),
-                  ),
-                  if (pending != null && pending.isNotEmpty)
-                    Text(
-                      '${pending.length} việc',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.space4),
-              if (snapshot.hasError)
-                AppErrorState(
-                  title: 'Chưa tải được việc chờ xử lý',
-                  message: 'Kiểm tra kết nối mạng rồi thử lại.',
-                  onRetry: () =>
-                      setState(() => _batches = _source.loadBatches()),
-                )
-              else if (pending == null || done == null)
-                const AppSkeletonList(rows: 3)
-              else ...[
-                if (pending.isEmpty)
-                  const AppEmptyState(
-                    icon: AppIcons.checkCircle,
-                    title: 'Không có việc chờ xử lý',
-                    message: 'Đề xuất Phó HT gửi lên sẽ hiện ở đây.',
-                  )
-                else
-                  for (final (i, batch) in pending.indexed) ...[
-                    AppTaskCard(
-                      icon: AppIcons.trophy,
-                      title: '${batch.title} · ${batch.proposals.length} bé',
-                      subtitle:
-                          '${batch.campusName} · Phó HT đã xét · duyệt trên Web',
-                      highlighted: i == 0,
-                      trailing: const AppStatusBadge(
-                        label: 'Khen thưởng',
-                        tone: AppStatusTone.blue,
-                      ),
-                      onTap: () => _open(batch.id),
-                    ),
-                    const SizedBox(height: AppSpacing.space2),
-                  ],
-                if (done.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.space4),
-                  Semantics(
-                    header: true,
-                    child: Text(
-                      'Đã xử lý gần đây',
-                      style: textTheme.titleSmall,
-                    ),
+                  AppSegmented<_Filter>(
+                    segments: const [
+                      (_Filter.all, 'Tất cả'),
+                      (_Filter.rewards, 'Khen thưởng'),
+                    ],
+                    selected: _filter,
+                    onChanged: (value) => setState(() => _filter = value),
                   ),
                   const SizedBox(height: AppSpacing.space3),
-                  for (final batch in done) ...[
-                    _DoneCard(batch: batch),
-                    const SizedBox(height: AppSpacing.space2),
+                  if (snapshot.hasError)
+                    AppErrorState(
+                      title: 'Chưa tải được việc chờ xử lý',
+                      message: 'Kiểm tra kết nối mạng rồi thử lại.',
+                      onRetry: () =>
+                          setState(() => _batches = _source.loadBatches()),
+                    )
+                  else if (pending == null || done == null)
+                    const AppSkeletonList(rows: 3)
+                  else ...[
+                    if (pending.isEmpty)
+                      const AppEmptyState(
+                        icon: AppIcons.checkCircle,
+                        title: 'Không có việc chờ xử lý',
+                        message: 'Đề xuất Phó HT gửi lên sẽ hiện ở đây.',
+                      )
+                    else
+                      for (final (i, batch) in pending.indexed) ...[
+                        AppTaskCard(
+                          icon: AppIcons.trophy,
+                          title:
+                              '${batch.title} · ${batch.proposals.length} bé',
+                          subtitle:
+                              '${batch.campusName} · Phó HT đã xét · duyệt trên Web',
+                          highlighted: i == 0,
+                          trailing: const AppStatusBadge(
+                            label: 'Khen thưởng',
+                            tone: AppStatusTone.blue,
+                          ),
+                          onTap: () => _open(batch.id),
+                        ),
+                        const SizedBox(height: AppSpacing.space2),
+                      ],
+                    if (done.isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.space3),
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          'Đã xử lý gần đây',
+                          style: textTheme.titleSmall,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.space2),
+                      for (final batch in done) ...[
+                        _DoneCard(batch: batch),
+                        const SizedBox(height: AppSpacing.space2),
+                      ],
+                    ],
                   ],
                 ],
-              ],
-            ],
-          );
-        },
-      ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

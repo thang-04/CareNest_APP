@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/motion.dart';
-import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 
-/// Chip lọc/chọn viên thuốc cao 36, vùng chạm 48; Clay: không viền, gờ đáy; đang chọn nền `primarySoft` chữ `onBrand`.
+/// Chip lọc/chọn viên thuốc cao 36, vùng chạm 48; phẳng có viền; đang chọn nền `brand` chữ trắng (Figma PH 06, GV 03).
 class AppFilterChip extends StatelessWidget {
   const AppFilterChip({
     super.key,
@@ -43,9 +42,11 @@ class AppFilterChip extends StatelessWidget {
             ),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
             decoration: BoxDecoration(
-              color: selected ? AppColors.primarySoft : AppColors.surface,
+              color: selected ? AppColors.brand : AppColors.surface,
               borderRadius: BorderRadius.circular(AppRadius.pill),
-              boxShadow: AppShadows.buttonSecondary,
+              border: Border.all(
+                color: selected ? AppColors.brand : AppColors.borderStrong,
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

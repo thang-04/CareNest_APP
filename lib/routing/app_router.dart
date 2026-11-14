@@ -35,11 +35,13 @@ import 'package:carenest_app/features/kitchen_meals/presentation/screens/kitchen
 import 'package:carenest_app/features/kitchen_sample_log/presentation/screens/sample_log_screen.dart';
 import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_form_screen.dart';
 import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_list_screen.dart';
+import 'package:carenest_app/features/meal_count_confirm/data/fake_meal_count_confirm_source.dart';
 import 'package:carenest_app/features/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
 import 'package:carenest_app/features/my_child/presentation/screens/child_activities_screen.dart';
 import 'package:carenest_app/features/my_child/presentation/screens/child_attendance_screen.dart';
 import 'package:carenest_app/features/my_child/presentation/screens/child_profile_screen.dart';
 import 'package:carenest_app/features/my_child/presentation/screens/my_child_screen.dart';
+import 'package:carenest_app/features/notifications/data/fake_notification_source.dart';
 import 'package:carenest_app/features/notifications/presentation/screens/notification_detail_screen.dart';
 import 'package:carenest_app/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:carenest_app/features/nutrition_balance/presentation/screens/nutrition_balance_screen.dart';
@@ -51,6 +53,10 @@ import 'package:carenest_app/features/parent_menu/presentation/screens/weekly_me
 import 'package:carenest_app/features/pickup/presentation/screens/pickup_list_screen.dart';
 import 'package:carenest_app/features/pickup/presentation/screens/pickup_verify_screen.dart';
 import 'package:carenest_app/features/principal_overview/presentation/screens/principal_overview_screen.dart';
+import 'package:carenest_app/features/reward_proposals/data/fake_principal_reward_source.dart';
+import 'package:carenest_app/features/reward_proposals/data/fake_reward_proposal_source.dart';
+import 'package:carenest_app/features/reward_proposals/domain/reward_batch.dart';
+import 'package:carenest_app/features/reward_proposals/domain/reward_proposal.dart';
 import 'package:carenest_app/features/reward_proposals/presentation/screens/reward_batch_screen.dart';
 import 'package:carenest_app/features/reward_proposals/presentation/screens/reward_proposals_screen.dart';
 import 'package:carenest_app/features/school_children/presentation/screens/school_children_screen.dart';
@@ -410,6 +416,41 @@ String _maskPhone(String phone) {
   return '${digits.substring(0, 3)}$hidden${digits.substring(digits.length - 3)}';
 }
 
+/// Số trên tab theo Figma: GV và bếp ở tab Thông báo (GV 01, Bếp 01); PHT/HT ở tab Chờ xử lý (PHT 02, HT 01);
+/// phụ huynh xem số chưa đọc ở chuông đầu màn. Tải một lần mỗi vai trò để thanh đáy không nháy khi đổi tab.
+// TODO(Giáp): lấy số chưa đọc và số việc chờ từ API khi nối BE; bản giả đếm từ dữ liệu giả.
+final _tabBadges = <AppRole, Future<Map<NavTab, int>>>{};
+
+Future<Map<NavTab, int>> _loadTabBadges(AppRole role) async {
+  switch (role) {
+    case AppRole.teacher || AppRole.kitchen:
+      return {
+        NavTab.notifications: FakeNotificationSource.byRole[role]!
+            .where((item) => item.unread)
+            .length,
+      };
+    case AppRole.vicePrincipal:
+      // Cùng cách đếm việc của màn Chờ xử lý: sổ suất chưa xác nhận + đợt khen thưởng còn chờ
+      final meals = await FakeMealCountConfirmSource.shared.loadToday();
+      final rewards = await FakeRewardProposalSource.shared.load();
+      final pendingRewards = rewards.any(
+        (item) => item.stage == RewardStage.pending,
+      );
+      return {
+        NavTab.primary: (meals.confirmed ? 0 : 1) + (pendingRewards ? 1 : 0),
+      };
+    case AppRole.principal:
+      final batches = await FakePrincipalRewardSource.shared.loadBatches();
+      return {
+        NavTab.primary: batches
+            .where((batch) => batch.status == RewardBatchStatus.pending)
+            .length,
+      };
+    case AppRole.parent:
+      return const {};
+  }
+}
+
 /// Một nhánh tab cho mỗi đích; Thông báo và Tài khoản dùng chung mọi vai trò,
 /// đích chưa có màn thì hiện "Sắp có". Màn con mở trên navigator gốc (ẩn thanh đáy).
 StatefulShellRoute _roleShell(
@@ -420,7 +461,14 @@ StatefulShellRoute _roleShell(
 ) {
   return StatefulShellRoute.indexedStack(
     builder: (context, state, navigationShell) =>
-        AppShell(navigationShell: navigationShell, destinations: destinations),
+        FutureBuilder<Map<NavTab, int>>(
+          future: _tabBadges.putIfAbsent(role, () => _loadTabBadges(role)),
+          builder: (context, snapshot) => AppShell(
+            navigationShell: navigationShell,
+            destinations: destinations,
+            badges: snapshot.data ?? const {},
+          ),
+        ),
     branches: [
       for (final destination in destinations)
         StatefulShellBranch(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
+import 'package:carenest_app/core/widgets/app_text_field.dart';
 import 'package:carenest_app/features/leave_notice/data/fake_leave_notice_source.dart';
 import 'package:carenest_app/features/leave_notice/domain/leave_notice.dart';
 import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_form_screen.dart';
@@ -225,12 +226,12 @@ void main() {
       FakeLeaveNoticeSource(delay: Duration.zero),
       onSubmitted: () => submitted = true,
     );
-    await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Tư, 14/10/2026')));
-    await tester.pump();
+    await tester.tap(find.widgetWithText(AppDateField, 'Đến ngày *'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Tháng sau'));
     await tester.pump();
     await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Sáu, 13/11/2026')));
-    await tester.pump();
+    await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.byType(TextField),
       200,
@@ -272,37 +273,50 @@ void main() {
     expect(notices.first.canCancel, isTrue);
   });
 
-  testWidgets('Bố cục D: chạm ngày đầu rồi ngày cuối ⇒ chọn khoảng', (
+  testWidgets('Figma PH03: Từ ngày / Đến ngày mở lịch chọn khoảng', (
     tester,
   ) async {
     await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
+    expect(find.text('Bé Nguyễn Minh Anh'), findsOneWidget);
+    expect(find.text('Lớp Mầm 3A'), findsOneWidget);
+    await tester.tap(find.widgetWithText(AppDateField, 'Từ ngày *'));
+    await tester.pumpAndSettle();
     await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Tư, 14/10/2026')));
-    await tester.pump();
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(AppDateField, 'Đến ngày *'));
+    await tester.pumpAndSettle();
     await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Sáu, 16/10/2026')));
-    await tester.pump();
-    expect(find.text('Nghỉ từ 14/10 đến 16/10/2026'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text('14/10/2026'), findsOneWidget);
+    expect(find.text('16/10/2026'), findsOneWidget);
   });
 
-  testWidgets('Bố cục D: ngày đã qua không chọn được', (tester) async {
+  testWidgets('Figma PH03: ngày đã qua không chọn được', (tester) async {
     await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
+    await tester.tap(find.widgetWithText(AppDateField, 'Từ ngày *'));
+    await tester.pumpAndSettle();
     await tester.tap(
       find.bySemanticsLabel(RegExp(r'^Thứ Sáu, 09/10/2026')),
       warnIfMissed: false,
     );
-    await tester.pump();
-    expect(find.text('Nghỉ ngày 13/10/2026'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text('Chọn ngày bắt đầu nghỉ'), findsOneWidget);
+    expect(find.text('13/10/2026'), findsNWidgets(2));
   });
 
-  testWidgets('Bố cục D: ngày đã có đơn nghỉ được đánh dấu có chữ', (
-    tester,
-  ) async {
-    await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
-    expect(
-      find.bySemanticsLabel('Thứ Ba, 13/10/2026, Đã báo nghỉ'),
-      findsOneWidget,
-    );
-    expect(find.text('Ngày đã báo nghỉ'), findsOneWidget);
-  });
+  testWidgets(
+    'Figma PH03: lịch chọn ngày đánh dấu ngày đã có đơn nghỉ có chữ',
+    (tester) async {
+      await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
+      await tester.tap(find.widgetWithText(AppDateField, 'Từ ngày *'));
+      await tester.pumpAndSettle();
+      expect(
+        find.bySemanticsLabel('Thứ Ba, 13/10/2026, Đã báo nghỉ'),
+        findsOneWidget,
+      );
+      expect(find.text('Ngày đã báo nghỉ'), findsOneWidget);
+    },
+  );
 
   testWidgets('AC-10: danh sách và form chữ 2.0 không tràn', (tester) async {
     await pumpList(
@@ -316,6 +330,10 @@ void main() {
       FakeLeaveNoticeSource(delay: Duration.zero),
       textScale: 2,
     );
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.widgetWithText(AppDateField, 'Từ ngày *'));
+    await tester.pumpAndSettle();
+    expect(find.text('Chọn ngày bắt đầu nghỉ'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

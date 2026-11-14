@@ -103,7 +103,10 @@ class _Body extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final status = AppStatusColors.of(context);
     final success = status.feedbackOf(AppFeedback.success);
-    final muted = textTheme.labelMedium?.copyWith(color: AppColors.textMuted);
+    final muted = textTheme.labelMedium?.copyWith(
+      color: AppColors.textMuted,
+      fontWeight: FontWeight.w400,
+    );
     final number = textTheme.titleSmall?.copyWith(
       fontFeatures: AppTextStyles.tabularFigures,
     );
@@ -243,7 +246,11 @@ class _Body extends StatelessWidget {
         ),
         if (data.warning case final warning?) ...[
           const SizedBox(height: AppSpacing.space4),
-          AppBanner(kind: AppBannerKind.warning, message: warning),
+          AppBanner(
+            kind: AppBannerKind.warning,
+            icon: AppIcons.info,
+            message: warning,
+          ),
         ],
       ],
     );

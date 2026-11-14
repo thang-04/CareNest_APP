@@ -5,21 +5,20 @@ import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
-import 'package:carenest_app/core/theme/app_text_styles.dart';
-import 'package:carenest_app/core/utils/date_labels.dart';
-import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
+import 'package:carenest_app/core/widgets/app_hero_header.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/core/widgets/app_task_card.dart';
 import 'package:carenest_app/features/vice_principal_home/data/fake_campus_today_source.dart';
 import 'package:carenest_app/features/vice_principal_home/domain/campus_today.dart';
+import 'package:carenest_app/features/vice_principal_home/presentation/widgets/stat_strip.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
-/// Phó HT · Trang chủ cơ sở (bố cục F): mốc giờ buổi sáng → chờ xử lý → theo dõi khác.
+/// Phó HT · Trang chủ cơ sở — Figma PHT 01 (chỉ xem): dải chào + thẻ cơ sở, dải số hôm nay, "Theo dõi hôm nay".
 /// Chỉ xem (AUTH-21, BE ADR-0026): mọi xử lý làm trên Web. Chỉ cơ sở được phân công (AUTH-02);
-/// mốc, trạng thái và số do BE trả (AUTH-08).
+/// số, nhãn trạng thái do BE trả (AUTH-08).
 class VicePrincipalHomeScreen extends StatefulWidget {
   const VicePrincipalHomeScreen({super.key, this.source});
 
@@ -53,7 +52,7 @@ class _VicePrincipalHomeScreenState extends State<VicePrincipalHomeScreen> {
     }
   }
 
-  // Quay lại từ màn con ⇒ tải lại để mốc và badge theo số BE mới nhất
+  // Quay lại từ màn con ⇒ tải lại để số và badge theo BE mới nhất
   Future<void> _open(String path) async {
     await context.push<void>(path);
     if (mounted) _load();
@@ -67,11 +66,9 @@ class _VicePrincipalHomeScreenState extends State<VicePrincipalHomeScreen> {
   };
 
   static AppStatusTone _tone(CampusBadgeLevel level) => switch (level) {
-    CampusBadgeLevel.todo => AppStatusTone.orange,
-    CampusBadgeLevel.fresh => AppStatusTone.blue,
-    CampusBadgeLevel.watch => AppStatusTone.teal,
+    CampusBadgeLevel.todo || CampusBadgeLevel.watch => AppStatusTone.orange,
+    CampusBadgeLevel.fresh || CampusBadgeLevel.view => AppStatusTone.blue,
     CampusBadgeLevel.done => AppStatusTone.green,
-    CampusBadgeLevel.view => AppStatusTone.blue,
   };
 
   void _openTask(CampusTaskKind kind) => switch (kind) {
@@ -82,50 +79,35 @@ class _VicePrincipalHomeScreenState extends State<VicePrincipalHomeScreen> {
     CampusTaskKind.children => _open(RoutePaths.vicePrincipalChildren),
   };
 
-  void _openPending(CampusPendingItem item) => switch (item.kind) {
-    CampusPendingKind.mealCount => _open(RoutePaths.vicePrincipalMealConfirm),
-    CampusPendingKind.rewards => _open(RoutePaths.vicePrincipalRewards),
-  };
-
   @override
   Widget build(BuildContext context) {
     final today = _today;
-    final textTheme = Theme.of(context).textTheme;
-    final topInset = MediaQuery.paddingOf(context).top;
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
-        padding: EdgeInsets.fromLTRB(
-          AppSpacing.pagePadding,
-          topInset + AppSpacing.space4,
-          AppSpacing.pagePadding,
-          AppSpacing.space6,
-        ),
+        padding: const EdgeInsets.only(bottom: AppSpacing.space6),
         children: [
-          Semantics(
-            container: true,
-            header: true,
+          AppHeroHeader(
+            greeting: 'Chào thầy,',
+            name: today?.staffName ?? '',
+            card: _error != null
+                ? null
+                : today == null
+                ? const AppSkeletonCard(lines: 1)
+                : _CampusCard(today: today),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.pagePadding,
+              AppSpacing.space3,
+              AppSpacing.pagePadding,
+              0,
+            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Sáng nay',
-                  style: textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                if (today != null)
-                  Text(
-                    '${today.campusName} · ${DateLabels.weekdayDayMonth(today.date)}',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-              ],
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: _buildBody(today),
             ),
           ),
-          const SizedBox(height: AppSpacing.space5),
-          ..._buildBody(today),
         ],
       ),
     );
@@ -134,6 +116,7 @@ class _VicePrincipalHomeScreenState extends State<VicePrincipalHomeScreen> {
   List<Widget> _buildBody(CampusToday? today) {
     if (_error != null) {
       return [
+        const SizedBox(height: AppSpacing.space3),
         AppErrorState(
           title: 'Chưa tải được số liệu cơ sở',
           message: 'Kiểm tra kết nối mạng rồi thử lại.',
@@ -141,73 +124,49 @@ class _VicePrincipalHomeScreenState extends State<VicePrincipalHomeScreen> {
         ),
       ];
     }
-    if (today == null) {
-      return const [
-        AppSkeletonCard(lines: 5),
-        SizedBox(height: AppSpacing.sectionGap),
-        AppSkeletonList(rows: 3),
-      ];
-    }
+    if (today == null) return const [AppSkeletonList(rows: 4)];
     final textTheme = Theme.of(context).textTheme;
-    // Số suất và việc chờ đã có ở thẻ mốc và mục chờ xử lý ⇒ không lặp trong "Theo dõi khác"
-    final others = today.tasks
-        .where(
-          (task) =>
-              task.kind != CampusTaskKind.mealCount &&
-              task.kind != CampusTaskKind.approvals,
-        )
-        .toList();
+    final status = AppStatusColors.of(context);
     return [
-      if (today.morning.isNotEmpty) ...[
-        _MorningCard(
-          steps: today.morning,
-          onViewMeals: () => _open(RoutePaths.vicePrincipalMealConfirm),
-        ),
-        const SizedBox(height: AppSpacing.sectionGap),
-      ],
-      _SectionHeader(
-        title: today.pending.isEmpty
-            ? 'Chờ xử lý'
-            : 'Chờ xử lý (${today.pendingCount})',
-        onAll: () => context.go(RoutePaths.vicePrincipalApprovals),
+      StatStrip(
+        items: [
+          StatStripItem(
+            value: '${today.present}',
+            label: 'Có mặt',
+            color: status.tone(AppStatusTone.green).foreground,
+          ),
+          StatStripItem(
+            value: '${today.excused}',
+            label: 'Có phép',
+            color: status.tone(AppStatusTone.blue).foreground,
+          ),
+          StatStripItem(
+            value: '${today.absent}',
+            label: 'Vắng',
+            color: status.tone(AppStatusTone.red).foreground,
+          ),
+          StatStripItem(
+            value: '${today.pendingCount}',
+            label: 'Chờ xử lý',
+            color: status.tone(AppStatusTone.orange).foreground,
+          ),
+        ],
+      ),
+      const SizedBox(height: AppSpacing.space5),
+      Semantics(
+        header: true,
+        child: Text('Theo dõi hôm nay', style: textTheme.titleMedium),
       ),
       const SizedBox(height: AppSpacing.space3),
-      if (today.pending.isEmpty)
+      if (today.tasks.isEmpty)
         const AppEmptyState(
           icon: AppIcons.checkCircle,
-          title: 'Không có việc chờ xử lý',
-          message: 'Số suất cần xác nhận và đề xuất khen thưởng sẽ hiện ở đây.',
+          title: 'Chưa có việc cần theo dõi',
+          message:
+              'Số suất, việc chờ xử lý trên Web, thực đơn và trẻ của cơ sở sẽ hiện ở đây.',
         )
       else
-        for (final item in today.pending) ...[
-          AppTaskCard(
-            icon: item.kind == CampusPendingKind.rewards
-                ? AppIcons.trophy
-                : AppIcons.meal,
-            title: item.title,
-            subtitle: item.note,
-            // Cùng màu nhãn với tab Chờ xử lý: suất ăn xanh, khen thưởng vàng
-            trailing: item.kind == CampusPendingKind.rewards
-                ? const AppStatusBadge(
-                    label: 'Khen thưởng',
-                    tone: AppStatusTone.approval,
-                  )
-                : const AppStatusBadge(
-                    label: 'Suất ăn',
-                    tone: AppStatusTone.blue,
-                  ),
-            onTap: () => _openPending(item),
-          ),
-          const SizedBox(height: AppSpacing.space2),
-        ],
-      if (others.isNotEmpty) ...[
-        const SizedBox(height: AppSpacing.sectionGap - AppSpacing.space2),
-        Semantics(
-          header: true,
-          child: Text('Theo dõi khác', style: textTheme.titleMedium),
-        ),
-        const SizedBox(height: AppSpacing.space3),
-        for (final task in others) ...[
+        for (final task in today.tasks) ...[
           AppTaskCard(
             icon: _icon(task.kind),
             title: task.title,
@@ -221,235 +180,40 @@ class _VicePrincipalHomeScreenState extends State<VicePrincipalHomeScreen> {
           ),
           const SizedBox(height: AppSpacing.space2),
         ],
-      ],
     ];
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.onAll});
+/// Thẻ cơ sở đè lên dải chào: tên cơ sở + "Hôm nay", số lớp và số bé có mặt (số BE trả).
+class _CampusCard extends StatelessWidget {
+  const _CampusCard({required this.today});
 
-  final String title;
-  final VoidCallback onAll;
+  final CampusToday today;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return Row(
-      children: [
-        Expanded(
-          child: Semantics(
-            header: true,
-            child: Text(title, style: textTheme.titleMedium),
-          ),
-        ),
-        AppLinkButton(label: 'Tất cả', onPressed: onAll),
-      ],
-    );
-  }
-}
-
-/// Thẻ mốc buổi sáng: cột giờ, đường ray, tên + ghi chú; mốc đang chờ nổi lên, chốt suất có nút xem số suất.
-class _MorningCard extends StatelessWidget {
-  const _MorningCard({required this.steps, required this.onViewMeals});
-
-  final List<MorningStep> steps;
-  final VoidCallback onViewMeals;
-
-  @override
-  Widget build(BuildContext context) {
     return AppCard(
+      dense: true,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final (i, step) in steps.indexed)
-            _MorningRow(
-              step: step,
-              last: i == steps.length - 1,
-              onAction: switch (step.kind) {
-                MorningStepKind.mealConfirm
-                    when step.state == MorningStepState.current =>
-                  onViewMeals,
-                _ => null,
-              },
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MorningRow extends StatelessWidget {
-  const _MorningRow({
-    required this.step,
-    required this.last,
-    required this.onAction,
-  });
-
-  final MorningStep step;
-  final bool last;
-  final VoidCallback? onAction;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final status = AppStatusColors.of(context);
-    final green = status.tone(AppStatusTone.green);
-    final orange = status.tone(AppStatusTone.orange);
-    final done = step.state == MorningStepState.done;
-    final current = step.state == MorningStepState.current;
-    final confirm = step.kind == MorningStepKind.mealConfirm;
-    final time = DateLabels.time24(step.time);
-    final stateText = switch (step.state) {
-      MorningStepState.done => 'đã xong',
-      MorningStepState.current =>
-        confirm ? 'chờ xác nhận trên Web' : 'đang diễn ra',
-      MorningStepState.upcoming => 'chưa tới',
-    };
-    final badge = switch (step.state) {
-      MorningStepState.done => const AppStatusBadge(
-        label: 'Xong',
-        tone: AppStatusTone.green,
-        icon: AppIcons.check,
-      ),
-      MorningStepState.current when confirm => const AppStatusBadge(
-        label: 'Chờ xác nhận',
-        tone: AppStatusTone.orange,
-        icon: AppIcons.clock,
-      ),
-      MorningStepState.current => const AppStatusBadge(
-        label: 'Đang diễn ra',
-        tone: AppStatusTone.blue,
-      ),
-      MorningStepState.upcoming => null,
-    };
-    // Chữ phóng lớn ⇒ giờ lên đầu phần nội dung thay vì chiếm một cột
-    final large = MediaQuery.textScalerOf(context).scale(1) > 1.3;
-    final timeText = Text(
-      time,
-      maxLines: 1,
-      softWrap: false,
-      style: textTheme.labelLarge?.copyWith(
-        color: current ? AppColors.textPrimary : AppColors.textMuted,
-        fontWeight: current ? FontWeight.w700 : FontWeight.w500,
-        fontFeatures: AppTextStyles.tabularFigures,
-      ),
-    );
-    final dotColor = done
-        ? green.main
-        : current
-        ? (confirm ? orange.main : AppColors.brand)
-        : AppColors.track;
-    final rail = SizedBox(
-      width: 24,
-      child: Column(
-        children: [
-          Container(
-            width: 16,
-            height: 16,
-            margin: const EdgeInsets.only(top: 2),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: dotColor,
-              boxShadow: current
-                  ? [
-                      BoxShadow(
-                        color: dotColor.withValues(alpha: 0.25),
-                        spreadRadius: 4,
-                      ),
-                    ]
-                  : null,
-            ),
-            child: done
-                ? const Icon(AppIcons.check, size: 12, color: AppColors.surface)
-                : null,
-          ),
-          if (!last)
-            Expanded(
-              child: Container(
-                width: 2,
-                margin: const EdgeInsets.symmetric(vertical: AppSpacing.space1),
-                color: done ? green.main : AppColors.track,
-              ),
-            ),
-        ],
-      ),
-    );
-    final note = step.note;
-    return Semantics(
-      container: true,
-      label: [time, step.title, ?note, stateText].join(', '),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (!large) ...[
-              SizedBox(
-                width: 52,
-                child: ExcludeSemantics(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.topLeft,
-                    child: timeText,
-                  ),
-                ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(today.campusName, style: textTheme.titleSmall),
               ),
               const SizedBox(width: AppSpacing.space2),
+              const AppStatusBadge(label: 'Hôm nay', tone: AppStatusTone.blue),
             ],
-            ExcludeSemantics(child: rail),
-            const SizedBox(width: AppSpacing.space3),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(bottom: last ? 0 : AppSpacing.space4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ExcludeSemantics(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (large) timeText,
-                          Wrap(
-                            spacing: AppSpacing.space2,
-                            runSpacing: AppSpacing.space1,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              Text(
-                                step.title,
-                                style: textTheme.titleSmall?.copyWith(
-                                  color: step.state == MorningStepState.upcoming
-                                      ? AppColors.textMuted
-                                      : AppColors.textPrimary,
-                                ),
-                              ),
-                              ?badge,
-                            ],
-                          ),
-                          if (note != null)
-                            Text(
-                              note,
-                              style: textTheme.bodyMedium?.copyWith(
-                                color: AppColors.textMuted,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    if (onAction != null) ...[
-                      const SizedBox(height: AppSpacing.space3),
-                      AppButton(
-                        label: 'Xem số suất',
-                        expand: true,
-                        variant: AppButtonVariant.secondary,
-                        onPressed: onAction,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: AppSpacing.space1),
+          Text(
+            '${today.classCount} lớp · ${today.present} bé có mặt / ${today.enrolled}',
+            style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+          ),
+        ],
       ),
     );
   }

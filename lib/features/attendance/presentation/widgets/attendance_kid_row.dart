@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/motion.dart';
-import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
@@ -91,13 +90,12 @@ class AttendanceKidRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.space4,
-        vertical: AppSpacing.space2,
+        vertical: AppSpacing.space1,
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.surface.withValues(alpha: 0.85)),
-        boxShadow: AppShadows.card,
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,7 +114,7 @@ class AttendanceKidRow extends StatelessWidget {
               ],
             ),
           if (showHealth) ...[
-            const SizedBox(height: AppSpacing.space2),
+            const SizedBox(height: AppSpacing.space1),
             ArrivalHealthSection(
               key: ValueKey('health-${kid.childId}'),
               childId: kid.childId,
@@ -159,33 +157,34 @@ class _Toggle extends StatelessWidget {
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        child: AnimatedContainer(
-          duration: AppMotion.fast,
-          curve: AppMotion.curve,
-          constraints: const BoxConstraints(
-            minHeight: AppSizes.minimumTapTarget - 4,
-            minWidth: 64,
-          ),
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space2),
-          // Clay: nút chưa chọn trắng nổi gờ đáy; nút đã chọn nền tông + viền tông + quầng
-          decoration: BoxDecoration(
-            color: selected ? colors.background : AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            border: Border.all(
-              color: selected ? colors.main : AppColors.border,
-              width: selected ? 1.5 : 1,
+        borderRadius: BorderRadius.circular(AppRadius.control),
+        // Viền ngoài 6 ⇒ vùng chạm 48 dù nút nhìn thấy cao 36
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: AnimatedContainer(
+            duration: AppMotion.fast,
+            curve: AppMotion.curve,
+            constraints: const BoxConstraints(
+              minHeight: AppSizes.filterChipHeight,
+              minWidth: 56,
             ),
-            boxShadow: selected
-                ? AppShadows.tinted(colors.main, strength: 0.35)
-                : AppShadows.buttonSecondary,
-          ),
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              color: selected ? colors.foreground : AppColors.textSecondary,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space2),
+            // Figma GV02: nút chọn nền nhạt + viền đậm cùng tông; chưa chọn trắng viền mảnh
+            decoration: BoxDecoration(
+              color: selected ? colors.background : AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.control),
+              border: Border.all(
+                color: selected ? colors.main : AppColors.borderStrong,
+                width: selected ? 1.5 : 1,
+              ),
+            ),
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                color: selected ? colors.foreground : AppColors.textSecondary,
+              ),
             ),
           ),
         ),

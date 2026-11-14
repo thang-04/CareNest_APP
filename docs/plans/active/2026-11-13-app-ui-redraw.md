@@ -8,7 +8,7 @@ modules: [leave_notice, parent_menu, my_child, auth, attendance, class_leave_not
 rules: [ATT-02, ATT-04, ATT-05, ATT-09, HLT-07, HLT-11, HLT-12, HLT-13, OBS-01, OBS-02, OBS-06, OBS-10, OBS-13, PCK-02, PCK-04, NUT-16, PAR-01, AUTH-19]
 risk: medium
 created: 2026-11-13
-updated: 2026-11-13
+updated: 2026-11-14
 ---
 # UI App theo bản sửa Figma 13/11 (phụ huynh, giáo viên) — dữ liệu giả
 
@@ -24,6 +24,7 @@ updated: 2026-11-13
 4. GV chụp ảnh bữa (GV 15–16): gỡ lối vào trên màn GV, giữ code `lib/features/meal_photos` — user 13/11.
 5. Làm liền các phase, báo một lần — user 13/11.
 6. Mở rộng 13/11 (user): làm thêm màn bếp theo bản sửa, đưa màn BGH chỉ xem (nhánh TBD-3) vào cùng bản — giữ Hiệu trưởng và Phó hiệu trưởng là 2 role/shell riêng, không gộp; so các màn giữ nguyên với Figma rồi sửa chỗ lệch. Màn có cả bản gốc và bản sửa ⇒ theo bản sửa. Việc mở rộng ghi mã Jira G94-87.
+7. Theo đúng Figma toàn App (user 14/11): bỏ style Clay nổi (lựa chọn 14/10), đổi style dùng chung `lib/core` sang style phẳng của Figma (xanh `#1565E0`, nền `#F5F8FC`, card trắng viền mảnh bo 12, nút/ô nhập bo 8, thanh tiêu đề trắng, thanh dưới trắng sát đáy); màn có bản sửa theo bản sửa, bỏ khung cũ; màn không có bản sửa theo khung gốc — kể cả PH 02, PHT 01, HT 01 trước đây giữ bố cục Clay. Nội dung nghiệp vụ đã chốt (Quyết định 1–4, quyết định 14/11 ở plan `2026-11-14-app-business-decisions.md`) thắng chữ trên Figma khi lệch. Làm liền cả 4 nhóm vai trò, báo một lần (user 14/11). Mã Jira: G94-194.
 
 ## Acceptance criteria
 - **AC-1 (AUTH-19, PCK-02)** PH 01: chú thích "Tài khoản do nhà trường cấp qua SMS. Lần đầu đăng nhập: đổi mật khẩu."; không nhắc ảnh chân dung.
@@ -66,6 +67,11 @@ updated: 2026-11-13
 - PH 02, 06, 07, 11, 13, 14, 15–19; GV 04, 05, 07, 09; Bếp 02, 03; BGH theo khung bản sửa `151:2`. Chụp App (dữ liệu giả) và Figma, sửa chỗ lệch nội dung/bố cục; ghi danh sách lệch vào Progress log.
 - Exit: `node scripts/verify.mjs` pass.
 
+### Phase 6 — Style phẳng và bố cục đúng Figma toàn App (G94-194)
+- Files: M `lib/core/constants/{colors,shadows,sizes,app_icons}.dart`, `lib/core/theme/app_theme.dart`, `lib/core/widgets/*` (card, nút, ô nhập, banner, badge, chip, segmented, ô số, dải ngày, tìm kiếm), `lib/core/layouts/{app_shell,app_bottom_dock}.dart` (thêm `badges` cho số trên tab), `lib/routing/app_router.dart` (số chưa đọc tab GV/bếp từ dữ liệu giả); M màn mọi vai trò theo ảnh Figma; M `DESIGN.md` §4.1, §5.3–5.5, §7, §8.1, §9.2; ghi chú thay thế ở `docs/design/mobile-redesign-clay.md`.
+- Cách so: build web (`flutter build web`), chạy tĩnh, chụp khổ 360×760 và so với ảnh khung Figma (link xem công khai, MCP Figma hết hạn mức gói Starter); ảnh để ngoài repo.
+- Exit: `node scripts/verify.mjs` pass; `node scripts/check-ai-layer.mjs` pass.
+
 ## Rủi ro & rollback
 | Rủi ro | Tác động | Giảm thiểu | Rollback |
 | --- | --- | --- | --- |
@@ -103,4 +109,17 @@ updated: 2026-11-13
   - HT 02: đầu màn đếm "1 việc" như PHT 02.
 - Giữ App (lệch có chủ đích): PH 02, PHT 01, HT 01 giữ bố cục user chọn 14/10 (`docs/design/mobile-redesign-clay.md`); HT 08 không nhãn CSVC (FAC REMOVED); PH 17 banner theo ngữ cảnh mở màn.
 - Chưa sửa: chấm số chưa đọc trên tab Thông báo/Chờ xử lý (cần sửa `AppShell` vùng dùng chung + số chưa đọc từ nguồn thông báo); HT 02 không có lọc "Tất cả / Khen thưởng" (chỉ một loại việc); Bếp 02 nhóm Mầm chỉ có thực đơn thay thế dị ứng hải sản (Figma 02 và 03 lệch nhau về số suất thay thế nhóm Mầm, App giữ khớp Bếp 03); thông báo bếp/PHT "xin điều chỉnh +1 suất … chờ duyệt" (màn Thông báo ngoài danh sách so).
+- Commit: chưa commit
+
+### 2026-11-14 — Phase 6 bắt đầu (user: theo Figma toàn bộ, làm liền 4 vai trò)
+- Đã đổi style dùng chung sang Figma phẳng (`lib/core`), Đăng nhập theo PH 01 bản sửa (logo + form trên nền, ô có icon điện thoại/khóa, nút xanh đặc, phiên bản ở đáy). `flutter test` → `All tests passed!` (219) sau khi đổi core; test style đổi tên `app_flat_style_test.dart`.
+- Số trên tab: GV và bếp hiện số chưa đọc ở tab Thông báo (Figma GV 01, Bếp 01); PHT/HT "Chờ xử lý" chưa có số vì danh sách việc chờ tải bất đồng bộ ⇒ chờ BE có API đếm.
+- Commit: chưa commit
+
+### 2026-11-14 — Phase 6 xong (chờ review)
+- Màn sửa theo Figma: PH 02–19 (PH 05, 09, 17 vốn đã khớp), GV 01–09 + Lịch hoạt động, Bếp 01–06, PHT 01/02/04/06/07/10/12, HT 01/02/04/06/07/08. Bỏ bố cục Clay đã chọn 14/10: PH 02 (thẻ ví), GV 01 (vòng tiến độ, việc trượt ngang), Bếp 01 (bố cục D), PHT 01 (mốc buổi sáng F), HT 01 (hai thẻ cơ sở D).
+- Core theo đề nghị khi so ảnh: chip lọc đang chọn nền xanh đặc chữ trắng; segmented viên thuốc; avatar một chữ nền `primarySoft`; badge cao 24 chữ 12, bỏ chấm tông xanh; dòng danh sách tên 15/600, mô tả 13, đệm 12; ô icon việc 36; nhãn ô nhập 14/600; nút nhỏ đệm 16; dải xanh đặt icon thanh trạng thái trắng; bỏ `contentPadding` ở theme (bị cộng vào ô `isCollapsed`). Số trên tab: GV/bếp tab Thông báo, PHT/HT tab Chờ xử lý (đếm từ dữ liệu giả, tải một lần mỗi vai trò).
+- Lệch Figma có chủ đích (nghiệp vụ đã chốt): không "báo ăn"/"Ăn 1 bữa"/"Ăn chay"/"Suất huỷ"; điểm danh có phần sức khỏe đầu ngày như Web nên thẻ bé cao hơn; đơn nghỉ không chọn buổi, trạng thái Đã gửi/Đã hủy; chi tiết thông báo không ảnh, không người gửi; đánh giá đủ 7 mặt; không mã rule trong chữ (bỏ "(ATT-04)"); BGH không nút ghi, HT 02 nhãn "Trả về"; HT 07 giữ dải ngày; Bếp 05 không nút thư viện ảnh và ô "+"; không CSVC.
+- Còn chờ dữ liệu/BE: cách xưng hô "Chào thầy/cô" đang viết cứng; cờ dòng điều chỉnh ở PHT 04; giờ đón (GV 06), "Đổi bé" ở GV 07.1, đơn "mới" ở GV 03 chưa có field.
+- `node scripts/verify.mjs` → `VERIFY PASS full | format ok | analyze ok | tests 219 fail 0 skip 0`; `node scripts/check-ai-layer.mjs` → 0 lỗi (8 cảnh báo E2/E7 có sẵn). So ảnh: build web, chụp 44 màn khổ 360×760 cạnh ảnh khung Figma (ảnh ngoài repo).
 - Commit: chưa commit

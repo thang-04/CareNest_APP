@@ -140,19 +140,25 @@ class _SchoolMenuOverviewScreenState extends State<SchoolMenuOverviewScreen> {
         .firstOrNull
         ?.value;
     final weekday = DateLabels.weekdayDayMonth(_day).split(',').first;
+    final range =
+        '${week.weekStart.day}–${DateLabels.dayMonth(week.weekStart.add(const Duration(days: 4)))}';
     return [
       if (week.publishedNote case final note?) ...[
         AppCard(
           dense: true,
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-                AppIcons.checkCircle,
-                size: AppSizes.iconInline,
-                color: AppColors.primary,
+              Text(
+                'Thực đơn tuần $range · Đã công bố',
+                style: textTheme.titleSmall,
               ),
-              const SizedBox(width: AppSpacing.space3),
-              Expanded(child: Text(note, style: textTheme.titleSmall)),
+              Text(
+                note,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textMuted,
+                ),
+              ),
             ],
           ),
         ),
@@ -182,7 +188,12 @@ class _SchoolMenuOverviewScreenState extends State<SchoolMenuOverviewScreen> {
         ],
       if (week.nutritionSummary case final summary?) ...[
         const SizedBox(height: AppSpacing.space2),
-        AppBanner(message: summary),
+        // Tóm tắt BE trả có thể kèm chất còn thiếu ⇒ icon thông tin, không dấu tích
+        AppBanner(
+          kind: AppBannerKind.success,
+          icon: AppIcons.info,
+          message: summary,
+        ),
       ],
     ];
   }

@@ -12,7 +12,7 @@ import 'package:carenest_app/features/kitchen_meals/data/fake_kitchen_meals_sour
 import 'package:carenest_app/features/kitchen_meals/domain/kitchen_meals.dart';
 import 'package:carenest_app/features/kitchen_meals/presentation/widgets/meal_count_table.dart';
 
-/// Suất ăn đã chốt theo lớp — mockup K03. Chỉ xem, chỉ số đã xác nhận (NUT-02, NUT-03);
+/// Suất ăn đã chốt theo lớp — Figma Bếp 03. Chỉ xem, chỉ số đã xác nhận (NUT-02, NUT-03);
 /// không có tên trẻ (AUTH-05).
 class KitchenMealsScreen extends StatefulWidget {
   const KitchenMealsScreen({super.key, this.source});
@@ -117,7 +117,7 @@ class _SheetBody extends StatelessWidget {
         const SizedBox(height: AppSpacing.space3),
         MealCountTable(
           classes: sheet.classes,
-          footer: 'Chỉ xem, không sửa được.',
+          footer: 'Chỉ xem, không sửa được',
         ),
       ],
     );

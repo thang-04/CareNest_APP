@@ -12,7 +12,7 @@ import 'package:carenest_app/features/my_child/data/fake_my_child_source.dart';
 import 'package:carenest_app/features/my_child/domain/my_child.dart';
 import 'package:carenest_app/features/my_child/presentation/widgets/my_child_widgets.dart';
 
-/// Hồ sơ của bé — mockup P13. Chỉ xem; thông tin do nhà trường quản lý (AUTH-04, HLT-06).
+/// Hồ sơ của bé (Figma PH13). Chỉ xem; thông tin do nhà trường quản lý (AUTH-04, HLT-06).
 class ChildProfileScreen extends StatefulWidget {
   const ChildProfileScreen({
     super.key,
@@ -113,6 +113,10 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
                     // Gọi điện cần plugin mở trình quay số ⇒ chưa thêm thư viện, mở "Sắp có"
                     IconButton.filledTonal(
                       tooltip: 'Gọi giáo viên chủ nhiệm',
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.primarySoft,
+                        foregroundColor: AppColors.primary,
+                      ),
                       onPressed: () => openComingSoon(context, 'Gọi giáo viên'),
                       icon: const Icon(AppIcons.call),
                     ),
@@ -159,33 +163,7 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
                       style: textTheme.titleSmall,
                     ),
                     const SizedBox(height: AppSpacing.space3),
-                    Wrap(
-                      spacing: AppSpacing.space5,
-                      runSpacing: AppSpacing.space3,
-                      children: [
-                        for (final (i, guardian) in profile.guardians.indexed)
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              AppIconTile(
-                                icon: AppIcons.person,
-                                tone: i.isEven ? null : AppStatusTone.green,
-                              ),
-                              const SizedBox(width: AppSpacing.space2),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${guardian.relation} – ${guardian.name}',
-                                    style: textTheme.titleSmall,
-                                  ),
-                                  Text(guardian.phone, style: muted),
-                                ],
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
+                    _GuardianGrid(guardians: profile.guardians),
                   ],
                 ),
               ),
@@ -198,6 +176,95 @@ class _ChildProfileScreenState extends State<ChildProfileScreen> {
           );
         },
       ),
+    );
+  }
+}
+
+/// Người đưa đón hai cột như Figma PH13; chữ lớn ⇒ một cột để tên không bị cắt.
+class _GuardianGrid extends StatelessWidget {
+  const _GuardianGrid({required this.guardians});
+
+  final List<Guardian> guardians;
+
+  @override
+  Widget build(BuildContext context) {
+    final tiles = [
+      for (final (i, guardian) in guardians.indexed)
+        _GuardianTile(guardian: guardian, alternate: i.isOdd),
+    ];
+    if (MediaQuery.textScalerOf(context).scale(1) > 1.3) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < tiles.length; i++) ...[
+            if (i > 0) const SizedBox(height: AppSpacing.space3),
+            tiles[i],
+          ],
+        ],
+      );
+    }
+    return Column(
+      children: [
+        for (var i = 0; i < tiles.length; i += 2) ...[
+          if (i > 0) const SizedBox(height: AppSpacing.space3),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: tiles[i]),
+              const SizedBox(width: AppSpacing.space3),
+              Expanded(
+                child: i + 1 < tiles.length
+                    ? tiles[i + 1]
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _GuardianTile extends StatelessWidget {
+  const _GuardianTile({required this.guardian, required this.alternate});
+
+  final Guardian guardian;
+
+  /// Người thứ hai trở đi đổi tông ô icon để dễ phân biệt (Figma).
+  final bool alternate;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Row(
+      children: [
+        AppIconTile(
+          icon: AppIcons.person,
+          tone: alternate ? AppStatusTone.green : null,
+          size: 36,
+        ),
+        const SizedBox(width: AppSpacing.space2),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${guardian.relation} – ${guardian.name}',
+                style: textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                guardian.phone,
+                style: textTheme.labelMedium?.copyWith(
+                  color: AppColors.textMuted,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -181,3 +181,58 @@ class InfoLine extends StatelessWidget {
     );
   }
 }
+
+/// Khung viền nét đứt bo 12 cho mục chưa có kết quả (khen thưởng chờ BGH duyệt — Figma PH12).
+class DashedBox extends StatelessWidget {
+  const DashedBox({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      foregroundPainter: const _DashedBorderPainter(
+        color: AppColors.borderStrong,
+        radius: AppRadius.xxl,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.space4),
+        child: child,
+      ),
+    );
+  }
+}
+
+class _DashedBorderPainter extends CustomPainter {
+  const _DashedBorderPainter({required this.color, required this.radius});
+
+  final Color color;
+  final double radius;
+
+  static const _dash = 5.0;
+  static const _gap = 4.0;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    final outline = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          (Offset.zero & size).deflate(0.6),
+          Radius.circular(radius),
+        ),
+      );
+    for (final metric in outline.computeMetrics()) {
+      for (var start = 0.0; start < metric.length; start += _dash + _gap) {
+        canvas.drawPath(metric.extractPath(start, start + _dash), paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedBorderPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.radius != radius;
+}

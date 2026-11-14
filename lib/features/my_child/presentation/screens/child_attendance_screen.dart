@@ -28,7 +28,7 @@ extension on AttendanceDayStatus {
   };
 }
 
-/// Điểm danh & bữa ăn theo tháng — mockup P10. Số đếm là BE trả (ATT-01, ATT-04);
+/// Điểm danh & bữa ăn theo tháng (Figma PH10 bản sửa). Số đếm là BE trả (ATT-01, ATT-04);
 /// có mặt là ăn đủ các bữa đã cấu hình nên không ghi từng bữa, không đếm suất huỷ (ATT-02).
 class ChildAttendanceScreen extends StatefulWidget {
   const ChildAttendanceScreen({
@@ -197,19 +197,15 @@ class _DayDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Wrap(
-          alignment: WrapAlignment.spaceBetween,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: AppSpacing.space2,
-          runSpacing: AppSpacing.space2,
-          children: [
-            Text(DateLabels.weekdayDate(day.date), style: textTheme.titleSmall),
-            AppStatusBadge(label: day.status.label, tone: day.status.tone),
-          ],
+        AppCardHeader(
+          title: DateLabels.weekdayDate(day.date),
+          trailing: AppStatusBadge(
+            label: day.status.label,
+            tone: day.status.tone,
+          ),
         ),
         const SizedBox(height: AppSpacing.space2),
         if (day.arrivedAt case final arrived?)

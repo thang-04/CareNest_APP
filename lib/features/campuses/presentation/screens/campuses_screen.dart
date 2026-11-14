@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
-import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
-import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/campuses/data/fake_campus_source.dart';
 import 'package:carenest_app/features/campuses/domain/campus.dart';
 
@@ -122,11 +120,37 @@ class _CampusCard extends StatelessWidget {
             spacing: AppSpacing.space2,
             runSpacing: AppSpacing.space2,
             children: [
-              for (final scope in campus.scopes)
-                AppStatusBadge(label: scope, tone: AppStatusTone.blue),
+              for (final scope in campus.scopes) _ScopeChip(label: scope),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Nhãn mảng phụ trách: nền `primarySoft`, chữ `primaryText`, không chấm trạng thái (Figma HT 08).
+class _ScopeChip extends StatelessWidget {
+  const _ScopeChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: AppSpacing.space1,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.primarySoft,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(
+          context,
+        ).textTheme.labelMedium?.copyWith(color: AppColors.primaryText),
       ),
     );
   }

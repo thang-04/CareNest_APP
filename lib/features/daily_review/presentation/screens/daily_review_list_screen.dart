@@ -16,7 +16,7 @@ import 'package:carenest_app/features/class_roster/data/fake_class_roster_source
 import 'package:carenest_app/features/daily_review/data/fake_daily_review_source.dart';
 import 'package:carenest_app/features/daily_review/domain/daily_review.dart';
 
-/// Đánh giá hằng ngày — danh sách bé (mockup T04). Bé vắng không cần đánh giá.
+/// Đánh giá hằng ngày — danh sách bé (Figma GV04). Bé vắng không cần đánh giá.
 class DailyReviewListScreen extends StatefulWidget {
   const DailyReviewListScreen({
     super.key,
@@ -151,9 +151,8 @@ class _DailyReviewListScreenState extends State<DailyReviewListScreen> {
                       : () => _open(kid),
                 ),
               ),
-              const SizedBox(height: AppSpacing.space2),
+              const SizedBox(height: AppSpacing.space3),
             ],
-            const SizedBox(height: AppSpacing.space2),
             Text(
               'Chạm một bé để mở màn đánh giá trong ngày. Bé vắng không cần đánh giá.',
               style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),

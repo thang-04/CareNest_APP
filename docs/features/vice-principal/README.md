@@ -9,7 +9,7 @@ Phó HT chỉ thấy campus được phân công qua StaffAssignment, mỗi ngư
 ### Trang chủ cơ sở (V01)
 - BE: rule AUTH-02, AUTH-08 · Endpoint: chưa có
 - Số có mặt / có phép / vắng / chờ duyệt là số BE trả, không tự đếm.
-- Giao diện bố cục F (user 2026-10-14, `docs/design/mobile-redesign-clay.md`): "Sáng nay" + cơ sở · ngày → thẻ mốc buổi sáng (Khoá điểm danh → Tổng hợp suất ăn → Chốt suất ăn → Bếp nhận số → Bữa trưa; mốc đã xong có "Xong", chốt suất đang chờ có nhãn trạng thái và nút xem "Xem số suất" — từ 13/11 không còn "Xem & chốt") → "Chờ xử lý (n)" liệt kê việc chờ trên Web, chỉ xem → "Theo dõi khác" (Thực đơn tuần · Trẻ của cơ sở; bỏ Trạng thái bếp — NUT-14). Không có chuông: thông báo ở tab.
+- Giao diện (Figma PHT 01 chỉ xem, user 2026-11-14 bỏ bố cục F thời Clay): dải xanh lời chào; thẻ cơ sở "Hôm nay" + "N lớp · X bé có mặt / sĩ số"; dải 4 số Có mặt / Có phép / Vắng / Chờ xử lý; "Theo dõi hôm nay" gồm Số suất hôm nay (viền xanh + nhãn cam khi chưa xác nhận), Chờ xử lý trên Web, Thực đơn tuần này, Trẻ của cơ sở. Không có chuông: số việc chờ trên tab Chờ xử lý, thông báo ở tab.
 - Mốc buổi sáng cần BE trả danh sách `MorningStep` (giờ theo cấu hình cơ sở, tên, ghi chú, trạng thái done/current/upcoming) và danh sách mục chờ duyệt `CampusPendingItem` ⇒ **PROPOSED**, đề xuất khi viết endpoint trang chủ Phó HT. APP không suy trạng thái mốc từ giờ máy. Rỗng ⇒ ẩn thẻ mốc.
 - Dòng mốc tự dựng trong màn, không dùng `AppTimeline`: widget chung chưa có trạng thái "đã xong", badge và nút trong mốc, và gộp hết semantics nên sẽ che nút.
 

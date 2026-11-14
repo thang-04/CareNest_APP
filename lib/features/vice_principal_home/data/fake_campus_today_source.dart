@@ -122,13 +122,17 @@ class FakeCampusTodaySource implements CampusTodaySource {
                 level: draft.confirmed
                     ? CampusBadgeLevel.done
                     : CampusBadgeLevel.watch,
+                highlighted: !draft.confirmed,
               ),
               CampusTask(
                 kind: CampusTaskKind.approvals,
                 title: 'Chờ xử lý trên Web',
                 subtitle: pending == 0
                     ? 'Không còn việc chờ'
-                    : '$pending việc chờ xử lý',
+                    : [
+                        if (!draft.confirmed) 'Số suất',
+                        if (rewards > 0) '$rewards đề xuất khen thưởng',
+                      ].join(' · '),
                 badge: pending == 0 ? 'Xong' : '$pending việc',
                 level: pending == 0
                     ? CampusBadgeLevel.done

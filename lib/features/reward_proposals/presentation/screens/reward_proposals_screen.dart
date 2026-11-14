@@ -189,6 +189,7 @@ class RewardProposalCard extends StatelessWidget {
                       color: item.isValid
                           ? AppColors.textMuted
                           : danger.foreground,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ],

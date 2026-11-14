@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
@@ -16,7 +15,7 @@ import 'package:carenest_app/features/class_roster/data/fake_class_roster_source
 import 'package:carenest_app/features/health_measure/data/fake_health_measure_source.dart';
 import 'package:carenest_app/features/health_measure/domain/health_measure.dart';
 
-/// Đo chiều cao, cân nặng — một bé (mockup T07.1). Xếp loại do hệ thống tính, GV không chọn (HLT-12);
+/// Đo chiều cao, cân nặng — một bé (Figma GV07.1 bản sửa). Xếp loại do hệ thống tính, GV không chọn (HLT-12);
 /// lưu là công bố cho phụ huynh (HLT-11); sửa số đã lưu phải có lý do (HLT-13); không chẩn đoán (HLT-04).
 class HealthMeasureDetailScreen extends StatefulWidget {
   const HealthMeasureDetailScreen({
@@ -129,6 +128,28 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
     widget.onSaved();
   }
 
+  /// Hai ô số đo cạnh nhau như Figma; chữ phóng lớn ⇒ xếp dọc để nhãn không bị cắt.
+  Widget _pair(BuildContext context, Widget first, Widget second) {
+    if (MediaQuery.textScalerOf(context).scale(1) > 1.3) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          first,
+          const SizedBox(height: AppSpacing.space3),
+          second,
+        ],
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: first),
+        const SizedBox(width: AppSpacing.space3),
+        Expanded(child: second),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final month = _month;
@@ -185,32 +206,34 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.space4),
-                AppTextField(
-                  label: 'Chiều cao (cm)',
-                  labelSuffix: '*',
-                  controller: _height,
-                  enabled: !_saving,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: numberOnly,
-                  onChanged: (_) => _preview(),
-                ),
                 const SizedBox(height: AppSpacing.space3),
-                AppTextField(
-                  label: 'Cân nặng (kg)',
-                  labelSuffix: '*',
-                  controller: _weight,
-                  enabled: !_saving,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
+                _pair(
+                  context,
+                  AppTextField(
+                    label: 'Chiều cao (cm)',
+                    labelSuffix: '*',
+                    controller: _height,
+                    enabled: !_saving,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: numberOnly,
+                    onChanged: (_) => _preview(),
                   ),
-                  inputFormatters: numberOnly,
-                  onChanged: (_) => _preview(),
+                  AppTextField(
+                    label: 'Cân nặng (kg)',
+                    labelSuffix: '*',
+                    controller: _weight,
+                    enabled: !_saving,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: numberOnly,
+                    onChanged: (_) => _preview(),
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.space4),
-                if (_result case final result?)
+                if (_result case final result?) ...[
+                  const SizedBox(height: AppSpacing.space3),
                   AppCard(
                     dense: true,
                     child: Column(
@@ -221,38 +244,38 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
                           style: textTheme.titleSmall,
                         ),
                         const SizedBox(height: AppSpacing.space2),
-                        // Chỉ hiển thị, không bấm được: mức đang áp dụng tô màu + dấu tích
+                        Wrap(
+                          spacing: AppSpacing.space2,
+                          runSpacing: AppSpacing.space1,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            AppStatusBadge(
+                              label: result.label,
+                              tone: AppStatusTone.green,
+                            ),
+                            Text(
+                              result.detail,
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.space3),
+                        // Chỉ hiển thị, không bấm được: thang mức BE trả, mức đang áp dụng tô màu + chữ đậm
                         Semantics(
                           container: true,
                           label: 'Phân loại: ${result.label}',
                           excludeSemantics: true,
-                          child: Wrap(
-                            spacing: AppSpacing.space2,
-                            runSpacing: AppSpacing.space1,
-                            children: [
-                              for (final level in result.scale)
-                                AppStatusBadge(
-                                  label: level,
-                                  tone: level == result.label
-                                      ? AppStatusTone.green
-                                      : AppStatusTone.gray,
-                                  icon: level == result.label
-                                      ? AppIcons.check
-                                      : null,
-                                ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.space2),
-                        Text(
-                          result.detail,
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondary,
+                          child: _ScaleBar(
+                            levels: result.scale,
+                            current: result.label,
                           ),
                         ),
                       ],
                     ),
                   ),
+                ],
                 if (_editingSaved) ...[
                   const SizedBox(height: AppSpacing.space3),
                   AppTextField(
@@ -267,10 +290,23 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
                   ),
                 ],
                 const SizedBox(height: AppSpacing.space3),
-                const AppBanner(
-                  icon: AppIcons.info,
-                  message:
-                      'Lưu là công bố cho phụ huynh · phụ huynh xem ở mục Sức khỏe.',
+                AppCard(
+                  dense: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Lưu là công bố cho phụ huynh',
+                        style: textTheme.titleSmall,
+                      ),
+                      Text(
+                        'Phụ huynh xem ở mục Sức khỏe',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: AppSpacing.space3),
@@ -298,6 +334,73 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
                 ),
               ],
             ),
+    );
+  }
+}
+
+/// Thang phân loại chỉ đọc: mỗi mức một đoạn, mức hiện tại tô xanh lá có chấm, nhãn dưới từng đoạn.
+class _ScaleBar extends StatelessWidget {
+  const _ScaleBar({required this.levels, required this.current});
+
+  final List<String> levels;
+  final String current;
+
+  @override
+  Widget build(BuildContext context) {
+    final green = AppStatusColors.of(context).tone(AppStatusTone.green);
+    final textTheme = Theme.of(context).textTheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < levels.length; i++) ...[
+          if (i > 0) const SizedBox(width: AppSpacing.space1),
+          Expanded(
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 12,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: levels[i] == current
+                              ? green.border
+                              : AppColors.track,
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
+                        ),
+                      ),
+                      if (levels[i] == current)
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: green.main,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.space1),
+                Text(
+                  levels[i],
+                  textAlign: TextAlign.center,
+                  style: textTheme.labelMedium?.copyWith(
+                    color: levels[i] == current
+                        ? green.foreground
+                        : AppColors.textMuted,
+                    fontWeight: levels[i] == current
+                        ? FontWeight.w600
+                        : FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

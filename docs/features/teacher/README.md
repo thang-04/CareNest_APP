@@ -7,7 +7,7 @@ Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scop
 - Endpoint: chưa có
 
 ### Trang chủ giáo viên (bố cục D)
-- Giao diện (user 2026-10-14, `docs/design/mobile-redesign-clay.md`): lời chào → thẻ lớp nổi bật (tên lớp, sĩ số, hoạt động đang diễn ra, vòng "x/N đã điểm danh", hạn điểm danh, nút "Điểm danh ngay") → "Việc tiếp theo" trượt ngang. Hết việc điểm danh ⇒ không còn nút và hạn.
+- Giao diện (Figma GV 01 bản sửa, user 2026-11-14 bỏ bố cục thời Clay): dải xanh lời chào; thẻ lớp đè mép dải (tên lớp, sĩ số, hoạt động đang diễn ra) + ô "Lịch hoạt động ›"; banner hạn điểm danh; "Việc cần làm hôm nay" là danh sách dọc, điểm danh đứng đầu có viền xanh; điểm danh xong ⇒ banner "Đã điểm danh N/N bé hôm nay" (số BE trả). Số chưa đọc trên tab Thông báo.
 - Vòng tiến độ cần **số bé đã điểm danh** do BE trả (`attendanceRecorded` ở `TeacherToday`, chưa có trong contract) ⇒ đề xuất khi viết endpoint trang chủ GV; APP không tự đếm. Không có số ⇒ không vẽ vòng.
 
 ### Điểm danh + sức khỏe đầu ngày (nhập hàng loạt)

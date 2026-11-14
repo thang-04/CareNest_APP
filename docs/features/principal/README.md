@@ -9,7 +9,7 @@ Hiệu trưởng có scope toàn trường, mọi campus (`BE:` AUTH-01). Số t
 ### Tổng quan toàn trường (H01)
 - BE: rule AUTH-01, AUTH-08 · Endpoint: chưa có
 - Tỉ lệ đánh giá theo khối là số BE trả. Không có ô "Nghỉ phép nhân sự" (ngoài phạm vi CareNest).
-- Giao diện bố cục D (user chọn 2026-10-14, `docs/design/mobile-redesign-clay.md`): lời chào + trường · ngày → hai thẻ cơ sở cạnh nhau (vòng tỉ lệ có mặt, có mặt/sĩ số, suất đã chốt; chạm mở H08; từ 13/11 bỏ trạng thái bếp — NUT-14 REMOVED) → "Chờ Hiệu trưởng duyệt (n)" + "Tất cả" sang tab Duyệt → thanh đánh giá theo khối → "Toàn trường" (Trẻ có mặt · Thực đơn tuần · Cơ sở và Phó HT phụ trách). Chữ phóng lớn hoặc thẻ hẹp hơn 136 ⇒ hai thẻ xếp dọc. Thang và tiêu chí đánh giá theo P-11 (PENDING).
+- Giao diện (Figma HT 01 chỉ xem, user 2026-11-14 bỏ bố cục D thời Clay): dải xanh lời chào; thẻ "Trường … · 2 cơ sở / Năm học … · ngày"; lưới 2 cột ô số liệu (Trẻ có mặt → Danh sách trẻ; Suất ăn đã chốt; Thực đơn tuần → Thực đơn); "Đánh giá trẻ tháng N" theo khối (thang/tiêu chí P-11 PENDING); "Chờ xử lý" chỉ xem, duyệt trên Web. Chữ phóng lớn ⇒ lưới 1 cột. Số việc chờ trên tab Chờ xử lý (bản giả đếm từ dữ liệu giả).
 - Thẻ cơ sở cần BE trả số theo từng cơ sở (`CampusSnapshot`: có mặt, sĩ số, tỉ lệ, suất đã chốt) ⇒ **PROPOSED**, đề xuất khi viết endpoint tổng quan HT. APP không tự tính tỉ lệ.
 
 ### Chờ xử lý (H02) + Khen thưởng cuối năm (H04) — chỉ xem

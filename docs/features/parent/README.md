@@ -9,7 +9,7 @@ Không có chat (PAR-04) — trao đổi tức thời vẫn qua Zalo.
 - BE: card `BE:docs/modules/child.md`, `BE:docs/modules/identity-access.md` · rule AUTH-04, PAR-01, PAR-02
 - Endpoint: chưa có
 - Field: PAR-01 (chốt 29/10, đóng P-13b) — tóm tắt chỉ gồm các mục trong danh sách; một tài khoản xem mọi con (PAR-06).
-- Giao diện (bố cục H, user 2026-10-14, `docs/design/mobile-redesign-clay.md`): thẻ bé đang chọn là thẻ lớn; bé khác ló ra dưới thẻ, chạm để đổi; từ 3 bé thì phần ló ghi "+N bé khác" mở sheet chọn bé. Ba ô hôm nay chỉ hiện field đang có (điểm danh, thực đơn đã công bố hay chưa, tên hoạt động); trạng thái của bé đang ló không hiện vì cần thêm một lần gọi dữ liệu.
+- Giao diện (Figma PH 02, user 2026-11-14 bỏ bố cục H thời Clay): dải xanh lời chào + chuông có số chưa đọc; thẻ bé "Bé … · Lớp … · tuổi · Xem hồ sơ ›", "Đổi bé" chỉ hiện khi có từ 2 con và mở sheet chọn bé; "Hôm nay · thứ, ngày" + "Xem lịch ›" với card 3 dòng (điểm danh, thực đơn, hoạt động — chỉ field đang có); "Tiện ích" lưới 2×2.
 
 ### Lịch sử điểm danh
 - BE: card `BE:docs/modules/attendance.md` · flow `BE:docs/business/flows/attendance.md` · rule PAR-01, ATT-09 (Có mặt / Vắng; vắng có phép khi có đơn nghỉ), ATT-03 (sau giờ chốt không nhận trẻ muộn), ATT-08 (PHT mở lại ⇒ dữ liệu có thể đổi sau lần nhập đầu)

@@ -374,6 +374,19 @@ Theo Design System §3.1–3.3. Mã màu chỉ định nghĩa trong `core/consta
 
 ### 4.1 Màu nền tảng — cùng mã với web
 
+> **App ghi đè theo Figma App (user chốt 2026-11-14):** App theo đúng Figma "CareNest App (Moqups)", không theo mã web ở các vai trò sau; nguồn mã là `lib/core/constants/colors.dart`.
+>
+> | Vai trò | Mã App |
+> | --- | --- |
+> | `brand`, `primary`, `info`, `toneBlue` (nút chính, dải đầu màn, link, focus) | `#1565E0`; nhấn `#0F55C2` |
+> | `onBrand` (chữ trên nền brand) | `#FFFFFF` |
+> | `primarySoft`, `infoSoft`, `toneBlueSoft` (mục chọn, ô icon, banner thông tin) | `#EAF2FE` |
+> | `primaryText`, `infoText`, `toneBlueText` (chữ trên nền xanh nhạt) | `#0F4FB0` |
+> | `background` (nền màn) | `#F5F8FC` |
+> | `border` / `borderStrong` | `#E6EBF4` / `#D5DCE7` |
+> | `track`, `toneGraySoft` | `#F1F3F6` |
+> | `warningSoft` / `warningBorder` | `#FFF4E5` / `#FFE1BC` |
+
 | Vai trò | Mã | Web | App `AppColors` |
 | --- | --- | --- | --- |
 | Nền thương hiệu: nút chính, mục chọn đậm | `#4FB0F5` | `--color-brand` | `brand` |
@@ -502,14 +515,15 @@ Không dùng `space7 = 32`; đổi mọi tham chiếu sang `space8`.
 
 | AppRadius | Giá trị | Áp dụng |
 | --- | --- | --- |
-| `xs` | 6 | Chi tiết nhỏ theo component |
-| `sm` | 12 | Ảnh thu nhỏ, ô lịch |
-| `md` | 14 | Theo component chung |
-| `lg` | 16 | Banner, toast |
-| `xl` | 20 | Ô nhập nhiều dòng, tranh màn trống |
-| `xxl` | 28 | Card, thẻ số liệu, thanh dưới và vùng nút đáy nổi (style Clay, user 2026-10-14) |
-| `xxxl` | 32 | Dialog, sheet mép trên |
-| `pill` | 9999 | Nút, badge, chip, segmented, ô nhập một dòng |
+| `xs` | 4 | Chi tiết nhỏ theo component |
+| `sm` | 8 | Ảnh thu nhỏ, ô lịch, ô chọn trên thanh dưới |
+| `md` | 10 | Theo component chung |
+| `lg` | 10 | Banner, toast, ô số liệu |
+| `xl` | 12 | Dòng danh sách dạng thẻ |
+| `xxl` | 12 | Card, thẻ số liệu (Figma App phẳng, user 2026-11-14) |
+| `xxxl` | 16 | Dialog, sheet mép trên |
+| `control` | 8 | Nút, ô nhập, ô tìm kiếm, segmented |
+| `pill` | 9999 | Badge, chip lọc |
 
 Ô icon 40 và avatar dùng hình tròn. Bo lồng nhau: bo trong = bo ngoài − khoảng cách hai mép; phép tính nằm trong component/token, không tự viết số ở feature.
 
@@ -517,38 +531,33 @@ Không dùng `space7 = 32`; đổi mọi tham chiếu sang `space8`.
 
 | AppSizes / vai trò | Giá trị nền |
 | --- | --- |
-| `buttonHeight` / `buttonSmallHeight` | 52 / 44 |
-| `inputHeight` | 52 |
+| `buttonHeight` / `buttonSmallHeight` | 48 / 44 |
+| `inputHeight` | 48 |
 | `minimumTapTarget` | 48×48 |
-| `badgeHeight` | 28 |
+| `badgeHeight` | 24 (Figma App, chữ 12) |
 | `filterChipHeight` | 36 |
 | `listRowMinHeight` | 64 |
 | `iconTileSize` | 40 |
 | `iconInline` / `iconTile` / `iconNavigation` | 20 / 22 / 24 |
 | `iconBadge` | 14 theo component badge ở Design System §6.1 |
 | `appBarHeight` | 56 |
-| `bottomNavigationHeight` | 72 + safe area |
+| `bottomNavigationHeight` | 64 + safe area |
 | `navigationIndicatorWidth` / `navigationIndicatorHeight` | 64 / 32 |
 | `heroHeight` | 224 |
 | `emptyIllustrationWidth` / `emptyIllustrationHeight` | 168 / 124 |
 
-Tên AppSizes là adapter đề xuất cho các kích thước đã có trong Design System; dùng thống nhất trong `sizes.dart`. 52 là chiều cao nền, không ép form/nút cắt chữ tại text scaling lớn. Nút nhỏ 44 và chip tương tác 36 vẫn phải có **vùng chạm ≥48×48**. Badge không tương tác có thể cao 28.
+Tên AppSizes là adapter đề xuất cho các kích thước đã có trong Design System; dùng thống nhất trong `sizes.dart`. 48 là chiều cao nền, không ép form/nút cắt chữ tại text scaling lớn. Nút nhỏ 44 và chip tương tác 36 vẫn phải có **vùng chạm ≥48×48**. Badge không tương tác có thể cao 24.
 
 ### 5.5 Bóng và chuyển động
 
-Style **Clay nổi** (user chọn 2026-10-14, `docs/design/mobile-redesign-clay.md`), cùng tinh thần token `--shadow-clay*` của FE. Mọi bóng chỉ khai báo trong `AppShadows` (`core/constants/shadows.dart`), không đặt tại feature:
+Style **phẳng theo Figma App** (user chốt 2026-11-14, thay style Clay nổi 2026-10-14): bề mặt tách nhau bằng viền mảnh `border`, không quầng màu, không gradient. Mọi bóng chỉ khai báo trong `AppShadows` (`core/constants/shadows.dart`), không đặt tại feature:
 
 | Bóng | Dùng cho |
 | --- | --- |
-| `card` | Card, ô số trắng, thanh dưới, vùng nút đáy: bóng xanh mềm `0 16 30 −14` + bóng tối gần `0 3 8 −3` |
-| `buttonPrimary` | Nút chính bấm được: gờ đáy cứng lệch 3px + quầng xanh |
-| `buttonSecondary` | Nút phụ/danger, chip lọc, ô ngày, mục segmented đang chọn |
-| `tinted(main)` | Badge, ô icon, ô số có tông: quầng cùng màu tông |
-| `soft` | Banner |
+| `card` | Card trắng: bóng mảnh `0 1 2` đi kèm viền `border` |
+| `buttonPrimary`, `buttonSecondary`, `soft`, `tinted(main)` | Rỗng (giữ tên cho tương thích); nút, chip, badge, banner phẳng |
 
-Flutter `BoxShadow` không có bóng trong: mép sáng của card là viền trắng mờ; rãnh segmented và ô nhập "lõm vào" dựng bằng gradient nền.
-
-Lớp nổi dùng `AppShadows.overlay` tương đương `--shadow-xl` của web. Design System nguồn không ghi số đầy đủ của `--shadow-xl`; khi nối repo lấy từ `tokens.css`, không tự chọn bóng Material để coi là đã đồng bộ. Nút có bóng clay khi bấm được; nút khoá/đang gửi phẳng. Focus dùng vòng 3 với `focusRing` qua theme.
+Lớp nổi (sheet, dialog) dùng `AppShadows.overlay` tương đương `--shadow-xl` của web. Focus ô nhập: viền `primary` 1.5, không vòng ngoài.
 
 | AppMotion | Giá trị | Dùng |
 | --- | --- | --- |
@@ -635,14 +644,14 @@ Theo Design System §5–6. App dùng `lib/core/widgets/`; feature không gọi 
 
 | Thành phần | Widget app | Hình và hành vi chung |
 | --- | --- | --- |
-| Nút | `AppButton` | Primary/secondary/text/danger; viên thuốc, chữ 16/700, cao 52; primary `brand/onBrand`; secondary trắng + `borderStrong`; danger `dangerSoft/dangerText`; bóng clay (`buttonPrimary`/`buttonSecondary`) khi bấm được, khoá thì phẳng |
-| Ô nhập | `AppTextField`, `AppPasswordField` | Một dòng viên thuốc, cao nền 52; nhiều dòng bo 20; nhãn trên, hint/error dưới; focus viền `primary` + vòng `focusRing`; mật khẩu ẩn/hiện; icon trái tuỳ chọn (`leadingIcon`, khi mockup có); khoá (`enabled: false`) nền `surfaceMuted` |
-| Card | `AppCard` | Trắng đặc, bo 28, viền trắng mờ, bóng `card`, padding 20 (dày 16); đầu card ô icon (nền chuyển theo tông + quầng) + tiêu đề + link |
-| Badge | `AppStatusBadge` | Viên thuốc, nền/chữ đúng tông mục 6, không viền, quầng `tinted`; cao 28 |
-| Chip lọc | `AppFilterChip` | Viên thuốc không viền, bóng `buttonSecondary`; chọn nền `primarySoft`, chữ `onBrand`; vùng chạm ≥48 |
+| Nút | `AppButton` | Primary/secondary/text/danger; phẳng bo 8, chữ 16/700, cao 48; primary nền `brand` (#1565E0) chữ trắng; secondary trắng viền + chữ `primary`; danger `dangerSoft/dangerText`; khoá nền `borderStrong` chữ trắng |
+| Ô nhập | `AppTextField`, `AppPasswordField` | Khung trắng bo 8, cao nền 48 (nhiều dòng cùng bo); nhãn trên, hint/error dưới; focus viền `primary` 1.5; mật khẩu ẩn/hiện; icon trái tuỳ chọn (`leadingIcon`, khi mockup có); khoá (`enabled: false`) nền `surfaceMuted` |
+| Card | `AppCard` | Trắng, bo 12, viền `border`, bóng mảnh `card`, padding 20 (dày 16); đầu card ô icon (tròn nền nhạt theo tông) + tiêu đề + link |
+| Badge | `AppStatusBadge` | Viên thuốc, nền/chữ đúng tông mục 6, không viền, không quầng; cao 24, chữ 12 |
+| Chip lọc | `AppFilterChip` | Viên thuốc viền `borderStrong`; chọn nền `primarySoft`, viền + chữ `primary`; vùng chạm ≥48 |
 | Thẻ số liệu | `AppStatCard` — cần bổ sung | Nhãn trên, số lớn màu đậm theo tông, icon mờ ở góc, nền chuyển nhẹ; có mũi tên khi bấm được |
 | Ô số liệu gọn | `AppStatTile`, `AppStatRow` | Số lớn + nhãn dưới, nền/viền/chữ theo tông mục 6; hàng chia đều, chữ phóng >1,3 xuống lưới 2 cột (mockup 2026-10-13) |
-| Đầu trang chủ | Lời chào trên nền màn + `AppFeaturedCard`; `AppHeroBell` | Lời chào nhỏ + tên (hoặc "Sáng nay" + cơ sở · ngày), bọc `Semantics(container: true, header: true)`; thẻ nổi bật đầu màn. `AppHeroHeader` (dải nền `brand`) không còn màn nào dùng sau đợt Clay 2026-10-14 |
+| Đầu trang chủ | `AppHeroHeader` + `AppHeroBell` | Dải nền `brand`, lời chào nhỏ + tên chữ trắng, chuông trắng có số chưa đọc; card ngữ cảnh trắng đè mép dưới dải (Figma App, user 2026-11-14). Bọc `Semantics(header: true)` |
 | Việc cần làm | `AppTaskCard` | Card trắng + `AppListRow`: ô icon, tên, mô tả, badge; việc cần làm ngay viền `primary` |
 | Dải ngày | `AppDayStrip` | Ô T2…CN + ngày/tháng; ô chọn nền `brand`; vùng chạm ≥48 |
 | Lịch tháng | `AppMonthCalendar` | Thứ Hai đầu tuần; chấm theo tông + nhãn semantics; cuối tuần chữ mờ; ngày chọn tròn `primary` |
@@ -651,7 +660,7 @@ Theo Design System §5–6. App dùng `lib/core/widgets/`; feature không gọi 
 | Ảnh giữ chỗ | `AppPhotoPlaceholder` | Khối `primarySoft` + icon ảnh, chữ dưới, "+N" ở ô cuối; dùng khi chưa có ảnh qua URL có auth, không dùng ảnh trẻ thật |
 | Ô chọn | `AppSelectField` | Cùng khung ô nhập, mũi tên xuống; màn mở `AppBottomSheet` để chọn |
 | Mã OTP | `AppOtpField` | Ô số rời, một `TextField` ẩn nhận phím/dán/autofill; ô đang nhập viền `primary` |
-| Segmented | `AppSegmented` | Rãnh lõm (gradient `border` → `track`), ô chọn trắng nổi trượt; count lấy BE; tab/menu đậm 500 |
+| Segmented | `AppSegmented` | Rãnh `track` bo 8, ô chọn trắng viền `border`, chữ `primary`; count lấy BE; tab/menu đậm 500 |
 | Banner | `AppBanner` | Màu nhạt theo nghĩa phản hồi, không viền, icon trơn, bo 16, bóng `soft` |
 | Toast | `AppToast` — cần bổ sung | Nền màu theo loại, icon tròn, thanh đếm ngược 3; mép trên dưới status bar; 3,5 s / lỗi 6 s |
 | Xác nhận | `AppConfirmationDialog` | Icon lớn giữa trong vòng tròn tông, tiêu đề + mô tả; nút lặp đúng hành động, phụ “Quay lại”; bo 32 |
@@ -713,12 +722,12 @@ Theo Design System §7.2–8.2. Đây là chuẩn bố cục; quyền và field 
 | --- | --- |
 | AppShell | Nội dung một cột + thanh điều hướng 3–5 đích; giữ tab/scroll khi cần |
 | Màn tab | Tiêu đề lớn trong nội dung; Hôm nay có hero |
-| Màn con | AppBar cùng nền màn, không kẻ dưới, cao 56, nút Back, tiêu đề căn trái |
-| Thanh đáy | Nổi cách mép 12 (`AppSizes.floatingBarInset`), bo 28, bóng `card`; cao 72 + safe area; nhãn luôn hiện; icon 24 |
-| Đích đang chọn | Viên 64×32 `primarySoft` sau icon; icon/nhãn `primary` |
+| Màn con | AppBar nền trắng, kẻ dưới `border`, cao 56, nút lùi mũi tên, tiêu đề căn trái (Figma App) |
+| Thanh đáy | Trắng sát đáy, kẻ trên `border`; cao 64 + safe area; nhãn luôn hiện; icon 24 |
+| Đích đang chọn | Ô 64×32 `primarySoft` bo 8 sau icon; icon/nhãn `primary` |
 | Số chưa đọc | Viên nền `danger`, chữ `surface` trắng; có semantics |
 | Ngữ cảnh con/lớp/điểm trường | Chip avatar/tên + mũi tên, mở `AppBottomSheet` chọn; Trang chủ PH dùng thẻ bé xếp chồng (§8.5) |
-| Vùng hành động form/chi tiết | `AppBottomDock` nổi cách mép 12, bo 28, nền đặc; tránh bàn phím/home indicator |
+| Vùng hành động form/chi tiết | `AppBottomDock` trên nền màn, nút rộng cách mép 16; tránh bàn phím/home indicator |
 | Điều hướng chi tiết | Route con hoặc bottom sheet cho chi tiết ngắn; không breadcrumb desktop |
 | Phiên bản/hỗ trợ | Màn Tài khoản/Giới thiệu; không footer toàn app |
 
@@ -853,10 +862,10 @@ ColorScheme buildLightColorScheme() {
 ### 9.2 Hợp đồng theme/component
 
 - `AppStatusColors` cung cấp link `primary`, pressed/focus, muted/disabled/track, phản hồi và 7 bộ tông gồm màu/chữ/nền/viền; triển khai copyWith/lerp và đăng ký ThemeData.extensions.
-- AppButton: primary `brand/onBrand`, pressed `brandPressed`; danger nhạt `dangerSoft/dangerText`; bo pill, bóng clay khi bấm được; loading ba chấm.
-- Input: nền lõm (gradient `surfaceMuted` → `surface`), viền borderStrong, focus viền 2 primary + vòng focusRing; màu lỗi theo feedback; label/hint/error có style chung.
-- AppBar cùng nền màn, căn trái; NavigationBar nổi bo 28, cao 72 + safe area, nhãn luôn hiện, indicator 64×32; không để primary role Material làm icon chọn thành nền brand sai mục 8.1.
-- Card trắng đặc bo 28 + viền trắng mờ + AppShadows.card; banner/toast bo 16; dialog/sheet bo 32 + overlay không blur.
+- AppButton: primary `brand/onBrand` (xanh đặc, chữ trắng), pressed `brandPressed`; danger nhạt `dangerSoft/dangerText`; bo 8, phẳng; loading ba chấm.
+- Input: nền trắng, viền borderStrong, bo 8, focus viền 1.5 primary; màu lỗi theo feedback; label/hint/error có style chung.
+- AppBar nền trắng, kẻ dưới `border`, căn trái, nút lùi mũi tên; NavigationBar trắng sát đáy, kẻ trên `border`, cao 64 + safe area, nhãn luôn hiện, ô chọn `primarySoft` bo 8; số trên tab (`AppShell.badges`) cho GV/bếp; không để primary role Material làm icon chọn thành nền brand sai mục 8.1.
+- Card trắng bo 12 + viền `border` + AppShadows.card; banner/toast bo 10 có viền cùng tông; dialog/sheet bo 16 + overlay không blur.
 - Link đọc token `primary` qua extension; không lấy `colorScheme.primary` vì role đó là nền brand của nút.
 - Theme input/button/card/navigation/sheet/dialog định nghĩa một lần, kiểm bằng widget test. Không tạo một theme khác ở mỗi feature.
 
@@ -1158,7 +1167,7 @@ Chuông trong app và danh sách thông báo không chứng minh backend đã h�
 - [ ] Light Theme, TextTheme đúng 22/26/28/18/17/16/14/13/12 theo vai trò; nút 16/700; không 800, không khóa textScaler.
 - [ ] Nút/input một dòng pill cao nền 52; card bo 28 padding 20, dialog/sheet bo 32; `space8 = 32`, không space7.
 - [ ] Vùng chạm ≥48 kể cả nút nhỏ/chip; list row ≥64; NavigationBar 72 + safe area, nhãn luôn hiện.
-- [ ] Một nút chính mỗi vùng; không FAB; câu nút là động từ; danger đỏ nhạt chữ đỏ; nút bấm được có bóng clay, nút khoá phẳng.
+- [ ] Một nút chính mỗi vùng; không FAB; câu nút là động từ; danger đỏ nhạt chữ đỏ; nút phẳng, khoá thì nền `borderStrong`.
 - [ ] Badge dùng 7 tông gray/orange/blue/approval/red/green/teal; cùng nhãn/tông với web theo người đọc; approval vàng chỉ chờ người duyệt.
 - [ ] Icon qua AppIcons; Tabler outline hoặc fallback Material rounded đúng ngoại lệ; không import trực tiếp/emoji tại feature.
 - [ ] Card trắng đặc; kính chỉ hero, không BackdropFilter trong list; logo/tranh cùng nguồn, không méo/đổi màu logo.

@@ -29,37 +29,40 @@ Future<void> pumpTeacherHome(
 
 void main() {
   testWidgets(
-    'Bố cục D (AUTH-03): thẻ lớp có vòng điểm danh, hạn, nút làm ngay',
+    'Figma GV01 (AUTH-03): dải chào, thẻ lớp + Lịch hoạt động, hạn điểm danh',
     (tester) async {
       await pumpTeacherHome(tester);
+      expect(find.text('Chào cô,'), findsOneWidget);
       expect(find.text('Trần Thu Hà'), findsOneWidget);
-      expect(find.text('Lớp Mầm 3A'), findsOneWidget);
-      expect(find.text('28 bé · Đang diễn ra: 08:00 Tạo hình'), findsOneWidget);
-      expect(find.bySemanticsLabel('0/28 đã điểm danh'), findsOneWidget);
+      expect(find.text('Lớp Mầm 3A · 28 bé'), findsOneWidget);
+      expect(find.text('Đang diễn ra: 08:00 Tạo hình'), findsOneWidget);
       expect(find.text('Hạn điểm danh: 08:30 · còn 47 phút'), findsOneWidget);
-      expect(
-        find.widgetWithText(FilledButton, 'Điểm danh ngay'),
-        findsOneWidget,
-      );
       expect(find.text('Lịch hoạt động ›'), findsOneWidget);
+      expect(find.bySemanticsLabel('Lịch hoạt động'), findsOneWidget);
     },
   );
 
   testWidgets(
-    'Bố cục D: Việc tiếp theo trượt ngang, không lặp việc điểm danh',
+    'Figma GV01: Việc cần làm hôm nay xếp dọc, điểm danh đứng đầu, mỗi việc một lần',
     (tester) async {
       await pumpTeacherHome(tester);
-      expect(find.text('Việc tiếp theo'), findsOneWidget);
-      expect(find.text('Điểm danh & nhiệt độ'), findsNothing);
-      for (final title in [
+      expect(find.text('Việc cần làm hôm nay'), findsOneWidget);
+      final titles = [
+        'Điểm danh & sức khỏe',
         'Đơn xin nghỉ',
         'Đánh giá hằng ngày',
         'Đón trẻ',
         'Đo sức khỏe tháng 10',
-      ]) {
+      ];
+      for (final title in titles) {
+        await tester.scrollUntilVisible(find.text(title), 150);
         expect(find.text(title), findsOneWidget);
       }
+      expect(find.text('0/28 bé · trước 08:30'), findsOneWidget);
+      expect(find.text('Cần làm'), findsOneWidget);
       expect(find.text('Còn 15'), findsOneWidget);
+      // Có mặt là ăn đủ bữa (ATT-02) ⇒ việc điểm danh không có báo ăn
+      expect(find.textContaining('báo ăn'), findsNothing);
     },
   );
 
@@ -83,8 +86,8 @@ void main() {
   testWidgets('Không còn việc ⇒ trạng thái rỗng', (tester) async {
     await pumpTeacherHome(tester, mode: FakeMode.empty);
     expect(find.text('Không còn việc nào'), findsOneWidget);
-    expect(find.bySemanticsLabel('28/28 đã điểm danh'), findsOneWidget);
-    expect(find.text('Điểm danh ngay'), findsNothing);
+    expect(find.text('Đã điểm danh 28/28 bé hôm nay.'), findsOneWidget);
+    expect(find.textContaining('Hạn điểm danh'), findsNothing);
   });
 
   testWidgets('Lỗi ⇒ Thử lại', (tester) async {

@@ -23,7 +23,7 @@ import 'package:carenest_app/routing/route_paths.dart';
 
 enum MyChildTab { today, health, development }
 
-/// Tab "Bé của tôi" — mockup P08 (Hôm nay), P11 (Sức khỏe), P12 (Phát triển).
+/// Tab "Bé của tôi" — Figma PH08 (Hôm nay), PH11 (Sức khỏe), PH12 (Phát triển).
 class MyChildScreen extends StatefulWidget {
   const MyChildScreen({
     super.key,
@@ -55,29 +55,28 @@ class _MyChildScreenState extends State<MyChildScreen> {
       valueListenable: SelectedChild.notifier,
       builder: (context, childId, _) {
         final child = FakeParentHomeSource.childById(childId);
-        return SafeArea(
-          bottom: false,
-          child: ListView(
+        return Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            title: Text.rich(
+              TextSpan(
+                text: 'Bé của tôi',
+                children: [
+                  TextSpan(
+                    text: ' · ${child.fullName}',
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textMuted,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            titleTextStyle: textTheme.headlineSmall,
+          ),
+          body: ListView(
             padding: const EdgeInsets.all(AppSpacing.pagePadding),
             children: [
-              Semantics(
-                header: true,
-                child: Text.rich(
-                  TextSpan(
-                    text: 'Bé của tôi',
-                    children: [
-                      TextSpan(
-                        text: ' · ${child.fullName}',
-                        style: textTheme.titleSmall?.copyWith(
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    ],
-                  ),
-                  style: textTheme.headlineSmall,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.space4),
               AppSegmented<MyChildTab>(
                 segments: const [
                   (MyChildTab.today, 'Hôm nay'),
@@ -186,18 +185,18 @@ class _TodayTab extends StatelessWidget {
           const SizedBox(height: AppSpacing.space2),
           AppCard(
             flush: true,
-            child: AppDividedColumn(
-              children: [
-                for (final event in today.events)
-                  AppListRow(
-                    leading: Icon(
-                      _icon(event.kind),
-                      size: AppSizes.iconTile,
-                      color: AppColors.primary,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.space1),
+              child: Column(
+                children: [
+                  for (final event in today.events)
+                    _EventRow(
+                      icon: _icon(event.kind),
+                      label:
+                          '${DateLabels.time24(event.time)} · ${event.label}',
                     ),
-                    title: '${DateLabels.time24(event.time)} · ${event.label}',
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
           if (today.review case final review?) ...[
@@ -244,12 +243,46 @@ class _TodayTab extends StatelessWidget {
                 ),
                 title: leave.title,
                 subtitle: Text(leave.detail),
-                showChevron: true,
                 onTap: () => push(RoutePaths.parentLeaveNotices),
               ),
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// Một mốc trong ngày: icon `primary` + giờ · nội dung, không kẻ ngăn (Figma PH08).
+class _EventRow extends StatelessWidget {
+  const _EventRow({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: AppSizes.minimumTapTarget),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.space4,
+          vertical: AppSpacing.space2 + 2,
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: AppSizes.iconInline, color: AppColors.primary),
+            const SizedBox(width: AppSpacing.space4),
+            Expanded(
+              child: Text(
+                label,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -379,7 +412,7 @@ class _MeasureBox extends StatelessWidget {
               value,
               textAlign: TextAlign.center,
               style: textTheme.headlineSmall?.copyWith(
-                color: AppColors.onBrand,
+                color: AppColors.primaryText,
               ),
             ),
           ],
@@ -413,22 +446,17 @@ class _DevelopmentTab extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: AppSpacing.space2,
-                  runSpacing: AppSpacing.space2,
-                  children: [
-                    Text(dev.commentTitle, style: textTheme.titleSmall),
-                    if (dev.commentConfirmed)
-                      const AppStatusBadge(
-                        label: 'Đã xác nhận',
-                        tone: AppStatusTone.green,
-                      ),
-                  ],
+                AppCardHeader(
+                  title: dev.commentTitle,
+                  trailing: dev.commentConfirmed
+                      ? const AppStatusBadge(
+                          label: 'Đã xác nhận',
+                          tone: AppStatusTone.green,
+                        )
+                      : null,
                 ),
                 const SizedBox(height: AppSpacing.space2),
-                Text(dev.commentNote, style: textTheme.bodyLarge),
+                Text(dev.commentNote, style: textTheme.bodyMedium),
                 const SizedBox(height: AppSpacing.space1),
                 Text(dev.commentAuthor, style: muted),
               ],
@@ -489,13 +517,7 @@ class _DevelopmentTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.space3),
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.space4),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceMuted,
-              borderRadius: BorderRadius.circular(AppRadius.xxl),
-              border: Border.all(color: AppColors.borderStrong),
-            ),
+          DashedBox(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
