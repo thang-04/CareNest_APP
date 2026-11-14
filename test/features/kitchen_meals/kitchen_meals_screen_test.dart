@@ -122,7 +122,7 @@ void main() {
     expect(find.textContaining('Cá basa sốt cà 45 g'), findsOneWidget);
     await tester.tap(find.text('Chồi'));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.text('Ăn chay · 2 bé'), 200);
+    await tester.scrollUntilVisible(find.text('Dị ứng hải sản · 1 bé'), 200);
     expect(find.textContaining('Nguyễn'), findsNothing);
   });
 

@@ -19,7 +19,6 @@ extension RosterTagView on RosterTag {
     RosterTagKind.allergy => AppStatusTone.teal,
     RosterTagKind.leave => AppStatusTone.orange,
     RosterTagKind.meal => AppStatusTone.approval,
-    RosterTagKind.diet => AppStatusTone.green,
   };
 }
 

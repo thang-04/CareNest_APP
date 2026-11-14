@@ -18,7 +18,7 @@ import 'package:carenest_app/features/campus_children/domain/campus_children.dar
 import 'package:carenest_app/features/class_roster/domain/class_roster.dart';
 import 'package:carenest_app/features/class_roster/presentation/screens/class_roster_screen.dart';
 
-enum _TagFilter { all, allergy, diet }
+enum _TagFilter { all, allergy }
 
 /// Phó HT · Trẻ của cơ sở (chỉ xem) — mockup V10. Chỉ trẻ thuộc cơ sở được phân công (AUTH-02);
 /// ghi chú dị ứng / chế độ ăn là mã BE trả (HLT-06). Thêm trẻ, xếp lớp làm trên Web.
@@ -53,7 +53,6 @@ class _CampusChildrenScreenState extends State<CampusChildrenScreen> {
   bool _matchesTag(CampusChild child) => switch (_tag) {
     _TagFilter.all => true,
     _TagFilter.allergy => child.tag?.kind == RosterTagKind.allergy,
-    _TagFilter.diet => child.tag?.kind == RosterTagKind.diet,
   };
 
   void _pickClass(CampusChildren data) {
@@ -127,10 +126,6 @@ class _CampusChildrenScreenState extends State<CampusChildrenScreen> {
                   (
                     _TagFilter.allergy,
                     'Dị ứng (${inClass.where((child) => child.tag?.kind == RosterTagKind.allergy).length})',
-                  ),
-                  (
-                    _TagFilter.diet,
-                    'Ăn kiêng (${inClass.where((child) => child.tag?.kind == RosterTagKind.diet).length})',
                   ),
                 ])
                   AppFilterChip(

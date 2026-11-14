@@ -59,7 +59,8 @@ void main() {
     tester,
   ) async {
     await pumpScreen(tester, const ClassRosterScreen(), inScaffold: true);
-    expect(find.text('Ăn chay', skipOffstage: false), findsOneWidget);
+    // Plan 14/11 AC-4 (HLT-06): không có nhãn ăn chay, chỉ dị ứng
+    expect(find.text('Ăn chay', skipOffstage: false), findsNothing);
     expect(find.textContaining('bữa', skipOffstage: false), findsNothing);
   });
 

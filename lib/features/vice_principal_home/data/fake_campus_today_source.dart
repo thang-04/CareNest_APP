@@ -144,8 +144,7 @@ class FakeCampusTodaySource implements CampusTodaySource {
               CampusTask(
                 kind: CampusTaskKind.children,
                 title: 'Trẻ của cơ sở',
-                subtitle:
-                    '${children.length} bé · $special bé dị ứng / ăn kiêng',
+                subtitle: '${children.length} bé · $special bé dị ứng',
                 badge: 'Xem',
                 level: CampusBadgeLevel.view,
               ),

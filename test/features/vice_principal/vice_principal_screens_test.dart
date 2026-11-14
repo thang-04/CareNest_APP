@@ -200,7 +200,7 @@ void main() {
     expect(find.bySemanticsLabel('Tổng suất: 182'), findsOneWidget);
     expect(
       labelOf('Chồi 1'),
-      'Chồi 1, 29 suất thường, 2 suất thay thế, ăn chay',
+      'Chồi 1, 29 suất thường, 2 suất thay thế, dị ứng trứng',
     );
     expect(find.textContaining('xác nhận trên CareNest Web'), findsOneWidget);
     expect(find.byType(AppButton), findsNothing);
@@ -284,7 +284,8 @@ void main() {
     );
     expect(find.text('196 bé'), findsOneWidget);
     expect(find.text('Dị ứng (4)'), findsOneWidget);
-    expect(find.text('Ăn kiêng (4)'), findsOneWidget);
+    // Plan 14/11 AC-4: không có lọc ăn kiêng / ăn chay
+    expect(find.textContaining('Ăn kiêng'), findsNothing);
 
     await tester.tap(find.text('Dị ứng (4)'));
     await tester.pumpAndSettle();
