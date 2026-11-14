@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
@@ -8,11 +9,11 @@ import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_bottom_sheet.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
-import 'package:carenest_app/core/widgets/app_text_field.dart';
 import 'package:carenest_app/features/kitchen_sample_log/data/fake_sample_log_source.dart';
 import 'package:carenest_app/features/kitchen_sample_log/domain/sample_log.dart';
+import 'package:carenest_app/features/kitchen_sample_log/presentation/widgets/boxed_field.dart';
 
-/// Sổ lưu mẫu thức ăn mỗi bữa (NUT-21): bếp ghi, PHT dinh dưỡng duyệt; giờ lấy mẫu do hệ thống ghi.
+/// Sổ lưu mẫu thức ăn mỗi bữa (NUT-21) — Figma Bếp 06: bếp ghi, PHT dinh dưỡng duyệt; giờ lấy mẫu do hệ thống ghi.
 class SampleLogScreen extends StatefulWidget {
   const SampleLogScreen({super.key, required this.onSaved, this.source});
 
@@ -134,60 +135,85 @@ class _SampleLogScreenState extends State<SampleLogScreen> {
   }
 
   Widget _buildForm(SampleLogForm form) {
-    final textTheme = Theme.of(context).textTheme;
+    // Chữ phóng lớn ⇒ hai ô xếp dọc thay vì chia đôi hàng (DESIGN.md §5.1)
+    final stacked = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+    // Chia đôi hàng: nhãn khối lượng xuống 2 dòng ⇒ hai ô cùng cao cho thẳng hàng
+    final pairHeight = stacked ? 56.0 : 74.0;
+    final amount = BoxedTextField(
+      label: 'Khối lượng · dụng cụ chứa',
+      isRequired: true,
+      hint: '150 g · hộp inox có nắp',
+      controller: _amount,
+      errorText: _amountError,
+      enabled: !_saving,
+      minHeight: pairHeight,
+      onChanged: (_) {
+        if (_amountError != null) setState(() => _amountError = null);
+      },
+    );
+    final temperature = BoxedTextField(
+      label: 'Nhiệt độ bảo quản',
+      isRequired: true,
+      hint: '0–5 °C',
+      controller: _temperature,
+      errorText: _temperatureError,
+      enabled: !_saving,
+      minHeight: pairHeight,
+      onChanged: (_) {
+        if (_temperatureError != null) {
+          setState(() => _temperatureError = null);
+        }
+      },
+    );
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.pagePadding),
       children: [
-        AppSelectField(
+        BoxedField(
           label: 'Bữa · món lưu mẫu',
-          labelSuffix: '*',
-          value: _dish?.label ?? 'Chọn món',
+          isRequired: true,
           onTap: _saving || form.dishes.isEmpty
               ? null
               : () => _pickDish(form.dishes),
+          trailing: const Icon(
+            AppIcons.chevronDown,
+            size: AppSizes.iconInline,
+            color: AppColors.textMuted,
+          ),
+          child: Text(_dish?.label ?? 'Chọn món'),
         ),
-        const SizedBox(height: AppSpacing.space4),
-        AppTextField(
-          label: 'Khối lượng · dụng cụ chứa',
-          labelSuffix: '*',
-          hint: '150 g · hộp inox có nắp',
-          controller: _amount,
-          errorText: _amountError,
-          enabled: !_saving,
-          onChanged: (_) {
-            if (_amountError != null) setState(() => _amountError = null);
-          },
-        ),
-        const SizedBox(height: AppSpacing.space4),
-        AppTextField(
-          label: 'Nhiệt độ bảo quản',
-          labelSuffix: '*',
-          hint: '0–5 °C',
-          controller: _temperature,
-          errorText: _temperatureError,
-          enabled: !_saving,
-          onChanged: (_) {
-            if (_temperatureError != null) {
-              setState(() => _temperatureError = null);
-            }
-          },
-        ),
-        const SizedBox(height: AppSpacing.space4),
-        AppFieldFrame(
+        const SizedBox(height: AppSpacing.space3),
+        if (stacked) ...[
+          amount,
+          const SizedBox(height: AppSpacing.space3),
+          temperature,
+        ] else
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: amount),
+              const SizedBox(width: AppSpacing.space2),
+              Expanded(child: temperature),
+            ],
+          ),
+        const SizedBox(height: AppSpacing.space3),
+        BoxedField(
           label: 'Giờ lấy mẫu',
-          enabled: false,
+          readOnly: true,
           child: Text(
             '${DateLabels.time24(form.sampledAt)} · hủy sau ít nhất 24 giờ',
-            style: textTheme.bodyLarge,
           ),
         ),
-        const SizedBox(height: AppSpacing.space4),
-        Text(
-          'Mẫu đủ món theo thực đơn đã công bố.',
-          style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+        const SizedBox(height: AppSpacing.space3),
+        // Domain chưa có trường ghi chú ⇒ chỉ hiện lời nhắc, không cho nhập
+        const BoxedField(
+          label: 'Ghi chú',
+          readOnly: true,
+          minHeight: 72,
+          child: Text('Mẫu đủ món theo thực đơn đã công bố.'),
         ),
         const SizedBox(height: AppSpacing.space3),
         const AppBanner(
+          kind: AppBannerKind.warning,
           message: 'PHT dinh dưỡng duyệt; sau ít nhất 24 giờ bếp ghi hủy mẫu.',
         ),
       ],

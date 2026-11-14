@@ -126,7 +126,12 @@ void main() {
         ('Ảnh mẫu bữa', 'Lưu ảnh mẫu'),
         ('Sổ lưu mẫu', 'Ghi lưu mẫu'),
       ]) {
-        await tester.scrollUntilVisible(find.text(task), 200);
+        // Đưa việc ra giữa màn: sát mép dưới thì thanh đáy che, bấm trượt
+        await Scrollable.ensureVisible(
+          tester.element(find.text(task)),
+          alignment: 0.5,
+        );
+        await tester.pumpAndSettle();
         await tester.tap(find.text(task));
         await tester.pumpAndSettle();
         expect(find.text(title), findsOneWidget, reason: task);

@@ -6,7 +6,7 @@ import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/features/account/domain/account_profile.dart';
 
-/// Hỏi lại trước khi đăng xuất (mockup P19); trả `true` khi người dùng chọn "Đăng xuất".
+/// Hỏi lại trước khi đăng xuất (Figma PH19); trả `true` khi người dùng chọn "Đăng xuất".
 Future<bool> confirmLogout(BuildContext context, AppRole role) async {
   final confirmed = await showDialog<bool>(
     context: context,
@@ -70,11 +70,21 @@ class _LogoutConfirmDialog extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.space3),
                 Expanded(
-                  child: AppButton(
-                    label: 'Đăng xuất',
-                    variant: AppButtonVariant.danger,
-                    expand: true,
+                  // Figma PH19: nút xác nhận nền đỏ đặc, khác nút danger nền nhạt dùng chung
+                  child: FilledButton(
                     onPressed: () => Navigator.of(context).pop(true),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.dangerText,
+                      foregroundColor: AppColors.onBrand,
+                      minimumSize: const Size(
+                        double.infinity,
+                        AppSizes.buttonHeight,
+                      ),
+                    ),
+                    child: const Text(
+                      'Đăng xuất',
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               ],

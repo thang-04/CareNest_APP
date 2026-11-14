@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/constants/app_icons.dart';
-import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
-import 'package:carenest_app/core/theme/app_status_colors.dart';
+import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_avatar.dart';
 import 'package:carenest_app/core/widgets/app_bottom_sheet.dart';
-import 'package:carenest_app/core/constants/shadows.dart';
+import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_hero_header.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
@@ -17,7 +17,7 @@ import 'package:carenest_app/features/parent_home/presentation/selected_child.da
 import 'package:carenest_app/features/parent_home/presentation/widgets/parent_home_cards.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
-/// Phụ huynh · Trang chủ — bố cục H (thẻ ví xếp chồng các bé): lời chào → thẻ bé đang chọn + bé khác ló ra → Việc nhanh.
+/// Phụ huynh · Trang chủ (Figma PH02): dải chào + thẻ bé đè mép → Hôm nay → Tiện ích.
 class ParentHomeScreen extends StatefulWidget {
   const ParentHomeScreen({super.key, this.source});
 
@@ -109,156 +109,132 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
 
   void _push(String path) => context.push(RoutePaths.withChild(path, _childId));
 
-  // Thẻ bé khác ló ra dưới thẻ đang chọn một đoạn này
-  static const double _peekOverlap = AppSpacing.space6;
-
-  bool get _hasPeek =>
-      !_loading && _error == null && _today != null && _children.length > 1;
-
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final topInset = MediaQuery.paddingOf(context).top;
-    return RefreshIndicator(
-      onRefresh: _load,
-      child: ListView(
-        padding: EdgeInsets.fromLTRB(
-          AppSpacing.pagePadding,
-          topInset + AppSpacing.space4,
-          AppSpacing.pagePadding,
-          AppSpacing.space6,
-        ),
-        children: [
-          Row(
-            children: [
-              Expanded(
-                // container: tách lời chào khỏi nút chuông, không gộp thành một câu đọc
-                child: Semantics(
-                  container: true,
-                  header: true,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Xin chào,',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textMuted,
-                        ),
+    final today = _today;
+    final ready = !_loading && _error == null && today != null;
+    // Dải đầu màn nền xanh ⇒ icon thanh trạng thái màu sáng
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: RefreshIndicator(
+        onRefresh: _load,
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: AppSpacing.space6),
+          children: [
+            AppHeroHeader(
+              greeting: 'Xin chào,',
+              name: today?.greetingName ?? '',
+              trailing: AppHeroBell(
+                unread: today?.unreadNotifications ?? 0,
+                onPressed: () => context.go(RoutePaths.parentNotifications),
+              ),
+              card: _loading
+                  ? const AppSkeletonCard(lines: 1)
+                  : ready
+                  ? ChildHeroCard(
+                      child: today.child,
+                      onOpenProfile: () => _push(RoutePaths.parentChildProfile),
+                      onSwitchChild: _children.length > 1 ? _pickChild : null,
+                    )
+                  : null,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.pagePadding,
+                AppSpacing.space3,
+                AppSpacing.pagePadding,
+                0,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_error != null) ...[
+                    AppErrorState(
+                      title: 'Chưa tải được thông tin hôm nay',
+                      message: 'Kiểm tra kết nối mạng rồi thử lại.',
+                      onRetry: _load,
+                    ),
+                    const SizedBox(height: AppSpacing.sectionGap),
+                  ] else if (ready) ...[
+                    _SectionTitle(
+                      title:
+                          'Hôm nay · ${DateLabels.weekdayDayMonth(today.date)}',
+                      action: AppLinkButton(
+                        label: 'Xem lịch ›',
+                        onPressed: () => _push(RoutePaths.parentAttendance),
                       ),
-                      Text(
-                        _today?.greetingName ?? '',
-                        style: textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
+                    ),
+                    const SizedBox(height: AppSpacing.space2),
+                    TodayCard(
+                      today: today,
+                      onOpenAttendance: () =>
+                          _push(RoutePaths.parentAttendance),
+                      onOpenMenu: () => _push(RoutePaths.parentMenu),
+                      onOpenActivities: () =>
+                          _push(RoutePaths.parentActivities),
+                    ),
+                    const SizedBox(height: AppSpacing.sectionGap),
+                  ],
+                  const _SectionTitle(title: 'Tiện ích'),
+                  const SizedBox(height: AppSpacing.space3),
+                  UtilityGrid(
+                    iconOnTop: true,
+                    items: [
+                      UtilityItem(
+                        AppIcons.calendarOff,
+                        'Xin nghỉ cho bé',
+                        () => _push(RoutePaths.parentLeaveNew),
+                      ),
+                      UtilityItem(
+                        AppIcons.gallery,
+                        'Hoạt động & đánh giá',
+                        () => _push(RoutePaths.parentActivities),
+                      ),
+                      UtilityItem(
+                        AppIcons.menuBook,
+                        'Thực đơn tuần',
+                        () => _push(RoutePaths.parentMenu),
+                      ),
+                      UtilityItem(
+                        AppIcons.heart,
+                        'Sức khỏe',
+                        () => context.go(
+                          Uri(
+                            path: RoutePaths.parentChild,
+                            queryParameters: {'tab': 'health'},
+                          ).toString(),
                         ),
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
-              Semantics(
-                container: true,
-                child: DecoratedBox(
-                  decoration: const BoxDecoration(
-                    color: AppColors.surface,
-                    shape: BoxShape.circle,
-                    boxShadow: AppShadows.buttonSecondary,
-                  ),
-                  child: IconTheme.merge(
-                    data: const IconThemeData(color: AppColors.textPrimary),
-                    child: AppHeroBell(
-                      unread: _today?.unreadNotifications ?? 0,
-                      onPressed: () =>
-                          context.go(RoutePaths.parentNotifications),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.space5),
-          _buildWallet(),
-          // Phần ló được kéo lên ⇒ trừ đúng đoạn đó để khoảng cách tới mục sau vẫn bằng sectionGap
-          SizedBox(
-            height: _hasPeek
-                ? AppSpacing.sectionGap - _peekOverlap
-                : AppSpacing.sectionGap,
-          ),
-          Semantics(
-            header: true,
-            child: Text('Việc nhanh', style: textTheme.titleMedium),
-          ),
-          const SizedBox(height: AppSpacing.space3),
-          UtilityGrid(
-            items: [
-              UtilityItem(
-                AppIcons.calendarOff,
-                'Xin nghỉ cho bé',
-                () => _push(RoutePaths.parentLeaveNew),
-                tone: AppStatusTone.orange,
-              ),
-              UtilityItem(
-                AppIcons.image,
-                'Hoạt động & đánh giá',
-                () => _push(RoutePaths.parentActivities),
-                tone: AppStatusTone.blue,
-              ),
-              UtilityItem(
-                AppIcons.menuBook,
-                'Thực đơn tuần',
-                () => _push(RoutePaths.parentMenu),
-                tone: AppStatusTone.green,
-              ),
-              UtilityItem(
-                AppIcons.heart,
-                'Sức khỏe',
-                () => context.go(
-                  Uri(
-                    path: RoutePaths.parentChild,
-                    queryParameters: {'tab': 'health'},
-                  ).toString(),
-                ),
-                tone: AppStatusTone.red,
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
+}
 
-  Widget _buildWallet() {
-    if (_loading) return const AppSkeletonCard(lines: 4);
-    final today = _today;
-    if (_error != null || today == null) {
-      return AppErrorState(
-        title: 'Chưa tải được thông tin hôm nay',
-        message: 'Kiểm tra kết nối mạng rồi thử lại.',
-        onRetry: _load,
-      );
-    }
-    final others = _children.where((item) => item.id != _childId).toList();
-    final card = ChildWalletCard(
-      today: today,
-      onOpenAttendance: () => _push(RoutePaths.parentAttendance),
-      onOpenMenu: () => _push(RoutePaths.parentMenu),
-      onOpenActivities: () => _push(RoutePaths.parentActivities),
-      onOpenProfile: () => _push(RoutePaths.parentChildProfile),
-    );
-    if (others.isEmpty) return card;
-    // Bé khác nằm dưới thẻ đang chọn: vẽ trước, kéo lên, thẻ đang chọn đè lên mép trên
-    return Column(
-      verticalDirection: VerticalDirection.up,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+/// Tiêu đề mục + link tuỳ chọn bên phải.
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.title, this.action});
+
+  final String title;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
       children: [
-        Transform.translate(
-          offset: const Offset(0, -_peekOverlap),
-          child: OtherChildrenPeek(
-            others: others,
-            onSelect: (child) => SelectedChild.notifier.value = child.id,
-            onOpenPicker: _pickChild,
+        Expanded(
+          child: Semantics(
+            header: true,
+            child: Text(title, style: Theme.of(context).textTheme.titleSmall),
           ),
         ),
-        card,
+        ?action,
       ],
     );
   }

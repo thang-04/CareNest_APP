@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
+import 'package:carenest_app/core/widgets/app_task_card.dart';
 import 'package:carenest_app/features/approvals/presentation/screens/approvals_screen.dart';
 import 'package:carenest_app/features/campus_children/data/fake_campus_children_source.dart';
 import 'package:carenest_app/features/campus_children/presentation/screens/campus_children_screen.dart';
@@ -73,45 +74,46 @@ void expectNoWriteActions() {
 
 void main() {
   testWidgets(
-    'V01 (AUTH-08, AUTH-21): mốc buổi sáng, chốt suất chờ xác nhận trên Web',
+    'V01 (AUTH-08, AUTH-21): thẻ cơ sở, số hôm nay, số suất chờ xác nhận trên Web',
     (tester) async {
       await pumpScreen(
         tester,
         VicePrincipalHomeScreen(source: homeSource()),
         inScaffold: true,
       );
-      expect(find.text('Sáng nay'), findsOneWidget);
+      expect(find.text('Chào thầy,'), findsOneWidget);
+      expect(find.text('Lê Văn Bình'), findsOneWidget);
+      expect(find.text('Cơ sở chính – Thượng Hồng'), findsOneWidget);
+      expect(find.text('6 lớp · 182 bé có mặt / 196'), findsOneWidget);
+      expect(find.bySemanticsLabel('Có mặt: 182'), findsOneWidget);
+      expect(find.bySemanticsLabel('Có phép: 9'), findsOneWidget);
+      expect(find.bySemanticsLabel('Vắng: 5'), findsOneWidget);
+      expect(find.bySemanticsLabel('Chờ xử lý: 2'), findsOneWidget);
+      expect(find.text('Theo dõi hôm nay'), findsOneWidget);
+      expect(find.text('Chưa xác nhận'), findsOneWidget);
+      expect(find.text('Tổng hợp 08:15 · hạn 08:30'), findsOneWidget);
+      // Số suất chưa xác nhận ⇒ thẻ có viền nhấn như Figma PHT 01
       expect(
-        find.text('Cơ sở chính – Thượng Hồng · Thứ Hai, 12/10'),
-        findsOneWidget,
+        tester
+            .widget<AppTaskCard>(
+              find.widgetWithText(AppTaskCard, 'Số suất hôm nay'),
+            )
+            .highlighted,
+        isTrue,
       );
-      expect(
-        labelOf('08:00, Khoá điểm danh'),
-        '08:00, Khoá điểm danh, 6/6 lớp đã điểm danh · 182/196 bé có mặt, đã xong',
-      );
-      expect(
-        labelOf('08:30, Chốt suất ăn'),
-        '08:30, Chốt suất ăn, 182 suất chờ xác nhận trên Web, chờ xác nhận trên Web',
-      );
-      expect(
-        labelOf('08:40, Bếp nhận số'),
-        '08:40, Bếp nhận số, Sau khi chốt suất, chưa tới',
-      );
-      expect(find.text('Xem số suất'), findsOneWidget);
       expectNoWriteActions();
-      await tester.scrollUntilVisible(find.text('Số suất chưa xác nhận'), 200);
-      expect(find.text('Chờ xử lý (2)'), findsOneWidget);
-      expect(find.text('182 suất · hạn 08:30'), findsOneWidget);
       await tester.scrollUntilVisible(find.text('Trẻ của cơ sở'), 200);
-      // NUT-14 REMOVED: không còn trạng thái bếp; số suất và việc chờ không lặp thành việc
+      expect(find.text('Số suất · 8 đề xuất khen thưởng'), findsOneWidget);
+      expect(find.text('2 việc'), findsOneWidget);
+      // NUT-14 REMOVED: không còn trạng thái bếp; chỉ dị ứng, không ăn chay / ăn kiêng
       expect(find.text('Trạng thái bếp'), findsNothing);
-      expect(find.text('Số suất hôm nay'), findsNothing);
-      expect(find.text('Chờ xử lý trên Web'), findsNothing);
+      expect(find.textContaining('ăn kiêng'), findsNothing);
+      expect(find.textContaining('Ăn chay'), findsNothing);
     },
   );
 
   testWidgets(
-    'V01: đã xác nhận trên Web ⇒ hết nút xem số suất, bữa trưa đang diễn ra',
+    'V01: đã xác nhận trên Web ⇒ nhãn Đã xác nhận, chỉ còn việc khen thưởng',
     (tester) async {
       await pumpScreen(
         tester,
@@ -120,24 +122,34 @@ void main() {
         ),
         inScaffold: true,
       );
-      expect(find.text('Xem số suất'), findsNothing);
-      expect(labelOf('08:30, Chốt suất ăn'), contains('Đã gửi bếp 08:25'));
-      expect(labelOf('10:45, Bữa trưa'), '10:45, Bữa trưa, đang diễn ra');
-      await tester.scrollUntilVisible(find.text('Chờ xử lý (1)'), 200);
-      expect(find.text('Số suất chưa xác nhận'), findsNothing);
+      expect(find.text('Đã xác nhận'), findsOneWidget);
+      expect(find.text('Đã gửi bếp 08:25 · 182 suất'), findsOneWidget);
+      expect(find.bySemanticsLabel('Chờ xử lý: 1'), findsOneWidget);
+      expect(
+        tester
+            .widget<AppTaskCard>(
+              find.widgetWithText(AppTaskCard, 'Số suất hôm nay'),
+            )
+            .highlighted,
+        isFalse,
+      );
+      await tester.scrollUntilVisible(find.text('1 việc'), 200);
+      expect(find.text('8 đề xuất khen thưởng'), findsOneWidget);
     },
   );
 
-  testWidgets('V01: không có việc chờ ⇒ trạng thái rỗng, không còn việc lặp', (
-    tester,
-  ) async {
+  testWidgets('V01: không có việc ⇒ trạng thái rỗng', (tester) async {
     await pumpScreen(
       tester,
       VicePrincipalHomeScreen(source: homeSource(mode: FakeMode.empty)),
       inScaffold: true,
     );
-    await tester.scrollUntilVisible(find.text('Không có việc chờ xử lý'), 200);
-    expect(find.text('Theo dõi khác'), findsNothing);
+    expect(find.bySemanticsLabel('Chờ xử lý: 0'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Chưa có việc cần theo dõi'),
+      200,
+    );
+    expect(find.byType(AppTaskCard), findsNothing);
   });
 
   testWidgets('V01: lỗi tải ⇒ Thử lại, không để khung chờ chạy mãi', (
@@ -245,6 +257,11 @@ void main() {
       200,
     );
     expect(find.text('Xem cân đối dinh dưỡng'), findsOneWidget);
+    // Câu chỉ xem nằm trong banner đã duyệt (Figma PHT 06), AUTH-21
+    expect(
+      find.text('Lập và duyệt trên CareNest Web · App chỉ xem'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('V07 (NUT-06): nhãn Đạt / Thiếu là chữ, có cảnh báo', (

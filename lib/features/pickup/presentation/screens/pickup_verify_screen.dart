@@ -14,7 +14,7 @@ import 'package:carenest_app/features/class_roster/data/fake_class_roster_source
 import 'package:carenest_app/features/pickup/data/fake_pickup_source.dart';
 import 'package:carenest_app/features/pickup/domain/pickup.dart';
 
-/// Xác minh người đón — mockup T06. Ảnh người đón chỉ tải qua URL có auth khi có API;
+/// Xác minh người đón — Figma GV06 (bản sửa). Ảnh người đón chỉ tải qua URL có auth khi có API;
 /// bản giả dùng icon (không dùng ảnh người thật). Không khớp ⇒ ghi cuộc gọi rồi trả / không trả (PCK-02).
 class PickupVerifyScreen extends StatefulWidget {
   const PickupVerifyScreen({
@@ -135,7 +135,7 @@ class _PickupVerifyScreenState extends State<PickupVerifyScreen> {
                         style: textTheme.titleSmall,
                       ),
                       Text(
-                        'Chờ giao bé',
+                        'Đang chờ giao bé',
                         style: textTheme.bodyMedium?.copyWith(
                           color: AppColors.textMuted,
                         ),
@@ -144,7 +144,13 @@ class _PickupVerifyScreenState extends State<PickupVerifyScreen> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.space4),
-                Text('Người đón đã đăng ký', style: textTheme.titleSmall),
+                Semantics(
+                  header: true,
+                  child: Text(
+                    'Người đón đã đăng ký',
+                    style: textTheme.titleSmall,
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.space3),
                 IntrinsicHeight(
                   child: Row(
@@ -166,29 +172,35 @@ class _PickupVerifyScreenState extends State<PickupVerifyScreen> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.space4),
-                const AppBanner(
-                  icon: AppIcons.person,
-                  message: 'Người đón có đúng là người trong ảnh đã đăng ký?',
+                const _QuestionBox(
+                  text: 'Người đón có đúng là người trong ảnh đã đăng ký?',
                 ),
-                const SizedBox(height: AppSpacing.space4),
-                AppButton(
-                  label: 'Đúng – giao bé',
-                  loadingLabel: 'Đang ghi nhận',
-                  isLoading: _saving,
-                  expand: true,
-                  onPressed: _selectedId == null || _mismatch
-                      ? null
-                      : _handOver,
-                ),
-                const SizedBox(height: AppSpacing.space2),
-                AppButton(
-                  label: 'Không khớp – gọi phụ huynh',
-                  icon: AppIcons.call,
-                  variant: AppButtonVariant.secondary,
-                  expand: true,
-                  onPressed: _saving || _mismatch
-                      ? null
-                      : () => setState(() => _mismatch = true),
+                const SizedBox(height: AppSpacing.space3),
+                _ToneButtons(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      AppButton(
+                        label: 'Đúng – giao bé',
+                        loadingLabel: 'Đang ghi nhận',
+                        isLoading: _saving,
+                        expand: true,
+                        onPressed: _selectedId == null || _mismatch
+                            ? null
+                            : _handOver,
+                      ),
+                      const SizedBox(height: AppSpacing.space3),
+                      AppButton(
+                        label: 'Không khớp – gọi phụ huynh',
+                        icon: AppIcons.call,
+                        variant: AppButtonVariant.secondary,
+                        expand: true,
+                        onPressed: _saving || _mismatch
+                            ? null
+                            : () => setState(() => _mismatch = true),
+                      ),
+                    ],
+                  ),
                 ),
                 if (_mismatch) ...[
                   const SizedBox(height: AppSpacing.space4),
@@ -285,10 +297,10 @@ class _GuardianCard extends StatelessWidget {
       child: Material(
         color: AppColors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
+          borderRadius: BorderRadius.circular(AppRadius.xxl),
           side: BorderSide(
             color: selected ? AppColors.primary : AppColors.border,
-            width: selected ? 2 : 1,
+            width: selected ? 1.5 : 1,
           ),
         ),
         clipBehavior: Clip.antiAlias,
@@ -336,6 +348,67 @@ class _GuardianCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Câu hỏi xác minh: nền `primarySoft`, chữ xanh căn giữa (Figma GV06).
+class _QuestionBox extends StatelessWidget {
+  const _QuestionBox({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.space4,
+        vertical: AppSpacing.space3,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.primarySoft,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.primaryText,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+/// Màu riêng của hai nút xác minh (Figma GV06): giao bé nền xanh lá, không khớp viền cam.
+class _ToneButtons extends StatelessWidget {
+  const _ToneButtons({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Theme(
+      data: theme.copyWith(
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.successText,
+            foregroundColor: AppColors.onBrand,
+            disabledBackgroundColor: AppColors.borderStrong,
+            disabledForegroundColor: AppColors.surface,
+          ).merge(theme.filledButtonTheme.style),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            backgroundColor: AppColors.warningSoft,
+            foregroundColor: AppColors.warningText,
+            side: const BorderSide(color: AppColors.warning),
+          ).merge(theme.outlinedButtonTheme.style),
+        ),
+      ),
+      child: child,
     );
   }
 }

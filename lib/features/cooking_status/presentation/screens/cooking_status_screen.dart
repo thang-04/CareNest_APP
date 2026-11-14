@@ -170,9 +170,7 @@ class _StageCard extends StatelessWidget {
           color: active ? AppColors.primarySoft : AppColors.surface,
           borderRadius: BorderRadius.circular(AppRadius.xl),
           border: Border.all(
-            color: active
-                ? AppColors.primary
-                : AppColors.surface.withValues(alpha: 0.85),
+            color: active ? AppColors.primary : AppColors.border,
             width: active ? 1.5 : 1,
           ),
           boxShadow: AppShadows.card,

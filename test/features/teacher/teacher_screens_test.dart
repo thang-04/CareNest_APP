@@ -106,7 +106,9 @@ void main() {
       expect(find.textContaining('duyệt'), findsNothing);
       expect(find.textContaining('Cả ngày'), findsNothing);
       expect(find.textContaining('Buổi'), findsNothing);
-      expect(find.text('Vắng có phép'), findsNWidgets(3));
+      // Figma GV03: mỗi đơn một thẻ, không badge trạng thái (cả danh sách là đơn nghỉ)
+      expect(find.textContaining('Lý do: '), findsNWidgets(3));
+      expect(find.text('Vắng có phép'), findsNothing);
       // Plan 14/11 AC-5: chỉ đơn nghỉ, không có trẻ vắng không đơn
       expect(find.text('Vắng'), findsNothing);
       expect(find.text('Vũ Đức Huy'), findsNothing);
@@ -335,9 +337,10 @@ void main() {
         findsOneWidget,
       );
       expect(find.bySemanticsLabel('Phân loại: Bình thường'), findsOneWidget);
-      for (final level in ['Thiếu cân', 'Bình thường', 'Thừa cân']) {
-        expect(find.text(level), findsOneWidget);
-      }
+      // Figma GV07.1: badge mức hiện tại + thang đủ các mức BE trả
+      expect(find.text('Thiếu cân'), findsOneWidget);
+      expect(find.text('Bình thường'), findsNWidgets(2));
+      expect(find.text('Thừa cân'), findsOneWidget);
       // Chip phân loại không bấm được
       expect(find.byType(FilterChip), findsNothing);
       expect(find.byType(AppFilterChip), findsNothing);
@@ -404,8 +407,10 @@ void main() {
       tester,
       ActivityScheduleScreen(initialDay: today, onReviewToday: () {}),
     );
+    // Figma: tuần ở góc phải thanh tiêu đề, thẻ chỉ nêu chủ đề
+    expect(find.text('Tuần 12–16/10'), findsOneWidget);
     expect(
-      find.text('Kế hoạch tuần 12–16/10 · Chủ đề “Mùa thu của bé”'),
+      find.text('Kế hoạch tuần · Chủ đề “Mùa thu của bé”'),
       findsOneWidget,
     );
     expect(find.textContaining('iáo án'), findsNothing);

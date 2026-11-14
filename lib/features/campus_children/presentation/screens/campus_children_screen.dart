@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/widgets/app_avatar.dart';
@@ -12,7 +13,6 @@ import 'package:carenest_app/core/widgets/app_search_field.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
-import 'package:carenest_app/core/widgets/app_text_field.dart';
 import 'package:carenest_app/features/campus_children/data/fake_campus_children_source.dart';
 import 'package:carenest_app/features/campus_children/domain/campus_children.dart';
 import 'package:carenest_app/features/class_roster/domain/class_roster.dart';
@@ -97,18 +97,19 @@ class _CampusChildrenScreenState extends State<CampusChildrenScreen> {
         final visible = inClass
             ?.where(
               (child) =>
-                  _matchesTag(child) && matchesSearch(child.fullName, _query),
+                  _matchesTag(child) &&
+                  (matchesSearch(child.fullName, _query) ||
+                      matchesSearch(child.className, _query)),
             )
             .toList();
         final header = <Widget>[
           AppSearchField(
-            hint: 'Tìm tên bé…',
+            hint: 'Tìm tên bé, lớp…',
             onChanged: (value) => setState(() => _query = value),
           ),
           const SizedBox(height: AppSpacing.space3),
           if (data != null && inClass != null) ...[
-            AppSelectField(
-              label: 'Lớp',
+            _ClassPicker(
               value:
                   data.classes
                       .where((item) => item.id == classId)
@@ -235,6 +236,70 @@ class _CampusChildrenScreenState extends State<CampusChildrenScreen> {
           body: body,
         );
       },
+    );
+  }
+}
+
+/// Ô chọn lớp một dòng "Lớp: …" như Figma PHT 10; mở sheet chọn lớp.
+class _ClassPicker extends StatelessWidget {
+  const _ClassPicker({required this.value, required this.onTap});
+
+  final String value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Semantics(
+      button: true,
+      label: 'Lớp: $value',
+      excludeSemantics: true,
+      child: Material(
+        color: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.control),
+          side: const BorderSide(color: AppColors.borderStrong),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: AppSizes.minimumTapTarget,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.space3 + 2,
+                vertical: AppSpacing.space2,
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    'Lớp:',
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.space2),
+                  Expanded(
+                    child: Text(
+                      value,
+                      style: textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    AppIcons.chevronDown,
+                    size: AppSizes.iconInline,
+                    color: AppColors.textMuted,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

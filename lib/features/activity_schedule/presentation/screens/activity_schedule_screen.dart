@@ -15,7 +15,7 @@ import 'package:carenest_app/features/activity_schedule/data/fake_activity_sched
 import 'package:carenest_app/features/activity_schedule/domain/activity_schedule.dart';
 import 'package:carenest_app/features/class_roster/data/fake_class_roster_source.dart';
 
-/// Lịch hoạt động — mockup T10, bỏ phần duyệt/ký giáo án (OBS-08, plan K3).
+/// Lịch hoạt động — Figma Lịch hoạt động (mở từ thẻ lớp Trang chủ GV), bỏ phần duyệt/ký giáo án (OBS-08, plan K3).
 class ActivityScheduleScreen extends StatefulWidget {
   const ActivityScheduleScreen({
     super.key,
@@ -48,8 +48,30 @@ class _ActivityScheduleScreenState extends State<ActivityScheduleScreen> {
       builder: (context, snapshot) {
         final week = snapshot.data;
         final weekEnd = week?.weekStart.add(const Duration(days: 4));
+        final weekLabel = week == null
+            ? null
+            : 'Tuần ${week.weekStart.day}–${DateLabels.dayMonth(weekEnd!)}';
+        // Chữ phóng lớn ⇒ tuần chuyển xuống thẻ kế hoạch, thanh tiêu đề không đủ chỗ
+        final large = MediaQuery.textScalerOf(context).scale(1) > 1.3;
         return Scaffold(
-          appBar: AppBar(title: const Text('Lịch hoạt động')),
+          appBar: AppBar(
+            title: const Text('Lịch hoạt động'),
+            actions: [
+              if (weekLabel != null && !large)
+                Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.space4),
+                  child: Center(
+                    child: Text(
+                      weekLabel,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
           body: week == null
               ? const Padding(
                   padding: EdgeInsets.all(AppSpacing.pagePadding),
@@ -79,7 +101,9 @@ class _ActivityScheduleScreenState extends State<ActivityScheduleScreen> {
                           const SizedBox(width: AppSpacing.space3),
                           Expanded(
                             child: Text(
-                              'Kế hoạch tuần ${week.weekStart.day}–${DateLabels.dayMonth(weekEnd!)} · Chủ đề “${week.theme}”',
+                              large
+                                  ? 'Kế hoạch ${weekLabel!.toLowerCase()} · Chủ đề “${week.theme}”'
+                                  : 'Kế hoạch tuần · Chủ đề “${week.theme}”',
                               style: textTheme.titleSmall,
                             ),
                           ),

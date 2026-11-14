@@ -10,7 +10,7 @@ import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_text_field.dart';
 import 'package:carenest_app/features/auth/presentation/widgets/auth_not_connected.dart';
 
-/// Đặt / đổi mật khẩu — mockup P17. Dùng sau OTP, lần đầu đăng nhập,
+/// Đặt / đổi mật khẩu (Figma PH17). Dùng sau OTP, lần đầu đăng nhập,
 /// hoặc từ Tài khoản (`requireCurrent`). Chính sách mật khẩu thật do BE kiểm lại.
 class NewPasswordScreen extends StatefulWidget {
   const NewPasswordScreen({

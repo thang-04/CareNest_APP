@@ -9,7 +9,7 @@ import 'package:carenest_app/core/widgets/app_text_field.dart';
 import 'package:carenest_app/features/account/data/fake_account_source.dart';
 import 'package:carenest_app/features/account/domain/account_profile.dart';
 
-/// Thông tin cá nhân — mockup P18. Số điện thoại là tài khoản đăng nhập ⇒ khoá.
+/// Thông tin cá nhân (Figma PH18). Số điện thoại là tài khoản đăng nhập ⇒ khoá.
 class PersonalInfoScreen extends StatefulWidget {
   const PersonalInfoScreen({
     super.key,

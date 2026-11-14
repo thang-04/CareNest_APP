@@ -13,7 +13,7 @@ import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/features/school_menu/data/fake_school_menu_source.dart';
 import 'package:carenest_app/features/school_menu/domain/school_menu.dart';
 
-/// Thực đơn tuần theo nhóm tuổi — mockup K02 (bếp, tab Thực đơn) và V06 (Phó HT). Chỉ xem:
+/// Thực đơn tuần theo nhóm tuổi — Figma Bếp 02 (bếp, tab Thực đơn) và V06 (Phó HT). Chỉ xem:
 /// thực đơn đã duyệt (NUT-08), lập và duyệt trên Web.
 class SchoolMenuScreen extends StatefulWidget {
   const SchoolMenuScreen({
@@ -29,7 +29,7 @@ class SchoolMenuScreen extends StatefulWidget {
   final DateTime initialDay;
   final String footerNote;
 
-  /// Là tab ⇒ tiêu đề lớn trong nội dung; màn con ⇒ AppBar có nút Back.
+  /// Là tab ⇒ AppBar "Thực đơn" không nút Back; màn con ⇒ "Thực đơn tuần" có nút Back.
   final bool asTab;
 
   /// Khối thêm cuối màn theo vai trò (vd. Phó HT: trạng thái duyệt + cân đối dinh dưỡng của nhóm, ngày đang chọn).
@@ -54,68 +54,38 @@ class _SchoolMenuScreenState extends State<SchoolMenuScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final body = FutureBuilder<SchoolMenuWeek>(
+    return FutureBuilder<SchoolMenuWeek>(
       future: _week,
       builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(
-            child: AppErrorState(
-              title: 'Chưa tải được thực đơn',
-              message: 'Kiểm tra kết nối mạng rồi thử lại.',
-              onRetry: () => setState(
-                () => _week = widget.source.loadWeek(widget.campusId),
-              ),
-            ),
-          );
-        }
-        final week = snapshot.data;
-        final weekEnd = week?.weekStart.add(const Duration(days: 4));
-        final weekLabel = week == null
-            ? ''
-            : 'Tuần ${week.weekStart.day}–${DateLabels.dayMonth(weekEnd!)}';
-        return ListView(
-          padding: const EdgeInsets.all(AppSpacing.pagePadding),
-          children: [
-            if (widget.asTab) ...[
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.end,
-                spacing: AppSpacing.space2,
-                children: [
-                  Semantics(
-                    header: true,
-                    child: Text('Thực đơn', style: textTheme.headlineSmall),
-                  ),
-                  Text(
-                    weekLabel,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
+        final week = snapshot.hasError ? null : snapshot.data;
+        return Scaffold(
+          appBar: AppBar(
+            // Tab gốc của bếp: không có màn để quay lại
+            automaticallyImplyLeading: !widget.asTab,
+            title: Text(widget.asTab ? 'Thực đơn' : 'Thực đơn tuần'),
+            actions: [if (week != null) _WeekLabel(week: week)],
+          ),
+          body: snapshot.hasError
+              ? Center(
+                  child: AppErrorState(
+                    title: 'Chưa tải được thực đơn',
+                    message: 'Kiểm tra kết nối mạng rồi thử lại.',
+                    onRetry: () => setState(
+                      () => _week = widget.source.loadWeek(widget.campusId),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.space4),
-            ] else if (week != null) ...[
-              Text(
-                weekLabel,
-                style: textTheme.titleSmall?.copyWith(color: AppColors.primary),
-              ),
-              const SizedBox(height: AppSpacing.space3),
-            ],
-            if (week == null)
-              const AppSkeletonList(rows: 4)
-            else
-              ..._content(context, week),
-          ],
+                )
+              : ListView(
+                  padding: const EdgeInsets.all(AppSpacing.pagePadding),
+                  children: [
+                    if (week == null)
+                      const AppSkeletonList(rows: 4)
+                    else
+                      ..._content(context, week),
+                  ],
+                ),
         );
       },
-    );
-    if (widget.asTab) return SafeArea(bottom: false, child: body);
-    return Scaffold(
-      appBar: AppBar(title: const Text('Thực đơn tuần')),
-      body: body,
     );
   }
 
@@ -147,9 +117,12 @@ class _SchoolMenuScreenState extends State<SchoolMenuScreen> {
       else ...[
         Text(
           'Nhóm ${menu.groupLabel} (${menu.ageRange}) · ${menu.childCount} bé · định lượng theo nhóm tuổi',
-          style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+          style: textTheme.labelMedium?.copyWith(
+            color: AppColors.textMuted,
+            fontWeight: FontWeight.w400,
+          ),
         ),
-        const SizedBox(height: AppSpacing.space3),
+        const SizedBox(height: AppSpacing.space2),
         for (final meal in menu.meals) ...[
           AppCard(
             dense: true,
@@ -201,12 +174,43 @@ class _SchoolMenuScreenState extends State<SchoolMenuScreen> {
         const SizedBox(height: AppSpacing.space2),
         widget.bottom!(context, week, _group, _day),
       ],
-      const SizedBox(height: AppSpacing.space3),
+      const SizedBox(height: AppSpacing.space2),
       Text(
         widget.footerNote,
-        style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+        style: textTheme.labelMedium?.copyWith(
+          color: AppColors.textMuted,
+          fontWeight: FontWeight.w400,
+        ),
       ),
     ];
+  }
+}
+
+/// Nhãn tuần ở góc phải AppBar, vd. "Tuần 12–16/10".
+class _WeekLabel extends StatelessWidget {
+  const _WeekLabel({required this.week});
+
+  final SchoolMenuWeek week;
+
+  @override
+  Widget build(BuildContext context) {
+    final weekEnd = week.weekStart.add(const Duration(days: 4));
+    // Cùng giới hạn phóng chữ với tiêu đề AppBar để thanh không tràn
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: 1.34,
+      child: Padding(
+        padding: const EdgeInsets.only(right: AppSpacing.pagePadding),
+        child: Center(
+          child: Text(
+            'Tuần ${week.weekStart.day}–${DateLabels.dayMonth(weekEnd)}',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

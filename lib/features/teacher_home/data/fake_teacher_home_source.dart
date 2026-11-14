@@ -31,7 +31,7 @@ class FakeTeacherHomeSource implements TeacherHomeSource {
           : [
               TeacherTask(
                 kind: TeacherTaskKind.attendance,
-                title: 'Điểm danh & nhiệt độ',
+                title: 'Điểm danh & sức khỏe',
                 subtitle: '0/$count bé · trước 08:30',
                 badge: 'Cần làm',
                 badgeLevel: TaskBadgeLevel.todo,
@@ -40,7 +40,7 @@ class FakeTeacherHomeSource implements TeacherHomeSource {
               const TeacherTask(
                 kind: TeacherTaskKind.leave,
                 title: 'Đơn xin nghỉ',
-                subtitle: 'Hôm nay & sắp tới: Minh Anh, Khánh Linh, Bảo Ngọc',
+                subtitle: 'Minh Anh, Khánh Linh, Bảo Ngọc',
                 badge: '3 đơn',
                 badgeLevel: TaskBadgeLevel.info,
               ),

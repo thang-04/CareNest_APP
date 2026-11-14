@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/config/app_info.dart';
+import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
-import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_text_field.dart';
 import 'package:carenest_app/core/widgets/brand/app_logo.dart';
 import 'package:carenest_app/features/auth/presentation/widgets/auth_not_connected.dart';
 
-/// Đăng nhập — bố cục A Clay (`docs/design/mobile-redesign-clay.md`): logo giữa, form trong card, ghi chú SMS dưới card.
+/// Đăng nhập — Figma PH01 bản sửa: logo + tên trường, form ngay trên nền màn, ghi chú SMS, phiên bản ở đáy.
 /// Chưa có AUTH_CONTRACT ⇒ `onSubmit`/`onForgotPassword` do tầng auth nối sau.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({
@@ -69,54 +69,42 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final muted = textTheme.bodyMedium?.copyWith(color: AppColors.textMuted);
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.space6,
-              vertical: AppSpacing.space6,
-            ),
+        child: LayoutBuilder(
+          builder: (context, viewport) => SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.space6),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: AutofillGroup(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Ảnh logo có nền trắng: đặt trong ô trắng bo góc để không lộ khối vuông trên nền màn
-                    Center(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(AppRadius.xxl),
-                        ),
-                        child: const Padding(
-                          padding: EdgeInsets.all(AppSpacing.space2),
-                          child: AppLogo(size: 140),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.space2),
-                    Text(
-                      AppInfo.schoolName,
-                      textAlign: TextAlign.center,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.space6),
-                    AppCard(
+              // Đủ cao ⇒ dòng phiên bản nằm sát đáy như Figma; màn thấp hoặc chữ lớn ⇒ cuộn
+              constraints: BoxConstraints(
+                minHeight: viewport.maxHeight - AppSpacing.space6 * 2,
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: AutofillGroup(
+                    child: IntrinsicHeight(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Semantics(
-                            header: true,
-                            child: Text(
-                              'Đăng nhập',
-                              style: textTheme.titleLarge,
+                          const SizedBox(height: AppSpacing.space4),
+                          // Ảnh logo nền trắng: nhân với màu nền ⇒ khối trắng hòa vào nền màn
+                          const Center(
+                            child: ColorFiltered(
+                              colorFilter: ColorFilter.mode(
+                                AppColors.background,
+                                BlendMode.multiply,
+                              ),
+                              child: AppLogo(size: 136),
                             ),
                           ),
-                          const SizedBox(height: AppSpacing.space4),
+                          Text(
+                            AppInfo.schoolName,
+                            textAlign: TextAlign.center,
+                            style: muted,
+                          ),
+                          const SizedBox(height: AppSpacing.space8),
                           if (widget.errorMessage != null) ...[
                             AppBanner(
                               kind: AppBannerKind.danger,
@@ -131,6 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           AppTextField(
                             label: 'Số điện thoại',
                             hint: 'Nhập số điện thoại',
+                            leadingIcon: AppIcons.phone,
                             controller: _account,
                             errorText: _accountError,
                             enabled: !widget.isSubmitting,
@@ -142,6 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           AppTextField(
                             label: 'Mật khẩu',
                             hint: 'Nhập mật khẩu',
+                            leadingIcon: AppIcons.lock,
                             controller: _passwordInput,
                             errorText: _passwordError,
                             isPassword: true,
@@ -168,33 +158,32 @@ class _LoginScreenState extends State<LoginScreen> {
                             expand: true,
                             onPressed: _submit,
                           ),
+                          const SizedBox(height: AppSpacing.space6),
+                          const AppBanner(
+                            message:
+                                'Tài khoản do nhà trường cấp qua SMS. Lần đầu đăng nhập: đổi mật khẩu.',
+                          ),
+                          const Spacer(),
+                          const SizedBox(height: AppSpacing.space6),
+                          if (widget.onOpenPreview != null) ...[
+                            Center(
+                              child: AppButton(
+                                label: 'Xem thử theo vai trò',
+                                variant: AppButtonVariant.text,
+                                onPressed: widget.onOpenPreview,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.space2),
+                          ],
+                          Text(
+                            'Phiên bản v${AppInfo.version}',
+                            textAlign: TextAlign.center,
+                            style: muted,
+                          ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.space5),
-                    const AppBanner(
-                      message:
-                          'Tài khoản do nhà trường cấp qua SMS. Lần đầu đăng nhập: đổi mật khẩu.',
-                    ),
-                    const SizedBox(height: AppSpacing.space6),
-                    Text(
-                      'Phiên bản v${AppInfo.version}',
-                      textAlign: TextAlign.center,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                    if (widget.onOpenPreview != null) ...[
-                      const SizedBox(height: AppSpacing.space4),
-                      Center(
-                        child: AppButton(
-                          label: 'Xem thử theo vai trò',
-                          variant: AppButtonVariant.text,
-                          onPressed: widget.onOpenPreview,
-                        ),
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
               ),
             ),

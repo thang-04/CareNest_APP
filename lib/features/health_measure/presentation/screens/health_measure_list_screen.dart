@@ -16,7 +16,7 @@ import 'package:carenest_app/features/class_roster/data/fake_class_roster_source
 import 'package:carenest_app/features/health_measure/data/fake_health_measure_source.dart';
 import 'package:carenest_app/features/health_measure/domain/health_measure.dart';
 
-/// Đo sức khỏe — danh sách bé (mockup T07). Người nhập số đo còn PENDING (NAVIGATION [P]).
+/// Đo sức khỏe — danh sách bé (Figma GV07). Người nhập số đo còn PENDING (NAVIGATION [P]).
 class HealthMeasureListScreen extends StatefulWidget {
   const HealthMeasureListScreen({
     super.key,
@@ -40,6 +40,7 @@ class _HealthMeasureListScreenState extends State<HealthMeasureListScreen> {
   MeasureMonth? _month;
   String _query = '';
   String? _lastSaved;
+  String? _lastSavedId;
 
   @override
   void initState() {
@@ -58,9 +59,10 @@ class _HealthMeasureListScreenState extends State<HealthMeasureListScreen> {
     await _load();
     final updated = _month?.kids.firstWhere((k) => k.childId == kid.childId);
     if (mounted && updated?.state == MeasureState.measured) {
-      setState(
-        () => _lastSaved = updated!.fullName.split(' ').skip(1).join(' '),
-      );
+      setState(() {
+        _lastSaved = updated!.fullName.split(' ').skip(1).join(' ');
+        _lastSavedId = updated.childId;
+      });
     }
   }
 
@@ -128,6 +130,10 @@ class _HealthMeasureListScreenState extends State<HealthMeasureListScreen> {
             )) ...[
               AppCard(
                 flush: true,
+                // Bé vừa lưu viền xanh lá như Figma GV07
+                borderColor: kid.childId == _lastSavedId
+                    ? AppColors.success
+                    : null,
                 child: AppListRow(
                   leading: AppAvatar(name: kid.fullName),
                   title: kid.fullName,
@@ -157,9 +163,8 @@ class _HealthMeasureListScreenState extends State<HealthMeasureListScreen> {
                       : () => _open(kid),
                 ),
               ),
-              const SizedBox(height: AppSpacing.space2),
+              const SizedBox(height: AppSpacing.space3),
             ],
-            const SizedBox(height: AppSpacing.space2),
             Text(
               'Danh sách tự cập nhật sau mỗi lần lưu. Chạm một bé để nhập chiều cao, cân nặng.',
               style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),

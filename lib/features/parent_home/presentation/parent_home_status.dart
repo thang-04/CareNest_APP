@@ -4,7 +4,7 @@ import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/features/parent_home/domain/parent_today.dart';
 
-/// Nhãn/tông điểm danh cho người đọc là phụ huynh (DESIGN.md §6.2).
+/// Nhãn/tông/icon điểm danh cho người đọc là phụ huynh (DESIGN.md §6.2); nghĩa nằm ở chữ, không chỉ màu.
 extension ParentAttendanceStatusView on ParentAttendanceStatus {
   String get label => switch (this) {
     ParentAttendanceStatus.present => 'Có mặt',
@@ -20,8 +20,10 @@ extension ParentAttendanceStatusView on ParentAttendanceStatus {
     ParentAttendanceStatus.notRecorded => AppStatusTone.gray,
   };
 
-  IconData? get icon => switch (this) {
-    ParentAttendanceStatus.present => AppIcons.check,
-    _ => null,
+  IconData get icon => switch (this) {
+    ParentAttendanceStatus.present => AppIcons.checkCircle,
+    ParentAttendanceStatus.absentExcused => AppIcons.calendarOff,
+    ParentAttendanceStatus.absentUnexcused => AppIcons.alertCircle,
+    ParentAttendanceStatus.notRecorded => AppIcons.clock,
   };
 }

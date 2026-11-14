@@ -8,6 +8,7 @@ import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
+import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_stat_tile.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
@@ -214,24 +215,28 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Bố cục A: dòng lớp/ngày trơn trên nền, badge khoá cam có icon
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: AppSpacing.space2,
-                runSpacing: AppSpacing.space2,
-                children: [
-                  Text(
-                    '${sheet.classSummary.name} · ${DateLabels.weekdayDayMonth(sheet.date)}',
-                    style: textTheme.titleSmall,
-                  ),
-                  if (sheet.lockAt != null)
-                    AppStatusBadge(
-                      label: 'Khoá lúc ${sheet.lockAt}',
-                      tone: AppStatusTone.orange,
-                      icon: AppIcons.lock,
+              // Figma GV02: thẻ lớp/ngày + badge giờ khoá cùng dòng; chữ lớn thì badge xuống dòng
+              AppCard(
+                dense: true,
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: AppSpacing.space2,
+                  runSpacing: AppSpacing.space2,
+                  children: [
+                    Text(
+                      '${sheet.classSummary.name} · ${DateLabels.weekdayDayMonth(sheet.date)}',
+                      style: textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                ],
+                    if (sheet.lockAt != null)
+                      AppStatusBadge(
+                        label: 'Khoá lúc ${sheet.lockAt}',
+                        tone: AppStatusTone.orange,
+                      ),
+                  ],
+                ),
               ),
               const SizedBox(height: AppSpacing.space3),
               AppStatRow(
@@ -254,31 +259,31 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   AppStatTile(
                     value: '${_count(AttendanceStatus.notRecorded)}',
                     label: 'Chưa ĐD',
+                    tone: AppStatusTone.gray,
                   ),
                 ],
               ),
               const SizedBox(height: AppSpacing.space3),
-              AppButton(
-                label: 'Đánh dấu tất cả có mặt',
-                icon: AppIcons.checks,
-                variant: AppButtonVariant.secondary,
-                expand: true,
-                onPressed: saving || _count(AttendanceStatus.notRecorded) == 0
-                    ? null
-                    : _markAllPresent,
+              _SoftOutlined(
+                child: AppButton(
+                  label: 'Đánh dấu tất cả có mặt',
+                  icon: AppIcons.checks,
+                  variant: AppButtonVariant.secondary,
+                  expand: true,
+                  onPressed: saving || _count(AttendanceStatus.notRecorded) == 0
+                      ? null
+                      : _markAllPresent,
+                ),
               ),
               const SizedBox(height: AppSpacing.space2),
               Text(
                 'Chạm 1 lần cho cả lớp, rồi kiểm tra sức khỏe đầu ngày từng bé có mặt.',
-                textAlign: TextAlign.center,
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textMuted,
                 ),
               ),
-              const SizedBox(height: AppSpacing.space1),
               Text(
                 'Sức khỏe đầu ngày: $_healthChecked/${_count(AttendanceStatus.present)} bé có mặt đã kiểm tra',
-                textAlign: TextAlign.center,
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textMuted,
                 ),
@@ -345,6 +350,28 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           onPressed: _save,
         ),
       ],
+    );
+  }
+}
+
+/// Nút viền nền `primarySoft` như Figma GV02 (nút phụ chung nền trắng).
+class _SoftOutlined extends StatelessWidget {
+  const _SoftOutlined({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Theme(
+      data: theme.copyWith(
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            backgroundColor: AppColors.primarySoft,
+          ).merge(theme.outlinedButtonTheme.style),
+        ),
+      ),
+      child: child,
     );
   }
 }

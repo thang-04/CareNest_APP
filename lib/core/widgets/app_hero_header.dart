@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
@@ -60,6 +61,7 @@ class AppHeroHeader extends StatelessWidget {
                       Text(
                         name,
                         style: textTheme.headlineSmall?.copyWith(
+                          fontSize: 20,
                           color: AppColors.onBrand,
                         ),
                       ),
@@ -83,18 +85,22 @@ class AppHeroHeader extends StatelessWidget {
         ],
       ),
     );
-    return Stack(
-      children: [
-        // Dải nền dừng cách đáy một đoạn cố định ⇒ card luôn đè nửa dưới, cao thấp nào cũng được
-        Positioned(
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: card == null ? 0 : _overlap,
-          child: const ColoredBox(color: AppColors.brand),
-        ),
-        content,
-      ],
+    // Dải xanh sát mép trên ⇒ icon thanh trạng thái màu trắng
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Stack(
+        children: [
+          // Dải nền dừng cách đáy một đoạn cố định ⇒ card luôn đè nửa dưới, cao thấp nào cũng được
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: card == null ? 0 : _overlap,
+            child: const ColoredBox(color: AppColors.brand),
+          ),
+          content,
+        ],
+      ),
     );
   }
 }

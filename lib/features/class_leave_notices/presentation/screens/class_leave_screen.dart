@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
-import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
-import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
+import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_filter_chip.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
-import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/class_leave_notices/data/fake_class_leave_source.dart';
 import 'package:carenest_app/features/class_leave_notices/domain/class_leave_notice.dart';
 import 'package:carenest_app/features/class_roster/data/fake_class_roster_source.dart';
 
-/// Đơn xin nghỉ của lớp — mockup T03. Chỉ liệt kê đơn nghỉ của phụ huynh, không có trẻ vắng không đơn
+/// Đơn xin nghỉ của lớp — Figma GV03 (bản sửa). Chỉ liệt kê đơn nghỉ của phụ huynh, không có trẻ vắng không đơn
 /// (như Web). GV chỉ xem: không duyệt, không đánh dấu đã xem (ATT-05).
 class ClassLeaveScreen extends StatefulWidget {
   const ClassLeaveScreen({
@@ -79,7 +77,7 @@ class _ClassLeaveScreenState extends State<ClassLeaveScreen> {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.space4),
+          const SizedBox(height: AppSpacing.space3),
           if (_error != null)
             AppErrorState(
               title: 'Chưa tải được đơn xin nghỉ',
@@ -109,6 +107,7 @@ class _ClassLeaveScreenState extends State<ClassLeaveScreen> {
   }
 }
 
+/// Một đơn: tên bé, ngày nghỉ, lý do, người gửi. Cả danh sách là đơn nghỉ ⇒ không lặp badge Vắng có phép.
 class _EntryCard extends StatelessWidget {
   const _EntryCard({required this.entry});
 
@@ -117,34 +116,20 @@ class _EntryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final muted = textTheme.bodyMedium?.copyWith(color: AppColors.textMuted);
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.space4),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.surface.withValues(alpha: 0.85)),
-        boxShadow: AppShadows.card,
-      ),
+    return AppCard(
+      dense: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: AppSpacing.space2,
-            runSpacing: AppSpacing.space1,
-            children: [
-              Text(entry.childName, style: textTheme.titleSmall),
-              const AppStatusBadge(
-                label: 'Vắng có phép',
-                tone: AppStatusTone.blue,
-              ),
-            ],
-          ),
+          Text(entry.childName, style: textTheme.titleSmall),
           const SizedBox(height: AppSpacing.space1),
           Text(entry.period, style: textTheme.bodyMedium),
-          Text('Lý do: ${entry.reason}', style: muted),
+          Text(
+            'Lý do: ${entry.reason}',
+            style: textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
           const SizedBox(height: AppSpacing.space1),
           Text(
             entry.meta,

@@ -4,6 +4,7 @@ import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
+import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_bottom_sheet.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
@@ -14,7 +15,7 @@ import 'package:carenest_app/features/leave_notice/data/fake_leave_notice_source
 import 'package:carenest_app/features/leave_notice/domain/leave_notice.dart';
 import 'package:carenest_app/features/leave_notice/presentation/leave_notice_status.dart';
 
-/// Đơn xin nghỉ đã gửi — mockup P04. Không có trạng thái duyệt hay GV đã xem (ATT-05). Hủy đơn nhiều ngày
+/// Đơn xin nghỉ đã gửi (Figma PH04 bản sửa). Không có trạng thái duyệt hay GV đã xem (ATT-05). Hủy đơn nhiều ngày
 /// hủy phần còn lại: ngày đã qua giờ chốt vẫn Vắng có phép (ATT-04, BE quyết định ngày nào hủy được).
 class LeaveNoticeListScreen extends StatefulWidget {
   const LeaveNoticeListScreen({
@@ -144,69 +145,20 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
               )
             else ...[
               for (final notice in notices) ...[
-                AppCard(
-                  dense: true,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Wrap: chữ phóng lớn thì badge xuống dòng thay vì tràn
-                      Wrap(
-                        alignment: WrapAlignment.spaceBetween,
-                        spacing: AppSpacing.space2,
-                        runSpacing: AppSpacing.space2,
-                        children: [
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(minWidth: 160),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  notice.periodLabel,
-                                  style: textTheme.titleSmall,
-                                ),
-                                const SizedBox(height: AppSpacing.space1),
-                                Text(
-                                  notice.reason,
-                                  style: textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.textMuted,
-                                  ),
-                                ),
-                                if (notice.remainingLabel case final remain?)
-                                  Text(remain, style: textTheme.bodyMedium),
-                              ],
-                            ),
-                          ),
-                          AppStatusBadge(
-                            label: notice.statusLabel,
-                            tone: notice.statusTone,
-                          ),
-                        ],
-                      ),
-                      if (notice.canCancel) ...[
-                        const SizedBox(height: AppSpacing.space3),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: AppButton(
-                            label: 'Hủy đơn',
-                            loadingLabel: 'Đang hủy',
-                            variant: AppButtonVariant.secondary,
-                            small: true,
-                            isLoading: _cancellingId == notice.id,
-                            onPressed: _cancellingId == null
-                                ? () => _confirmCancel(notice)
-                                : null,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
+                _NoticeCard(
+                  notice: notice,
+                  cancelling: _cancellingId == notice.id,
+                  onCancel: _cancellingId == null
+                      ? () => _confirmCancel(notice)
+                      : null,
                 ),
                 const SizedBox(height: AppSpacing.space3),
               ],
               Text(
                 'Hủy đơn được cho các ngày chưa qua giờ chốt; ngày đã qua giờ chốt vẫn ghi Vắng có phép.',
-                style: textTheme.bodyMedium?.copyWith(
+                style: textTheme.labelMedium?.copyWith(
                   color: AppColors.textMuted,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ],
@@ -222,6 +174,100 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Một đơn: ngày nghỉ + trạng thái, lý do; "Hủy đơn" bên phải khi đơn còn ngày hủy được (Figma PH04 bản sửa).
+class _NoticeCard extends StatelessWidget {
+  const _NoticeCard({
+    required this.notice,
+    required this.cancelling,
+    required this.onCancel,
+  });
+
+  final LeaveNotice notice;
+  final bool cancelling;
+  final VoidCallback? onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final details = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: AppSpacing.space2,
+          runSpacing: AppSpacing.space1,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(notice.periodLabel, style: textTheme.titleSmall),
+            AppStatusBadge(label: notice.statusLabel, tone: notice.statusTone),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.space1),
+        Text(
+          notice.reason,
+          style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+        ),
+        if (notice.remainingLabel case final remain?) ...[
+          const SizedBox(height: 2),
+          Text(remain, style: textTheme.bodyMedium),
+        ],
+      ],
+    );
+    if (!notice.canCancel) return AppCard(dense: true, child: details);
+    final cancel = _CancelButton(cancelling: cancelling, onPressed: onCancel);
+    // Chữ lớn ⇒ nút xuống dưới để ngày và lý do không bị ép hẹp
+    final stacked = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+    return AppCard(
+      dense: true,
+      child: stacked
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                details,
+                const SizedBox(height: AppSpacing.space2),
+                cancel,
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(child: details),
+                const SizedBox(width: AppSpacing.space3),
+                cancel,
+              ],
+            ),
+    );
+  }
+}
+
+/// Nút hủy gọn nền cảnh báo nhạt; vùng chạm vẫn ≥48.
+class _CancelButton extends StatelessWidget {
+  const _CancelButton({required this.cancelling, required this.onPressed});
+
+  final bool cancelling;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final warning = AppStatusColors.of(context).feedbackOf(AppFeedback.warning);
+    return OutlinedButton(
+      onPressed: cancelling ? null : onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: warning.foreground,
+        backgroundColor: warning.background,
+        side: BorderSide(color: warning.border),
+        shape: const StadiumBorder(),
+        minimumSize: const Size(0, 32),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space3 + 2),
+        tapTargetSize: MaterialTapTargetSize.padded,
+        visualDensity: VisualDensity.compact,
+        textStyle: Theme.of(
+          context,
+        ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+      ),
+      child: Text(cancelling ? 'Đang hủy' : 'Hủy đơn'),
     );
   }
 }

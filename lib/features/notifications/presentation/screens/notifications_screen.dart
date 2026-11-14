@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
-import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_filter_chip.dart';
@@ -13,7 +12,7 @@ import 'package:carenest_app/features/notifications/data/fake_notification_sourc
 import 'package:carenest_app/features/notifications/domain/app_notification.dart';
 import 'package:carenest_app/features/notifications/presentation/notification_icons.dart';
 
-/// Thông báo — mockup P06, dùng chung 5 vai trò. Danh sách in-app, không phải nội dung push.
+/// Thông báo (Figma PH06), dùng chung 5 vai trò. Danh sách in-app, không phải nội dung push.
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({
     super.key,
@@ -77,27 +76,29 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         : _unreadOnly
         ? items.where((item) => item.unread).toList()
         : items;
-    return SafeArea(
-      bottom: false,
-      child: ListView(
+    final markRead = AppLinkButton(
+      label: 'Đánh dấu đã đọc',
+      onPressed: unread == 0 ? null : _markAllRead,
+    );
+    // Chữ lớn ⇒ link xuống thân màn, thanh trên không đủ chỗ cho cả tiêu đề
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text('Thông báo'),
+        titleTextStyle: textTheme.headlineSmall,
+        actions: [
+          if (!largeText) ...[
+            markRead,
+            const SizedBox(width: AppSpacing.space1),
+          ],
+        ],
+      ),
+      body: ListView(
         padding: const EdgeInsets.all(AppSpacing.pagePadding),
         children: [
-          // Wrap: chữ phóng lớn thì link xuống dòng thay vì tràn
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Semantics(
-                header: true,
-                child: Text('Thông báo', style: textTheme.headlineSmall),
-              ),
-              AppLinkButton(
-                label: 'Đánh dấu đã đọc',
-                onPressed: unread == 0 ? null : _markAllRead,
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.space3),
+          if (largeText)
+            Align(alignment: Alignment.centerLeft, child: markRead),
           Wrap(
             spacing: AppSpacing.space2,
             runSpacing: AppSpacing.space2,
@@ -161,59 +162,53 @@ class _NotificationCard extends StatelessWidget {
         notificationMeta(item),
       ].join(', '),
       excludeSemantics: true,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
+      child: Material(
+        color: unread ? AppColors.primarySoft : AppColors.surface,
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.xl),
-          boxShadow: AppShadows.card,
-        ),
-        child: Material(
-          color: unread ? AppColors.primarySoft : AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            side: BorderSide(
-              color: unread
-                  ? AppColors.primaryBorder
-                  : AppColors.surface.withValues(alpha: 0.85),
-            ),
+          side: BorderSide(
+            color: unread ? AppColors.primaryBorder : AppColors.border,
           ),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.space4),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    notificationIcon(item.type),
-                    size: AppSizes.iconTile,
-                    color: unread ? AppColors.primary : AppColors.textMuted,
-                  ),
-                  const SizedBox(width: AppSpacing.space3),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.title,
-                          style: textTheme.bodyLarge?.copyWith(
-                            fontWeight: unread
-                                ? FontWeight.w700
-                                : FontWeight.w400,
-                          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.space4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  notificationIcon(item.type),
+                  size: AppSizes.iconTile,
+                  color: unread ? AppColors.primary : AppColors.textMuted,
+                ),
+                const SizedBox(width: AppSpacing.space3),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.title,
+                        style: textTheme.bodyLarge?.copyWith(
+                          fontSize: 15,
+                          fontWeight: unread
+                              ? FontWeight.w700
+                              : FontWeight.w400,
                         ),
-                        const SizedBox(height: AppSpacing.space1),
-                        Text(
-                          notificationMeta(item),
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textMuted,
-                          ),
+                      ),
+                      const SizedBox(height: AppSpacing.space1),
+                      Text(
+                        notificationMeta(item),
+                        style: textTheme.labelMedium?.copyWith(
+                          color: AppColors.textMuted,
+                          fontWeight: FontWeight.w400,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

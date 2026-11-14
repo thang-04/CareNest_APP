@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
-import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_loading_dots.dart';
 
 enum AppButtonVariant { primary, secondary, text, danger }
 
-/// Nút viên thuốc cao 52 (nhỏ 44), chữ 16/700; bóng clay khi bấm được (DESIGN.md §5.5, §7.1).
+/// Nút phẳng bo 8, cao 48 (nhỏ 44), chữ 16/700; chính = nền `brand` chữ trắng (Figma App).
 class AppButton extends StatelessWidget {
   const AppButton({
     super.key,
@@ -69,13 +68,18 @@ class AppButton extends StatelessWidget {
       ],
     );
     final minimumSize = Size(expand ? double.infinity : 64, height);
+    // Nút nhỏ trong dòng danh sách hẹp hơn để tên bé không xuống dòng (Figma GV 04/05/07)
+    final padding = small
+        ? const EdgeInsets.symmetric(horizontal: AppSpacing.space4)
+        : null;
 
-    final button = switch (variant) {
+    return switch (variant) {
       AppButtonVariant.primary => FilledButton(
         onPressed: handler,
         style: FilledButton.styleFrom(
           minimumSize: minimumSize,
           textStyle: textStyle,
+          padding: padding,
         ),
         child: content,
       ),
@@ -84,6 +88,7 @@ class AppButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           minimumSize: minimumSize,
           textStyle: textStyle,
+          padding: padding,
         ),
         child: content,
       ),
@@ -96,27 +101,11 @@ class AppButton extends StatelessWidget {
         context,
         handler,
         minimumSize,
+        padding,
         textStyle,
         content,
       ),
     };
-    // Gờ đáy + quầng chỉ khi bấm được: nút khoá phẳng để thấy rõ là không bấm được
-    final shadows = handler == null
-        ? null
-        : switch (variant) {
-            AppButtonVariant.primary => AppShadows.buttonPrimary,
-            AppButtonVariant.secondary ||
-            AppButtonVariant.danger => AppShadows.buttonSecondary,
-            AppButtonVariant.text => null,
-          };
-    if (shadows == null) return button;
-    return DecoratedBox(
-      decoration: ShapeDecoration(
-        shape: const StadiumBorder(),
-        shadows: shadows,
-      ),
-      child: button,
-    );
   }
 
   // Danger dùng nền nhạt + chữ đậm, không nền đỏ đặc chữ trắng (§4.2)
@@ -124,6 +113,7 @@ class AppButton extends StatelessWidget {
     BuildContext context,
     VoidCallback? handler,
     Size minimumSize,
+    EdgeInsetsGeometry? padding,
     TextStyle? textStyle,
     Widget content,
   ) {
@@ -135,6 +125,7 @@ class AppButton extends StatelessWidget {
         foregroundColor: danger.foreground,
         minimumSize: minimumSize,
         textStyle: textStyle,
+        padding: padding,
       ),
       child: content,
     );

@@ -94,9 +94,10 @@ class _RewardBatchScreenState extends State<RewardBatchScreen> {
       padding: const EdgeInsets.all(AppSpacing.pagePadding),
       children: [
         AppBanner(
-          kind: pending ? AppBannerKind.info : AppBannerKind.neutral,
+          kind: pending ? AppBannerKind.success : AppBannerKind.neutral,
+          icon: pending ? AppIcons.checkCircle : null,
           message: pending
-              ? '${batch.reviewNote} Chờ Hiệu trưởng duyệt trên CareNest Web.'
+              ? '${batch.reviewNote} Chỉ xem — Hiệu trưởng duyệt trên CareNest Web.'
               : batch.decisionNote ?? 'Đợt này đã được xử lý.',
         ),
         const SizedBox(height: AppSpacing.space3),
@@ -109,7 +110,28 @@ class _RewardBatchScreenState extends State<RewardBatchScreen> {
             alignment: Alignment.centerLeft,
             child: TextButton(
               onPressed: () => setState(() => _expanded = true),
-              child: Text('+ $hidden đề xuất khác · Xem tất cả'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.space1,
+                ),
+              ),
+              child: Text.rich(
+                TextSpan(
+                  text: '+ $hidden đề xuất khác · ',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textMuted,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: 'Xem tất cả',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         if (batch.proposals.isEmpty)
@@ -135,12 +157,6 @@ class _ProposalTile extends StatelessWidget {
       dense: true,
       child: Row(
         children: [
-          Icon(
-            AppIcons.trophy,
-            size: AppSizes.iconTile,
-            color: award.foreground,
-          ),
-          const SizedBox(width: AppSpacing.space3),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,6 +178,12 @@ class _ProposalTile extends StatelessWidget {
                 Text(item.awardTitle, style: textTheme.bodyMedium),
               ],
             ),
+          ),
+          const SizedBox(width: AppSpacing.space3),
+          Icon(
+            AppIcons.trophy,
+            size: AppSizes.iconTile,
+            color: award.foreground,
           ),
         ],
       ),

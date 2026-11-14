@@ -79,6 +79,10 @@ void main() {
       }
       expect(find.text('Ghi'), findsOneWidget);
       expect(find.text('Xem'), findsNWidgets(2));
+      // Figma Bếp 01: số đổi do GV sửa điểm danh, không còn chờ duyệt (NUT-04)
+      expect(find.text('6 lớp · cập nhật 09:05'), findsOneWidget);
+      expect(find.text('+1 suất'), findsOneWidget);
+      expect(find.textContaining('Chờ duyệt'), findsNothing);
       for (final gone in [
         'Đang nấu',
         'Cập nhật trạng thái',
@@ -181,7 +185,7 @@ void main() {
         find.text('Định lượng hệ thống tính theo số suất'),
         findsOneWidget,
       );
-      expect(find.textContaining('(182 SUẤT)'), findsOneWidget);
+      expect(find.textContaining('(182 suất)'), findsOneWidget);
       expect(find.text('10,5 kg'), findsOneWidget);
       expect(find.text('Xem cách chế biến'), findsOneWidget);
       expect(find.textContaining('phiếu xuất kho'), findsNothing);
@@ -203,7 +207,7 @@ void main() {
       expect(find.text('Bếp cơ sở chính · Thứ Hai, 12/10'), findsOneWidget);
       expect(find.text('Chụp trong 10:30–11:30'), findsOneWidget);
       expect(find.text('Đã chụp (1/2)'), findsOneWidget);
-      expect(find.text('Mẫu suất thường'), findsOneWidget);
+      expect(find.bySemanticsLabel('Mẫu suất thường, đã chụp'), findsOneWidget);
       expect(
         find.bySemanticsLabel('Mẫu suất thay thế, chưa chụp'),
         findsOneWidget,

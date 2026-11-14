@@ -8,7 +8,7 @@ import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_text_field.dart';
 import 'package:carenest_app/features/auth/presentation/widgets/auth_not_connected.dart';
 
-/// Quên mật khẩu — mockup P15. Gửi mã OTP là việc của BE (AUTH_CONTRACT chưa có).
+/// Quên mật khẩu (Figma PH15). Gửi mã OTP là việc của BE (AUTH_CONTRACT chưa có).
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key, this.onSendCode});
 
@@ -56,7 +56,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         children: [
           Text(
             'Nhập số điện thoại đã đăng ký với nhà trường. CareNest sẽ gửi mã OTP gồm 6 số qua SMS.',
-            style: textTheme.bodyLarge?.copyWith(
+            style: textTheme.bodyMedium?.copyWith(
               color: AppColors.textSecondary,
             ),
           ),

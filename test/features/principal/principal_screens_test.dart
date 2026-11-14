@@ -50,7 +50,7 @@ String? labelOf(String prefix) => find
 
 void main() {
   testWidgets(
-    'H01 (AUTH-08, K5): hai cơ sở cạnh nhau, không có nghỉ phép nhân sự',
+    'H01 (AUTH-08, K5): thẻ trường, ô số liệu cạnh nhau, không có nghỉ phép nhân sự',
     (tester) async {
       await pumpScreen(
         tester,
@@ -62,39 +62,32 @@ void main() {
         ),
         inScaffold: true,
       );
+      expect(find.text('Chào cô,'), findsOneWidget);
       expect(find.text('Nguyễn Thị Hồng'), findsOneWidget);
-      expect(
-        find.text('Trường MN Thượng Hồng · Thứ Hai, 12/10'),
-        findsOneWidget,
+      expect(find.text('Trường MN Thượng Hồng · 2 cơ sở'), findsOneWidget);
+      expect(find.text('Năm học 2026–2027 · Thứ Hai, 12/10'), findsOneWidget);
+      expect(labelOf('Trẻ có mặt'), 'Trẻ có mặt: 312/334, 93%');
+      expect(labelOf('Suất ăn đã chốt'), 'Suất ăn đã chốt: 306, 2 cơ sở');
+      expect(labelOf('Thực đơn tuần'), 'Thực đơn tuần: 2/2, cơ sở đã công bố');
+      // Hai ô đầu cùng một hàng như Figma HT 01
+      final present = tester.getTopLeft(
+        find.bySemanticsLabel(RegExp('^Trẻ có mặt')),
       );
-      expect(
-        labelOf('Cơ sở chính'),
-        'Cơ sở chính, có mặt 182/196, 93%, 182 suất đã chốt',
+      final meals = tester.getTopLeft(
+        find.bySemanticsLabel(RegExp('^Suất ăn đã chốt')),
       );
-      expect(
-        labelOf('Cơ sở 2'),
-        'Cơ sở 2, có mặt 130/138, 94%, 124 suất đã chốt',
-      );
-      // Hai thẻ cùng một hàng
-      final main = tester.getTopLeft(
-        find.bySemanticsLabel(RegExp('^Cơ sở chính')),
-      );
-      final second = tester.getTopLeft(
-        find.bySemanticsLabel(RegExp('^Cơ sở 2')),
-      );
-      expect(main.dy, second.dy);
-      expect(main.dx, lessThan(second.dx));
+      expect(present.dy, meals.dy);
+      expect(present.dx, lessThan(meals.dx));
+      await tester.scrollUntilVisible(find.bySemanticsLabel('Mầm: 91%'), 200);
       await tester.scrollUntilVisible(
         find.text('Khen thưởng cuối năm · 7 bé'),
         200,
       );
-      await tester.scrollUntilVisible(find.bySemanticsLabel('Mầm: 91%'), 200);
-      await tester.scrollUntilVisible(find.text('312/334 bé · 93%'), 200);
       expect(find.textContaining('Nghỉ phép'), findsNothing);
     },
   );
 
-  testWidgets('H01: khổ 320 hai thẻ cơ sở vẫn cạnh nhau, không tràn', (
+  testWidgets('H01: khổ 320 hai ô số liệu vẫn cạnh nhau, không tràn', (
     tester,
   ) async {
     usePhoneSize(tester);
@@ -114,11 +107,13 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    final main = tester.getTopLeft(
-      find.bySemanticsLabel(RegExp('^Cơ sở chính')),
+    final present = tester.getTopLeft(
+      find.bySemanticsLabel(RegExp('^Trẻ có mặt')),
     );
-    final second = tester.getTopLeft(find.bySemanticsLabel(RegExp('^Cơ sở 2')));
-    expect(main.dy, second.dy);
+    final meals = tester.getTopLeft(
+      find.bySemanticsLabel(RegExp('^Suất ăn đã chốt')),
+    );
+    expect(present.dy, meals.dy);
   });
 
   testWidgets('H01: lỗi tải ⇒ Thử lại', (tester) async {
@@ -153,6 +148,8 @@ void main() {
     );
     expect(find.text('Đã xử lý gần đây'), findsOneWidget);
     expect(find.text('Trả về'), findsOneWidget);
+    // Lọc theo loại như Figma HT 02 (hiện chỉ có khen thưởng)
+    expect(find.text('Tất cả'), findsOneWidget);
     expect(find.textContaining('Nghỉ phép'), findsNothing);
   });
 

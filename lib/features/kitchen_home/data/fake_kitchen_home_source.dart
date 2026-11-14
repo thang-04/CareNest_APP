@@ -5,7 +5,7 @@ import 'package:carenest_app/features/kitchen_meals/data/fake_kitchen_meals_sour
 import 'package:carenest_app/features/parent_home/data/fake_parent_home_source.dart';
 import 'package:carenest_app/features/school_menu/domain/meal_slot.dart';
 
-/// Dữ liệu giả mockup K01, khớp K03 (182 suất, 6 lớp, Mầm 3A xin +1 chờ duyệt), K04 (định lượng)
+/// Dữ liệu giả Figma Bếp 01, khớp K03 (182 suất, 6 lớp, Mầm 3A +1 do GV sửa điểm danh), K04 (định lượng)
 /// và khung giờ ảnh mẫu bữa trưa.
 class FakeKitchenHomeSource implements KitchenHomeSource {
   FakeKitchenHomeSource({
@@ -57,8 +57,8 @@ class FakeKitchenHomeSource implements KitchenHomeSource {
         const KitchenTask(
           kind: KitchenTaskKind.mealCounts,
           title: 'Suất ăn theo lớp',
-          subtitle: '6 lớp · Mầm 3A xin +1 suất lúc 09:05',
-          badge: 'Chờ duyệt +1',
+          subtitle: '6 lớp · cập nhật 09:05',
+          badge: '+1 suất',
           level: KitchenBadgeLevel.changed,
         ),
         KitchenTask(
@@ -66,7 +66,7 @@ class FakeKitchenHomeSource implements KitchenHomeSource {
           title: 'Định lượng thực phẩm',
           subtitle: 'Theo $total suất đã xác nhận',
           badge: 'Xem',
-          level: KitchenBadgeLevel.info,
+          level: KitchenBadgeLevel.done,
         ),
         KitchenTask(
           kind: KitchenTaskKind.mealSamples,

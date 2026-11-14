@@ -11,20 +11,20 @@ void main() {
   final theme = buildLightTheme();
 
   test(
-    'AC-1: ColorScheme theo DESIGN §4.1/§4.3 — primary là brand, chữ trên nút là onBrand',
+    'AC-1: ColorScheme theo Figma App phẳng — primary là brand, chữ trên nút trắng',
     () {
       final scheme = theme.colorScheme;
       expect(scheme.brightness, Brightness.light);
-      expect(scheme.primary, const Color(0xFF4FB0F5));
-      expect(scheme.onPrimary, const Color(0xFF0E3F63));
-      expect(scheme.secondary, const Color(0xFF0B72BC));
-      expect(scheme.primaryContainer, const Color(0xFFE2F2FD));
+      expect(scheme.primary, const Color(0xFF1565E0));
+      expect(scheme.onPrimary, const Color(0xFFFFFFFF));
+      expect(scheme.secondary, const Color(0xFF1565E0));
+      expect(scheme.primaryContainer, const Color(0xFFEAF2FE));
       expect(scheme.error, const Color(0xFFE03131));
       expect(scheme.surface, const Color(0xFFFFFFFF));
       expect(scheme.onSurface, const Color(0xFF1B2433));
-      expect(scheme.outline, const Color(0xFFCDD6E3));
-      expect(scheme.outlineVariant, const Color(0xFFE3E9F2));
-      expect(theme.scaffoldBackgroundColor, const Color(0xFFF1F9FE));
+      expect(scheme.outline, const Color(0xFFD5DCE7));
+      expect(scheme.outlineVariant, const Color(0xFFE6EBF4));
+      expect(theme.scaffoldBackgroundColor, const Color(0xFFF5F8FC));
     },
   );
 
@@ -51,9 +51,9 @@ void main() {
     });
   });
 
-  test('AC-1: nút chính cao 52, nền brand, chữ onBrand', () {
+  test('AC-1: nút chính cao 48, nền brand, chữ onBrand', () {
     final style = theme.filledButtonTheme.style!;
-    expect(style.minimumSize?.resolve({})?.height, 52);
+    expect(style.minimumSize?.resolve({})?.height, 48);
     expect(style.backgroundColor?.resolve({}), AppColors.brand);
     expect(style.foregroundColor?.resolve({}), AppColors.onBrand);
   });
