@@ -13,13 +13,15 @@ import 'package:carenest_app/core/widgets/app_stat_tile.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/attendance/data/fake_attendance_source.dart';
+import 'package:carenest_app/features/attendance/domain/arrival_health.dart';
 import 'package:carenest_app/features/attendance/domain/attendance.dart';
 import 'package:carenest_app/features/attendance/presentation/widgets/attendance_kid_row.dart';
 
-enum _SaveState { idle, saving, saved, failed }
+enum _SaveState { idle, saving, saved, failed, invalid }
 
-/// Điểm danh & nhiệt độ đầu ngày cả lớp — mockup T02. Có mặt là ăn đủ các bữa, không báo ăn riêng
-/// (ATT-02); APP không tính số suất (NUT-01): các ô đếm chỉ là tổng lựa chọn đang nhập.
+/// Điểm danh & sức khỏe đầu ngày cả lớp — mockup T02, form sức khỏe như Web (HLT-07). Có mặt là ăn đủ
+/// các bữa, không báo ăn riêng (ATT-02); APP không tính số suất (NUT-01): các ô đếm chỉ là tổng lựa chọn
+/// đang nhập. Ngày nghỉ theo lịch trường không điểm danh (P-19).
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key, required this.classId, this.source});
 
@@ -71,7 +73,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       _kids = [
         for (final kid in _kids) kid.childId == childId ? change(kid) : kid,
       ];
-      if (_saveState != _SaveState.saving) _saveState = _SaveState.idle;
+      // Đang báo lỗi sức khỏe thì giữ báo lỗi (cập nhật theo ô vừa sửa) tới khi hết lỗi
+      if (_saveState == _SaveState.invalid) {
+        if (_invalidCount == 0) _saveState = _SaveState.idle;
+      } else if (_saveState != _SaveState.saving) {
+        _saveState = _SaveState.idle;
+      }
     });
   }
 
@@ -80,17 +87,25 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     (item) => item.copyWith(status: AttendanceStatus.present),
   );
 
-  // GV chỉ có Có mặt / Vắng không phép; có phép do đơn nghỉ đặt (ATT-09)
+  // GV chỉ có Có mặt / Vắng không phép; có phép do đơn nghỉ đặt (ATT-09). Trẻ vắng không có sức khỏe.
   void _setAbsent(KidAttendance kid) => _update(
     kid.childId,
     (item) => item.copyWith(
       status: AttendanceStatus.unexcused,
-      temperature: () => null,
+      health: const ArrivalHealth(),
     ),
   );
 
-  void _setTemperature(KidAttendance kid, double? value) =>
-      _update(kid.childId, (item) => item.copyWith(temperature: () => value));
+  void _setHealth(KidAttendance kid, ArrivalHealth health) =>
+      _update(kid.childId, (item) => item.copyWith(health: health));
+
+  Map<ArrivalHealthField, String> _errorsOf(KidAttendance kid) =>
+      kid.status == AttendanceStatus.present
+      ? validateArrivalHealth(kid.health)
+      : const {};
+
+  int get _invalidCount =>
+      _kids.where((kid) => _errorsOf(kid).isNotEmpty).length;
 
   void _markAllPresent() {
     setState(() {
@@ -107,6 +122,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Future<void> _save() async {
     final sheet = _sheet;
     if (sheet == null) return;
+    // Ghi sức khỏe chưa đủ ⇒ chỉ ra ô lỗi, giữ nguyên dữ liệu, chưa gửi
+    if (_invalidCount > 0) {
+      setState(() => _saveState = _SaveState.invalid);
+      return;
+    }
     setState(() => _saveState = _SaveState.saving);
     try {
       await _source.save(widget.classId, sheet.date, _kids);
@@ -122,12 +142,22 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   int _count(AttendanceStatus status) =>
       _kids.where((kid) => kid.status == status).length;
 
+  int get _healthChecked => _kids
+      .where(
+        (kid) =>
+            kid.status == AttendanceStatus.present &&
+            kid.health.observation != null,
+      )
+      .length;
+
   @override
   Widget build(BuildContext context) {
+    final holiday = _sheet != null && !_sheet!.isSchoolDay;
     return Scaffold(
-      appBar: AppBar(title: const Text('Điểm danh & nhiệt độ')),
+      appBar: AppBar(title: const Text('Điểm danh & sức khỏe')),
       body: _buildBody(),
-      bottomNavigationBar: _loading || _loadError != null || _kids.isEmpty
+      bottomNavigationBar:
+          _loading || _loadError != null || _kids.isEmpty || holiday
           ? null
           : _buildDock(),
     );
@@ -147,6 +177,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             title: 'Chưa tải được danh sách lớp',
             message: 'Kiểm tra kết nối mạng rồi thử lại.',
             onRetry: _load,
+          ),
+        ),
+      );
+    }
+    if (!_sheet!.isSchoolDay) {
+      return const Center(
+        child: SingleChildScrollView(
+          child: AppEmptyState(
+            icon: AppIcons.calendarOff,
+            title: 'Hôm nay trường nghỉ',
+            message: 'Ngày nghỉ theo lịch của trường nên không điểm danh.',
           ),
         ),
       );
@@ -228,13 +269,29 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               ),
               const SizedBox(height: AppSpacing.space2),
               Text(
-                'Chạm 1 lần cho cả lớp, rồi nhập nhiệt độ đầu ngày từng bé có mặt.',
+                'Chạm 1 lần cho cả lớp, rồi kiểm tra sức khỏe đầu ngày từng bé có mặt.',
+                textAlign: TextAlign.center,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textMuted,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.space1),
+              Text(
+                'Sức khỏe đầu ngày: $_healthChecked/${_count(AttendanceStatus.present)} bé có mặt đã kiểm tra',
                 textAlign: TextAlign.center,
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textMuted,
                 ),
               ),
               const SizedBox(height: AppSpacing.space3),
+              if (_saveState == _SaveState.invalid) ...[
+                AppBanner(
+                  kind: AppBannerKind.danger,
+                  title: 'Còn $_invalidCount bé ghi sức khỏe chưa đủ',
+                  message: 'Sửa các ô báo lỗi rồi lưu lại.',
+                ),
+                const SizedBox(height: AppSpacing.space3),
+              ],
               if (_saveState == _SaveState.failed) ...[
                 const AppBanner(
                   kind: AppBannerKind.danger,
@@ -263,7 +320,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             enabled: !saving,
             onPresent: () => _setPresent(kid),
             onAbsent: () => _setAbsent(kid),
-            onTemperatureChanged: (value) => _setTemperature(kid, value),
+            onHealthChanged: (health) => _setHealth(kid, health),
+            // Chỉ hiện lỗi sau lần bấm Lưu đầu tiên
+            healthErrors: _saveState == _SaveState.invalid
+                ? _errorsOf(kid)
+                : const {},
           ),
         );
       },

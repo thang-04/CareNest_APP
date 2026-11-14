@@ -12,7 +12,6 @@ class FakeClassLeaveSource implements ClassLeaveSource {
       period: 'Thứ Ba 13/10',
       reason: 'Khám răng định kỳ',
       meta: 'Mẹ (Thu Lan) gửi lúc 07:55',
-      state: ClassLeaveState.notice,
       upcoming: true,
     ),
     ClassLeaveEntry(
@@ -21,7 +20,6 @@ class FakeClassLeaveSource implements ClassLeaveSource {
       period: '11/10 – 13/10',
       reason: 'Bé bị ốm, sốt nhẹ',
       meta: 'Bố gửi lúc 20:10 ngày 10/10',
-      state: ClassLeaveState.notice,
       upcoming: true,
     ),
     ClassLeaveEntry(
@@ -30,16 +28,6 @@ class FakeClassLeaveSource implements ClassLeaveSource {
       period: 'Thứ Sáu 16/10',
       reason: 'Đi khám định kỳ',
       meta: 'Mẹ gửi ngày 09/10',
-      state: ClassLeaveState.notice,
-      upcoming: true,
-    ),
-    ClassLeaveEntry(
-      id: 'l-4',
-      childName: 'Vũ Đức Huy',
-      period: 'Thứ Hai 12/10',
-      reason: 'Chưa có đơn – vắng không phép',
-      meta: 'Cô Hà đã gọi phụ huynh 08:15',
-      state: ClassLeaveState.absentNoNotice,
       upcoming: true,
     ),
     ClassLeaveEntry(
@@ -48,7 +36,6 @@ class FakeClassLeaveSource implements ClassLeaveSource {
       period: 'Thứ Ba 29/09',
       reason: 'Việc gia đình',
       meta: 'Mẹ gửi ngày 28/09',
-      state: ClassLeaveState.notice,
       upcoming: false,
     ),
   ];
