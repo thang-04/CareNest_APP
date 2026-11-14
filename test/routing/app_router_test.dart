@@ -105,11 +105,10 @@ void main() {
     final router = await pumpRouter(tester, enablePreview: true);
     router.go(RoutePaths.vicePrincipalApprovals);
     await tester.pumpAndSettle();
-    expect(find.text('Yêu cầu chờ duyệt'), findsOneWidget);
+    expect(find.textContaining('Chỉ xem. Xác nhận số suất'), findsOneWidget);
 
     for (final (path, title) in [
-      (RoutePaths.vicePrincipalAdjustment('adj-mam-3a'), 'Điều chỉnh suất ăn'),
-      (RoutePaths.vicePrincipalMealConfirm, 'Chốt suất ăn'),
+      (RoutePaths.vicePrincipalMealConfirm, 'Số suất hôm nay'),
       (RoutePaths.vicePrincipalChildren, 'Trẻ của cơ sở'),
       (
         RoutePaths.vicePrincipalNutritionOf('choi', DateTime(2026, 10, 12)),
@@ -122,6 +121,39 @@ void main() {
       expect(find.byType(NavigationBar), findsNothing, reason: path);
     }
     expect(find.text('Nhóm Chồi · Thứ Hai, 12/10 · chỉ xem'), findsOneWidget);
+  });
+
+  testWidgets(
+    'BGH (AUTH-21, NUT-04, NUT-14): route duyệt điều chỉnh suất, trạng thái bếp đã gỡ',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      for (final path in [
+        '/vice-principal/approvals/meals/adj-mam-3a',
+        '/vice-principal/kitchen',
+      ]) {
+        router.go(path);
+        await tester.pumpAndSettle();
+        expect(find.text('Không tìm thấy trang'), findsOneWidget, reason: path);
+      }
+    },
+  );
+
+  testWidgets('BGH (AUTH-21): tab thứ hai tên "Chờ xử lý"', (tester) async {
+    final router = await pumpRouter(tester, enablePreview: true);
+    for (final path in [
+      RoutePaths.vicePrincipalHome,
+      RoutePaths.principalHome,
+    ]) {
+      router.go(path);
+      await tester.pumpAndSettle();
+      final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+      final labels = bar.destinations
+          .whereType<NavigationDestination>()
+          .map((destination) => destination.label)
+          .toList();
+      expect(labels, contains('Chờ xử lý'), reason: path);
+      expect(labels, isNot(contains('Duyệt')), reason: path);
+    }
   });
 
   testWidgets('Hiệu trưởng: màn con ẩn thanh đáy; Tài khoản mở Cơ sở', (
@@ -180,8 +212,8 @@ void main() {
         'Phụ huynh': ['Trang chủ', 'Bé của tôi', 'Thông báo', 'Tài khoản'],
         'Giáo viên': ['Trang chủ', 'Lớp học', 'Thông báo', 'Tài khoản'],
         'Nhân viên bếp': ['Trang chủ', 'Thực đơn', 'Thông báo', 'Tài khoản'],
-        'Phó Hiệu trưởng': ['Trang chủ', 'Duyệt', 'Thông báo', 'Tài khoản'],
-        'Hiệu trưởng': ['Tổng quan', 'Duyệt', 'Thông báo', 'Tài khoản'],
+        'Phó Hiệu trưởng': ['Trang chủ', 'Chờ xử lý', 'Thông báo', 'Tài khoản'],
+        'Hiệu trưởng': ['Tổng quan', 'Chờ xử lý', 'Thông báo', 'Tài khoản'],
       };
       for (final MapEntry(key: role, value: tabs) in roles.entries) {
         router.go(RoutePaths.preview);

@@ -11,7 +11,6 @@ import 'package:carenest_app/features/account/presentation/screens/account_scree
 import 'package:carenest_app/features/account/presentation/screens/personal_info_screen.dart';
 import 'package:carenest_app/features/activity_schedule/presentation/screens/activity_schedule_screen.dart';
 import 'package:carenest_app/features/approvals/presentation/screens/approvals_screen.dart';
-import 'package:carenest_app/features/approvals/presentation/screens/meal_adjustment_screen.dart';
 import 'package:carenest_app/features/approvals/presentation/screens/principal_approvals_screen.dart';
 import 'package:carenest_app/features/attendance/data/fake_attendance_source.dart';
 import 'package:carenest_app/features/attendance/presentation/screens/attendance_screen.dart';
@@ -59,7 +58,6 @@ import 'package:carenest_app/features/school_children/presentation/screens/schoo
 import 'package:carenest_app/features/school_menu/presentation/screens/school_menu_overview_screen.dart';
 import 'package:carenest_app/features/school_menu/presentation/screens/school_menu_screen.dart';
 import 'package:carenest_app/features/teacher_home/presentation/screens/teacher_home_screen.dart';
-import 'package:carenest_app/features/vice_principal_home/presentation/screens/campus_kitchen_screen.dart';
 import 'package:carenest_app/features/vice_principal_home/presentation/screens/campus_menu_screen.dart';
 import 'package:carenest_app/features/vice_principal_home/presentation/screens/vice_principal_home_screen.dart';
 import 'package:carenest_app/routing/navigation_destinations.dart';
@@ -302,15 +300,8 @@ List<GoRoute> _kitchenRoutes() => [
   ),
 ];
 
-/// Màn con của Phó HT. Ngữ cảnh (nhóm tuổi, ngày) ở query; sai định dạng ⇒ về mặc định.
+/// Màn con của Phó HT, chỉ xem (AUTH-21, BE ADR-0026). Ngữ cảnh (nhóm tuổi, ngày) ở query; sai định dạng ⇒ về mặc định.
 List<GoRoute> _vicePrincipalRoutes() => [
-  GoRoute(
-    path: '${RoutePaths.vicePrincipalAdjustments}/:id',
-    builder: (context, state) => MealAdjustmentScreen(
-      id: state.pathParameters['id']!,
-      onDone: () => context.pop(),
-    ),
-  ),
   GoRoute(
     path: RoutePaths.vicePrincipalRewards,
     builder: (context, state) => const RewardProposalsScreen(),
@@ -318,10 +309,6 @@ List<GoRoute> _vicePrincipalRoutes() => [
   GoRoute(
     path: RoutePaths.vicePrincipalMealConfirm,
     builder: (context, state) => const MealCountConfirmScreen(),
-  ),
-  GoRoute(
-    path: RoutePaths.vicePrincipalKitchen,
-    builder: (context, state) => const CampusKitchenScreen(),
   ),
   GoRoute(
     path: RoutePaths.vicePrincipalMenu,
@@ -342,14 +329,12 @@ List<GoRoute> _vicePrincipalRoutes() => [
   ),
 ];
 
-/// Màn con của Hiệu trưởng. Cơ sở, lớp, nhóm tuổi, ngày là ngữ cảnh ở query.
+/// Màn con của Hiệu trưởng, chỉ xem (AUTH-21, BE ADR-0026). Cơ sở, lớp, nhóm tuổi, ngày là ngữ cảnh ở query.
 List<GoRoute> _principalRoutes() => [
   GoRoute(
     path: '${RoutePaths.principalRewardBatches}/:id',
-    builder: (context, state) => RewardBatchScreen(
-      id: state.pathParameters['id']!,
-      onDone: () => context.pop(),
-    ),
+    builder: (context, state) =>
+        RewardBatchScreen(id: state.pathParameters['id']!),
   ),
   GoRoute(
     path: RoutePaths.principalChildren,

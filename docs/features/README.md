@@ -9,10 +9,10 @@ Mỗi role 1 file. File **chỉ map** màn hình → BE flow / module card / rul
 | Parent | [parent/README.md](parent/README.md) | child, attendance, nutrition, health, learning-observation (đọc theo PAR-*) |
 | Teacher | [teacher/README.md](teacher/README.md) | attendance (gồm đón trẻ), learning-observation, health |
 | Kitchen Staff | [kitchen/README.md](kitchen/README.md) | nutrition (số suất dị ứng không tên trẻ — AUTH-05, NUT-23) |
-| Vice Principal — ngoài phạm vi App (AUTH-21), tham khảo | [vice-principal/README.md](vice-principal/README.md) | nutrition, attendance, child, learning-observation (scope campus) |
-| Principal — ngoài phạm vi App (AUTH-21), tham khảo | [principal/README.md](principal/README.md) | school-structure, child, nutrition, learning-observation (toàn trường) |
+| Vice Principal — chỉ xem (AUTH-21, BE ADR-0026) | [vice-principal/README.md](vice-principal/README.md) | nutrition, attendance, child, learning-observation (scope campus) |
+| Principal — chỉ xem (AUTH-21, BE ADR-0026) | [principal/README.md](principal/README.md) | school-structure, child, nutrition, learning-observation (toàn trường) |
 
-App chỉ cho Phụ huynh, Giáo viên, Bếp; Ban giám hiệu chỉ dùng Web (`BE:` AUTH-21, user chốt 27/10). Màn lệch rule BE chốt 28/10, 29/10 ghi "Lệch BE (28/10)", "Lệch BE (29/10)" trong file của role — cần sửa khi tích hợp. Từ 29/10: App tập trung cho phụ huynh và GV (điểm danh, sức khỏe, đánh giá, đón trẻ, thông báo); bếp giữ màn tối thiểu (AUTH-21).
+App cho Phụ huynh, Giáo viên, Bếp; Ban giám hiệu dùng App chỉ xem (`BE:` AUTH-21, ADR-0026, user chốt 13/11 thay "BGH chỉ dùng Web" 27/10). Màn lệch rule BE chốt 28/10, 29/10 ghi "Lệch BE (28/10)", "Lệch BE (29/10)" trong file của role — cần sửa khi tích hợp. Từ 29/10: App tập trung cho phụ huynh và GV (điểm danh, sức khỏe, đánh giá, đón trẻ, thông báo); bếp giữ màn tối thiểu (AUTH-21).
 
 ## Nguồn BE dùng chung
 

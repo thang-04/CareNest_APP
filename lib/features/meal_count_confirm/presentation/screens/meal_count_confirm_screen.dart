@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
-import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
-import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_stat_tile.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
@@ -14,8 +12,8 @@ import 'package:carenest_app/features/kitchen_meals/presentation/widgets/meal_co
 import 'package:carenest_app/features/meal_count_confirm/data/fake_meal_count_confirm_source.dart';
 import 'package:carenest_app/features/meal_count_confirm/domain/meal_count_draft.dart';
 
-/// Phó HT · Chốt suất ăn trong ngày — mockup V04. Người xác nhận PENDING P-05 (mockup giao Phó HT).
-/// Số do BE tổng hợp từ điểm danh; APP chỉ xem và gửi xác nhận.
+/// Phó HT · Số suất hôm nay — V04, chỉ xem (AUTH-21, BE ADR-0026). Số do BE tổng hợp từ điểm danh (NUT-01);
+/// PHT xác nhận gửi bếp trên CareNest Web (NUT-02), App chỉ hiện trạng thái.
 class MealCountConfirmScreen extends StatefulWidget {
   const MealCountConfirmScreen({super.key, this.source});
 
@@ -29,23 +27,6 @@ class _MealCountConfirmScreenState extends State<MealCountConfirmScreen> {
   late final MealCountConfirmSource _source =
       widget.source ?? FakeMealCountConfirmSource.shared;
   late Future<MealCountDraft> _draft = _source.loadToday();
-  bool _confirming = false;
-
-  Future<void> _confirm() async {
-    setState(() => _confirming = true);
-    try {
-      final updated = await _source.confirm();
-      if (!mounted) return;
-      setState(() => _draft = Future.value(updated));
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          const SnackBar(content: Text('Chưa gửi được. Thử lại sau.')),
-        );
-      }
-    }
-    if (mounted) setState(() => _confirming = false);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +40,7 @@ class _MealCountConfirmScreenState extends State<MealCountConfirmScreen> {
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Chốt suất ăn'),
+                const Text('Số suất hôm nay'),
                 if (draft != null)
                   Text(
                     '${DateLabels.weekdayDayMonth(draft.date)} · tổng hợp lúc ${DateLabels.time24(draft.summarizedAt)}',
@@ -105,14 +86,14 @@ class _MealCountConfirmScreenState extends State<MealCountConfirmScreen> {
                   AppBanner(
                     kind: AppBannerKind.success,
                     message:
-                        'Đã gửi bếp lúc ${DateLabels.time24(at)} · ${draft.mealLabel} ${draft.total} suất',
+                        'Đã xác nhận gửi bếp lúc ${DateLabels.time24(at)} · ${draft.mealLabel} ${draft.total} suất',
                   ),
                   const SizedBox(height: AppSpacing.space3),
                 ] else ...[
                   AppBanner(
                     kind: AppBannerKind.info,
                     message:
-                        '${draft.mealLabel} · hạn xác nhận ${DateLabels.time24(draft.deadline)}',
+                        'Chưa xác nhận · ${draft.mealLabel} · hạn ${DateLabels.time24(draft.deadline)} — xác nhận trên CareNest Web',
                   ),
                   const SizedBox(height: AppSpacing.space3),
                 ],
@@ -123,7 +104,7 @@ class _MealCountConfirmScreenState extends State<MealCountConfirmScreen> {
                 ],
                 const SizedBox(height: AppSpacing.space3),
                 Text(
-                  'Số suất tự tổng hợp từ điểm danh, Phó HT chỉ xem và xác nhận. Sửa sau giờ chốt đi qua mục Yêu cầu chờ duyệt.',
+                  'Chỉ xem. Số suất tự tổng hợp từ điểm danh; xác nhận gửi bếp và mở lại điểm danh thực hiện trên CareNest Web.',
                   style: textTheme.bodyMedium?.copyWith(
                     color: AppColors.textMuted,
                   ),
@@ -131,19 +112,6 @@ class _MealCountConfirmScreenState extends State<MealCountConfirmScreen> {
               ],
             ),
           },
-          bottomNavigationBar: draft == null || draft.confirmed
-              ? null
-              : AppBottomDock(
-                  children: [
-                    AppButton(
-                      label: 'Xác nhận gửi bếp (${draft.total} suất)',
-                      loadingLabel: 'Đang gửi bếp',
-                      isLoading: _confirming,
-                      expand: true,
-                      onPressed: _confirm,
-                    ),
-                  ],
-                ),
         );
       },
     );

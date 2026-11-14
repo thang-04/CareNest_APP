@@ -4,7 +4,7 @@
 # Chỉ đường dẫn trong `available` (và app_docs dưới đây) đã tồn tại; `planned` thì chưa.
 version: 2
 repository: CareNest_APP
-role: Mobile client (Parent, Teacher, Kitchen Staff; Ban giám hiệu không dùng App — BE AUTH-21) — sở hữu UI, navigation, client state, API integration, nhận push. KHÔNG sở hữu business rule/authz/contract.
+role: Mobile client (Parent, Teacher, Kitchen Staff; Ban giám hiệu chỉ xem — BE AUTH-21, ADR-0026) — sở hữu UI, navigation, client state, API integration, nhận push. KHÔNG sở hữu business rule/authz/contract.
 
 keywords:
   # từ khóa (VN|EN, regex-friendly) -> {app_docs, be_module_card}
