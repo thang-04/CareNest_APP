@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
+import 'package:carenest_app/features/account/domain/app_modes.dart';
 import 'package:carenest_app/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/otp_verify_screen.dart';
@@ -268,6 +269,53 @@ void main() {
           );
         }
       }
+    },
+  );
+
+  testWidgets(
+    'Plan 14/11 AC-6 (AUTH-21): GV kiêm phụ huynh mở chế độ GV, chuyển ở Tài khoản, lần sau mở chế độ cuối',
+    (tester) async {
+      AppMode.resetForTest();
+      addTearDown(AppMode.resetForTest);
+      final router = await pumpRouter(tester, enablePreview: true);
+      Future<void> openTab(String label) async {
+        await tester.tap(
+          find.descendant(
+            of: find.byType(NavigationBar),
+            matching: find.text(label),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      Future<void> openDual() async {
+        router.go(RoutePaths.preview);
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Giáo viên kiêm phụ huynh'));
+        await tester.tap(find.text('Giáo viên kiêm phụ huynh'));
+        await tester.pumpAndSettle();
+      }
+
+      await openDual();
+      expect(find.text('Lớp học'), findsWidgets);
+      await openTab('Tài khoản');
+      await tester.tap(find.text('Chuyển sang chế độ phụ huynh'));
+      await tester.pumpAndSettle();
+      expect(find.text('Bé của tôi'), findsWidgets);
+      await openTab('Tài khoản');
+      expect(find.text('Trần Thu Hà'), findsOneWidget);
+      expect(find.text('Chuyển sang chế độ giáo viên'), findsOneWidget);
+      // Mở lại phiên ⇒ giữ chế độ dùng lần cuối (phụ huynh)
+      await openDual();
+      expect(find.text('Bé của tôi'), findsWidgets);
+      // Tài khoản chỉ có một vai trò ⇒ không có nút chuyển chế độ
+      router.go(RoutePaths.preview);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Phụ huynh'));
+      await tester.pumpAndSettle();
+      await openTab('Tài khoản');
+      expect(find.text('Nguyễn Thu Lan'), findsOneWidget);
+      expect(find.textContaining('Chuyển sang chế độ'), findsNothing);
     },
   );
 

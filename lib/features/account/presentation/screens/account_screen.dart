@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/config/app_info.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
@@ -13,9 +14,12 @@ import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/features/account/data/fake_account_source.dart';
 import 'package:carenest_app/features/account/domain/account_profile.dart';
+import 'package:carenest_app/features/account/domain/app_modes.dart';
+import 'package:carenest_app/features/account/presentation/app_mode.dart';
 import 'package:carenest_app/features/account/presentation/widgets/logout_confirm_dialog.dart';
 
-/// Tài khoản — mockup P14, dùng chung 5 vai trò (DESIGN.md §8.5 Tài khoản).
+/// Tài khoản — mockup P14, dùng chung 5 vai trò (DESIGN.md §8.5 Tài khoản). Tài khoản GV kiêm phụ huynh
+/// chuyển chế độ ở đây (AUTH-21, user chốt 2026-11-14).
 class AccountScreen extends StatefulWidget {
   const AccountScreen({
     super.key,
@@ -24,6 +28,7 @@ class AccountScreen extends StatefulWidget {
     required this.onChangePassword,
     required this.onLogout,
     this.onOpenCampuses,
+    this.onSwitchMode,
     this.source = const FakeAccountSource(),
   });
 
@@ -34,6 +39,9 @@ class AccountScreen extends StatefulWidget {
 
   /// Hiệu trưởng: mở "Cơ sở của trường" (mockup H08); vai trò khác để null.
   final VoidCallback? onOpenCampuses;
+
+  /// Mở chế độ khác; null ⇒ chuyển tới màn đầu của chế độ đó.
+  final ValueChanged<AppRole>? onSwitchMode;
   final AccountSource source;
 
   @override
@@ -54,7 +62,19 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Future<void> _logout() async {
     final confirmed = await confirmLogout(context, widget.role);
-    if (confirmed && mounted) widget.onLogout();
+    if (!confirmed || !mounted) return;
+    AppMode.endSession();
+    widget.onLogout();
+  }
+
+  void _switchMode(AppRole mode) {
+    AppMode.switchTo(mode);
+    final onSwitchMode = widget.onSwitchMode;
+    if (onSwitchMode != null) {
+      onSwitchMode(mode);
+    } else {
+      context.go(homePathOf(mode));
+    }
   }
 
   @override
@@ -130,6 +150,18 @@ class _AccountScreenState extends State<AccountScreen> {
                       showChevron: true,
                       onTap: widget.onOpenProfile,
                     ),
+                    if (AppMode.otherThan(widget.role) case final other?)
+                      AppListRow(
+                        title:
+                            'Chuyển sang chế độ ${other.label.toLowerCase()}',
+                        leading: Icon(
+                          other == AppRole.parent
+                              ? AppIcons.child
+                              : AppIcons.school,
+                        ),
+                        showChevron: true,
+                        onTap: () => _switchMode(other),
+                      ),
                     if (widget.onOpenCampuses != null)
                       AppListRow(
                         title: 'Cơ sở của trường',
