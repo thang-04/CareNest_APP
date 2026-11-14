@@ -69,11 +69,11 @@ void main() {
       );
       expect(
         labelOf('Cơ sở chính'),
-        'Cơ sở chính, có mặt 182/196, 93%, 182 suất đã chốt, bếp đang nấu',
+        'Cơ sở chính, có mặt 182/196, 93%, 182 suất đã chốt',
       );
       expect(
         labelOf('Cơ sở 2'),
-        'Cơ sở 2, có mặt 130/138, 94%, 124 suất đã chốt, bếp đang nấu',
+        'Cơ sở 2, có mặt 130/138, 94%, 124 suất đã chốt',
       );
       // Hai thẻ cùng một hàng
       final main = tester.getTopLeft(
@@ -144,7 +144,7 @@ void main() {
       PrincipalApprovalsScreen(source: FakePrincipalRewardSource()),
       inScaffold: true,
     );
-    expect(find.text('1 mới'), findsOneWidget);
+    expect(find.text('1 việc'), findsOneWidget);
     expect(find.text('Chờ xử lý'), findsOneWidget);
     expect(find.text('Khen thưởng cuối năm · 7 bé'), findsOneWidget);
     expect(
@@ -155,6 +155,37 @@ void main() {
     expect(find.text('Trả về'), findsOneWidget);
     expect(find.textContaining('Nghỉ phép'), findsNothing);
   });
+
+  testWidgets('Figma audit: HT 02 đếm "việc" như Phó HT', (tester) async {
+    await pumpScreen(
+      tester,
+      PrincipalApprovalsScreen(source: FakePrincipalRewardSource()),
+      inScaffold: true,
+    );
+    expect(find.text('1 việc'), findsOneWidget);
+    expect(find.text('1 mới'), findsNothing);
+  });
+
+  testWidgets(
+    'Figma audit: HT 01 thẻ cơ sở không có trạng thái bếp, việc chờ ghi duyệt trên Web',
+    (tester) async {
+      await pumpScreen(
+        tester,
+        PrincipalOverviewScreen(
+          source: FakeSchoolOverviewSource(
+            delay: Duration.zero,
+            rewards: FakePrincipalRewardSource(),
+          ),
+        ),
+        inScaffold: true,
+      );
+      expect(find.text('Đang nấu', skipOffstage: false), findsNothing);
+      await tester.scrollUntilVisible(
+        find.text('Cơ sở chính · đã qua Phó HT · duyệt trên Web'),
+        200,
+      );
+    },
+  );
 
   testWidgets('H04 (OBS-14, AUTH-21): chỉ xem đề xuất, duyệt trên Web', (
     tester,

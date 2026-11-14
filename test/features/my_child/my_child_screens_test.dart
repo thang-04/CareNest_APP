@@ -69,6 +69,15 @@ void main() {
     },
   );
 
+  testWidgets('Figma audit: P11 lần đo gần nhất 05/10/2026', (tester) async {
+    await pumpScreen(
+      tester,
+      const MyChildScreen(initialTab: MyChildTab.health),
+      inScaffold: true,
+    );
+    expect(find.text('Lần đo gần nhất · 05/10/2026'), findsOneWidget);
+  });
+
   testWidgets(
     'Redraw AC-8 (OBS-06, OBS-10): Phát triển có nhận xét tháng, phiếu bé ngoan tuần, khen thưởng',
     (tester) async {

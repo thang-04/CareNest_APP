@@ -7,6 +7,7 @@ import 'package:carenest_app/features/activity_schedule/presentation/screens/act
 import 'package:carenest_app/features/class_leave_notices/presentation/screens/class_leave_screen.dart';
 import 'package:carenest_app/features/class_roster/presentation/screens/class_roster_screen.dart';
 import 'package:carenest_app/features/daily_review/data/fake_daily_review_source.dart';
+import 'package:carenest_app/features/daily_review/domain/daily_review.dart';
 import 'package:carenest_app/features/daily_review/presentation/screens/daily_review_detail_screen.dart';
 import 'package:carenest_app/features/daily_review/presentation/screens/daily_review_list_screen.dart';
 import 'package:carenest_app/features/health_measure/data/fake_health_measure_source.dart';
@@ -53,6 +54,46 @@ void main() {
     expect(find.text('Phạm Khánh Linh'), findsOneWidget);
     expect(find.text('Nguyễn Minh Anh'), findsNothing);
   });
+
+  testWidgets('Figma audit: T09 không có nhãn ăn theo bữa (ATT-02)', (
+    tester,
+  ) async {
+    await pumpScreen(tester, const ClassRosterScreen(), inScaffold: true);
+    expect(find.text('Ăn chay', skipOffstage: false), findsOneWidget);
+    expect(find.textContaining('bữa', skipOffstage: false), findsNothing);
+  });
+
+  testWidgets(
+    'Figma audit: T04 bé đã đánh giá hiện tóm tắt ngắn, không lặp 7 mức',
+    (tester) async {
+      final source = FakeDailyReviewSource();
+      // Một bé có mặt khác mức mặc định ⇒ chỉ nêu mặt đó
+      await source.save(
+        KidReview(
+          childId: 'k-06',
+          fullName: 'Trần Bảo Ngọc',
+          state: KidReviewState.done,
+          presenceLine: 'Có mặt 07:47',
+          answers: {
+            for (final c in FakeDailyReviewSource.criteria)
+              c.id: c.id == 'sleep' ? 'Cần cố gắng' : c.defaultOption,
+          },
+        ),
+      );
+      await pumpScreen(
+        tester,
+        DailyReviewListScreen(onOpenKid: noop, source: source),
+      );
+      await tester.drag(find.byType(ListView), const Offset(0, -500));
+      await tester.pumpAndSettle();
+      expect(find.text('Ngủ: Cần cố gắng'), findsOneWidget);
+      expect(find.text('Đạt cả 7 mặt'), findsWidgets);
+      expect(
+        find.textContaining('Đạt · Đạt', skipOffstage: false),
+        findsNothing,
+      );
+    },
+  );
 
   testWidgets(
     'Redraw AC-11 (ATT-05): GV chỉ xem; không Mới / Đã xem, không đánh dấu, không duyệt',

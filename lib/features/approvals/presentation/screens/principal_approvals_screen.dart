@@ -65,7 +65,7 @@ class _PrincipalApprovalsScreenState extends State<PrincipalApprovalsScreen> {
                   ),
                   if (pending != null && pending.isNotEmpty)
                     Text(
-                      '${pending.length} mới',
+                      '${pending.length} việc',
                       style: textTheme.bodyMedium?.copyWith(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w600,

@@ -1,11 +1,12 @@
-import 'package:carenest_app/features/food_quantities/data/fake_food_quantity_source.dart';
 import 'package:carenest_app/features/ingredient_receipt/domain/ingredient_receipt.dart';
 
-/// Dữ liệu giả mockup K05/K06, khớp phiếu ở màn Định lượng (K04); cá basa nhận thiếu 0,7 kg.
+/// Dữ liệu giả mockup K05/K06; cá basa nhận thiếu 0,7 kg.
 class FakeIngredientReceiptSource implements IngredientReceiptSource {
   FakeIngredientReceiptSource();
 
   static final shared = FakeIngredientReceiptSource();
+
+  static const slipCode = 'PXK-1012';
 
   final List<ShortageReport> reports = [];
 
@@ -13,7 +14,7 @@ class FakeIngredientReceiptSource implements IngredientReceiptSource {
   Future<List<ReceiptLot>> loadLots() async => const [
     ReceiptLot(
       id: 'lot-1',
-      title: 'Lô 1 · Theo phiếu ${FakeFoodQuantitySource.slipCode}',
+      title: 'Lô 1 · Theo phiếu $slipCode',
       subtitle: 'Giao từ kho lúc 07:30 · nhập số thực nhận',
       items: [
         ReceiptItem(

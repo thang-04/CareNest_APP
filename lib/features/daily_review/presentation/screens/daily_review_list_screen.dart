@@ -167,8 +167,21 @@ class _DailyReviewListScreenState extends State<DailyReviewListScreen> {
   static String _subtitle(KidReview kid, ReviewDay day) => switch (kid.state) {
     KidReviewState.absent => kid.presenceLine,
     KidReviewState.pending => '${kid.presenceLine} · chưa đánh giá',
-    KidReviewState.done => [
-      for (final criterion in day.criteria) ?kid.answers[criterion.id],
-    ].join(' · '),
+    KidReviewState.done => _doneSummary(kid, day),
   };
+
+  // Tóm tắt ngắn như mockup: chỉ nêu mặt khác mức mặc định, đủ mặc định thì gộp một câu
+  static String _doneSummary(KidReview kid, ReviewDay day) {
+    final changed = [
+      for (final criterion in day.criteria)
+        if (kid.answers[criterion.id] case final answer?
+            when answer != criterion.defaultOption)
+          '${criterion.title}: $answer',
+    ];
+    if (changed.isNotEmpty) return changed.join(' · ');
+    final defaults = {for (final c in day.criteria) c.defaultOption};
+    return defaults.length == 1
+        ? '${defaults.single} cả ${day.criteria.length} mặt'
+        : 'Đã đánh giá ${day.criteria.length} mặt';
+  }
 }

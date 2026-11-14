@@ -23,6 +23,7 @@ updated: 2026-11-13
 3. Màn bếp để task khác; không đụng `kitchen_*`, `cooking_status`, `ingredient_receipt`, `food_quantities` — user 13/11.
 4. GV chụp ảnh bữa (GV 15–16): gỡ lối vào trên màn GV, giữ code `lib/features/meal_photos` — user 13/11.
 5. Làm liền các phase, báo một lần — user 13/11.
+6. Mở rộng 13/11 (user): làm thêm màn bếp theo bản sửa, đưa màn BGH chỉ xem (nhánh TBD-3) vào cùng bản — giữ Hiệu trưởng và Phó hiệu trưởng là 2 role/shell riêng, không gộp; so các màn giữ nguyên với Figma rồi sửa chỗ lệch. Màn có cả bản gốc và bản sửa ⇒ theo bản sửa. Việc mở rộng ghi mã Jira G94-87.
 
 ## Acceptance criteria
 - **AC-1 (AUTH-19, PCK-02)** PH 01: chú thích "Tài khoản do nhà trường cấp qua SMS. Lần đầu đăng nhập: đổi mật khẩu."; không nhắc ảnh chân dung.
@@ -49,6 +50,22 @@ updated: 2026-11-13
 - Files: M màn + domain + fake source của `teacher_home`, `attendance`, `class_leave_notices`, `daily_review`, `pickup`, `health_measure`; gỡ lối vào `meal_photos` ở màn/route GV; test tương ứng.
 - Exit: `node scripts/verify.mjs` pass; `node scripts/check-ai-layer.mjs` pass (docs đổi).
 
+### Phase 3 — BGH chỉ xem (từ nhánh TBD-3, G94-87)
+- Áp `74f647c` (BGH chỉ xem) và `3253153` (ghi chú OTP SMS phụ huynh) bằng `git cherry-pick -n`; plan chi tiết: `docs/plans/active/2026-11-13-bgh-view-only.md`. HT và PHT giữ 2 shell riêng (`/principal`, `/vice-principal`).
+- Exit: `node scripts/verify.mjs` pass.
+
+### Phase 4 — Bếp theo bản sửa (G94-87)
+- AC-15 (NUT-07, AUTH-05) Bếp 01: thẻ "Định lượng thực phẩm · Theo N suất đã xác nhận · Xem"; "Ảnh mẫu bữa · Bữa trưa · chụp 10:30–11:30"; "Sổ lưu mẫu · Bữa trưa chưa ghi mẫu · Ghi"; không còn trạng thái nấu, nhận nguyên liệu, phiếu xuất kho.
+- AC-16 (NUT-11) Bếp 04: tiêu đề "Bữa trưa · N suất đã xác nhận", "Định lượng hệ thống tính theo số suất"; nút "Xem cách chế biến"; không phiếu xuất kho.
+- AC-17 (NUT-16, PAR-01) Ảnh mẫu bữa (mới): bếp cơ sở chụp mẫu suất thường + suất thay thế trong khung giờ, không tên trẻ, "Lưu ảnh mẫu".
+- AC-18 (NUT-21) Sổ lưu mẫu (mới): bữa · món, khối lượng · dụng cụ chứa, nhiệt độ bảo quản, giờ lấy mẫu; ghi chú PHT dinh dưỡng duyệt, hủy sau ≥ 24 giờ; "Ghi lưu mẫu".
+- AC-19: gỡ lối vào + route Bếp 05 Nhận nguyên liệu, 06 Báo thiếu, 07 Trạng thái nấu (NUT-11, NUT-12, NUT-22, NUT-14 REMOVED).
+- Exit: `node scripts/verify.mjs` pass.
+
+### Phase 5 — So màn giữ nguyên với Figma (G94-87)
+- PH 02, 06, 07, 11, 13, 14, 15–19; GV 04, 05, 07, 09; Bếp 02, 03; BGH theo khung bản sửa `151:2`. Chụp App (dữ liệu giả) và Figma, sửa chỗ lệch nội dung/bố cục; ghi danh sách lệch vào Progress log.
+- Exit: `node scripts/verify.mjs` pass.
+
 ## Rủi ro & rollback
 | Rủi ro | Tác động | Giảm thiểu | Rollback |
 | --- | --- | --- | --- |
@@ -71,4 +88,19 @@ updated: 2026-11-13
 - Khác plan / quyết định khi làm: không hiện mã rule trong chữ cho người dùng (App chưa từng hiện); tiêu đề GV "Điểm danh & nhiệt độ" thay "& báo ăn" (ATT-02); trạng thái đơn "Đã gửi / Đã hủy"; ngày có đơn ở phụ huynh ghi "Vắng có phép"; khoảng nhiệt độ 34,0–42,0 °C chỉ cảnh báo nhập, không chặn lưu.
 - Còn để ý: GV 04 (danh sách đánh giá, giữ nguyên) nối mọi câu trả lời nên hiện "Đạt · Đạt · …" 7 mục; chữ "báo ăn" còn ở `dev_preview`.
 - Chưa so ảnh chụp màn hình với Figma.
+- Commit: chưa commit
+
+### 2026-11-13 — Phase 5 (so màn giữ nguyên với Figma, chờ review)
+- Cách so: chạy App web (`flutter run -d web-server`, dữ liệu giả, khổ 360×760) và chụp Figma (link xem công khai) từng màn; ảnh chụp để ngoài repo.
+- Đã sửa (test "Figma audit: …"):
+  - PH 06, PH 11: ngày đo sức khỏe 05/10/2026 (thông báo 05/10 · 15:20, "Lần đo gần nhất · 05/10/2026").
+  - PH 19: Đăng xuất hỏi lại "Đăng xuất khỏi CareNest?" với "Ở lại" / "Đăng xuất" (mọi vai trò; câu "thông báo của bé" chỉ cho phụ huynh).
+  - GV 04: bé đã đánh giá hiện tóm tắt ngắn ("Đạt cả 7 mặt" hoặc mặt khác mức mặc định), không lặp 7 mức.
+  - GV 09: bỏ nhãn "Ăn 1 bữa" (ATT-02).
+  - Bếp 03: banner "09:05 · Mầm 3A +1 suất (giáo viên sửa điểm danh)", không "xin … chờ Phó HT duyệt" (NUT-04).
+  - PHT 04: trạng thái "Chưa xác nhận — xác nhận trên CareNest Web" nằm dưới bảng, tông cảnh báo.
+  - HT 01: thẻ cơ sở bỏ trạng thái bếp (NUT-14 REMOVED); việc chờ ghi "đã qua Phó HT · duyệt trên Web".
+  - HT 02: đầu màn đếm "1 việc" như PHT 02.
+- Giữ App (lệch có chủ đích): PH 02, PHT 01, HT 01 giữ bố cục user chọn 14/10 (`docs/design/mobile-redesign-clay.md`); HT 08 không nhãn CSVC (FAC REMOVED); PH 17 banner theo ngữ cảnh mở màn.
+- Chưa sửa: chấm số chưa đọc trên tab Thông báo/Chờ xử lý (cần sửa `AppShell` vùng dùng chung + số chưa đọc từ nguồn thông báo); HT 02 không có lọc "Tất cả / Khen thưởng" (chỉ một loại việc); Bếp 02 nhóm Mầm chỉ có thực đơn thay thế dị ứng hải sản (Figma 02 và 03 lệch nhau về số suất thay thế nhóm Mầm, App giữ khớp Bếp 03); thông báo bếp/PHT "xin điều chỉnh +1 suất … chờ duyệt" (màn Thông báo ngoài danh sách so).
 - Commit: chưa commit

@@ -5,7 +5,6 @@ import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/theme/app_text_styles.dart';
-import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
@@ -45,15 +44,12 @@ class FoodQuantitiesScreen extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.pagePadding),
             children: [
-              if (plan.slip case final slip?) ...[
-                AppBanner(
-                  kind: AppBannerKind.success,
-                  title: 'Phiếu xuất kho ${slip.code} · Đã duyệt',
-                  message:
-                      '${slip.approvedBy} duyệt lúc ${DateLabels.time24(slip.approvedAt)}',
-                ),
-                const SizedBox(height: AppSpacing.space3),
-              ],
+              AppBanner(
+                kind: AppBannerKind.success,
+                title: '${plan.mealLabel} · ${plan.servings} suất đã xác nhận',
+                message: 'Định lượng hệ thống tính theo số suất',
+              ),
+              const SizedBox(height: AppSpacing.space3),
               AppCard(
                 flush: true,
                 child: Column(
@@ -136,11 +132,10 @@ class FoodQuantitiesScreen extends StatelessWidget {
       bottomNavigationBar: AppBottomDock(
         children: [
           AppButton(
-            label: 'Xem phiếu xuất kho & cách chế biến',
+            label: 'Xem cách chế biến',
             variant: AppButtonVariant.secondary,
             expand: true,
-            onPressed: () =>
-                openComingSoon(context, 'Phiếu xuất kho & cách chế biến'),
+            onPressed: () => openComingSoon(context, 'Cách chế biến'),
           ),
         ],
       ),

@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-import 'package:carenest_app/features/cooking_status/domain/cooking_status.dart';
 import 'package:carenest_app/features/reward_proposals/domain/reward_batch.dart';
 
 /// Tỉ lệ đánh giá một khối BE trả (thang và tiêu chí theo P-11, PENDING).
@@ -32,7 +31,6 @@ class CampusSnapshot {
     required this.presentRatio,
     required this.presentRate,
     this.confirmedMeals,
-    this.kitchenStage,
   });
 
   /// "Cơ sở chính"
@@ -48,9 +46,6 @@ class CampusSnapshot {
 
   /// Null ⇒ cơ sở chưa chốt suất hôm nay.
   final int? confirmedMeals;
-
-  /// Bữa trưa; null ⇒ bếp chưa cập nhật.
-  final CookingStage? kitchenStage;
 }
 
 /// Tổng quan toàn trường cho Hiệu trưởng (AUTH-01) — mockup H01. Mọi số do BE tổng hợp (AUTH-08).

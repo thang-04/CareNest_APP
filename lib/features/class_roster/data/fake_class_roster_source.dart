@@ -41,7 +41,6 @@ class FakeClassRosterSource implements ClassRosterSource {
       fullName: 'Đỗ Tuấn Kiệt',
       ageLabel: '4 tuổi',
       guardianLine: 'Bố: 0988 777 888',
-      tag: RosterTag(RosterTagKind.meal, 'Ăn 1 bữa'),
     ),
     RosterKid(
       id: 'k-06',

@@ -66,7 +66,7 @@ class MealCountTable extends StatelessWidget {
                 '${row.regular} suất thường',
                 '${row.alternative} suất thay thế',
                 ?row.note,
-                if (row.changed) 'có điều chỉnh chờ duyệt',
+                if (row.changed) 'có điều chỉnh',
               ].join(', '),
               excludeSemantics: true,
               child: Container(
