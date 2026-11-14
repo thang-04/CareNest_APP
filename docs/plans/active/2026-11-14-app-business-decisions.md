@@ -1,9 +1,9 @@
 ---
 title: Quyết định nghiệp vụ App 14/11 — đề xuất BE và việc sửa App
-status: draft
+status: in-progress
 owner: Giáp
-jira: chưa có / FE-FEAT   # user tạo task Jira sau khi chốt rule (14/11)
-branch: chưa có
+jira: G94-332, G94-232, G94-194, G94-334 / FE-FEAT-49   # user chọn 14/11; BE dùng G94-87
+branch: feature/G94-194-FE-FEAT-49-app-ui-redraw   # UI redraw chưa vào dev, user chọn làm tiếp nhánh này
 modules: [attendance, health, identity-access, notification, nutrition]
 rules: [ATT-04, ATT-06, ATT-08, AUTH-21, AUTH-22, AUTH-27, HLT-07, HLT-14, HLT-18, NUT-02, OBS-06, OBS-29, PAR-04, PAR-05, PAR-07, PCK-04]
 risk: medium
@@ -45,7 +45,7 @@ Tất cả do user chốt trong phiên làm việc APP ngày 2026-11-14. Không 
 ### Câu hỏi mở
 - [x] Màn quên mật khẩu nằm trong App, gọi API BE (P-41, user 2026-11-14).
 - [x] Tài khoản GV có SĐT: nhân sự đăng nhập bằng SĐT, `phone` bắt buộc khi tạo (`BE:src/main/java/com/carenest/dto/account/CreateAccountRequest.java:17`).
-- [ ] Mã Jira cho Phase 1 phía App (BE dùng G94-87).
+- [x] Mã Jira Phase 1 phía App: G94-332, G94-232, G94-194, G94-334 (user 2026-11-14); BE dùng G94-87.
 
 | Câu hỏi | Trả lời | Ai | Ngày | Rule/doc đã cập nhật |
 | --- | --- | --- | --- | --- |
@@ -75,7 +75,7 @@ User cho phép; BE nhánh `feature/G94-87-BE-FEAT-0-app-rules-sms-reset` (chưa 
 - **AC-6** (AUTH-21): Given tài khoản GV kiêm phụ huynh, When đăng nhập, Then mở chế độ GV; chuyển chế độ ở Tài khoản; mở lại App thì giữ chế độ cuối.
 
 ## Phases
-### Phase 1 — Sửa code giả theo quyết định (sau khi có mã Jira)
+### Phase 1 — Sửa code giả theo quyết định (user duyệt 14/11; Jira: AC-1/2/5 G94-332, AC-3 G94-232, AC-4/6 G94-194, Thông báo G94-334)
 - Files (dự kiến): M `lib/features/class_roster/data/fake_class_roster_source.dart` · M `lib/features/campus_children/data/fake_campus_children_source.dart` · M `lib/features/kitchen_meals/data/fake_kitchen_meals_source.dart` · M `lib/features/school_menu/data/fake_school_menu_source.dart` · M `lib/features/class_leave_notices/**` · M `lib/features/leave_notice/**` · M `lib/features/attendance/**` · M `lib/features/account/**`
 - Steps: AC-1..AC-6 theo thứ tự; tách plan nếu >8 file.
 - Exit: `node scripts/verify.mjs` → `VERIFY PASS full`, skip 0
@@ -100,3 +100,10 @@ User cho phép; BE nhánh `feature/G94-87-BE-FEAT-0-app-rules-sms-reset` (chưa 
 - Docs App đồng bộ theo BE: `docs/integration/AUTH_FLOW.md` (luồng API quên mật khẩu), `docs/integration/PUSH_NOTIFICATION.md` (PAR-07, bảng loại theo role), `docs/context/CURRENT_STATE.md`, `docs/features/{parent,teacher,kitchen}/README.md`, `docs/architecture/NAVIGATION.md`.
 - Commit App: chưa commit.
 - Tiếp: mã Jira App ⇒ Phase 1 (sửa code giả).
+
+### 2026-11-14 — Phase 1 (xong, chờ user review)
+- Commit (nhánh `feature/G94-194-FE-FEAT-49-app-ui-redraw`, chưa push): `75aa7e7` G94-332 · `c38a9bc` G94-232 · `b04d113` G94-194 (bỏ "Ăn chay") · `c35dd5b` G94-194 (chuyển chế độ) · `47a0651` G94-334. Trước đó tách 3 commit cho thay đổi có sẵn: `196a147` TBD-3, `83fbe9d` G94-194, `d10195f` G94-87.
+- AC-1..AC-6 có test `Plan 14/11 AC-n`; thêm test PAR-07 cho Thông báo.
+- Khác plan: (AC-6) chế độ cuối chỉ nhớ trong phiên — lưu bền chờ plan nền App thêm storage (`TODO(Giáp)` trong `app_modes.dart`); không sửa vùng dùng chung `lib/core`, `lib/routing`. (AC-3) không có cờ `canCancel` từ BE: App hiện nút khi đơn còn ngày từ hôm nay, BE trả `LEAVE_CANNOT_CANCEL` thì báo. Thông báo bỏ ảnh đính kèm và người gửi (BE `NotificationResponse` không có).
+- Sửa kèm: hàng nút Có mặt / Vắng tràn ngang khi chữ 2.0 và nút đang chọn in đậm (đổi `Row` ⇒ `Wrap`).
+- Verify: `node scripts/verify.mjs` → `VERIFY PASS full | format ok | analyze ok | tests 219 fail 0 skip 0`.

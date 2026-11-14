@@ -49,7 +49,7 @@ Ngôn ngữ `desc`: ví dụ trong guide BE là tiếng Anh — hiển thị tr�
 ## Retry & offline (retry PROPOSED; không offline — user 2026-11-14)
 
 - Tự retry (có backoff, giới hạn số lần) chỉ cho `GET` và thao tác ghi idempotent.
-- **Batch điểm danh lớp/ngày** (có mặt là ăn — ATT-02, không gửi báo ăn riêng; kèm nhiệt độ đầu ngày — HLT-07): idempotent upsert theo lớp/ngày (BE PAT-IDEMPOTENT-BATCH, `BE:docs/knowledge/PATTERNS.md`); HTTP method TBD ⇒ gửi lại toàn bộ payload an toàn, không tạo trùng. Mất mạng ⇒ báo lỗi, giữ batch trên màn, đánh dấu "chưa lưu", người dùng bấm gửi lại; không lưu xuống máy (không offline — user 2026-11-14).
+- **Batch điểm danh lớp/ngày** (có mặt là ăn — ATT-02, không gửi báo ăn riêng; kèm sức khỏe đầu ngày — HLT-07; BE ghi sức khỏe từng trẻ qua API riêng `DailyHealthRequest`): idempotent upsert theo lớp/ngày (BE PAT-IDEMPOTENT-BATCH, `BE:docs/knowledge/PATTERNS.md`); HTTP method TBD ⇒ gửi lại toàn bộ payload an toàn, không tạo trùng. Mất mạng ⇒ báo lỗi, giữ batch trên màn, đánh dấu "chưa lưu", người dùng bấm gửi lại; không lưu xuống máy (không offline — user 2026-11-14).
 - Gửi lại sau giờ chốt (ATT-06, HT cấu hình) ⇒ BE từ chối trừ khi PHT đã mở lại điểm danh (ATT-08) — hiển thị `desc`, không tự sửa giờ. Sửa sau khi suất đã xác nhận ⇒ BE đánh dấu cần xác nhận lại (ATT-07, NUT-03); APP không cần logic riêng.
 - Ghi không idempotent (tạo, confirm, approve): không retry mù; chặn double-submit; mất kết nối giữa chừng ⇒ refetch để kiểm tra trước khi gửi lại.
 - Offline: **không** hỗ trợ, kể cả batch nhập của giáo viên (user 2026-11-14).

@@ -10,7 +10,7 @@ Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scop
 - Giao diện (user 2026-10-14, `docs/design/mobile-redesign-clay.md`): lời chào → thẻ lớp nổi bật (tên lớp, sĩ số, hoạt động đang diễn ra, vòng "x/N đã điểm danh", hạn điểm danh, nút "Điểm danh ngay") → "Việc tiếp theo" trượt ngang. Hết việc điểm danh ⇒ không còn nút và hạn.
 - Vòng tiến độ cần **số bé đã điểm danh** do BE trả (`attendanceRecorded` ở `TeacherToday`, chưa có trong contract) ⇒ đề xuất khi viết endpoint trang chủ GV; APP không tự đếm. Không có số ⇒ không vẽ vòng.
 
-### Điểm danh + nhiệt độ đầu ngày (nhập hàng loạt)
+### Điểm danh + sức khỏe đầu ngày (nhập hàng loạt)
 - Mục đích: nhập Có mặt / Vắng cho cả lớp/ngày cùng lúc. Có mặt là ăn tất cả các bữa đã cấu hình cho nhóm tuổi; GV không nhập tham gia ăn riêng (ATT-02). Vắng có phép tự động khi phụ huynh đã gửi đơn nghỉ, còn lại không phép (ATT-04, ATT-09). Khi nhận trẻ, GV quan sát và đo nhiệt độ, nhập cùng màn điểm danh; không chụp ảnh trẻ, dặn dò miệng của phụ huynh không ghi (HLT-07). Ô thân nhiệt không bắt buộc trên form (user chốt 14/11, như Web).
 - BE: card `BE:docs/modules/attendance.md`, `BE:docs/modules/health.md` · flow `BE:docs/business/flows/attendance.md` · rule ATT-01, ATT-02, ATT-03, ATT-06, ATT-07, ATT-08, ATT-09, HLT-07
 - Endpoint: chưa có. Hướng BE: idempotent upsert theo lớp/ngày (BE PAT-IDEMPOTENT-BATCH, `BE:docs/knowledge/PATTERNS.md`); HTTP method TBD ⇒ retry an toàn (`docs/integration/BACKEND_INTEGRATION.md`).
