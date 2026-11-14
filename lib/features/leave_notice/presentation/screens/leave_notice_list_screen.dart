@@ -14,7 +14,8 @@ import 'package:carenest_app/features/leave_notice/data/fake_leave_notice_source
 import 'package:carenest_app/features/leave_notice/domain/leave_notice.dart';
 import 'package:carenest_app/features/leave_notice/presentation/leave_notice_status.dart';
 
-/// Đơn xin nghỉ đã gửi — mockup P04. Không có trạng thái duyệt hay GV đã xem (ATT-05).
+/// Đơn xin nghỉ đã gửi — mockup P04. Không có trạng thái duyệt hay GV đã xem (ATT-05). Hủy đơn nhiều ngày
+/// hủy phần còn lại: ngày đã qua giờ chốt vẫn Vắng có phép (ATT-04, BE quyết định ngày nào hủy được).
 class LeaveNoticeListScreen extends StatefulWidget {
   const LeaveNoticeListScreen({
     super.key,
@@ -69,7 +70,7 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Bé sẽ được ghi đi học bình thường các ngày này.',
+            'Đơn được hủy từ ngày đầu tiên chưa qua giờ chốt. Ngày đã qua giờ chốt vẫn ghi Vắng có phép.',
             style: Theme.of(sheetContext).textTheme.bodyMedium,
           ),
           const SizedBox(height: AppSpacing.space4),
@@ -94,6 +95,15 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
     try {
       await _source.cancel(notice.id);
       if (mounted) await _load();
+    } on LeaveCannotCancelException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Các ngày của đơn đã qua giờ chốt, không hủy được.'),
+          ),
+        );
+        await _load();
+      }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -161,6 +171,8 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
                                     color: AppColors.textMuted,
                                   ),
                                 ),
+                                if (notice.remainingLabel case final remain?)
+                                  Text(remain, style: textTheme.bodyMedium),
                               ],
                             ),
                           ),
@@ -192,7 +204,7 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
                 const SizedBox(height: AppSpacing.space3),
               ],
               Text(
-                'Hủy đơn được trước giờ chốt của ngày nghỉ; ngày nghỉ ghi Vắng có phép.',
+                'Hủy đơn được cho các ngày chưa qua giờ chốt; ngày đã qua giờ chốt vẫn ghi Vắng có phép.',
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textMuted,
                 ),

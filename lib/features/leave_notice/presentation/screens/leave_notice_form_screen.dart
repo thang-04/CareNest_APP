@@ -75,7 +75,7 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
         if (notice.status == LeaveNoticeStatus.cancelled) continue;
         for (
           var day = notice.from;
-          !day.isAfter(notice.to);
+          !day.isAfter(notice.effectiveTo);
           day = day.add(const Duration(days: 1))
         ) {
           days.add(DateTime(day.year, day.month, day.day));
