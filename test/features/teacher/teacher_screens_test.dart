@@ -106,6 +106,9 @@ void main() {
       expect(find.textContaining('Cả ngày'), findsNothing);
       expect(find.textContaining('Buổi'), findsNothing);
       expect(find.text('Vắng có phép'), findsNWidgets(3));
+      // Plan 14/11 AC-5: chỉ đơn nghỉ, không có trẻ vắng không đơn
+      expect(find.text('Vắng'), findsNothing);
+      expect(find.text('Vũ Đức Huy'), findsNothing);
       expect(find.byType(FilledButton), findsNothing);
       await tester.scrollUntilVisible(
         find.text(

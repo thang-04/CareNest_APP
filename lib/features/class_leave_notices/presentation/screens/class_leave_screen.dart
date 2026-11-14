@@ -13,7 +13,8 @@ import 'package:carenest_app/features/class_leave_notices/data/fake_class_leave_
 import 'package:carenest_app/features/class_leave_notices/domain/class_leave_notice.dart';
 import 'package:carenest_app/features/class_roster/data/fake_class_roster_source.dart';
 
-/// Đơn xin nghỉ của lớp — mockup T03. GV chỉ xem: không duyệt, không đánh dấu đã xem (ATT-05).
+/// Đơn xin nghỉ của lớp — mockup T03. Chỉ liệt kê đơn nghỉ của phụ huynh, không có trẻ vắng không đơn
+/// (như Web). GV chỉ xem: không duyệt, không đánh dấu đã xem (ATT-05).
 class ClassLeaveScreen extends StatefulWidget {
   const ClassLeaveScreen({
     super.key,
@@ -48,12 +49,6 @@ class _ClassLeaveScreenState extends State<ClassLeaveScreen> {
       if (mounted) setState(() => _error = error);
     }
   }
-
-  static (String, AppStatusTone) _badge(ClassLeaveState state) =>
-      switch (state) {
-        ClassLeaveState.notice => ('Vắng có phép', AppStatusTone.blue),
-        ClassLeaveState.absentNoNotice => ('Vắng', AppStatusTone.red),
-      };
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +95,7 @@ class _ClassLeaveScreenState extends State<ClassLeaveScreen> {
             )
           else ...[
             for (final entry in visible) ...[
-              _EntryCard(entry: entry, badge: _badge(entry.state)),
+              _EntryCard(entry: entry),
               const SizedBox(height: AppSpacing.space3),
             ],
             const AppBanner(
@@ -115,10 +110,9 @@ class _ClassLeaveScreenState extends State<ClassLeaveScreen> {
 }
 
 class _EntryCard extends StatelessWidget {
-  const _EntryCard({required this.entry, required this.badge});
+  const _EntryCard({required this.entry});
 
   final ClassLeaveEntry entry;
-  final (String, AppStatusTone) badge;
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +136,10 @@ class _EntryCard extends StatelessWidget {
             runSpacing: AppSpacing.space1,
             children: [
               Text(entry.childName, style: textTheme.titleSmall),
-              AppStatusBadge(label: badge.$1, tone: badge.$2),
+              const AppStatusBadge(
+                label: 'Vắng có phép',
+                tone: AppStatusTone.blue,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.space1),
