@@ -9,22 +9,37 @@ abstract interface class LeaveNoticeSource {
   Future<LeaveNotice> cancel(String noticeId);
 }
 
-/// Dữ liệu giả theo mockup P04, không phải dữ liệu thật của trẻ.
+/// Dữ liệu giả theo mockup P04, không phải dữ liệu thật của trẻ. Bé 2 có đơn nhiều ngày đang diễn ra để
+/// thử hủy phần còn lại (ATT-04).
 class FakeLeaveNoticeSource implements LeaveNoticeSource {
   FakeLeaveNoticeSource({
     this.mode = FakeMode.data,
     this.delay = const Duration(milliseconds: 400),
-  });
+    List<LeaveNotice>? notices,
+  }) : _seed = notices;
 
   /// Một bản dùng chung giữa form và danh sách trong app, để đơn vừa gửi hiện ở danh sách.
   static final shared = FakeLeaveNoticeSource();
 
   final FakeMode mode;
   final Duration delay;
+  final List<LeaveNotice>? _seed;
 
   late final List<LeaveNotice> _notices = mode == FakeMode.empty
       ? []
+      : _seed != null
+      ? [for (final notice in _seed) _withCancel(notice)]
       : [
+          _withCancel(
+            LeaveNotice(
+              id: 'leave-4',
+              childId: 'child-2',
+              from: DateTime(2026, 10, 9),
+              to: DateTime(2026, 10, 14),
+              reason: 'Về quê cùng gia đình',
+              status: LeaveNoticeStatus.submitted,
+            ),
+          ),
           _withCancel(
             LeaveNotice(
               id: 'leave-3',
@@ -56,11 +71,11 @@ class FakeLeaveNoticeSource implements LeaveNoticeSource {
   @override
   DateTime get today => FakeParentHomeSource.today;
 
-  // Luật giả thay BE: còn hủy được khi ngày bắt đầu sau hôm nay
+  // Luật giả thay BE: còn ngày từ hôm nay trở đi thì hiện nút hủy
   LeaveNotice _withCancel(LeaveNotice notice) => notice.copyWith(
     canCancel:
         notice.status == LeaveNoticeStatus.submitted &&
-        notice.from.isAfter(today),
+        !notice.effectiveTo.isBefore(today),
   );
 
   @override
@@ -89,15 +104,25 @@ class FakeLeaveNoticeSource implements LeaveNoticeSource {
     return notice;
   }
 
+  /// Luật giả thay BE `cancelLeaveRequest` (ATT-04): hủy từ ngày đầu tiên chưa qua giờ chốt tới hết đơn;
+  /// giả lập hôm nay chưa qua giờ chốt, ngày trước hôm nay đã khóa.
   @override
   Future<LeaveNotice> cancel(String noticeId) async {
     await Future<void>.delayed(delay);
     final index = _notices.indexWhere((notice) => notice.id == noticeId);
-    if (index < 0 || !_notices[index].canCancel) {
-      throw StateError('Đơn không còn hủy được');
+    if (index < 0 || _notices[index].status != LeaveNoticeStatus.submitted) {
+      throw StateError('Không tìm thấy đơn');
     }
-    final cancelled = _notices[index].copyWith(
-      status: LeaveNoticeStatus.cancelled,
+    final notice = _notices[index];
+    final first = notice.from.isBefore(today) ? today : notice.from;
+    if (first.isAfter(notice.effectiveTo)) {
+      throw const LeaveCannotCancelException();
+    }
+    final cancelled = notice.copyWith(
+      status: first == notice.from
+          ? LeaveNoticeStatus.cancelled
+          : LeaveNoticeStatus.submitted,
+      effectiveTo: first.subtract(const Duration(days: 1)),
       canCancel: false,
     );
     _notices[index] = cancelled;

@@ -12,7 +12,7 @@ import '../../helpers/pump_app.dart';
 
 Future<void> pumpList(
   WidgetTester tester,
-  FakeLeaveNoticeSource source, {
+  LeaveNoticeSource source, {
   double textScale = 1,
   Future<void> Function()? onCreate,
 }) async {
@@ -68,7 +68,7 @@ void main() {
       expect(find.widgetWithText(OutlinedButton, 'Hủy đơn'), findsOneWidget);
       expect(
         find.text(
-          'Hủy đơn được trước giờ chốt của ngày nghỉ; ngày nghỉ ghi Vắng có phép.',
+          'Hủy đơn được cho các ngày chưa qua giờ chốt; ngày đã qua giờ chốt vẫn ghi Vắng có phép.',
         ),
         findsOneWidget,
       );
@@ -92,6 +92,75 @@ void main() {
     ))!;
     expect(notices.first.status, LeaveNoticeStatus.cancelled);
   });
+
+  LeaveNotice notice(String id, DateTime from, DateTime to) => LeaveNotice(
+    id: id,
+    childId: 'child-1',
+    from: from,
+    to: to,
+    reason: 'Bé ốm',
+    status: LeaveNoticeStatus.submitted,
+  );
+
+  testWidgets(
+    'Plan 14/11 AC-3 (ATT-04): đơn 3 ngày đã qua 1 ngày ⇒ hủy phần còn lại, ngày đã qua vẫn nghỉ có phép',
+    (tester) async {
+      final source = FakeLeaveNoticeSource(
+        delay: Duration.zero,
+        notices: [
+          notice('p-1', DateTime(2026, 10, 11), DateTime(2026, 10, 13)),
+        ],
+      );
+      await pumpList(tester, source);
+      await tester.tap(find.text('Hủy đơn'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          'Đơn được hủy từ ngày đầu tiên chưa qua giờ chốt. Ngày đã qua giờ chốt vẫn ghi Vắng có phép.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Hủy đơn').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Hủy từ 12/10'), findsOneWidget);
+      expect(find.text('Vẫn nghỉ có phép: 11/10/2026'), findsOneWidget);
+      expect(find.text('Hủy đơn'), findsNothing);
+      final saved = (await tester.runAsync(
+        () => source.loadNotices('child-1'),
+      ))!;
+      expect(saved.single.status, LeaveNoticeStatus.submitted);
+      expect(saved.single.effectiveTo, DateTime(2026, 10, 11));
+    },
+  );
+
+  testWidgets('Plan 14/11 AC-3: đơn đã qua hết ⇒ không có nút hủy', (
+    tester,
+  ) async {
+    await pumpList(
+      tester,
+      FakeLeaveNoticeSource(
+        delay: Duration.zero,
+        notices: [notice('p-2', DateTime(2026, 10, 8), DateTime(2026, 10, 9))],
+      ),
+    );
+    expect(find.text('Đã gửi'), findsOneWidget);
+    expect(find.text('Hủy đơn'), findsNothing);
+  });
+
+  testWidgets(
+    'Plan 14/11 AC-3: BE báo qua giờ chốt ⇒ thông báo không hủy được',
+    (tester) async {
+      await pumpList(tester, _CannotCancelSource());
+      await tester.tap(find.text('Hủy đơn'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Hủy đơn').last);
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Các ngày của đơn đã qua giờ chốt, không hủy được.'),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('P04: danh sách rỗng ⇒ lời mời tạo đơn', (tester) async {
     await pumpList(
@@ -249,4 +318,31 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+}
+
+/// BE trả 409 `LEAVE_CANNOT_CANCEL` dù App còn hiện nút (giờ chốt do BE quyết định).
+class _CannotCancelSource implements LeaveNoticeSource {
+  final _notice = LeaveNotice(
+    id: 'p-3',
+    childId: 'child-1',
+    from: DateTime(2026, 10, 12),
+    to: DateTime(2026, 10, 12),
+    reason: 'Bé ốm',
+    status: LeaveNoticeStatus.submitted,
+    canCancel: true,
+  );
+
+  @override
+  DateTime get today => DateTime(2026, 10, 12);
+
+  @override
+  Future<List<LeaveNotice>> loadNotices(String childId) async => [_notice];
+
+  @override
+  Future<LeaveNotice> submit(LeaveNoticeDraft draft) =>
+      throw UnimplementedError();
+
+  @override
+  Future<LeaveNotice> cancel(String noticeId) async =>
+      throw const LeaveCannotCancelException();
 }
