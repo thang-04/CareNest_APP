@@ -34,13 +34,13 @@ class RolePreviewScreen extends StatelessWidget {
     ),
     (
       'Phó Hiệu trưởng',
-      'Cơ sở phụ trách, chốt suất ăn, yêu cầu chờ duyệt',
+      'Chỉ xem: cơ sở phụ trách, số suất, việc chờ xử lý',
       AppIcons.approval,
       RoutePaths.vicePrincipalHome,
     ),
     (
       'Hiệu trưởng',
-      'Tổng quan toàn trường, chờ duyệt',
+      'Chỉ xem: tổng quan toàn trường, việc chờ xử lý',
       AppIcons.shieldPerson,
       RoutePaths.principalHome,
     ),

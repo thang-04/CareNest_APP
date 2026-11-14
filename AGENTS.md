@@ -1,6 +1,6 @@
 # CareNest Mobile — hướng dẫn cho AI coding agent
 
-Repo này là **client Mobile** của CareNest (Trường Mầm non Thượng Hồng, Hải Phòng — **1 trường, 2 điểm trường**). Người dùng: Phụ huynh, Giáo viên, Nhân viên bếp; Ban giám hiệu không dùng App, chỉ Web (BE `AUTH-21`, user chốt 27/10). APP sở hữu màn hình, navigation, client state, tích hợp API, nhận push. **Business rule, authorization, API contract thuộc `CareNest_BE`** — repo sibling `../CareNest_BE/` hoặc https://github.com/thang-04/CareNest_BE.git.
+Repo này là **client Mobile** của CareNest (Trường Mầm non Thượng Hồng, Hải Phòng — **1 trường, 2 điểm trường**). Người dùng: Phụ huynh, Giáo viên, Nhân viên bếp; Ban giám hiệu dùng App chỉ xem, thao tác trên Web (BE `AUTH-21`, ADR-0026, user chốt 13/11). APP sở hữu màn hình, navigation, client state, tích hợp API, nhận push. **Business rule, authorization, API contract thuộc `CareNest_BE`** — repo sibling `../CareNest_BE/` hoặc https://github.com/thang-04/CareNest_BE.git.
 
 Quy ước trong docs repo này: `BE:<path>` = file trong repo BE (vd. `BE:docs/modules/attendance.md` ⇒ `../CareNest_BE/docs/modules/attendance.md`).
 
@@ -27,7 +27,7 @@ Quy ước trong docs repo này: `BE:<path>` = file trong repo BE (vd. `BE:docs/
 5. **Push tối thiểu:** không mang dữ liệu sức khỏe/chi tiết nhạy cảm của trẻ; chỉ "có cập nhật mới" + deep link, mở app mới tải dữ liệu qua API có auth.
 6. **Chưa rõ / PENDING / OPEN / lệch tài liệu ⇒ hỏi user tới khi rõ**; cấu hình được chỉ khi user nói chưa chốt (vd. trẻ có đơn nghỉ vẫn đến `P-20`, triệu chứng đầu ngày `P-21`, ảnh đối chiếu người đón `P-33`). Status: CONFIRMED / ACCEPTED / PROPOSED / PENDING / OPEN.
 7. **Tri thức mới, bug không hiển nhiên** (kể cả cách thử thất bại) ⇒ `.ai/workflows/update-knowledge.md` ngay trong lượt; lỗi contract/nghiệp vụ ⇒ đề xuất ghi `BE:docs/knowledge/CROSS_MODULE_ISSUES.md`.
-8. **Ngoài scope:** chat (CareNest không thay Zalo), multi-school/multi-tenant, kho/NCC và kiểm nhận hàng (PHT làm trên Web — BE NUT-11, NUT-12), màn BGH (AUTH-21), soạn/duyệt kế hoạch giáo dục (làm trên Web; App chỉ hiện tên hoạt động cho phụ huynh — EDU-09), CSVC (BE FAC REMOVED 29/10), đăng ký trước người đón hộ (PCK-03), chẩn đoán y tế. App tập trung cho phụ huynh và GV; bếp giữ màn tối thiểu (AUTH-21, user chốt 29/10). AI chỉ hỗ trợ — APP không hiển thị AI draft như kết quả chính thức.
+8. **Ngoài scope:** chat (CareNest không thay Zalo), multi-school/multi-tenant, kho/NCC và kiểm nhận hàng (PHT làm trên Web — BE NUT-11, NUT-12), thao tác ghi của BGH (BGH chỉ xem — AUTH-21, ADR-0026), soạn/duyệt kế hoạch giáo dục (làm trên Web; App chỉ hiện tên hoạt động cho phụ huynh — EDU-09), CSVC (BE FAC REMOVED 29/10), đăng ký trước người đón hộ (PCK-03), chẩn đoán y tế. App tập trung cho phụ huynh và GV; bếp giữ màn tối thiểu (AUTH-21, user chốt 29/10). AI chỉ hỗ trợ — APP không hiển thị AI draft như kết quả chính thức.
 
 ## Stack
 

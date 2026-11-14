@@ -13,11 +13,11 @@ App
    ├─ Parent
    ├─ Teacher
    ├─ Kitchen
-   ├─ Vice Principal (Phó Hiệu trưởng)   ngoài phạm vi App (AUTH-21) — màn cũ chỉ debug, tham khảo
-   └─ Principal (Hiệu trưởng)            ngoài phạm vi App (AUTH-21) — màn cũ chỉ debug, tham khảo
+   ├─ Vice Principal (Phó Hiệu trưởng)   chỉ xem (AUTH-21, BE ADR-0026) — màn chỉ ở bản debug
+   └─ Principal (Hiệu trưởng)            chỉ xem (AUTH-21, BE ADR-0026) — màn chỉ ở bản debug
 ```
 
-App chỉ cho Parent, Teacher, Kitchen (`BE:` AUTH-21, user chốt 27/10); BGH chỉ dùng Web. Tổ trưởng chuyên môn là phân công trên tài khoản GV, không phải nhánh role (AUTH-23).
+App cho Parent, Teacher, Kitchen và Ban giám hiệu; **BGH trên App chỉ xem** (`BE:` AUTH-21, ADR-0026, user chốt 13/11 thay câu "BGH chỉ dùng Web" 27/10): không nút duyệt/xác nhận/trả lại/gửi; mọi thao tác làm trên Web. BE chặn lệnh ghi (403 `errorCode` 1301) và chỉ mở các GET của màn BGH. Tổ trưởng chuyên môn là phân công trên tài khoản GV, không phải nhánh role (AUTH-23).
 
 Dùng chung mọi role: Thông báo (danh sách in-app, nếu BE có) · Tài khoản/Đăng xuất · Màn hình lỗi: không có quyền (403) / không tìm thấy (404) / mất mạng.
 
@@ -68,27 +68,27 @@ Không có trên App bếp (BE 28/10): trạng thái nấu (NUT-14 REMOVED), bà
 
 ## Vice Principal (Phó Hiệu trưởng)
 
-> Ngoài phạm vi App theo AUTH-21 (user chốt 27/10): BGH chỉ dùng Web. Màn hình hiện có giữ làm tham khảo, không phát triển tiếp.
+> Chỉ xem trên App (AUTH-21, BE ADR-0026, user chốt 13/11/2026): không có thao tác ghi; duyệt, xác nhận làm trên CareNest Web.
 
-User chốt 2026-10-13: BGH có trên app, tách 2 vai trò (plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`) — đã thay bởi AUTH-21. Phạm vi theo campus được phân công + mảng (AUTH-02, AUTH-20; đóng P-14). Rule màn: `docs/features/vice-principal/README.md`.
+User chốt 2026-10-13: BGH có trên app, tách 2 vai trò (plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`) — AUTH-21 27/10 bỏ BGH khỏi App, user chốt 13/11 cho BGH dùng App chỉ xem. Phạm vi theo campus được phân công + mảng (AUTH-02, AUTH-20; đóng P-14). Rule màn: `docs/features/vice-principal/README.md`.
 
 | Nhóm màn hình | Nội dung | Ghi chú |
 | --- | --- | --- |
-| Trang chủ cơ sở | Số liệu hôm nay của cơ sở + việc cần làm | AUTH-08 |
-| Yêu cầu chờ duyệt | Điều chỉnh suất, đề xuất khen thưởng | NUT-03, NUT-04 (đóng P-04: không có điều chỉnh chờ duyệt) · OBS-10, OBS-14 (chốt 29/10) |
-| Chốt suất ăn | Xác nhận số suất gửi bếp | NUT-02 (đóng P-05: PHT xác nhận, trên Web) |
-| Bếp, thực đơn, dinh dưỡng, trẻ của cơ sở | Chỉ xem | NUT-08, NUT-06, NUT-14 REMOVED |
+| Trang chủ cơ sở | Số liệu hôm nay của cơ sở + việc chờ xử lý trên Web | AUTH-08 |
+| Chờ xử lý (tab, trước là "Duyệt") | Số suất chưa xác nhận, đề xuất khen thưởng — chỉ xem | NUT-02 · OBS-10, OBS-14; không có điều chỉnh suất chờ duyệt (NUT-04) |
+| Số suất hôm nay | Bảng suất + trạng thái đã/chưa xác nhận; xác nhận trên Web | NUT-02 (đóng P-05) |
+| Thực đơn, dinh dưỡng, trẻ của cơ sở | Chỉ xem | NUT-08, NUT-06; không có trạng thái bếp (NUT-14 REMOVED) |
 
 ## Principal (Hiệu trưởng)
 
-> Ngoài phạm vi App theo AUTH-21 (user chốt 27/10): BGH chỉ dùng Web. Màn hình hiện có giữ làm tham khảo, không phát triển tiếp.
+> Chỉ xem trên App (AUTH-21, BE ADR-0026, user chốt 13/11/2026): không có thao tác ghi; duyệt, xác nhận làm trên CareNest Web.
 
 Phạm vi toàn trường (AUTH-01). Rule màn: `docs/features/principal/README.md`.
 
 | Nhóm màn hình | Nội dung | Ghi chú |
 | --- | --- | --- |
 | Tổng quan toàn trường | Số liệu các cơ sở, đánh giá trẻ theo khối | AUTH-08 |
-| Chờ Hiệu trưởng duyệt | Khen thưởng cuối năm | OBS-10, OBS-14 (chốt 29/10); không có nghỉ phép nhân sự (ngoài phạm vi) |
+| Chờ xử lý (tab, trước là "Duyệt") | Khen thưởng cuối năm chờ HT — chỉ xem, duyệt trên Web | OBS-10, OBS-14 (chốt 29/10); không có nghỉ phép nhân sự (ngoài phạm vi) |
 | Trẻ toàn trường, thực đơn, cơ sở | Chỉ xem | AUTH-01, NUT-08, AUTH-02 |
 
 ## Xác nhận số suất (đã chốt — Web)
@@ -104,17 +104,17 @@ Nhãn tab theo mockup `docs/design/figma/` (user 2026-10-13). Chưa có auth ⇒
 | Route | Màn | Release | Ghi chú |
 | --- | --- | --- | --- |
 | `/login` (`/` chuyển về đây) | Đăng nhập | có | Chưa nối AUTH_CONTRACT; debug có link "Xem thử theo vai trò" |
-| `/forgot-password`, `/forgot-password/otp`, `/forgot-password/new-password` | Quên mật khẩu → Xác thực OTP → Đặt mật khẩu mới | có | Chưa nối AUTH_CONTRACT: release báo "chưa kết nối", debug đi hết luồng bằng dữ liệu giả |
+| `/forgot-password`, `/forgot-password/otp`, `/forgot-password/new-password` | Quên mật khẩu → Xác thực OTP → Đặt mật khẩu mới | có | Chưa nối AUTH_CONTRACT: release báo "chưa kết nối", debug đi hết luồng bằng dữ liệu giả. Phụ huynh nhận OTP qua SMS (BE AUTH-19, user chốt 13/11; BE chưa có API) |
 | `/preview` | Xem thử theo vai trò | không | Chỉ debug; không phải chọn role khi đăng nhập |
 | `/parent`, `/parent/child`, `/parent/notifications`, `/parent/account` | Tab Phụ huynh: Trang chủ · Bé của tôi · Thông báo · Tài khoản | không | Tab chưa làm hiện "Sắp có" |
 | `/teacher`, `/teacher/class`, `/teacher/notifications`, `/teacher/account` | Tab Giáo viên: Trang chủ (T01) · Lớp học (T09) · Thông báo · Tài khoản | không | |
 | `/kitchen`, `/kitchen/menu`, `/kitchen/notifications`, `/kitchen/account` | Tab Bếp: Trang chủ (K01) · Thực đơn (K02) · Thông báo · Tài khoản | không | |
 | `/kitchen/meals`, `/kitchen/quantities`, `/kitchen/receipts`, `/kitchen/receipts/shortage`, `/kitchen/cooking` | Suất ăn đã chốt (K03) · Định lượng (K04) · Nhận nguyên liệu (K05) · Báo thiếu (K06) · Trạng thái nấu (K07) | không | Lệch BE (28/10): K05 nhận hàng do PHT ghi trên Web (NUT-11, NUT-12), K06 báo thiếu qua Zalo (NUT-22), K07 NUT-14 REMOVED — cần sửa khi tích hợp |
-| `/vice-principal`, `/vice-principal/approvals`, `/vice-principal/notifications`, `/vice-principal/account` | Tab Phó HT: Trang chủ (V01) · Duyệt (V02) · Thông báo · Tài khoản | không | Ngoài phạm vi App (AUTH-21), tham khảo — áp cho mọi route `/vice-principal/*`, `/principal/*` |
-| `/vice-principal/approvals/meals/<id>`, `/vice-principal/approvals/rewards` | Duyệt điều chỉnh suất (V03) · Đề xuất khen thưởng (V12) | không | Chi tiết chỉ mang ID; OBS-10, OBS-14 (chốt 29/10) |
-| `/vice-principal/meal-confirm`, `/vice-principal/kitchen`, `/vice-principal/menu`, `/vice-principal/menu/nutrition?group=<id>&day=<yyyy-mm-dd>`, `/vice-principal/children` | Chốt suất (V04) · Trạng thái bếp (V05) · Thực đơn tuần (V06) · Cân đối dinh dưỡng (V07) · Trẻ của cơ sở (V10) | không | V04 phụ thuộc P-05; nhóm tuổi + ngày là ngữ cảnh ở query |
-| `/principal`, `/principal/approvals`, `/principal/notifications`, `/principal/account` | Tab Hiệu trưởng: Tổng quan (H01) · Duyệt (H02) · Thông báo · Tài khoản | không | Tài khoản có thêm "Cơ sở của trường" |
-| `/principal/approvals/rewards/<id>`, `/principal/children`, `/principal/children/class?campus=<id>&class=<id>`, `/principal/menu`, `/principal/menu/nutrition?campus=<id>&group=<id>&day=<yyyy-mm-dd>`, `/principal/campuses` | Khen thưởng cuối năm (H04) · Danh sách trẻ (H06) · Trẻ của lớp · Thực đơn tuần (H07) · Cân đối dinh dưỡng · Cơ sở & Phó HT (H08) | không | OBS-10, OBS-14 (chốt 29/10); cơ sở, lớp, nhóm tuổi, ngày là ngữ cảnh ở query |
+| `/vice-principal`, `/vice-principal/approvals`, `/vice-principal/notifications`, `/vice-principal/account` | Tab Phó HT: Trang chủ (V01) · Chờ xử lý (V02, trước là "Duyệt") · Thông báo · Tài khoản | không | Chỉ xem (AUTH-21, BE ADR-0026) — áp cho mọi route `/vice-principal/*`, `/principal/*`: không có nút ghi (plan `docs/plans/active/2026-11-13-bgh-view-only.md`) |
+| `/vice-principal/approvals/rewards` | Đề xuất khen thưởng (V12, chỉ xem) | không | OBS-10, OBS-14 (chốt 29/10). V03 điều chỉnh suất đã gỡ 13/11 (NUT-04) |
+| `/vice-principal/meal-confirm`, `/vice-principal/menu`, `/vice-principal/menu/nutrition?group=<id>&day=<yyyy-mm-dd>`, `/vice-principal/children` | Số suất hôm nay (V04, chỉ xem) · Thực đơn tuần (V06) · Cân đối dinh dưỡng (V07) · Trẻ của cơ sở (V10) | không | V04 không có nút xác nhận (NUT-02: trên Web); V05 trạng thái bếp đã gỡ 13/11 (NUT-14 REMOVED); nhóm tuổi + ngày là ngữ cảnh ở query |
+| `/principal`, `/principal/approvals`, `/principal/notifications`, `/principal/account` | Tab Hiệu trưởng: Tổng quan (H01) · Chờ xử lý (H02, trước là "Duyệt") · Thông báo · Tài khoản | không | Tài khoản có thêm "Cơ sở của trường" |
+| `/principal/approvals/rewards/<id>`, `/principal/children`, `/principal/children/class?campus=<id>&class=<id>`, `/principal/menu`, `/principal/menu/nutrition?campus=<id>&group=<id>&day=<yyyy-mm-dd>`, `/principal/campuses` | Khen thưởng cuối năm (H04, chỉ xem) · Danh sách trẻ (H06) · Trẻ của lớp · Thực đơn tuần (H07) · Cân đối dinh dưỡng · Cơ sở & Phó HT (H08) | không | OBS-10, OBS-14 (chốt 29/10); cơ sở, lớp, nhóm tuổi, ngày là ngữ cảnh ở query |
 | `/parent/leave-notices?child=<id>`, `/parent/leave-notices/new?child=<id>` | Đơn xin nghỉ đã gửi · Xin nghỉ cho bé (P04, P03) | không | Màn con, chỉ mang ID con |
 | `/parent/menu`, `/parent/activities`, `/parent/attendance`, `/parent/child-profile` (đều `?child=<id>`) | Thực đơn tuần · Hoạt động & đánh giá · Điểm danh & bữa ăn · Hồ sơ của bé (P05, P09, P10, P13) | không | ID không thuộc danh sách con ⇒ 404 |
 | `/parent/child?tab=health` | Tab Bé của tôi mở sẵn Sức khỏe | không | Con đang xem là state (`SelectedChild`), không nằm trong route |

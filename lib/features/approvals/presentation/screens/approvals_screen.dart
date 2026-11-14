@@ -10,20 +10,22 @@ import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/core/widgets/app_task_card.dart';
-import 'package:carenest_app/features/approvals/data/fake_meal_adjustment_source.dart';
-import 'package:carenest_app/features/approvals/domain/meal_adjustment.dart';
+import 'package:carenest_app/core/utils/date_labels.dart';
+import 'package:carenest_app/features/meal_count_confirm/data/fake_meal_count_confirm_source.dart';
+import 'package:carenest_app/features/meal_count_confirm/domain/meal_count_draft.dart';
 import 'package:carenest_app/features/reward_proposals/data/fake_reward_proposal_source.dart';
 import 'package:carenest_app/features/reward_proposals/domain/reward_proposal.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
 enum _Filter { all, meals, rewards }
 
-/// Phó HT · tab Duyệt — mockup V02: yêu cầu chờ duyệt trong cơ sở phụ trách (AUTH-02).
-/// Điều chỉnh suất (NUT-03) và đề xuất khen thưởng (OBS-10 PROPOSED).
+/// Phó HT · tab Chờ xử lý — V02, chỉ xem (AUTH-21, BE ADR-0026): việc chờ PHT xử lý trên Web trong cơ sở
+/// phụ trách (AUTH-02) — số suất chưa xác nhận (NUT-02), đề xuất khen thưởng chờ xét (OBS-14).
+/// Không còn điều chỉnh suất chờ duyệt (NUT-04).
 class ApprovalsScreen extends StatefulWidget {
   const ApprovalsScreen({super.key, this.mealSource, this.rewardSource});
 
-  final MealAdjustmentSource? mealSource;
+  final MealCountConfirmSource? mealSource;
   final RewardProposalSource? rewardSource;
 
   @override
@@ -31,15 +33,15 @@ class ApprovalsScreen extends StatefulWidget {
 }
 
 class _ApprovalsScreenState extends State<ApprovalsScreen> {
-  late final MealAdjustmentSource _meals =
-      widget.mealSource ?? FakeMealAdjustmentSource.shared;
+  late final MealCountConfirmSource _meals =
+      widget.mealSource ?? FakeMealCountConfirmSource.shared;
   late final RewardProposalSource _rewards =
       widget.rewardSource ?? FakeRewardProposalSource.shared;
-  late Future<(List<MealAdjustment>, int)> _data = _load();
+  late Future<(MealCountDraft, int)> _data = _load();
   _Filter _filter = _Filter.all;
 
-  Future<(List<MealAdjustment>, int)> _load() async {
-    final meals = await _meals.loadPending();
+  Future<(MealCountDraft, int)> _load() async {
+    final meals = await _meals.loadToday();
     final rewards = await _rewards.load();
     return (
       meals,
@@ -47,7 +49,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
     );
   }
 
-  // Quay lại từ màn chi tiết ⇒ tải lại để yêu cầu đã xử lý biến khỏi danh sách
+  // Quay lại từ màn xem ⇒ tải lại theo số BE mới nhất
   Future<void> _open(String path) async {
     await context.push<void>(path);
     if (mounted) setState(() => _data = _load());
@@ -58,13 +60,13 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
     final textTheme = Theme.of(context).textTheme;
     return SafeArea(
       bottom: false,
-      child: FutureBuilder<(List<MealAdjustment>, int)>(
+      child: FutureBuilder<(MealCountDraft, int)>(
         future: _data,
         builder: (context, snapshot) {
           final data = snapshot.data;
           final newCount = data == null
               ? null
-              : data.$1.length + (data.$2 > 0 ? 1 : 0);
+              : (data.$1.confirmed ? 0 : 1) + (data.$2 > 0 ? 1 : 0);
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.pagePadding),
             children: [
@@ -75,14 +77,11 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                 children: [
                   Semantics(
                     header: true,
-                    child: Text(
-                      'Yêu cầu chờ duyệt',
-                      style: textTheme.headlineSmall,
-                    ),
+                    child: Text('Chờ xử lý', style: textTheme.headlineSmall),
                   ),
                   if (newCount != null && newCount > 0)
                     Text(
-                      '$newCount mới',
+                      '$newCount việc',
                       style: textTheme.bodyMedium?.copyWith(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w600,
@@ -103,7 +102,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
               const SizedBox(height: AppSpacing.space3),
               if (snapshot.hasError)
                 AppErrorState(
-                  title: 'Chưa tải được yêu cầu',
+                  title: 'Chưa tải được việc chờ xử lý',
                   message: 'Kiểm tra kết nối mạng rồi thử lại.',
                   onRetry: () => setState(() => _data = _load()),
                 )
@@ -113,7 +112,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                 ..._cards(data.$1, data.$2),
               const SizedBox(height: AppSpacing.space3),
               Text(
-                'Chạm một yêu cầu để xem chi tiết và Duyệt / Từ chối. Yêu cầu bị từ chối được trả về người gửi kèm lý do.',
+                'Chỉ xem. Xác nhận số suất và xét đề xuất khen thưởng thực hiện trên CareNest Web.',
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textMuted,
                 ),
@@ -125,26 +124,25 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
     );
   }
 
-  List<Widget> _cards(List<MealAdjustment> meals, int pendingRewards) {
+  List<Widget> _cards(MealCountDraft meals, int pendingRewards) {
     final cards = <Widget>[
-      if (_filter != _Filter.rewards)
-        for (final (i, item) in meals.indexed)
-          AppTaskCard(
-            icon: AppIcons.meal,
-            title: 'Điều chỉnh suất · ${item.className}',
-            subtitle: '${item.deltaLabel} · ${item.summary}',
-            highlighted: i == 0,
-            trailing: const AppStatusBadge(
-              label: 'Suất ăn',
-              tone: AppStatusTone.blue,
-            ),
-            onTap: () => _open(RoutePaths.vicePrincipalAdjustment(item.id)),
+      if (_filter != _Filter.rewards && !meals.confirmed)
+        AppTaskCard(
+          icon: AppIcons.meal,
+          title: 'Số suất chưa xác nhận',
+          subtitle:
+              '${meals.mealLabel} ${meals.total} suất · hạn ${DateLabels.time24(meals.deadline)}',
+          trailing: const AppStatusBadge(
+            label: 'Suất ăn',
+            tone: AppStatusTone.blue,
           ),
+          onTap: () => _open(RoutePaths.vicePrincipalMealConfirm),
+        ),
       if (_filter != _Filter.meals && pendingRewards > 0)
         AppTaskCard(
           icon: AppIcons.trophy,
           title: 'Đề xuất khen thưởng',
-          subtitle: '$pendingRewards đề xuất từ giáo viên',
+          subtitle: '$pendingRewards đề xuất từ giáo viên chờ xét',
           trailing: const AppStatusBadge(
             label: 'Khen thưởng',
             tone: AppStatusTone.approval,
@@ -156,8 +154,8 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
       return const [
         AppEmptyState(
           icon: AppIcons.checkCircle,
-          title: 'Không còn yêu cầu chờ duyệt',
-          message: 'Yêu cầu mới từ giáo viên sẽ hiện ở đây.',
+          title: 'Không có việc chờ xử lý',
+          message: 'Số suất cần xác nhận và đề xuất khen thưởng sẽ hiện ở đây.',
         ),
       ];
     }

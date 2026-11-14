@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
-import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
-import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_segmented.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
@@ -15,8 +13,8 @@ import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/reward_proposals/data/fake_reward_proposal_source.dart';
 import 'package:carenest_app/features/reward_proposals/domain/reward_proposal.dart';
 
-/// Phó HT · Đề xuất khen thưởng — mockup V12 (OBS-10 PROPOSED, tiêu chí P-11 PENDING).
-/// "Hợp lệ" là kết quả BE; Phó HT gửi đề xuất hợp lệ cho Hiệu trưởng, trả lại đề xuất không hợp lệ.
+/// Phó HT · Đề xuất khen thưởng — V12, chỉ xem (AUTH-21, BE ADR-0026; OBS-10, OBS-14).
+/// "Hợp lệ" là kết quả BE; gửi Hiệu trưởng / trả lại giáo viên thực hiện trên CareNest Web.
 class RewardProposalsScreen extends StatefulWidget {
   const RewardProposalsScreen({super.key, this.source});
 
@@ -32,27 +30,6 @@ class _RewardProposalsScreenState extends State<RewardProposalsScreen> {
   late Future<List<RewardProposal>> _items = _source.load();
   RewardStage _tab = RewardStage.pending;
 
-  /// Nút đang chạy: true = gửi HT, false = trả lại.
-  bool? _busy;
-
-  Future<void> _run({required bool send}) async {
-    setState(() => _busy = send);
-    try {
-      await (send ? _source.sendValidToPrincipal() : _source.returnInvalid());
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          const SnackBar(content: Text('Chưa gửi được. Thử lại sau.')),
-        );
-      }
-    }
-    if (!mounted) return;
-    setState(() {
-      _busy = null;
-      _items = _source.load();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -67,8 +44,6 @@ class _RewardProposalsScreenState extends State<RewardProposalsScreen> {
                 ?.where((item) => item.stage == RewardStage.pending)
                 .toList() ??
             const <RewardProposal>[];
-        final valid = pending.where((item) => item.isValid).length;
-        final invalid = pending.length - valid;
         return Scaffold(
           appBar: AppBar(
             title: Column(
@@ -114,45 +89,11 @@ class _RewardProposalsScreenState extends State<RewardProposalsScreen> {
                 const SizedBox(height: AppSpacing.space2),
                 const AppBanner(
                   message:
-                      'Đề xuất không hợp lệ được trả về giáo viên kèm lý do. Đề xuất hợp lệ gửi Hiệu trưởng phê duyệt.',
+                      'Chỉ xem. Trả lại đề xuất không hợp lệ và gửi đề xuất hợp lệ cho Hiệu trưởng thực hiện trên CareNest Web.',
                 ),
               ],
             ],
           ),
-          bottomNavigationBar: _tab != RewardStage.pending || pending.isEmpty
-              ? null
-              : AppBottomDock(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: AppButton(
-                            label: 'Trả lại ($invalid)',
-                            variant: AppButtonVariant.danger,
-                            isLoading: _busy == false,
-                            loadingLabel: 'Đang gửi',
-                            expand: true,
-                            onPressed: invalid == 0 || _busy != null
-                                ? null
-                                : () => _run(send: false),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.space3),
-                        Expanded(
-                          child: AppButton(
-                            label: 'Gửi HT ($valid)',
-                            isLoading: _busy == true,
-                            loadingLabel: 'Đang gửi',
-                            expand: true,
-                            onPressed: valid == 0 || _busy != null
-                                ? null
-                                : () => _run(send: true),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
         );
       },
     );

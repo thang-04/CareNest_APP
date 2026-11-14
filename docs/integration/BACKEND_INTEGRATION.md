@@ -36,7 +36,7 @@ Phân trang: `data` = `{ items, page, size, totalElements, totalPages }`; query 
 | 200 / 201 | Dùng `data`; sau ghi ⇒ refetch dữ liệu liên quan |
 | 400 | Map `data` field errors vào form; không có field ⇒ hiển thị `desc` |
 | 401 | Luồng auth (`AUTH_FLOW.md` — SKELETON): làm mới phiên nếu có cơ chế, không thì về Login + xóa dữ liệu phiên |
-| 403 | Màn hình "không có quyền"; không retry |
+| 403 | Màn hình "không có quyền"; không retry. `errorCode` 1301 `MOBILE_STAFF_READ_ONLY` (BGH chỉ xem trên App, `BE:` ADR-0026) ⇒ báo "Thao tác này làm trên CareNest Web"; 1302 `MOBILE_STAFF_WRITE_BLOCKED` ⇒ cùng thông báo, log path (lỗi BE cần sửa). Phân nhánh theo `errorCode`, không theo `desc` |
 | 404 | "Không tìm thấy" (BE có thể trả 404 thay 403 để ẩn dữ liệu trẻ ngoài scope) |
 | 409 | Trạng thái đã đổi (vd. số suất đã xác nhận) ⇒ refetch + thông báo |
 | 413 / 415 | Ảnh/tệp quá lớn hoặc sai loại ⇒ báo người dùng |

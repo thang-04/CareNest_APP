@@ -14,4 +14,4 @@
 - [ ] Luồng 401: refresh 1 lần, hàng đợi request song song, thất bại ⇒ Login
 - [ ] User nhiều role (vd. GV đồng thời là phụ huynh) ⇒ chọn role thế nào
 - [ ] Đăng ký/hủy device push token gắn với phiên
-- [ ] Đổi/quên mật khẩu
+- [ ] Đổi/quên mật khẩu — đã chốt (BE AUTH-19, user 13/11): phụ huynh quên mật khẩu nhận OTP qua SMS tới SĐT đăng nhập; BE chưa có API, chưa có nhà cung cấp SMS. Đăng nhập lần đầu chỉ đổi mật khẩu tạm, không bắt tải ảnh chân dung (BE PCK-02, `profileUpdateRequired` luôn `false`)

@@ -13,20 +13,17 @@ import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/core/widgets/app_task_card.dart';
-import 'package:carenest_app/features/cooking_status/data/fake_cooking_status_source.dart';
-import 'package:carenest_app/features/cooking_status/domain/cooking_status.dart';
-import 'package:carenest_app/features/school_menu/domain/meal_slot.dart';
 import 'package:carenest_app/features/vice_principal_home/data/fake_campus_today_source.dart';
 import 'package:carenest_app/features/vice_principal_home/domain/campus_today.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
-/// Phó HT · Trang chủ cơ sở (bố cục F): mốc giờ buổi sáng → chờ duyệt → theo dõi khác.
-/// Chỉ cơ sở được phân công (AUTH-02); mốc, trạng thái và số do BE trả (AUTH-08).
+/// Phó HT · Trang chủ cơ sở (bố cục F): mốc giờ buổi sáng → chờ xử lý → theo dõi khác.
+/// Chỉ xem (AUTH-21, BE ADR-0026): mọi xử lý làm trên Web. Chỉ cơ sở được phân công (AUTH-02);
+/// mốc, trạng thái và số do BE trả (AUTH-08).
 class VicePrincipalHomeScreen extends StatefulWidget {
-  const VicePrincipalHomeScreen({super.key, this.source, this.cookingSource});
+  const VicePrincipalHomeScreen({super.key, this.source});
 
   final CampusTodaySource? source;
-  final CookingStatusSource? cookingSource;
 
   @override
   State<VicePrincipalHomeScreen> createState() =>
@@ -36,10 +33,7 @@ class VicePrincipalHomeScreen extends StatefulWidget {
 class _VicePrincipalHomeScreenState extends State<VicePrincipalHomeScreen> {
   late final CampusTodaySource _source =
       widget.source ?? FakeCampusTodaySource();
-  late final CookingStatusSource _cooking =
-      widget.cookingSource ?? FakeCookingStatusSource.shared;
   CampusToday? _today;
-  MealCooking? _lunch;
   Object? _error;
 
   @override
@@ -52,27 +46,22 @@ class _VicePrincipalHomeScreenState extends State<VicePrincipalHomeScreen> {
     setState(() => _error = null);
     try {
       final today = await _source.loadToday();
-      final cooking = await _cooking.loadToday();
       if (!mounted) return;
-      setState(() {
-        _today = today;
-        _lunch = cooking[MealSlot.lunch];
-      });
+      setState(() => _today = today);
     } catch (error) {
       if (mounted) setState(() => _error = error);
     }
   }
 
-  // Quay lại từ màn con (đã chốt suất, đã duyệt) ⇒ tải lại để mốc và badge đúng
+  // Quay lại từ màn con ⇒ tải lại để mốc và badge theo số BE mới nhất
   Future<void> _open(String path) async {
     await context.push<void>(path);
     if (mounted) _load();
   }
 
   static IconData _icon(CampusTaskKind kind) => switch (kind) {
-    CampusTaskKind.confirmMeals => AppIcons.meal,
+    CampusTaskKind.mealCount => AppIcons.meal,
     CampusTaskKind.approvals => AppIcons.approval,
-    CampusTaskKind.kitchen => AppIcons.kitchen,
     CampusTaskKind.menu => AppIcons.menuBook,
     CampusTaskKind.children => AppIcons.childFace,
   };
@@ -86,31 +75,17 @@ class _VicePrincipalHomeScreenState extends State<VicePrincipalHomeScreen> {
   };
 
   void _openTask(CampusTaskKind kind) => switch (kind) {
-    CampusTaskKind.confirmMeals => _open(RoutePaths.vicePrincipalMealConfirm),
-    // Duyệt là một tab ⇒ chuyển tab, không chồng màn
+    CampusTaskKind.mealCount => _open(RoutePaths.vicePrincipalMealConfirm),
+    // Chờ xử lý là một tab ⇒ chuyển tab, không chồng màn
     CampusTaskKind.approvals => context.go(RoutePaths.vicePrincipalApprovals),
-    CampusTaskKind.kitchen => _open(RoutePaths.vicePrincipalKitchen),
     CampusTaskKind.menu => _open(RoutePaths.vicePrincipalMenu),
     CampusTaskKind.children => _open(RoutePaths.vicePrincipalChildren),
   };
 
   void _openPending(CampusPendingItem item) => switch (item.kind) {
-    CampusPendingKind.mealAdjustment when item.id != null => _open(
-      RoutePaths.vicePrincipalAdjustment(item.id!),
-    ),
-    CampusPendingKind.mealAdjustment => context.go(
-      RoutePaths.vicePrincipalApprovals,
-    ),
+    CampusPendingKind.mealCount => _open(RoutePaths.vicePrincipalMealConfirm),
     CampusPendingKind.rewards => _open(RoutePaths.vicePrincipalRewards),
   };
-
-  String _subtitle(CampusTask task) {
-    final lunch = _lunch;
-    if (task.kind != CampusTaskKind.kitchen || lunch == null) {
-      return task.subtitle;
-    }
-    return '${task.subtitle}: ${lunch.stage.label}';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -174,11 +149,11 @@ class _VicePrincipalHomeScreenState extends State<VicePrincipalHomeScreen> {
       ];
     }
     final textTheme = Theme.of(context).textTheme;
-    // Chốt suất và duyệt đã có ở thẻ mốc và mục chờ duyệt ⇒ không lặp trong "Theo dõi khác"
+    // Số suất và việc chờ đã có ở thẻ mốc và mục chờ xử lý ⇒ không lặp trong "Theo dõi khác"
     final others = today.tasks
         .where(
           (task) =>
-              task.kind != CampusTaskKind.confirmMeals &&
+              task.kind != CampusTaskKind.mealCount &&
               task.kind != CampusTaskKind.approvals,
         )
         .toList();
@@ -186,23 +161,22 @@ class _VicePrincipalHomeScreenState extends State<VicePrincipalHomeScreen> {
       if (today.morning.isNotEmpty) ...[
         _MorningCard(
           steps: today.morning,
-          onConfirm: () => _open(RoutePaths.vicePrincipalMealConfirm),
-          onKitchen: () => _open(RoutePaths.vicePrincipalKitchen),
+          onViewMeals: () => _open(RoutePaths.vicePrincipalMealConfirm),
         ),
         const SizedBox(height: AppSpacing.sectionGap),
       ],
       _SectionHeader(
         title: today.pending.isEmpty
-            ? 'Chờ duyệt'
-            : 'Chờ duyệt (${today.pendingApprovals})',
+            ? 'Chờ xử lý'
+            : 'Chờ xử lý (${today.pendingCount})',
         onAll: () => context.go(RoutePaths.vicePrincipalApprovals),
       ),
       const SizedBox(height: AppSpacing.space3),
       if (today.pending.isEmpty)
         const AppEmptyState(
           icon: AppIcons.checkCircle,
-          title: 'Không có yêu cầu chờ duyệt',
-          message: 'Yêu cầu mới từ giáo viên và bếp sẽ hiện ở đây.',
+          title: 'Không có việc chờ xử lý',
+          message: 'Số suất cần xác nhận và đề xuất khen thưởng sẽ hiện ở đây.',
         )
       else
         for (final item in today.pending) ...[
@@ -212,7 +186,7 @@ class _VicePrincipalHomeScreenState extends State<VicePrincipalHomeScreen> {
                 : AppIcons.meal,
             title: item.title,
             subtitle: item.note,
-            // Cùng màu nhãn với tab Duyệt: suất ăn xanh, khen thưởng vàng
+            // Cùng màu nhãn với tab Chờ xử lý: suất ăn xanh, khen thưởng vàng
             trailing: item.kind == CampusPendingKind.rewards
                 ? const AppStatusBadge(
                     label: 'Khen thưởng',
@@ -237,7 +211,7 @@ class _VicePrincipalHomeScreenState extends State<VicePrincipalHomeScreen> {
           AppTaskCard(
             icon: _icon(task.kind),
             title: task.title,
-            subtitle: _subtitle(task),
+            subtitle: task.subtitle,
             highlighted: task.highlighted,
             trailing: AppStatusBadge(
               label: task.badge,
@@ -275,17 +249,12 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-/// Thẻ mốc buổi sáng: cột giờ, đường ray, tên + ghi chú; mốc đang chờ nổi lên, chốt suất có nút làm ngay.
+/// Thẻ mốc buổi sáng: cột giờ, đường ray, tên + ghi chú; mốc đang chờ nổi lên, chốt suất có nút xem số suất.
 class _MorningCard extends StatelessWidget {
-  const _MorningCard({
-    required this.steps,
-    required this.onConfirm,
-    required this.onKitchen,
-  });
+  const _MorningCard({required this.steps, required this.onViewMeals});
 
   final List<MorningStep> steps;
-  final VoidCallback onConfirm;
-  final VoidCallback onKitchen;
+  final VoidCallback onViewMeals;
 
   @override
   Widget build(BuildContext context) {
@@ -300,10 +269,7 @@ class _MorningCard extends StatelessWidget {
               onAction: switch (step.kind) {
                 MorningStepKind.mealConfirm
                     when step.state == MorningStepState.current =>
-                  onConfirm,
-                MorningStepKind.lunch
-                    when step.state == MorningStepState.current =>
-                  onKitchen,
+                  onViewMeals,
                 _ => null,
               },
             ),
@@ -336,7 +302,8 @@ class _MorningRow extends StatelessWidget {
     final time = DateLabels.time24(step.time);
     final stateText = switch (step.state) {
       MorningStepState.done => 'đã xong',
-      MorningStepState.current => confirm ? 'cần làm' : 'đang diễn ra',
+      MorningStepState.current =>
+        confirm ? 'chờ xác nhận trên Web' : 'đang diễn ra',
       MorningStepState.upcoming => 'chưa tới',
     };
     final badge = switch (step.state) {
@@ -346,7 +313,7 @@ class _MorningRow extends StatelessWidget {
         icon: AppIcons.check,
       ),
       MorningStepState.current when confirm => const AppStatusBadge(
-        label: 'Cần làm',
+        label: 'Chờ xác nhận',
         tone: AppStatusTone.orange,
         icon: AppIcons.clock,
       ),
@@ -471,11 +438,9 @@ class _MorningRow extends StatelessWidget {
                     if (onAction != null) ...[
                       const SizedBox(height: AppSpacing.space3),
                       AppButton(
-                        label: confirm ? 'Xem & chốt' : 'Xem bếp',
+                        label: 'Xem số suất',
                         expand: true,
-                        variant: confirm
-                            ? AppButtonVariant.primary
-                            : AppButtonVariant.secondary,
+                        variant: AppButtonVariant.secondary,
                         onPressed: onAction,
                       ),
                     ],

@@ -13,8 +13,8 @@ import 'package:carenest_app/features/reward_proposals/data/fake_principal_rewar
 import 'package:carenest_app/features/reward_proposals/domain/reward_batch.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
-/// Hiệu trưởng · tab Duyệt — mockup H02: đợt khen thưởng Phó HT đã xét (OBS-10 PROPOSED)
-/// và mục đã xử lý gần đây. Không có nghỉ phép nhân sự (ngoài phạm vi CareNest, plan K5).
+/// Hiệu trưởng · tab Chờ xử lý — H02, chỉ xem (AUTH-21, BE ADR-0026): đợt khen thưởng Phó HT đã xét chờ HT
+/// duyệt trên Web (OBS-14) và mục đã xử lý gần đây. Không có nghỉ phép nhân sự (ngoài phạm vi CareNest, plan K5).
 class PrincipalApprovalsScreen extends StatefulWidget {
   const PrincipalApprovalsScreen({super.key, this.source});
 
@@ -30,7 +30,7 @@ class _PrincipalApprovalsScreenState extends State<PrincipalApprovalsScreen> {
       widget.source ?? FakePrincipalRewardSource.shared;
   late Future<List<RewardBatch>> _batches = _source.loadBatches();
 
-  // Quay lại từ màn chi tiết ⇒ tải lại để đợt đã xử lý chuyển xuống mục dưới
+  // Quay lại từ màn xem ⇒ tải lại theo trạng thái BE mới nhất
   Future<void> _open(String id) async {
     await context.push<void>(RoutePaths.principalRewardBatch(id));
     if (mounted) setState(() => _batches = _source.loadBatches());
@@ -61,10 +61,7 @@ class _PrincipalApprovalsScreenState extends State<PrincipalApprovalsScreen> {
                 children: [
                   Semantics(
                     header: true,
-                    child: Text(
-                      'Chờ Hiệu trưởng duyệt',
-                      style: textTheme.headlineSmall,
-                    ),
+                    child: Text('Chờ xử lý', style: textTheme.headlineSmall),
                   ),
                   if (pending != null && pending.isNotEmpty)
                     Text(
@@ -79,7 +76,7 @@ class _PrincipalApprovalsScreenState extends State<PrincipalApprovalsScreen> {
               const SizedBox(height: AppSpacing.space4),
               if (snapshot.hasError)
                 AppErrorState(
-                  title: 'Chưa tải được yêu cầu',
+                  title: 'Chưa tải được việc chờ xử lý',
                   message: 'Kiểm tra kết nối mạng rồi thử lại.',
                   onRetry: () =>
                       setState(() => _batches = _source.loadBatches()),
@@ -90,7 +87,7 @@ class _PrincipalApprovalsScreenState extends State<PrincipalApprovalsScreen> {
                 if (pending.isEmpty)
                   const AppEmptyState(
                     icon: AppIcons.checkCircle,
-                    title: 'Không còn yêu cầu chờ duyệt',
+                    title: 'Không có việc chờ xử lý',
                     message: 'Đề xuất Phó HT gửi lên sẽ hiện ở đây.',
                   )
                 else
@@ -98,7 +95,8 @@ class _PrincipalApprovalsScreenState extends State<PrincipalApprovalsScreen> {
                     AppTaskCard(
                       icon: AppIcons.trophy,
                       title: '${batch.title} · ${batch.proposals.length} bé',
-                      subtitle: '${batch.campusName} · Phó HT đã xét',
+                      subtitle:
+                          '${batch.campusName} · Phó HT đã xét · duyệt trên Web',
                       highlighted: i == 0,
                       trailing: const AppStatusBadge(
                         label: 'Khen thưởng',

@@ -34,17 +34,8 @@ class RewardBatch {
   final String? decisionNote;
 }
 
+/// Chỉ đọc: HT duyệt khen thưởng trên Web, App chỉ xem (AUTH-21, BE ADR-0026).
 abstract interface class PrincipalRewardSource {
   Future<List<RewardBatch>> loadBatches();
   Future<RewardBatch?> loadBatch(String id);
-
-  /// Duyệt các đề xuất được chọn; đề xuất bỏ chọn trả về Phó HT kèm ghi chú. BE kiểm tra lại.
-  Future<void> approve(
-    String id, {
-    required Set<String> approvedIds,
-    String? note,
-  });
-
-  /// Trả cả đợt về Phó HT, bắt buộc ghi chú.
-  Future<void> returnToVicePrincipal(String id, {required String note});
 }

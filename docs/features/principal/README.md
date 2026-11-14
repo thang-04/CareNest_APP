@@ -1,8 +1,8 @@
 # Principal (Hiệu trưởng) — màn hình Mobile
 
-> **Ngoài phạm vi App theo AUTH-21 (user chốt 27/10): BGH chỉ dùng Web. Màn hình hiện có giữ làm tham khảo, không phát triển tiếp.**
+> **Chỉ xem trên App (AUTH-21, `BE:docs/decisions/ADR-0026-staff-mobile-read-only.md`, user chốt 13/11/2026).** Không có nút duyệt/trả về; mọi thao tác làm trên CareNest Web. BE chặn lệnh ghi (403 `errorCode` 1301) và chỉ mở các GET của màn BGH. Plan client: `docs/plans/active/2026-11-13-bgh-view-only.md`.
 
-User chốt 2026-10-13: BGH có trên app, tách Phó Hiệu trưởng và Hiệu trưởng (plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`) — đã thay bởi AUTH-21; `BE:docs/business/USER_ROLES.md` ghi Principal chỉ dùng Web là đúng.
+User chốt 2026-10-13: BGH có trên app, tách Phó Hiệu trưởng và Hiệu trưởng (plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`) — AUTH-21 27/10 bỏ BGH khỏi App; user chốt 13/11 cho dùng App chỉ xem (`BE:docs/business/USER_ROLES.md`: "Web; App chỉ xem").
 
 Hiệu trưởng có scope toàn trường, mọi campus (`BE:` AUTH-01). Số tổng hợp chỉ trong scope (AUTH-08). Mockup: `docs/design/figma/principal-*.png`.
 
@@ -12,7 +12,10 @@ Hiệu trưởng có scope toàn trường, mọi campus (`BE:` AUTH-01). Số t
 - Giao diện bố cục D (user chọn 2026-10-14, `docs/design/mobile-redesign-clay.md`): lời chào + trường · ngày → hai thẻ cơ sở cạnh nhau (vòng tỉ lệ có mặt, có mặt/sĩ số, suất đã chốt, trạng thái bếp; chạm mở H08) → "Chờ Hiệu trưởng duyệt (n)" + "Tất cả" sang tab Duyệt → thanh đánh giá theo khối → "Toàn trường" (Trẻ có mặt · Thực đơn tuần · Cơ sở và Phó HT phụ trách). Chữ phóng lớn hoặc thẻ hẹp hơn 136 ⇒ hai thẻ xếp dọc. Thang và tiêu chí đánh giá theo P-11 (PENDING).
 - Thẻ cơ sở cần BE trả số theo từng cơ sở (`CampusSnapshot`: có mặt, sĩ số, tỉ lệ, suất đã chốt, trạng thái bếp bữa trưa) ⇒ **PROPOSED**, đề xuất khi viết endpoint tổng quan HT. APP không tự tính tỉ lệ.
 
-### Chờ Hiệu trưởng duyệt (H02) + Khen thưởng cuối năm (H04) — **PROPOSED**
+### Chờ xử lý (H02) + Khen thưởng cuối năm (H04) — chỉ xem
+- Từ 13/11: tab "Chờ xử lý" (trước là "Duyệt") liệt kê đợt khen thưởng chờ HT và đã xử lý; H04 chỉ xem danh sách đề xuất và trạng thái — không ô chọn, không "Duyệt (n)", không "Trả về Phó HT" (duyệt trên Web — OBS-14). BE: GET `/assessment/reward-lists`, `/assessment/reward-lists/classes/{classId}`.
+
+#### Lịch sử mockup H02, H04 (PROPOSED)
 - BE: rule OBS-10, OBS-14 (chốt 29/10: GV đề xuất → PHT xét → HT duyệt), tiêu chí P-11; làm cả hai: P-31.
 - Mockup H02: bỏ tab và mục "Nghỉ phép" (K5) ⇒ không còn bộ lọc; danh sách đợt chờ duyệt + "Đã xử lý gần đây".
 - Mockup H04: chọn sẵn mọi đề xuất hợp lệ; bỏ chọn ⇒ đề xuất đó trả về Phó HT, **cần ghi chú**; "Trả về Phó HT" trả cả đợt, bắt buộc ghi chú. Duyệt từng phần là đề xuất của APP theo mockup (có ô chọn) — cần BE xác nhận khi viết OBS-10.
