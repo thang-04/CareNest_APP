@@ -4,7 +4,7 @@ import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/features/parent_home/domain/parent_today.dart';
 
-/// Nhãn/tông điểm danh cho người đọc là phụ huynh (DESIGN.md §6.2).
+/// Nhãn/tông điểm danh cho người đọc là phụ huynh (DESIGN.md §B4.2).
 extension ParentAttendanceStatusView on ParentAttendanceStatus {
   String get label => switch (this) {
     ParentAttendanceStatus.present => 'Có mặt',

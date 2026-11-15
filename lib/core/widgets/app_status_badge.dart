@@ -4,7 +4,7 @@ import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 
-/// Badge viên thuốc cao 28, chữ 13/600, icon 14; Clay: không viền, quầng màu tông (DESIGN.md §6.2).
+/// Badge viên thuốc cao 28, chữ 13/600, icon 14; Clay: không viền, quầng màu tông (DESIGN.md §B4.2).
 /// Tông `blue` không icon có chấm sáng thay icon.
 class AppStatusBadge extends StatelessWidget {
   const AppStatusBadge({

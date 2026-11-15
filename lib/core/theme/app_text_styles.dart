@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
 
-/// Thang chữ CareNest (DESIGN.md §5.1). Không dùng độ đậm 800.
+/// Thang chữ CareNest (DESIGN.md §3.4). Không dùng độ đậm 800.
 abstract final class AppTextStyles {
   static const fontFamily = 'BeVietnamPro';
   static const tabularFigures = [FontFeature.tabularFigures()];

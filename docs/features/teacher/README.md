@@ -51,7 +51,7 @@ Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scop
 ### Chụp và gửi ảnh bữa ăn — **PROPOSED**
 - Ảnh bữa ăn — **PROPOSED** (user 2026-10-13): (1) bếp chụp ảnh món khi nấu xong; (2) giáo viên chụp khay khi bếp giao tới lớp rồi đăng; phụ huynh xem ảnh món ăn trong thực đơn/lịch của con. BE NUT-16 hiện chỉ ghi bếp chụp ⇒ đề xuất cập nhật BE.
 - Mockup: `docs/design/figma/teacher-15-16-meal-photo-capture-send.png` (chọn bữa, chụp suất thường / suất thay thế, gửi phụ huynh cả lớp hoặc riêng phụ huynh có suất thay thế).
-- BE: rule NUT-16 · Endpoint: chưa có · upload theo `DESIGN.md` §16.1 (PROPOSED).
+- BE: rule NUT-16 · Endpoint: chưa có · upload theo `docs/architecture/CODING_GUIDE.md` §7.1 (PROPOSED).
 - Chưa chọn thư viện camera (hỏi trước khi thêm): khung ngắm là khối tĩnh, nút chụp chỉ thêm ảnh giữ chỗ.
 - Lệch BE (28/10): NUT-16 CONFIRMED chỉ **bếp** chụp ảnh mẫu mỗi bữa, dùng chung toàn trường; phụ huynh xem trong thực đơn ngày (PAR-01). Màn T15/T16 của GV cần bỏ hoặc đề xuất BE khi tích hợp.
 

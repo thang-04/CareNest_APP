@@ -34,7 +34,7 @@ class ReviewTagWrap extends StatelessWidget {
   }
 }
 
-/// Biểu đồ đường một màu `primary` (DESIGN.md §8.5 Sức khỏe), tự vẽ vì chưa chọn thư viện chart.
+/// Biểu đồ đường một màu `primary` (DESIGN.md §B6.2 Sức khỏe), tự vẽ vì chưa chọn thư viện chart.
 /// Chỉ vẽ số BE trả; không tô vùng "chuẩn" khi chưa chốt ngưỡng (HLT-03, P-13).
 class WeightTrendChart extends StatelessWidget {
   const WeightTrendChart({super.key, required this.points});

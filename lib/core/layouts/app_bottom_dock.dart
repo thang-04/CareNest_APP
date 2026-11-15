@@ -4,7 +4,7 @@ import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 
-/// Vùng hành động nổi ở đáy, cách mép 12, bo 28, tránh home indicator (DESIGN.md §8.1).
+/// Vùng hành động nổi ở đáy, cách mép 12, bo 28, tránh home indicator (DESIGN.md §B5.1).
 class AppBottomDock extends StatelessWidget {
   const AppBottomDock({super.key, required this.children});
 

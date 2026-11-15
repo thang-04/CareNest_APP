@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
 
-/// Ba chấm primary/brand/accent nhảy lần lượt; không dùng spinner quay (DESIGN.md §5.5).
+/// Ba chấm primary/brand/accent nhảy lần lượt; không dùng spinner quay (DESIGN.md §B2.3).
 class AppLoadingDots extends StatefulWidget {
   const AppLoadingDots({super.key, this.size = 8});
 

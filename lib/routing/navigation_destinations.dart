@@ -6,7 +6,7 @@ import 'package:carenest_app/routing/route_paths.dart';
 /// Vai trò của tab trong khung: thông báo và tài khoản dùng chung mọi nhóm.
 enum NavTab { home, primary, notifications, account }
 
-/// Đích thanh đáy theo nhóm người dùng, khai báo một lần (DESIGN.md §8.1, §8.4).
+/// Đích thanh đáy theo nhóm người dùng, khai báo một lần (DESIGN.md §B5.1, §B5.2).
 @immutable
 class NavDestination {
   const NavDestination(this.label, this.icon, this.path, this.tab);

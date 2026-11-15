@@ -5,7 +5,7 @@ import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 
-/// Card Clay: trắng đặc, bo 28, viền sáng, bóng card; padding 20 (dày 16) (DESIGN.md §7.1).
+/// Card Clay: trắng đặc, bo 28, viền sáng, bóng card; padding 20 (dày 16) (DESIGN.md §B4.1).
 class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
@@ -112,7 +112,7 @@ class AppCardHeader extends StatelessWidget {
       ],
     );
     if (trailing == null || !_stacked(context)) return titleRow;
-    // Chữ lớn ⇒ đưa badge/link xuống dòng thay vì cắt chữ (DESIGN.md §5.1)
+    // Chữ lớn ⇒ đưa badge/link xuống dòng thay vì cắt chữ (DESIGN.md §3.4)
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

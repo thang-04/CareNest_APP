@@ -4,7 +4,7 @@ import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 
-/// Chip ngữ cảnh (con/lớp/điểm trường): avatar hoặc icon + tên + mũi tên, mở sheet chọn (DESIGN.md §8.1).
+/// Chip ngữ cảnh (con/lớp/điểm trường): avatar hoặc icon + tên + mũi tên, mở sheet chọn (DESIGN.md §B5.1).
 class AppContextChip extends StatelessWidget {
   const AppContextChip({
     super.key,

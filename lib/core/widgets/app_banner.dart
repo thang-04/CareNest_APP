@@ -7,7 +7,7 @@ import 'package:carenest_app/core/theme/app_status_colors.dart';
 
 enum AppBannerKind { info, warning, danger, success, neutral }
 
-/// Banner nền nhạt theo nghĩa, không viền, bo 16, nổi nhẹ (DESIGN.md §7.1).
+/// Banner nền nhạt theo nghĩa, không viền, bo 16, nổi nhẹ (DESIGN.md §B4.1).
 class AppBanner extends StatelessWidget {
   const AppBanner({
     super.key,

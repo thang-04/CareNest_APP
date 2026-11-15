@@ -1,6 +1,6 @@
 import 'package:flutter/painting.dart';
 
-/// Màu gốc CareNest, cùng mã với web (DESIGN.md §4.1–4.2, §6.1, §7.3).
+/// Màu gốc CareNest, cùng mã với web (DESIGN.md §3.1, §3.3, §3.2, §B4.4).
 /// Widget không dùng trực tiếp; đọc qua Theme/ThemeExtension.
 abstract final class AppColors {
   // Thương hiệu: `brand` là nền nút chính, `primary` là link/icon nhấn/focus (§4.1)

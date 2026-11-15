@@ -4,7 +4,7 @@ import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 
-/// Dòng danh sách cao ≥64; có đích thì cả dòng bấm được (DESIGN.md §7.1).
+/// Dòng danh sách cao ≥64; có đích thì cả dòng bấm được (DESIGN.md §B4.1).
 class AppListRow extends StatelessWidget {
   const AppListRow({
     super.key,
@@ -30,7 +30,7 @@ class AppListRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    // Chữ phóng lớn ⇒ đưa phần cuối (badge) xuống dưới tiêu đề thay vì ép tràn (DESIGN.md §5.1)
+    // Chữ phóng lớn ⇒ đưa phần cuối (badge) xuống dưới tiêu đề thay vì ép tràn (DESIGN.md §3.4)
     final stackTrailing =
         trailing != null && MediaQuery.textScalerOf(context).scale(1) > 1.3;
     final row = ConstrainedBox(

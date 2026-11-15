@@ -7,7 +7,7 @@ import 'package:carenest_app/core/constants/motion.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 
-/// Ô nhập: nhãn trên, viên thuốc cao 52 (nhiều dòng bo 20), lỗi dưới ô (DESIGN.md §7.1).
+/// Ô nhập: nhãn trên, viên thuốc cao 52 (nhiều dòng bo 20), lỗi dưới ô (DESIGN.md §B4.1).
 class AppTextField extends StatefulWidget {
   const AppTextField({
     super.key,

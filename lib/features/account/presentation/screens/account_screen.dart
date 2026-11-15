@@ -14,7 +14,7 @@ import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/features/account/data/fake_account_source.dart';
 import 'package:carenest_app/features/account/domain/account_profile.dart';
 
-/// Tài khoản — mockup P14, dùng chung 5 vai trò (DESIGN.md §8.5 Tài khoản).
+/// Tài khoản — mockup P14, dùng chung 5 vai trò (DESIGN.md §B6.2 Tài khoản).
 class AccountScreen extends StatefulWidget {
   const AccountScreen({
     super.key,

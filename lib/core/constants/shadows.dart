@@ -1,6 +1,6 @@
 import 'package:flutter/painting.dart';
 
-/// Bóng của style Clay nổi (DESIGN.md §5.5, docs/design/mobile-redesign-clay.md).
+/// Bóng của style Clay nổi (DESIGN.md §B2.3, docs/design/mobile-redesign-clay.md).
 /// Chỉ khai báo ở đây; widget không tự đặt bóng.
 abstract final class AppShadows {
   // Card, thanh dưới, vùng nút đáy: bóng xanh mềm + bóng tối gần (FE `--shadow-clay`)

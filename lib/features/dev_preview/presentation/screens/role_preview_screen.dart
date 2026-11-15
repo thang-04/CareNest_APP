@@ -9,7 +9,7 @@ import 'package:carenest_app/core/widgets/app_list_row.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
 /// Chỉ bản debug: mở màn theo vai trò khi chưa có đăng nhập thật.
-/// Không phải chọn role khi đăng nhập — role thật do BE trả (DESIGN.md §8.4).
+/// Không phải chọn role khi đăng nhập — role thật do BE trả (DESIGN.md §B5.2).
 class RolePreviewScreen extends StatelessWidget {
   const RolePreviewScreen({super.key});
 

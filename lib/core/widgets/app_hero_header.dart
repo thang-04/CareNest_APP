@@ -5,7 +5,7 @@ import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 
 /// Đầu màn trang chủ: dải nền `brand`, lời chào + tên, card ngữ cảnh đè lên mép dưới dải.
-/// Chưa có tranh hero (DESIGN.md §3.2) ⇒ dùng nền thương hiệu trơn theo mockup.
+/// Chưa có tranh hero (DESIGN.md §B3) ⇒ dùng nền thương hiệu trơn theo mockup.
 class AppHeroHeader extends StatelessWidget {
   const AppHeroHeader({
     super.key,
@@ -99,7 +99,7 @@ class AppHeroHeader extends StatelessWidget {
   }
 }
 
-/// Chuông thông báo trên hero, có số chưa đọc (DESIGN.md §8.1).
+/// Chuông thông báo trên hero, có số chưa đọc (DESIGN.md §B5.1).
 class AppHeroBell extends StatelessWidget {
   const AppHeroBell({super.key, required this.unread, required this.onPressed});
 

@@ -7,7 +7,7 @@ paths:
 
 # Screen & component rules
 
-> Flutter (CONFIRMED); glob theo cấu trúc `DESIGN.md` §2. Source thực tế khác ⇒ theo source, cập nhật `paths`.
+> Flutter (CONFIRMED); glob theo cấu trúc `docs/architecture/CODING_GUIDE.md` §2; giao diện theo `DESIGN.md` (rule `ui-style.md`). Source thực tế khác ⇒ theo source, cập nhật `paths`.
 
 - Screen = điều phối: lấy dữ liệu qua hook/state layer, xử lý loading / empty / error / offline / 403, truyền props xuống. Component trình bày không gọi API, không đọc token.
 - **Không business rule trong UI:** không tính số suất, định lượng, trend sức khỏe, không quyết định trẻ nào/field nào phụ huynh được xem. Hiển thị đúng giá trị BE trả (vd. trạng thái `CONFIRMED`, `APPROVED`).

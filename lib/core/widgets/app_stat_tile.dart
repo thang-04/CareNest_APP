@@ -6,7 +6,7 @@ import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/theme/app_text_styles.dart';
 
-/// Ô số liệu: số lớn + nhãn, nền theo tông trạng thái (DESIGN.md §6.1).
+/// Ô số liệu: số lớn + nhãn, nền theo tông trạng thái (DESIGN.md §3.2).
 /// Số luôn đi kèm nhãn chữ ⇒ không truyền nghĩa chỉ bằng màu.
 class AppStatTile extends StatelessWidget {
   const AppStatTile({

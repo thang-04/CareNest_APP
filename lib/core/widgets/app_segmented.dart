@@ -5,7 +5,7 @@ import 'package:carenest_app/core/constants/motion.dart';
 import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 
-/// Segmented Clay: rãnh lõm (gradient tối dần lên trên), ô chọn trắng nổi (DESIGN.md §7.1).
+/// Segmented Clay: rãnh lõm (gradient tối dần lên trên), ô chọn trắng nổi (DESIGN.md §B4.1).
 class AppSegmented<T> extends StatelessWidget {
   const AppSegmented({
     super.key,

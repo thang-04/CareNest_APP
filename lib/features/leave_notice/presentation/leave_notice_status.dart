@@ -2,7 +2,7 @@ import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/features/leave_notice/domain/leave_notice.dart';
 
-/// Không có trạng thái chờ duyệt (ATT-05, DESIGN.md §6.2): chỉ GV đã xem / chưa xem / đã huỷ.
+/// Không có trạng thái chờ duyệt (ATT-05, DESIGN.md §B4.2): chỉ GV đã xem / chưa xem / đã huỷ.
 extension LeaveNoticeView on LeaveNotice {
   String get statusLabel => switch (status) {
     LeaveNoticeStatus.cancelled => 'Đã huỷ',

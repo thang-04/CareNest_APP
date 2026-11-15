@@ -1,15 +1,15 @@
 # Mobile Architecture
 
-> Quy chuẩn chi tiết (cấu trúc thư mục, theme, widget, luồng dữ liệu): `DESIGN.md` ở gốc repo. File này chỉ ghi các quyết định đã chốt và phần còn mở.
+> Quy chuẩn chi tiết: code (thư mục, luồng dữ liệu, auth) ở `docs/architecture/CODING_GUIDE.md`; giao diện (token, theme, widget) ở `DESIGN.md` gốc repo. File này chỉ ghi các quyết định đã chốt và phần còn mở.
 
 ## Quyết định đã chốt
 
 | Hạng mục | Chọn | Status | Nguồn |
 | --- | --- | --- | --- |
 | Framework | Flutter (Dart), package `carenest_app` | CONFIRMED | user, 2026-10-08 |
-| Kiến trúc | Feature-based + Clean Architecture: `lib/core/`, `lib/features/<feature>/{data,domain,presentation}`, `lib/routing/` | CONFIRMED | `DESIGN.md` §2, §10 |
+| Kiến trúc | Feature-based + Clean Architecture: `lib/core/`, `lib/features/<feature>/{data,domain,presentation}`, `lib/routing/` | CONFIRMED | `CODING_GUIDE.md` §2, §3 |
 | Navigation | `go_router`; cấu hình ở `lib/routing/` | CONFIRMED | user, 2026-10-08 |
-| Theme | Light theme duy nhất, token ở `lib/core/constants/`, theme ở `lib/core/theme/` | CONFIRMED | `DESIGN.md` §4, §9 |
+| Theme | Light theme duy nhất, token ở `lib/core/constants/`, theme ở `lib/core/theme/` | CONFIRMED | `DESIGN.md` §3, §B2 |
 | Font | BeVietnamPro đóng gói trong `assets/fonts/` (OFL) | CONFIRMED | user, 2026-10-08 |
 | Verify | `node scripts/verify.mjs` ⇒ `dart format` check + `flutter analyze` + `flutter test` | CONFIRMED | user, 2026-10-08 |
 
@@ -24,8 +24,8 @@
 
 ## Còn mở (hỏi trước khi chọn)
 
-- [ ] State/DI (DESIGN đề xuất `flutter_riverpod` — PROPOSED)
-- [ ] HTTP client (DESIGN đề xuất `dio` — PROPOSED), secure storage (`flutter_secure_storage` — PROPOSED), push SDK
+- [ ] State/DI (CODING_GUIDE đề xuất `flutter_riverpod` — PROPOSED)
+- [ ] HTTP client (CODING_GUIDE đề xuất `dio` — PROPOSED), secure storage (`flutter_secure_storage` — PROPOSED), push SDK
 - [ ] Môi trường (dev/staging/prod), base URL + API prefix (`lib/core/config/env.dart` đọc `--dart-define`)
 - [ ] Integration test/E2E, CI build, phát hành (store/nội bộ)
 - [ ] Crash report/analytics (nếu có) + chính sách dữ liệu

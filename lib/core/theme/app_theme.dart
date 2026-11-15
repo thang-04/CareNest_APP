@@ -5,7 +5,7 @@ import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/theme/app_text_styles.dart';
 
-/// Light theme duy nhất (DESIGN.md §4.3, §4.4, §9).
+/// Light theme duy nhất (DESIGN.md §B2.1, §2.1, §B2.4).
 ThemeData buildLightTheme() {
   // ColorScheme.primary = brand (nền nút chính), không phải token `primary` (link) — §4.3
   const scheme = ColorScheme(

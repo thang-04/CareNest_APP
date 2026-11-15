@@ -1,4 +1,4 @@
-/// Khoảng cách lưới 4, đơn vị logical pixel (DESIGN.md §5.2). Không có `space7`.
+/// Khoảng cách lưới 4, đơn vị logical pixel (DESIGN.md §3.5). Không có `space7`.
 abstract final class AppSpacing {
   static const double space1 = 4;
   static const double space2 = 8;
@@ -23,20 +23,20 @@ abstract final class AppSpacing {
       width >= wideBreakpoint ? pagePaddingWide : pagePadding;
 }
 
-/// Bo góc (DESIGN.md §5.3).
+/// Bo góc (DESIGN.md §B2.2).
 abstract final class AppRadius {
   static const double xs = 6;
   static const double sm = 12;
   static const double md = 14;
   static const double lg = 16;
   static const double xl = 20;
-  // Card, thẻ số liệu: 28 theo style Clay (DESIGN.md §5.3)
+  // Card, thẻ số liệu: 28 theo style Clay (DESIGN.md §B2.2)
   static const double xxl = 28;
   static const double xxxl = 32;
   static const double pill = 9999;
 }
 
-/// Kích thước nền trước text scaling (DESIGN.md §5.4).
+/// Kích thước nền trước text scaling (DESIGN.md §B2.2).
 abstract final class AppSizes {
   static const double buttonHeight = 52;
   static const double buttonSmallHeight = 44;
@@ -52,7 +52,7 @@ abstract final class AppSizes {
   static const double iconBadge = 14;
   static const double appBarHeight = 56;
 
-  /// Thanh dưới và vùng nút đáy nổi cách mép màn (DESIGN.md §8.1).
+  /// Thanh dưới và vùng nút đáy nổi cách mép màn (DESIGN.md §B5.1).
   static const double floatingBarInset = 12;
   static const double bottomNavigationHeight = 72;
   static const double navigationIndicatorWidth = 64;

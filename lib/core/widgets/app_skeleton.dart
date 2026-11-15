@@ -5,7 +5,7 @@ import 'package:carenest_app/core/constants/motion.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 
-/// Khối chờ đúng hình nội dung, nhịp thở 0,6↔1 (DESIGN.md §5.5).
+/// Khối chờ đúng hình nội dung, nhịp thở 0,6↔1 (DESIGN.md §B2.3).
 class AppSkeleton extends StatefulWidget {
   const AppSkeleton({
     super.key,

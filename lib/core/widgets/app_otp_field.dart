@@ -5,7 +5,7 @@ import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_text_styles.dart';
 
-/// Ô nhập mã OTP: một `TextField` ẩn nhận phím/dán, các ô chỉ để hiển thị (DESIGN.md §8.2 OTP).
+/// Ô nhập mã OTP: một `TextField` ẩn nhận phím/dán, các ô chỉ để hiển thị (DESIGN.md §B6.1 OTP).
 class AppOtpField extends StatefulWidget {
   const AppOtpField({
     super.key,

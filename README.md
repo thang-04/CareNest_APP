@@ -22,5 +22,5 @@ node scripts/check-ai-layer.mjs   # khi sửa docs/, .ai/, .claude/, .agents/
 ## Tài liệu
 
 - Người và AI agent bắt đầu từ `AGENTS.md`; chỉ mục tài liệu: `docs/INDEX.md`.
-- Quy chuẩn UI và kiến trúc: `DESIGN.md`.
+- Giao diện: `DESIGN.md` (Phần A chung với web + Phần B riêng App). Code/kiến trúc: `docs/architecture/CODING_GUIDE.md`.
 - Tích hợp BE: `docs/integration/BACKEND_INTEGRATION.md`; danh sách endpoint BE: `docs/integration/BE_API_INDEX.md`.

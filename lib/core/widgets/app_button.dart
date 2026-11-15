@@ -7,7 +7,7 @@ import 'package:carenest_app/core/widgets/app_loading_dots.dart';
 
 enum AppButtonVariant { primary, secondary, text, danger }
 
-/// Nút viên thuốc cao 52 (nhỏ 44), chữ 16/700; bóng clay khi bấm được (DESIGN.md §5.5, §7.1).
+/// Nút viên thuốc cao 52 (nhỏ 44), chữ 16/700; bóng clay khi bấm được (DESIGN.md §B2.3, §B4.1).
 class AppButton extends StatelessWidget {
   const AppButton({
     super.key,

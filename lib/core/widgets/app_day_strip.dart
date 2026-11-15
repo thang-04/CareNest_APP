@@ -6,7 +6,7 @@ import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 
-/// Dải ngày trong tuần (T2 12/10 …), ô đang chọn nền `brand`; Clay: không viền, gờ đáy (DESIGN.md §8.2 Danh sách).
+/// Dải ngày trong tuần (T2 12/10 …), ô đang chọn nền `brand`; Clay: không viền, gờ đáy (DESIGN.md §B6.1 Danh sách).
 class AppDayStrip extends StatelessWidget {
   const AppDayStrip({
     super.key,

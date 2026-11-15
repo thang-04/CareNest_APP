@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
 
-/// Tông trạng thái bản ghi (DESIGN.md §6.1); feature tự map mã BE sang tông.
+/// Tông trạng thái bản ghi (DESIGN.md §3.2); feature tự map mã BE sang tông.
 enum AppStatusTone { gray, orange, blue, approval, red, green, teal }
 
-/// Nghĩa phản hồi (DESIGN.md §4.2) cho banner, toast, nút danger.
+/// Nghĩa phản hồi (DESIGN.md §3.3) cho banner, toast, nút danger.
 enum AppFeedback { success, warning, danger, info }
 
 @immutable
@@ -30,7 +30,7 @@ class ToneColors {
   final Color border;
 }
 
-/// Token ngoài ColorScheme mà widget chung cần (DESIGN.md §4.3).
+/// Token ngoài ColorScheme mà widget chung cần (DESIGN.md §B2.1).
 @immutable
 class AppStatusColors extends ThemeExtension<AppStatusColors> {
   const AppStatusColors({

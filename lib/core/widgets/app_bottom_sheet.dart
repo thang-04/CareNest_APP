@@ -5,7 +5,7 @@ import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 
-/// Sheet trắng bo trên 32, scrim `overlay` không blur (DESIGN.md §7.1).
+/// Sheet trắng bo trên 32, scrim `overlay` không blur (DESIGN.md §B4.1).
 Future<T?> showAppBottomSheet<T>({
   required BuildContext context,
   required String title,

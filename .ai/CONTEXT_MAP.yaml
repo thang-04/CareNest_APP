@@ -77,7 +77,8 @@ available:
     - docs/context/CURRENT_STATE.md
     - docs/architecture/MOBILE_ARCHITECTURE.md
     - docs/architecture/NAVIGATION.md
-    - DESIGN.md                           # quy chuẩn UI/kiến trúc Flutter
+    - DESIGN.md                           # giao diện: Phần A chung web + Phần B riêng App
+    - docs/architecture/CODING_GUIDE.md   # code Flutter: thư mục, kiến trúc, auth, API
     - docs/features/README.md
     - docs/features/parent/README.md
     - docs/features/teacher/README.md

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Nơi duy nhất import bộ icon (DESIGN.md §7.2). Gói Tabler còn OPEN ⇒ tạm ánh xạ Material rounded.
+/// Nơi duy nhất import bộ icon (DESIGN.md §B4.3). Gói Tabler còn OPEN ⇒ tạm ánh xạ Material rounded.
 abstract final class AppIcons {
   static const back = Icons.chevron_left_rounded;
   static const chevronRight = Icons.chevron_right_rounded;

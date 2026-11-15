@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 
-/// Avatar chữ cái, màu theo tên giống web `avatarTone`/`initials` (DESIGN.md §7.3).
+/// Avatar chữ cái, màu theo tên giống web `avatarTone`/`initials` (DESIGN.md §B4.4).
 /// Không dùng ảnh trẻ trong mock/test (AGENTS.md nguyên tắc 4).
 class AppAvatar extends StatelessWidget {
   const AppAvatar({super.key, required this.name, this.size = AppSizes.avatar});

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/widgets/app_loading_dots.dart';
 
-/// Phủ trắng khi đang gửi form, giữ form bên dưới (DESIGN.md §7.1).
+/// Phủ trắng khi đang gửi form, giữ form bên dưới (DESIGN.md §B4.1).
 class AppSubmitOverlay extends StatelessWidget {
   const AppSubmitOverlay({super.key, this.label = 'Đang gửi…'});
 

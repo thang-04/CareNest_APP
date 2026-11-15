@@ -1,6 +1,6 @@
 import 'package:flutter/animation.dart';
 
-/// Thời lượng và đường cong chuyển động (DESIGN.md §5.5).
+/// Thời lượng và đường cong chuyển động (DESIGN.md §B2.3).
 abstract final class AppMotion {
   static const curve = Cubic(0.4, 0, 0.2, 1);
   static const fast = Duration(milliseconds: 150);

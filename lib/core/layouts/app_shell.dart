@@ -6,7 +6,7 @@ import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/routing/navigation_destinations.dart';
 
-/// Khung tab: nội dung một cột + thanh đáy nổi 4 đích, giữ trạng thái từng tab (DESIGN.md §8.1).
+/// Khung tab: nội dung một cột + thanh đáy nổi 4 đích, giữ trạng thái từng tab (DESIGN.md §B5.1).
 class AppShell extends StatelessWidget {
   const AppShell({
     super.key,
