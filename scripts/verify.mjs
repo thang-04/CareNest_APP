@@ -2,7 +2,7 @@
 // Cổng kiểm chứng (ADR-0012): chạy build/test, ghi log đầy đủ ra file, chỉ in tóm tắt ≤10 dòng để tiết kiệm token.
 // Dùng: node scripts/verify.mjs            (full: mvnw verify = test + ArchUnit + snapshot OpenAPI + Spotless)
 //       node scripts/verify.mjs --quick    (làn S: test liên quan file đổi + ArchUnit + Spotless)
-//       Repo Flutter (có pubspec.yaml): dart format check + flutter analyze + flutter test, bỏ qua --quick
+//       Repo Flutter (có pubspec.yaml): dart format check + check-design (DESIGN.md §B8) + flutter analyze + flutter test, bỏ qua --quick
 // Luôn in 1 dòng `VERIFY PASS|FAIL|SKIP <mode> | ...` — hook đọc dòng này làm bằng chứng.
 import { execFileSync, spawn } from "node:child_process";
 import { createWriteStream, existsSync, mkdirSync } from "node:fs";
@@ -95,9 +95,10 @@ export function formatSummary(mode, parsed, exitCode, seconds, logFile) {
   return [head, ...notes.slice(0, 8)].join("\n");
 }
 
-// Flutter (APP): format → analyze → test, dừng ở bước fail đầu tiên
+// Flutter (APP): format → design → analyze → test, dừng ở bước fail đầu tiên
 const FLUTTER_STEPS = [
   { key: "format", exe: "dart", args: ["format", "--output=none", "--set-exit-if-changed", "lib", "test"] },
+  { key: "design", exe: "node", args: ["scripts/check-design.mjs"] },
   { key: "analyze", exe: "flutter", args: ["analyze"] },
   { key: "test", exe: "flutter", args: ["test"] },
 ];
@@ -109,6 +110,11 @@ export function parseFlutterStep(key, text, exitCode) {
   const add = (problem) => problems.length < 5 && problems.push(problem.slice(0, 220));
   if (key === "format") {
     for (const line of lines) if (line.startsWith("Changed ")) add(`format: ${line.slice(8).trim()} (sửa: dart format lib test)`);
+    return { status: exitCode === 0 ? "ok" : "FAIL", problems };
+  }
+  if (key === "design") {
+    // check-design in mỗi file vượt baseline trên một dòng thụt 2 dấu cách
+    for (const line of lines) if (/^  \S/.test(line) && line.includes(" > baseline ")) add(`design: ${line.trim()}`);
     return { status: exitCode === 0 ? "ok" : "FAIL", problems };
   }
   if (key === "analyze") {
@@ -136,6 +142,7 @@ export function formatFlutterSummary(steps, exitCode, seconds, logFile) {
   const head = [
     `VERIFY ${exitCode === 0 ? "PASS" : "FAIL"} full`,
     `format ${steps.format?.status ?? "-"}`,
+    `design ${steps.design?.status ?? "-"}`,
     `analyze ${steps.analyze?.status ?? "-"}`,
     t ? `tests ${t.tests} fail ${t.failures} skip ${t.skipped}` : "tests -",
     `${seconds}s`,

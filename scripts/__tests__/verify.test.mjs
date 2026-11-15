@@ -164,12 +164,25 @@ test("flutter: test lấy số đếm cuối, skip và test fail", () => {
 test("flutter summary: bước chưa chạy hiện '-', skip ⇒ cảnh báo", () => {
   const steps = {
     format: parseFlutterStep("format", "Formatted 3 files (0 changed)", 0),
+    design: parseFlutterStep("design", "check-design: ok · icon 0/0", 0),
     analyze: parseFlutterStep("analyze", "No issues found!", 0),
     test: parseFlutterStep("test", "00:02 +3 ~1: All tests passed!", 0),
   };
   const lines = formatFlutterSummary(steps, 0, 20, "verify.log").split("\n");
-  assert.equal(lines[0], "VERIFY PASS full | format ok | analyze ok | tests 4 fail 0 skip 1 | 20s | log verify.log");
+  assert.equal(lines[0], "VERIFY PASS full | format ok | design ok | analyze ok | tests 4 fail 0 skip 1 | 20s | log verify.log");
   assert.match(lines[1], /1 test bị skip/);
   const failed = formatFlutterSummary({ format: parseFlutterStep("format", "Changed lib/a.dart", 1) }, 1, 2, "verify.log");
-  assert.match(failed, /^VERIFY FAIL full \| format FAIL \| analyze - \| tests - \| 2s \| log verify\.log\n- format: lib\/a\.dart/);
+  assert.match(failed, /^VERIFY FAIL full \| format FAIL \| design - \| analyze - \| tests - \| 2s \| log verify\.log\n- format: lib\/a\.dart/);
+});
+
+test("flutter: design vượt baseline ⇒ FAIL + file", () => {
+  const out = [
+    "check-design: FAIL · icon 1/0",
+    "  lib/features/a/a_screen.dart: Icons.* ở feature — dùng AppIcons 1 > baseline 0",
+    "  Dùng token / widget chung (DESIGN.md §2, §B4). Sửa bớt nợ ⇒ node scripts/check-design.mjs --update",
+  ].join("\n");
+  const step = parseFlutterStep("design", out, 1);
+  assert.equal(step.status, "FAIL");
+  assert.deepEqual(step.problems, ["design: lib/features/a/a_screen.dart: Icons.* ở feature — dùng AppIcons 1 > baseline 0"]);
+  assert.equal(parseFlutterStep("design", "check-design: ok · icon 0/0\n", 0).status, "ok");
 });
