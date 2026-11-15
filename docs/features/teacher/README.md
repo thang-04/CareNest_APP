@@ -6,9 +6,9 @@ Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scop
 - BE: card `BE:docs/modules/school-structure.md`, `BE:docs/modules/identity-access.md` · rule AUTH-03
 - Endpoint: chưa có
 
-### Trang chủ giáo viên (bố cục D)
+### Trang chủ giáo viên
 - Giao diện (Figma GV 01 bản sửa, user 2026-11-14 bỏ bố cục thời Clay): dải xanh lời chào; thẻ lớp đè mép dải (tên lớp, sĩ số, hoạt động đang diễn ra) + ô "Lịch hoạt động ›"; banner hạn điểm danh; "Việc cần làm hôm nay" là danh sách dọc, điểm danh đứng đầu có viền xanh; điểm danh xong ⇒ banner "Đã điểm danh N/N bé hôm nay" (số BE trả). Số chưa đọc trên tab Thông báo.
-- Vòng tiến độ cần **số bé đã điểm danh** do BE trả (`attendanceRecorded` ở `TeacherToday`, chưa có trong contract) ⇒ đề xuất khi viết endpoint trang chủ GV; APP không tự đếm. Không có số ⇒ không vẽ vòng.
+- Banner "Đã điểm danh N/N bé hôm nay" cần **số bé đã điểm danh** do BE trả (`attendanceRecorded` ở `TeacherToday`, chưa có trong contract) ⇒ đề xuất khi viết endpoint trang chủ GV; APP không tự đếm. Không có số ⇒ không hiện banner. Vòng tiến độ thời Clay đã bỏ (14/11).
 
 ### Điểm danh + sức khỏe đầu ngày (nhập hàng loạt)
 - Mục đích: nhập Có mặt / Vắng cho cả lớp/ngày cùng lúc. Có mặt là ăn tất cả các bữa đã cấu hình cho nhóm tuổi; GV không nhập tham gia ăn riêng (ATT-02). Vắng có phép tự động khi phụ huynh đã gửi đơn nghỉ, còn lại không phép (ATT-04, ATT-09). Khi nhận trẻ, GV quan sát và đo nhiệt độ, nhập cùng màn điểm danh; không chụp ảnh trẻ, dặn dò miệng của phụ huynh không ghi (HLT-07). Ô thân nhiệt không bắt buộc trên form (user chốt 14/11, như Web).
@@ -39,7 +39,7 @@ Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scop
 ### Báo nghỉ của lớp (chỉ xem)
 - BE: flow `BE:docs/business/flows/leave-request.md` · rule ATT-05, ATT-04
 - GV xem thông báo nghỉ của trẻ trong lớp được phân công; **không có bước duyệt**. GV không tạo đơn thay phụ huynh (ATT-05, chốt 27/10).
-- Mockup T03 (Figma sửa 13/11): lọc "Hôm nay & sắp tới" / "Tất cả"; chỉ xem — không badge Mới / Đã xem, không nút đánh dấu đã xem, đơn theo ngày không chia buổi; ghi chú "Ngày có đơn tự ghi Vắng có phép, không có suất. GV chỉ xem đơn." (ATT-04). Trẻ **vắng không đơn** không có trong T03 (user chốt 14/11, như Web): chỉ thấy ở màn điểm danh với trạng thái Vắng không phép, không có ghi chú "đã gọi phụ huynh" (`AttendanceRecord` không có field ghi chú). Code giả T03 còn mục này ⇒ sửa ở việc code tiếp theo.
+- Mockup T03 (Figma sửa 13/11): lọc "Hôm nay & sắp tới" / "Tất cả"; chỉ xem — không badge Mới / Đã xem, không nút đánh dấu đã xem, đơn theo ngày không chia buổi; ghi chú "Ngày có đơn tự ghi Vắng có phép, không có suất. GV chỉ xem đơn." (ATT-04). Trẻ **vắng không đơn** không có trong T03 (user chốt 14/11, như Web): chỉ thấy ở màn điểm danh với trạng thái Vắng không phép, không có ghi chú "đã gọi phụ huynh" (`AttendanceRecord` không có field ghi chú). Code giả T03 đã bỏ mục này (G94-332, 14/11).
 
 ### Nhận suất ăn từ bếp — **REMOVED ở BE (28/10)**
 - BE: rule NUT-15 · flow `BE:docs/business/flows/meal-management.md` (bàn giao suất). GV xác nhận số suất nhận; thiếu/sai ⇒ bếp bàn giao lại.
@@ -56,21 +56,21 @@ Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scop
 
 ### Chụp và gửi ảnh bữa ăn — **gỡ lối vào (13/11)**
 - Figma sửa 13/11: ảnh bữa ăn là ảnh mẫu của bếp cơ sở (NUT-16) ⇒ gỡ việc "Ảnh bữa ăn" ở Trang chủ GV và route `/teacher/meal-photos*`; giữ code `lib/features/meal_photos` và test dựng màn trực tiếp.
-- Ảnh bữa ăn — **PROPOSED** (user 2026-10-13): (1) bếp chụp ảnh món khi nấu xong; (2) giáo viên chụp khay khi bếp giao tới lớp rồi đăng; phụ huynh xem ảnh món ăn trong thực đơn/lịch của con. BE NUT-16 hiện chỉ ghi bếp chụp ⇒ đề xuất cập nhật BE.
+- Đề xuất cũ (user 2026-10-13, không làm): bếp chụp ảnh món khi nấu xong, giáo viên chụp khay khi bếp giao tới lớp rồi đăng. BE NUT-16 CONFIRMED chỉ bếp chụp ảnh mẫu ⇒ App theo BE.
 - Mockup: `docs/design/figma/teacher-15-16-meal-photo-capture-send.png` (chọn bữa, chụp suất thường / suất thay thế, gửi phụ huynh cả lớp hoặc riêng phụ huynh có suất thay thế).
 - BE: rule NUT-16 · Endpoint: chưa có · upload theo `DESIGN.md` §16.1 (PROPOSED).
 - Chưa chọn thư viện camera (hỏi trước khi thêm): khung ngắm là khối tĩnh, nút chụp chỉ thêm ảnh giữ chỗ.
-- Lệch BE (28/10): NUT-16 CONFIRMED chỉ **bếp** chụp ảnh mẫu mỗi bữa, dùng chung toàn trường; phụ huynh xem trong thực đơn ngày (PAR-01). Màn T15/T16 của GV cần bỏ hoặc đề xuất BE khi tích hợp.
+- Đã xử lý (13/11): NUT-16 CONFIRMED chỉ **bếp** chụp ảnh mẫu mỗi bữa; phụ huynh xem trong thực đơn ngày (PAR-01). Màn T15/T16 của GV không còn lối vào (mục đầu).
 
 ### Đón trẻ + xác minh người đón
 - BE: card `BE:docs/modules/attendance.md` · flow pickup của BE (chưa merge nhánh chính BE) · rule PCK-01..04, ATT-10: màn đón hiện danh sách phụ huynh/người giám hộ; người lạ ⇒ gọi phụ huynh, ghi lý do; lưu người đón, giờ đón (cả đón muộn, về sớm); báo phụ huynh. Ảnh đối chiếu: PCK-02 (đóng P-33 31/10) — ưu tiên ảnh phụ huynh ở hồ sơ tiếp nhận; từ 13/11 đăng nhập lần đầu không bắt tải ảnh chân dung.
 - Mockup T05 / T06 (plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md` K4): danh sách chờ đón / đã đón, xác minh người đón đã đăng ký (ảnh, tên, SĐT), "Đúng – giao bé" ⇒ BE ghi giờ, người đón và báo phụ huynh.
 - Figma sửa 13/11: "Không khớp – gọi phụ huynh" mở phần ghi cuộc gọi: bắt buộc "Nội dung cuộc gọi" rồi chọn "Trả bé" (bắt buộc "Người đến đón"; ghi người đón, giờ đón, báo phụ huynh) hoặc "Không trả bé" (chỉ ghi lần đón, không giao bé) — PCK-02, PCK-04. Bản giả: `PickupCall` qua `PickupSource.recordCall`.
-- Lệch BE (29/10): mock xác minh theo người đón đã đăng ký (ảnh, tên, SĐT); BE không đăng ký trước người đón hộ (PCK-03), chỉ dùng danh sách phụ huynh/người giám hộ; người lạ phải ghi lý do trước khi xác nhận (PCK-02). Ảnh người đón chỉ tải qua URL có auth; bản giả dùng icon. Gọi điện cần plugin quay số (chưa thêm).
+- Còn lệch BE (29/10): BE không đăng ký trước người đón hộ (PCK-03), chỉ dùng danh sách phụ huynh/người giám hộ. Bản giả lấy phụ huynh của bé (Mẹ, Bố), nhưng chữ trên màn còn ghi "Người đón đã đăng ký" ⇒ đổi chữ khi tích hợp. Người lạ: đã có bước ghi nội dung cuộc gọi (bản sửa 13/11, mục trên). Ảnh người đón chỉ tải qua URL có auth; bản giả dùng icon. Gọi điện cần plugin quay số (chưa thêm).
 
 ### Lớp học (danh sách bé)
 - Mockup T09: tên, tuổi, liên hệ phụ huynh, nhãn dị ứng / chế độ ăn / nghỉ (HLT-06, AUTH-03). Mở chi tiết bé: chưa có trong mockup ⇒ "Sắp có".
-- So Figma 13/11: bỏ nhãn "Ăn 1 bữa" (không báo ăn theo bữa — ATT-02). Bỏ nhãn "Ăn chay" (user chốt 14/11): BE không có chế độ ăn đặc biệt ngoài dị ứng (HLT-06), chỉ hiện dị ứng nhẹ/nặng. Dữ liệu giả còn nhãn này (`fake_class_roster_source.dart`, `fake_campus_children_source.dart`, `fake_kitchen_meals_source.dart`, `fake_school_menu_source.dart`) ⇒ sửa ở việc code tiếp theo.
+- So Figma 13/11: bỏ nhãn "Ăn 1 bữa" (không báo ăn theo bữa — ATT-02). Bỏ nhãn "Ăn chay" (user chốt 14/11): BE không có chế độ ăn đặc biệt ngoài dị ứng (HLT-06), chỉ hiện dị ứng nhẹ/nặng. Dữ liệu giả đã bỏ nhãn này (G94-194, 14/11).
 
 ### Lịch hoạt động
 - Mockup T10, bỏ "Giáo án tuần đã duyệt", "Tổ trưởng & Phó HT ký duyệt", "Xem file". Nguồn lịch: kế hoạch ngày của module education-plan (OBS-07, EDU-01, ADR-0019; card BE chưa merge nhánh chính BE); soạn và duyệt làm trên Web. Chưa có API ⇒ dữ liệu giả ở bản debug.
@@ -79,7 +79,7 @@ Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scop
 - Mọi thông báo BE tạo cho GV đều push (BE PAR-07, user chốt 14/11): đơn nghỉ của phụ huynh, trẻ vào lớp, mở lại điểm danh, nhắc việc, phân công… Danh mục và màn đích: `docs/integration/PUSH_NOTIFICATION.md`. Nội dung chung + deep link.
 
 ### Tài khoản GV kiêm phụ huynh
-- User chốt 14/11: sau đăng nhập App mở chế độ GV; nút "Chuyển sang chế độ phụ huynh" ở màn Tài khoản; App nhớ chế độ dùng lần cuối. BE không nhận vai trò đang chọn từ client, vẫn lọc quyền theo token (AUTH-21). Chưa có code.
+- User chốt 14/11: sau đăng nhập App mở chế độ GV; nút "Chuyển sang chế độ phụ huynh" ở màn Tài khoản; App nhớ chế độ dùng lần cuối. BE không nhận vai trò đang chọn từ client, vẫn lọc quyền theo token (AUTH-21). Đã có code (G94-194, 14/11): chế độ cuối chỉ nhớ trong phiên; lưu bền chờ storage của plan nền App (`TODO(Giáp)` trong `lib/features/account/domain/app_modes.dart`).
 
 ## Known pitfalls
 - Chưa có. Thêm 1 dòng/bẫy, link incident (`docs/knowledge/incidents/`).

@@ -10,7 +10,7 @@ Nguồn chung: card `BE:docs/modules/nutrition.md` · flow `BE:docs/business/flo
 - Đã chốt 28/10: mỗi cơ sở bếp riêng, tài khoản bếp gắn một cơ sở (AUTH-05, AUTH-22; đóng P-06) · PHT cơ sở xác nhận số suất, HT thay khi vắng (NUT-02; đóng P-05). Vẫn hiển thị theo dữ liệu BE, không hard-code cơ sở.
 - Chỉ hiển thị MealCount **CONFIRMED**; DRAFT không phải số để nấu.
 - Mockup K01 / K03 (user 2026-10-13): Trang chủ bếp có số suất đã chốt + giờ chốt; màn "Suất ăn đã chốt" theo lớp (thường / thay thế, ghi chú dị ứng ở mức nấu, không tên trẻ). Điều chỉnh sau giờ chốt hiện banner thông tin "HH:mm · <lớp> +N suất (giáo viên sửa điểm danh)", không ghi "chờ duyệt" (so Figma 13/11, NUT-04); bếp vẫn nấu theo số đã xác nhận (NUT-03).
-- Lệch BE (28/10): không có điều chỉnh chờ duyệt hay thêm suất cho trẻ muộn (ATT-03, NUT-04); thay đổi chỉ qua PHT mở lại điểm danh rồi xác nhận lại, bếp thấy số mới khi đã xác nhận lại (ATT-08, NUT-03). Dị ứng là số suất theo **món** và lớp (NUT-23), bảng giả chỉ có thường / thay thế theo lớp — cần sửa khi tích hợp.
+- BE (28/10): không có điều chỉnh chờ duyệt hay thêm suất cho trẻ muộn (ATT-03, NUT-04); thay đổi chỉ qua PHT mở lại điểm danh rồi xác nhận lại, bếp thấy số mới khi đã xác nhận lại (ATT-08, NUT-03) — App đã theo (banner ở mục trên). Còn lệch: dị ứng là số suất theo **món** và lớp (NUT-23), bảng giả chỉ có thường / thay thế theo lớp — cần sửa khi tích hợp.
 - Trang chủ (Figma Bếp 01 bản sửa, user 2026-11-14 bỏ bố cục D thời Clay): dải xanh lời chào; thẻ bếp cơ sở + ngày đè mép dải; thẻ "Suất ăn đã chốt lúc HH:mm · Bữa trưa" với số lớn, bên phải số thường / thay thế; "Việc của bếp hôm nay" (thực đơn, suất theo lớp, định lượng, ảnh mẫu bữa, sổ lưu mẫu). Thay thế chỉ theo dị ứng, không có ăn chay. Số chưa đọc trên tab Thông báo.
 - Bản sửa Figma 13/11 (đã làm): bỏ thẻ tiến độ nấu (NUT-14 REMOVED) và việc "Nhận nguyên liệu" (NUT-11, NUT-12 — PHT ghi trên Web); việc bếp gồm Thực đơn, Suất ăn theo lớp, "Định lượng thực phẩm · Theo N suất đã xác nhận", "Ảnh mẫu bữa · Bữa trưa · chụp 10:30–11:30", "Sổ lưu mẫu · Bữa trưa chưa ghi mẫu".
 
@@ -29,18 +29,13 @@ Nguồn chung: card `BE:docs/modules/nutrition.md` · flow `BE:docs/business/flo
 
 ### Trạng thái chuẩn bị + bàn giao suất — **REMOVED ở BE (28/10)**
 - BE: rule NUT-14 (chờ nấu → đang nấu → sẵn sàng bàn giao), NUT-15 (số suất từng lớp, GV xác nhận nhận), NUT-16 (ảnh món) · flow `BE:docs/business/flows/meal-management.md`
-- Ảnh bữa ăn — **PROPOSED** (user 2026-10-13): (1) bếp chụp ảnh món khi nấu xong; (2) giáo viên chụp khay khi bếp giao tới lớp rồi đăng; phụ huynh xem ảnh món ăn trong thực đơn/lịch của con. BE NUT-16 hiện chỉ ghi bếp chụp ⇒ đề xuất cập nhật BE. Mockup K07 chưa có bước chụp ảnh ⇒ đợt này không dựng bước đó.
-- Endpoint: chưa có. Màn "Trạng thái nấu" dựng với dữ liệu giả, chỉ có ở bản debug, cho tới khi team chốt (user 2026-10-13, plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`).
-- Mockup K07 ghi "Giáo viên không cần thao tác nhận suất" — **lệch NUT-15** (PROPOSED: GV xác nhận số nhận). APP giữ câu theo mockup ở bản giả; cần team chốt một bên.
-- Lệch BE (28/10): NUT-14 và NUT-15 **REMOVED** — không theo dõi trạng thái nấu, không ghi bàn giao; bếp chia suất theo danh sách lớp. NUT-16 CONFIRMED: chỉ bếp chụp ảnh mẫu (mục dưới). Route K07 `/kitchen/cooking` đã gỡ 13/11; code `cooking_status` giữ, không có lối vào.
+- Đề xuất cũ (user 2026-10-13, không làm): bếp chụp ảnh món khi nấu xong, giáo viên chụp khay khi bếp giao tới lớp. BE NUT-16 CONFIRMED chỉ bếp chụp ảnh mẫu ⇒ mục "Ảnh mẫu bữa" bên dưới.
+- Màn "Trạng thái nấu" (K07) từng dựng với dữ liệu giả ở bản debug (plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`); BE 28/10 bỏ nghiệp vụ này.
+- Đã xử lý (13/11): NUT-14 và NUT-15 **REMOVED** (BE 28/10) — không theo dõi trạng thái nấu, không ghi bàn giao; bếp chia suất theo danh sách lớp. NUT-16 CONFIRMED: chỉ bếp chụp ảnh mẫu (mục dưới). Route K07 `/kitchen/cooking` đã gỡ 13/11; code `cooking_status` giữ, không có lối vào.
 
-### Nhận nguyên liệu + báo thiếu thực phẩm — **nghiệp vụ mới, BE chưa ghi**
-- Nguồn: user 2026-10-13 ("nghiệp vụ mới"), mockup `docs/design/figma/kitchen-05-06-receive-ingredients-shortage.png`. Mức **PROPOSED** (user 2026-10-13, Q3 plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`). Phiếu xuất kho (PXK) thuộc nghiệp vụ này (Q2).
-- Mockup: bếp nhập số thực nhận theo lô, so với số trên phiếu xuất kho; có chênh lệch ⇒ báo Phó HT; báo thiếu gồm thực phẩm, số lượng, cần trước giờ nào, ảnh hưởng, ghi chú.
-- BE gần nhất: NUT-10 (Fresh/Stored, CONFIRMED); NUT-11/12 kho–NCC (CONFIRMED 28/10, ADR-0009 ACCEPTED).
-- Endpoint: chưa có. Chênh lệch, "tự báo Phó HT" là hành vi BE; APP chỉ hiển thị.
-- APP so số nhập với số phiếu chỉ để nhắc khi nhập (viền đỏ + "Thiếu x kg"); chênh lệch chính thức do BE ghi khi xác nhận. Màn báo thiếu điền sẵn món đang thiếu, gửi cho Phó HT.
-- Lệch BE (28/10): bếp không ghi nhận hàng — PHT nhập kho khô và ghi kiểm nhận hàng tươi trên Web (NUT-11, NUT-12); thiếu nguyên liệu hoặc thiếu/thừa suất báo PHT qua Zalo/điện thoại, hệ thống không ghi (NUT-22). Route K05/K06 (`/kitchen/receipts`, `/kitchen/receipts/shortage`) đã gỡ 13/11; code `ingredient_receipt` giữ, không có lối vào.
+### Nhận nguyên liệu + báo thiếu thực phẩm — **không làm trên App (BE 28/10)**
+- Đề xuất cũ (user 2026-10-13, mockup `docs/design/figma/kitchen-05-06-receive-ingredients-shortage.png`, Q2–Q3 plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`): bếp nhập số thực nhận theo lô so với phiếu xuất kho, có chênh lệch thì báo Phó HT; màn báo thiếu thực phẩm.
+- Đã xử lý (13/11): bếp không ghi nhận hàng — PHT nhập kho khô và ghi kiểm nhận hàng tươi trên Web (NUT-11, NUT-12, ADR-0009); thiếu nguyên liệu hoặc thiếu/thừa suất báo PHT qua Zalo/điện thoại, hệ thống không ghi (NUT-22). Route K05/K06 (`/kitchen/receipts`, `/kitchen/receipts/shortage`) đã gỡ 13/11; code `ingredient_receipt` giữ, không có lối vào.
 
 ### Ảnh mẫu bữa + sổ lưu mẫu — dữ liệu giả (bản sửa Figma 13/11)
 - BE: rule NUT-16 (bếp mỗi cơ sở chụp ảnh mẫu mỗi bữa trên App trong khung giờ HT cấu hình, phụ huynh xem trong thực đơn ngày — PAR-01), NUT-21 (ghi sổ lưu mẫu thức ăn mỗi bữa, PHT duyệt; mẫu sổ theo Mẫu 4, Mẫu 5 QĐ 1246 — P-26 đã chốt 09/11) · ADR-0009
