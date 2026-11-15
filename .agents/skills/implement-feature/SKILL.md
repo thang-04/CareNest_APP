@@ -8,4 +8,5 @@ description: Use for new CareNest mobile screens or features for Parent, Teacher
 1. Read `../../../AGENTS.md` (invariants) if not already in context.
 2. Find the screen/domain: grep `keywords` in `../../../.ai/CONTEXT_MAP.yaml`, read `docs/features/<role>/README.md` and the BE module card it points to.
 3. Follow `../../../.ai/workflows/implement-feature.md` with profile `../../../.ai/profiles/feature.md`.
-4. Never implement a PENDING/OPEN rule as decided, never recompute business numbers on the client — ask or render what BE returns.
+4. UI must follow `../../../DESIGN.md` (Part A shared with web, Part B app-only; screen recipes §B6, widgets §B4.1). Deviation from web only via a §B1 row.
+5. Never implement a PENDING/OPEN rule as decided, never recompute business numbers on the client — ask or render what BE returns.

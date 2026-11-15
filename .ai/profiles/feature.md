@@ -7,7 +7,8 @@ Mức: L2. Bắt đầu từ **actor và outcome**, không từ component.
 2. `docs/architecture/NAVIGATION.md` — vị trí màn hình trong cây điều hướng của role.
 3. BE module card (`.ai/CONTEXT_MAP.yaml` → `keywords` → `be_module_card`) + flow trong card; rule ID trong `BE:docs/business/BUSINESS_RULES.md`.
 4. `docs/integration/BACKEND_INTEGRATION.md` + `BE:docs/contracts/API_CONVENTIONS.md`, `ERROR_CONTRACT.md` khi gọi API.
-5. `.claude/rules/` theo loại file.
+5. `DESIGN.md` — giao diện: A §2 luật cứng, §B1 điểm App khác web, §B4 widget, §B6 công thức màn.
+6. `.claude/rules/` theo loại file.
 
 Kiểm tra trước khi code:
 - Rule cần dùng CONFIRMED/ACCEPTED? PENDING/OPEN ⇒ hỏi, hoặc thiết kế UI chịu được cả hai phương án (ẩn theo dữ liệu/permission BE trả về).

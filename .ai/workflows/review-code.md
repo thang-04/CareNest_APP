@@ -11,7 +11,7 @@ Làn S: tự kiểm 3 điểm (đúng phạm vi, không đổi contract, có tes
 5. **UX states:** loading / empty / error / offline / 401 / 403; tiếng Việt; accessibility cơ bản.
 6. **Navigation:** deep link có kiểm tra đăng nhập/role; back stack sau login/logout; màn hình theo role không lộ sang role khác.
 7. **Test:** có test cho hành vi chính, regression cho bug fix?
-8. **Convention:** `.claude/rules/`; không thêm dependency khi chưa được duyệt.
+8. **Convention:** `.claude/rules/`; không thêm dependency khi chưa được duyệt. **Thiết kế** (`DESIGN.md`, rule `ui-style.md`): token/widget chung, icon qua `AppIcons`, badge cùng nhãn/tông với web (§3.2), lệch web chỉ khi có dòng §B1 — lệch không ghi ⇒ Medium.
 9. **Memory:** fix bug không hiển nhiên có incident + dòng `ISSUE_INDEX.md` chưa? Đối chiếu Known pitfalls + `PATTERNS.md`.
 
 ## Phát hiện
