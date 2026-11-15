@@ -25,7 +25,7 @@ class FakeKitchenMealsSource implements KitchenMealsSource {
       className: 'Chồi 1',
       regular: 29,
       alternative: 2,
-      note: 'ăn chay',
+      note: 'dị ứng trứng',
     ),
     ClassMealCount(
       className: 'Chồi 2',
@@ -43,7 +43,7 @@ class FakeKitchenMealsSource implements KitchenMealsSource {
       className: 'Lá 2',
       regular: 35,
       alternative: 1,
-      note: 'ăn chay',
+      note: 'dị ứng sữa bò',
     ),
   ];
 
@@ -65,8 +65,7 @@ class FakeKitchenMealsSource implements KitchenMealsSource {
       regular: 175,
       alternative: 7,
       classes: classes,
-      adjustmentNote:
-          '09:05 · Mầm 3A xin +1 suất (giáo viên sửa điểm danh) · chờ Phó HT duyệt',
+      adjustmentNote: '09:05 · Mầm 3A +1 suất (giáo viên sửa điểm danh)',
     );
   }
 }

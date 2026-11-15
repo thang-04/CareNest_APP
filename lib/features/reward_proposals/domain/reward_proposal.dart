@@ -45,14 +45,9 @@ class RewardProposal {
   );
 }
 
+/// Chỉ đọc: PHT xét đề xuất trên Web, App chỉ xem (AUTH-21, BE ADR-0026).
 abstract interface class RewardProposalSource {
   /// Năm học đang xét, vd. "2026–2027".
   String get schoolYear;
   Future<List<RewardProposal>> load();
-
-  /// Gửi các đề xuất hợp lệ cho Hiệu trưởng; BE kiểm tra lại từng đề xuất.
-  Future<void> sendValidToPrincipal();
-
-  /// Trả đề xuất không hợp lệ về giáo viên kèm lý do BE ghi.
-  Future<void> returnInvalid();
 }

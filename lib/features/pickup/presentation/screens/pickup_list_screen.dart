@@ -16,7 +16,7 @@ import 'package:carenest_app/features/class_roster/data/fake_class_roster_source
 import 'package:carenest_app/features/pickup/data/fake_pickup_source.dart';
 import 'package:carenest_app/features/pickup/domain/pickup.dart';
 
-/// Đón trẻ — danh sách chờ đón (mockup T05). Chưa có rule BE (plan K4): bản giả ở debug.
+/// Đón trẻ — danh sách chờ đón (Figma GV05). Chưa có rule BE (plan K4): bản giả ở debug.
 class PickupListScreen extends StatefulWidget {
   const PickupListScreen({
     super.key,
@@ -113,9 +113,8 @@ class _PickupListScreenState extends State<PickupListScreen> {
                         ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.space2),
+              const SizedBox(height: AppSpacing.space3),
             ],
-            const SizedBox(height: AppSpacing.space2),
             Text(
               'Chạm “Giao bé” để xác minh người đón trước khi giao.',
               style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),

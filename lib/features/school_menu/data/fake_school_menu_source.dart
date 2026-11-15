@@ -60,14 +60,7 @@ class FakeSchoolMenuSource implements SchoolMenuSource {
       ),
     ],
     'mam': <AlternativeMenu>[],
-    'choi': [
-      AlternativeMenu(
-        title: 'Ăn chay',
-        count: 1,
-        swaps: [('Canh thịt', 'Canh rau củ'), ('Cá', 'Đậu sốt cà')],
-        isAllergy: false,
-      ),
-    ],
+    'choi': <AlternativeMenu>[],
     'la': [
       AlternativeMenu(
         title: 'Dị ứng hải sản',
@@ -94,12 +87,6 @@ class FakeSchoolMenuSource implements SchoolMenuSource {
         swaps: [('Cá basa sốt cà', 'Thịt gà rim')],
         isAllergy: true,
       ),
-      AlternativeMenu(
-        title: 'Ăn chay',
-        count: 2,
-        swaps: [('Canh thịt', 'Canh rau củ'), ('Cá', 'Đậu sốt cà')],
-        isAllergy: false,
-      ),
     ],
     'la': [
       AlternativeMenu(
@@ -110,12 +97,6 @@ class FakeSchoolMenuSource implements SchoolMenuSource {
           ('Sữa tươi', 'Sữa đậu nành'),
         ],
         isAllergy: true,
-      ),
-      AlternativeMenu(
-        title: 'Ăn chay',
-        count: 1,
-        swaps: [('Canh thịt', 'Canh rau củ'), ('Cá', 'Đậu sốt cà')],
-        isAllergy: false,
       ),
     ],
   };

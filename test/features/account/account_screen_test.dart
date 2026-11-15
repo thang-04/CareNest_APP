@@ -49,8 +49,38 @@ void main() {
     }
     await tester.ensureVisible(find.text('Đăng xuất'));
     await tester.tap(find.text('Đăng xuất'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Đăng xuất').last);
+    await tester.pumpAndSettle();
     expect(loggedOut, isTrue);
   });
+
+  testWidgets(
+    'Figma audit: P19 hỏi lại trước khi đăng xuất, "Ở lại" giữ phiên',
+    (tester) async {
+      usePhoneSize(tester);
+      var loggedOut = false;
+      await pumpAccount(
+        tester,
+        AppRole.parent,
+        onLogout: () => loggedOut = true,
+      );
+      await tester.ensureVisible(find.text('Đăng xuất'));
+      await tester.tap(find.text('Đăng xuất'));
+      await tester.pumpAndSettle();
+      expect(find.text('Đăng xuất khỏi CareNest?'), findsOneWidget);
+      expect(
+        find.text(
+          'Bạn sẽ không nhận được thông báo của bé cho đến khi đăng nhập lại.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Ở lại'));
+      await tester.pumpAndSettle();
+      expect(find.text('Đăng xuất khỏi CareNest?'), findsNothing);
+      expect(loggedOut, isFalse);
+    },
+  );
 
   testWidgets('P14: mỗi vai trò hiện đúng nhãn vai trò', (tester) async {
     usePhoneSize(tester);

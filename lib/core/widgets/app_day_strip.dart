@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/motion.dart';
-import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 
-/// Dải ngày trong tuần (T2 12/10 …), ô đang chọn nền `brand`; Clay: không viền, gờ đáy (DESIGN.md §8.2 Danh sách).
+/// Dải ngày trong tuần (T2 12/10 …), ô đang chọn nền `brand`, ô khác trắng viền mảnh (Figma App, DESIGN.md §8.2 Danh sách).
 class AppDayStrip extends StatelessWidget {
   const AppDayStrip({
     super.key,
@@ -77,9 +76,9 @@ class _DayTile extends StatelessWidget {
             decoration: BoxDecoration(
               color: selected ? AppColors.brand : AppColors.surface,
               borderRadius: BorderRadius.circular(AppRadius.sm),
-              boxShadow: selected
-                  ? AppShadows.buttonPrimary
-                  : AppShadows.buttonSecondary,
+              border: Border.all(
+                color: selected ? AppColors.brand : AppColors.border,
+              ),
             ),
             // Ô hẹp + chữ phóng lớn ⇒ thu nhỏ chữ trong ô thay vì tràn
             child: FittedBox(

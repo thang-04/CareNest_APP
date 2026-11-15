@@ -7,7 +7,7 @@ import 'package:carenest_app/core/constants/motion.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 
-/// Ô nhập: nhãn trên, viên thuốc cao 52 (nhiều dòng bo 20), lỗi dưới ô (DESIGN.md §7.1).
+/// Ô nhập: nhãn trên, khung trắng bo 8 cao 48, lỗi dưới ô (Figma App, DESIGN.md §7.1).
 class AppTextField extends StatefulWidget {
   const AppTextField({
     super.key,
@@ -138,9 +138,11 @@ class AppDateField extends StatelessWidget {
     required this.label,
     required this.value,
     required this.onTap,
+    this.labelSuffix,
   });
 
   final String label;
+  final String? labelSuffix;
   final String value;
   final VoidCallback? onTap;
 
@@ -148,7 +150,7 @@ class AppDateField extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppFieldFrame(
       label: label,
-      compactLabel: true,
+      labelSuffix: labelSuffix,
       onTap: onTap,
       trailing: const Padding(
         padding: EdgeInsets.only(right: AppSpacing.space4),
@@ -200,7 +202,7 @@ class AppSelectField extends StatelessWidget {
   }
 }
 
-/// Khung chung của ô nhập Clay: nền lõm nhẹ, viền mảnh, focus viền 2 + vòng 3 `focusRing`, nhãn, dòng gợi ý/lỗi.
+/// Khung chung của ô nhập: nền trắng, viền mảnh, focus viền `primary` 1.5, nhãn, dòng gợi ý/lỗi.
 class AppFieldFrame extends StatelessWidget {
   const AppFieldFrame({
     super.key,
@@ -211,7 +213,6 @@ class AppFieldFrame extends StatelessWidget {
     this.helperText,
     this.focused = false,
     this.multiline = false,
-    this.compactLabel = false,
     this.enabled = true,
     this.leading,
     this.trailing,
@@ -225,7 +226,6 @@ class AppFieldFrame extends StatelessWidget {
   final String? helperText;
   final bool focused;
   final bool multiline;
-  final bool compactLabel;
 
   /// Khoá (vd. số điện thoại dùng để đăng nhập): nền `surfaceMuted`, không vòng focus.
   final bool enabled;
@@ -243,10 +243,8 @@ class AppFieldFrame extends StatelessWidget {
         : focused
         ? status.link
         : AppColors.borderStrong;
-    final borderWidth = focused || hasError ? 2.0 : 1.0;
-    final radius = BorderRadius.circular(
-      multiline ? AppRadius.xl : AppRadius.pill,
-    );
+    final borderWidth = focused || hasError ? 1.5 : 1.0;
+    final radius = BorderRadius.circular(AppRadius.control);
 
     Widget box = AnimatedContainer(
       duration: AppMotion.fast,
@@ -255,30 +253,18 @@ class AppFieldFrame extends StatelessWidget {
         minHeight: multiline ? 104 : AppSizes.inputHeight,
       ),
       padding: EdgeInsets.only(
-        left: AppSpacing.space5,
-        right: trailing == null ? AppSpacing.space5 : AppSpacing.space1,
+        left: AppSpacing.space3 + 2,
+        right: trailing == null ? AppSpacing.space3 + 2 : AppSpacing.space1,
         top: multiline ? AppSpacing.space3 + 2 : 0,
         bottom: multiline ? AppSpacing.space3 + 2 : 0,
       ),
       decoration: BoxDecoration(
-        color: enabled ? null : AppColors.surfaceMuted,
-        // Ô lõm vào: mép trên hơi tối, thay bóng trong của wireframe
-        gradient: enabled
-            ? const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [AppColors.surfaceMuted, AppColors.surface],
-                stops: [0, 0.4],
-              )
-            : null,
+        color: enabled ? AppColors.surface : AppColors.surfaceMuted,
         borderRadius: radius,
         border: Border.all(
           color: enabled ? borderColor : AppColors.border,
           width: enabled ? borderWidth : 1,
         ),
-        boxShadow: focused && enabled
-            ? [BoxShadow(color: status.focusRing, spreadRadius: 3)]
-            : null,
       ),
       child: Row(
         crossAxisAlignment: multiline
@@ -301,9 +287,10 @@ class AppFieldFrame extends StatelessWidget {
       );
     }
 
-    final labelStyle = compactLabel
-        ? theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)
-        : theme.textTheme.titleSmall;
+    // Nhãn 14/600 trên ô như Figma (PH 01, PH 03)
+    final labelStyle = theme.textTheme.bodyMedium?.copyWith(
+      fontWeight: FontWeight.w600,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

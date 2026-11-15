@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-/// Một thực phẩm cần dùng; số do BE tính = suất đã chốt × định lượng thực đơn đã duyệt (NUT-07).
+/// Một thực phẩm cần dùng; số do BE tính = suất đã xác nhận × định lượng thực đơn đã công bố (NUT-07).
 @immutable
 class QuantityLine {
   const QuantityLine({
@@ -20,33 +20,19 @@ class QuantityLine {
   final bool forAlternative;
 }
 
-/// Phiếu xuất kho đã duyệt — nghiệp vụ nhận nguyên liệu mới (quyết định 7, PROPOSED).
-@immutable
-class IssueSlip {
-  const IssueSlip({
-    required this.code,
-    required this.approvedBy,
-    required this.approvedAt,
-  });
-
-  final String code;
-  final String approvedBy;
-  final DateTime approvedAt;
-}
-
 @immutable
 class QuantityPlan {
   const QuantityPlan({
     required this.mealLabel,
     required this.servings,
     required this.lines,
-    this.slip,
   });
 
   final String mealLabel;
+
+  /// Số suất đã xác nhận của cơ sở (NUT-02).
   final int servings;
   final List<QuantityLine> lines;
-  final IssueSlip? slip;
 }
 
 abstract interface class FoodQuantitySource {

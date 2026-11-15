@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:carenest_app/features/parent_menu/domain/weekly_menu.dart';
 
-/// Thực đơn thay thế cho trẻ dị ứng / ăn chay ở mức cần để nấu: số bé, đổi món — không tên trẻ (AUTH-05).
+/// Thực đơn thay thế cho trẻ dị ứng (HLT-06; không có ăn chay) ở mức cần để nấu: số bé, đổi món — không tên trẻ (AUTH-05).
 @immutable
 class AlternativeMenu {
   const AlternativeMenu({

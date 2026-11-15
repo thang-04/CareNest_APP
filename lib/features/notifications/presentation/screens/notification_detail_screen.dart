@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
+import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_coming_soon.dart';
@@ -13,7 +14,8 @@ import 'package:carenest_app/features/notifications/data/fake_notification_sourc
 import 'package:carenest_app/features/notifications/domain/app_notification.dart';
 import 'package:carenest_app/features/notifications/presentation/notification_icons.dart';
 
-/// Chi tiết thông báo — mockup P07. Route chỉ mang ID; nội dung tải lại theo ID.
+/// Chi tiết thông báo (Figma PH07). Route chỉ mang ID; nội dung tải lại theo ID. Thông báo BE không có ảnh
+/// hay người gửi; lối mở màn liên quan theo loại (PAR-07).
 class NotificationDetailScreen extends StatelessWidget {
   const NotificationDetailScreen({
     super.key,
@@ -28,33 +30,53 @@ class NotificationDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Chi tiết thông báo')),
-      body: FutureBuilder<List<AppNotification>>(
-        future: source.load(role),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Padding(
-              padding: EdgeInsets.all(AppSpacing.pagePadding),
-              child: AppSkeletonCard(),
-            );
-          }
-          final item = snapshot.data!
-              .where((notification) => notification.id == id)
-              .firstOrNull;
-          if (item == null) {
-            return const Center(
-              child: AppEmptyState(
-                icon: AppIcons.searchOff,
-                title: 'Không tìm thấy thông báo',
-                message: 'Thông báo đã bị gỡ hoặc không thuộc tài khoản này.',
-              ),
-            );
-          }
-          return _DetailBody(item: item);
-        },
-      ),
+    return FutureBuilder<List<AppNotification>>(
+      future: source.load(role),
+      builder: (context, snapshot) {
+        final item = snapshot.data
+            ?.where((notification) => notification.id == id)
+            .firstOrNull;
+        final action = item == null ? null : notificationAction(item.type);
+        return Scaffold(
+          appBar: AppBar(title: const Text('Chi tiết thông báo')),
+          body: _body(snapshot, item),
+          bottomNavigationBar: action == null
+              ? null
+              : AppBottomDock(
+                  children: [
+                    // Deep link theo loại chốt khi nối API (PUSH_NOTIFICATION.md); bản giả báo sắp có
+                    AppButton(
+                      label: action,
+                      expand: true,
+                      onPressed: () => openComingSoon(context, action),
+                    ),
+                  ],
+                ),
+        );
+      },
     );
+  }
+
+  Widget _body(
+    AsyncSnapshot<List<AppNotification>> snapshot,
+    AppNotification? item,
+  ) {
+    if (!snapshot.hasData) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.pagePadding),
+        child: AppSkeletonCard(),
+      );
+    }
+    if (item == null) {
+      return const Center(
+        child: AppEmptyState(
+          icon: AppIcons.searchOff,
+          title: 'Không tìm thấy thông báo',
+          message: 'Thông báo đã bị gỡ hoặc không thuộc tài khoản này.',
+        ),
+      );
+    }
+    return _DetailBody(item: item);
   }
 }
 
@@ -73,7 +95,7 @@ class _DetailBody extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppIconTile(icon: notificationIcon(item.kind), size: 48),
+              AppIconTile(icon: notificationIcon(item.type), size: 48),
               const SizedBox(height: AppSpacing.space4),
               Text(item.title, style: textTheme.titleMedium),
               const SizedBox(height: AppSpacing.space1),
@@ -107,45 +129,15 @@ class _DetailBody extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.primarySoft,
                 borderRadius: BorderRadius.circular(AppRadius.pill),
+                border: Border.all(color: AppColors.primaryBorder),
               ),
               child: Text(
                 item.tag!,
                 style: textTheme.labelMedium?.copyWith(
-                  color: AppColors.onBrand,
+                  color: AppColors.primaryText,
                 ),
               ),
             ),
-          ),
-        ],
-        if (item.hasPhoto) ...[
-          const SizedBox(height: AppSpacing.space3),
-          // Ảnh thật chỉ tải qua URL có auth khi có API; bản giả dùng khối giữ chỗ
-          Semantics(
-            label: 'Ảnh đính kèm',
-            excludeSemantics: true,
-            child: AspectRatio(
-              aspectRatio: 4 / 3,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.primarySoft,
-                  borderRadius: BorderRadius.circular(AppRadius.xl),
-                ),
-                child: const Icon(
-                  AppIcons.image,
-                  size: 56,
-                  color: AppColors.primaryBorder,
-                ),
-              ),
-            ),
-          ),
-        ],
-        if (item.actionLabel != null) ...[
-          const SizedBox(height: AppSpacing.space4),
-          AppButton(
-            label: item.actionLabel!,
-            variant: AppButtonVariant.secondary,
-            expand: true,
-            onPressed: () => openComingSoon(context, item.actionLabel!),
           ),
         ],
       ],

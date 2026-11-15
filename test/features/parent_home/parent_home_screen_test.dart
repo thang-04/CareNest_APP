@@ -7,7 +7,6 @@ import 'package:carenest_app/features/parent_home/data/fake_parent_home_source.d
 import 'package:carenest_app/features/parent_home/domain/parent_today.dart';
 import 'package:carenest_app/features/parent_home/presentation/screens/parent_home_screen.dart';
 import 'package:carenest_app/features/parent_home/presentation/selected_child.dart';
-import 'package:carenest_app/features/parent_home/presentation/widgets/parent_home_cards.dart';
 
 import '../../helpers/pump_app.dart';
 
@@ -72,15 +71,18 @@ Future<void> pumpParentHome(
 void main() {
   setUp(SelectedChild.reset);
 
-  testWidgets('Bố cục H (PAR-01): lời chào → thẻ bé → Việc nhanh', (
+  testWidgets('Figma PH02: dải chào + thẻ bé → Hôm nay → Tiện ích', (
     tester,
   ) async {
     await pumpParentHome(tester, FakeMode.data);
     expect(find.text('Chị Nguyễn Thu Lan'), findsOneWidget);
-    expect(find.text('Minh Anh'), findsOneWidget);
-    expect(find.text('Mầm 3A · 4 tuổi'), findsOneWidget);
-    expect(find.text('Có mặt'), findsOneWidget);
-    expect(find.bySemanticsLabel('Điểm danh: 07:42'), findsOneWidget);
+    expect(find.text('Bé Nguyễn Minh Anh'), findsOneWidget);
+    expect(find.textContaining('Lớp Mầm 3A · 4 tuổi'), findsOneWidget);
+    expect(find.text('Hôm nay · Thứ Hai, 12/10'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Điểm danh: Có mặt lúc 07:42'),
+      findsOneWidget,
+    );
     expect(find.bySemanticsLabel('Thực đơn: Đã công bố'), findsOneWidget);
     expect(
       find.bySemanticsLabel('Hoạt động: Tô màu chiếc lá mùa thu'),
@@ -91,10 +93,13 @@ void main() {
     double top(Finder finder) => tester.getTopLeft(finder).dy;
     expect(
       top(find.text('Chị Nguyễn Thu Lan')),
-      lessThan(top(find.text('Minh Anh'))),
+      lessThan(top(find.text('Bé Nguyễn Minh Anh'))),
     );
     await tester.scrollUntilVisible(find.text('Sức khỏe'), 200);
-    expect(top(find.text('Minh Anh')), lessThan(top(find.text('Việc nhanh'))));
+    expect(
+      top(find.text('Bé Nguyễn Minh Anh')),
+      lessThan(top(find.text('Tiện ích'))),
+    );
     for (final label in [
       'Xin nghỉ cho bé',
       'Hoạt động & đánh giá',
@@ -105,44 +110,42 @@ void main() {
     }
   });
 
-  testWidgets('Hai bé (AUTH-04): chạm phần ló để đổi sang bé kia', (
-    tester,
-  ) async {
+  testWidgets('Hai bé (AUTH-04): Đổi bé mở sheet, chọn bé kia', (tester) async {
     await pumpParentHome(tester, FakeMode.data);
-    expect(find.text('Bảo Ngọc · Lá 1'), findsOneWidget);
-    await tester.tap(find.text('Bảo Ngọc · Lá 1'));
+    await tester.tap(find.text('Đổi bé'));
+    await tester.pumpAndSettle();
+    expect(find.text('Chọn bé'), findsOneWidget);
+    await tester.tap(find.text('Nguyễn Hoàng Bảo Ngọc'));
     await tester.pumpAndSettle();
     expect(SelectedChild.notifier.value, 'child-2');
-    expect(find.text('Bảo Ngọc'), findsOneWidget);
-    expect(find.text('Minh Anh · Mầm 3A'), findsOneWidget);
+    expect(find.text('Bé Nguyễn Hoàng Bảo Ngọc'), findsOneWidget);
+    expect(find.textContaining('Lớp Lá 1 · 5 tuổi'), findsOneWidget);
   });
 
-  testWidgets('Ba bé: phần ló ghi "+2 bé khác" và mở sheet chọn bé', (
-    tester,
-  ) async {
+  testWidgets('Ba bé: sheet chọn bé có đủ các con', (tester) async {
     await pumpParentHome(
       tester,
       FakeMode.data,
       source: _ChildrenSource([...FakeParentHomeSource.children, _thirdChild]),
     );
-    expect(find.text('+2 bé khác'), findsOneWidget);
-    await tester.tap(find.text('+2 bé khác'));
+    await tester.tap(find.text('Đổi bé'));
     await tester.pumpAndSettle();
     expect(find.text('Chọn bé'), findsOneWidget);
+    expect(find.text('Nguyễn Hoàng Bảo Ngọc'), findsOneWidget);
     await tester.tap(find.text('Nguyễn Gia Khang'));
     await tester.pumpAndSettle();
     expect(SelectedChild.notifier.value, 'child-3');
-    expect(find.text('Gia Khang'), findsOneWidget);
+    expect(find.text('Bé Nguyễn Gia Khang'), findsOneWidget);
   });
 
-  testWidgets('Một bé: không có phần ló', (tester) async {
+  testWidgets('Một bé: không có Đổi bé', (tester) async {
     await pumpParentHome(
       tester,
       FakeMode.data,
       source: _ChildrenSource([FakeParentHomeSource.children.first]),
     );
-    expect(find.byType(OtherChildrenPeek), findsNothing);
-    expect(find.text('Minh Anh'), findsOneWidget);
+    expect(find.text('Đổi bé'), findsNothing);
+    expect(find.text('Bé Nguyễn Minh Anh'), findsOneWidget);
   });
 
   testWidgets('Dữ liệu rỗng ⇒ Chưa điểm danh, thực đơn chưa công bố', (
@@ -171,7 +174,9 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('AC-5: khổ 320 xếp dọc ba ô hôm nay, không tràn', (tester) async {
+  testWidgets('AC-5: khổ 320 các dòng hôm nay xếp dọc, không tràn', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(320, 640);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);

@@ -14,7 +14,7 @@ class AppListRow extends StatelessWidget {
     this.trailing,
     this.onTap,
     this.showChevron = false,
-    this.horizontalPadding = AppSpacing.space4,
+    this.horizontalPadding = AppSpacing.space3,
     this.titleMaxLines = 2,
   });
 
@@ -38,7 +38,7 @@ class AppListRow extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.symmetric(
           horizontal: horizontalPadding,
-          vertical: AppSpacing.space3,
+          vertical: AppSpacing.space2 + 2,
         ),
         child: Row(
           children: [
@@ -55,11 +55,13 @@ class AppListRow extends StatelessWidget {
                     title,
                     maxLines: titleMaxLines,
                     overflow: TextOverflow.ellipsis,
-                    style: textTheme.titleSmall,
+                    // Figma: tên dòng 15/600, mô tả 13 — gọn hơn titleSmall/bodyMedium
+                    style: textTheme.titleSmall?.copyWith(fontSize: 15),
                   ),
                   if (subtitle != null)
                     DefaultTextStyle.merge(
                       style: textTheme.bodyMedium?.copyWith(
+                        fontSize: 13,
                         color: AppColors.textMuted,
                       ),
                       child: subtitle!,

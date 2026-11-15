@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
+import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/features/approvals/presentation/screens/principal_approvals_screen.dart';
 import 'package:carenest_app/features/campus_children/data/fake_campus_children_source.dart';
 import 'package:carenest_app/features/campus_children/presentation/screens/campus_children_screen.dart';
@@ -11,7 +12,6 @@ import 'package:carenest_app/features/parent_home/data/fake_parent_home_source.d
 import 'package:carenest_app/features/principal_overview/data/fake_school_overview_source.dart';
 import 'package:carenest_app/features/principal_overview/presentation/screens/principal_overview_screen.dart';
 import 'package:carenest_app/features/reward_proposals/data/fake_principal_reward_source.dart';
-import 'package:carenest_app/features/reward_proposals/domain/reward_batch.dart';
 import 'package:carenest_app/features/reward_proposals/presentation/screens/reward_batch_screen.dart';
 import 'package:carenest_app/features/school_children/presentation/screens/school_children_screen.dart';
 import 'package:carenest_app/features/school_menu/presentation/screens/school_menu_overview_screen.dart';
@@ -50,7 +50,7 @@ String? labelOf(String prefix) => find
 
 void main() {
   testWidgets(
-    'H01 (AUTH-08, K5): hai cơ sở cạnh nhau, không có nghỉ phép nhân sự',
+    'H01 (AUTH-08, K5): thẻ trường, ô số liệu cạnh nhau, không có nghỉ phép nhân sự',
     (tester) async {
       await pumpScreen(
         tester,
@@ -62,39 +62,32 @@ void main() {
         ),
         inScaffold: true,
       );
+      expect(find.text('Chào cô,'), findsOneWidget);
       expect(find.text('Nguyễn Thị Hồng'), findsOneWidget);
-      expect(
-        find.text('Trường MN Thượng Hồng · Thứ Hai, 12/10'),
-        findsOneWidget,
+      expect(find.text('Trường MN Thượng Hồng · 2 cơ sở'), findsOneWidget);
+      expect(find.text('Năm học 2026–2027 · Thứ Hai, 12/10'), findsOneWidget);
+      expect(labelOf('Trẻ có mặt'), 'Trẻ có mặt: 312/334, 93%');
+      expect(labelOf('Suất ăn đã chốt'), 'Suất ăn đã chốt: 306, 2 cơ sở');
+      expect(labelOf('Thực đơn tuần'), 'Thực đơn tuần: 2/2, cơ sở đã công bố');
+      // Hai ô đầu cùng một hàng như Figma HT 01
+      final present = tester.getTopLeft(
+        find.bySemanticsLabel(RegExp('^Trẻ có mặt')),
       );
-      expect(
-        labelOf('Cơ sở chính'),
-        'Cơ sở chính, có mặt 182/196, 93%, 182 suất đã chốt, bếp đang nấu',
+      final meals = tester.getTopLeft(
+        find.bySemanticsLabel(RegExp('^Suất ăn đã chốt')),
       );
-      expect(
-        labelOf('Cơ sở 2'),
-        'Cơ sở 2, có mặt 130/138, 94%, 124 suất đã chốt, bếp đang nấu',
-      );
-      // Hai thẻ cùng một hàng
-      final main = tester.getTopLeft(
-        find.bySemanticsLabel(RegExp('^Cơ sở chính')),
-      );
-      final second = tester.getTopLeft(
-        find.bySemanticsLabel(RegExp('^Cơ sở 2')),
-      );
-      expect(main.dy, second.dy);
-      expect(main.dx, lessThan(second.dx));
+      expect(present.dy, meals.dy);
+      expect(present.dx, lessThan(meals.dx));
+      await tester.scrollUntilVisible(find.bySemanticsLabel('Mầm: 91%'), 200);
       await tester.scrollUntilVisible(
         find.text('Khen thưởng cuối năm · 7 bé'),
         200,
       );
-      await tester.scrollUntilVisible(find.bySemanticsLabel('Mầm: 91%'), 200);
-      await tester.scrollUntilVisible(find.text('312/334 bé · 93%'), 200);
       expect(find.textContaining('Nghỉ phép'), findsNothing);
     },
   );
 
-  testWidgets('H01: khổ 320 hai thẻ cơ sở vẫn cạnh nhau, không tràn', (
+  testWidgets('H01: khổ 320 hai ô số liệu vẫn cạnh nhau, không tràn', (
     tester,
   ) async {
     usePhoneSize(tester);
@@ -114,11 +107,13 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    final main = tester.getTopLeft(
-      find.bySemanticsLabel(RegExp('^Cơ sở chính')),
+    final present = tester.getTopLeft(
+      find.bySemanticsLabel(RegExp('^Trẻ có mặt')),
     );
-    final second = tester.getTopLeft(find.bySemanticsLabel(RegExp('^Cơ sở 2')));
-    expect(main.dy, second.dy);
+    final meals = tester.getTopLeft(
+      find.bySemanticsLabel(RegExp('^Suất ăn đã chốt')),
+    );
+    expect(present.dy, meals.dy);
   });
 
   testWidgets('H01: lỗi tải ⇒ Thử lại', (tester) async {
@@ -136,7 +131,7 @@ void main() {
     await tester.scrollUntilVisible(find.text('Thử lại'), 200);
   });
 
-  testWidgets('H02 (K5): đợt chờ duyệt và đã xử lý, không có tab nghỉ phép', (
+  testWidgets('H02 (K5, AUTH-21): chờ xử lý chỉ xem, không có tab nghỉ phép', (
     tester,
   ) async {
     await pumpScreen(
@@ -144,59 +139,70 @@ void main() {
       PrincipalApprovalsScreen(source: FakePrincipalRewardSource()),
       inScaffold: true,
     );
-    expect(find.text('1 mới'), findsOneWidget);
+    expect(find.text('1 việc'), findsOneWidget);
+    expect(find.text('Chờ xử lý'), findsOneWidget);
     expect(find.text('Khen thưởng cuối năm · 7 bé'), findsOneWidget);
+    expect(
+      find.text('Cơ sở chính · Phó HT đã xét · duyệt trên Web'),
+      findsOneWidget,
+    );
     expect(find.text('Đã xử lý gần đây'), findsOneWidget);
     expect(find.text('Trả về'), findsOneWidget);
+    // Lọc theo loại như Figma HT 02 (hiện chỉ có khen thưởng)
+    expect(find.text('Tất cả'), findsOneWidget);
     expect(find.textContaining('Nghỉ phép'), findsNothing);
   });
 
-  testWidgets('H04 (OBS-10): bỏ chọn ⇒ cần ghi chú; duyệt số đề xuất đã chọn', (
-    tester,
-  ) async {
-    final source = FakePrincipalRewardSource();
-    var done = 0;
+  testWidgets('Figma audit: HT 02 đếm "việc" như Phó HT', (tester) async {
     await pumpScreen(
       tester,
-      RewardBatchScreen(id: batchId, source: source, onDone: () => done++),
+      PrincipalApprovalsScreen(source: FakePrincipalRewardSource()),
+      inScaffold: true,
     );
-    expect(find.text('Cơ sở chính · 7 đề xuất hợp lệ'), findsOneWidget);
-    expect(find.text('Duyệt (7)'), findsOneWidget);
-    expect(find.text('+ 2 đề xuất khác · Xem tất cả'), findsOneWidget);
-
-    await tester.tap(find.text('Nguyễn Minh Anh · Mầm 3A', findRichText: true));
-    await tester.pumpAndSettle();
-    expect(find.text('Duyệt (6)'), findsOneWidget);
-    await tester.tap(find.text('Duyệt (6)'));
-    await tester.pumpAndSettle();
-    expect(done, 0);
-    expect(find.text('Nhập ghi chú cho 1 đề xuất bỏ chọn'), findsOneWidget);
-
-    await tester.enterText(find.byType(TextField), 'Thiếu minh chứng tháng 9');
-    await tester.tap(find.text('Duyệt (6)'));
-    await tester.pumpAndSettle();
-    expect(done, 1);
-    final batch = await source.loadBatch(batchId);
-    expect(batch?.status, RewardBatchStatus.approved);
-    expect(batch?.decisionNote, 'Đã duyệt 12/10 · 6 bé');
+    expect(find.text('1 việc'), findsOneWidget);
+    expect(find.text('1 mới'), findsNothing);
   });
 
-  testWidgets('H04: trả về Phó HT bắt buộc ghi chú', (tester) async {
-    final source = FakePrincipalRewardSource();
+  testWidgets(
+    'Figma audit: HT 01 thẻ cơ sở không có trạng thái bếp, việc chờ ghi duyệt trên Web',
+    (tester) async {
+      await pumpScreen(
+        tester,
+        PrincipalOverviewScreen(
+          source: FakeSchoolOverviewSource(
+            delay: Duration.zero,
+            rewards: FakePrincipalRewardSource(),
+          ),
+        ),
+        inScaffold: true,
+      );
+      expect(find.text('Đang nấu', skipOffstage: false), findsNothing);
+      await tester.scrollUntilVisible(
+        find.text('Cơ sở chính · đã qua Phó HT · duyệt trên Web'),
+        200,
+      );
+    },
+  );
+
+  testWidgets('H04 (OBS-14, AUTH-21): chỉ xem đề xuất, duyệt trên Web', (
+    tester,
+  ) async {
     await pumpScreen(
       tester,
-      RewardBatchScreen(id: batchId, source: source, onDone: () {}),
+      RewardBatchScreen(id: batchId, source: FakePrincipalRewardSource()),
     );
-    await tester.tap(find.text('Trả về Phó HT'));
+    expect(find.text('Cơ sở chính · 7 đề xuất hợp lệ'), findsOneWidget);
+    expect(find.textContaining('duyệt trên CareNest Web'), findsOneWidget);
+    expect(find.text('Trả về Phó HT'), findsNothing);
+    expect(find.textContaining('Duyệt ('), findsNothing);
+    expect(find.byType(Checkbox), findsNothing);
+    expect(find.byType(TextField), findsNothing);
+    expect(find.byType(AppButton), findsNothing);
+    await tester.ensureVisible(find.text('+ 2 đề xuất khác · Xem tất cả'));
     await tester.pumpAndSettle();
-    expect(
-      find.text('Nhập ghi chú để Phó HT biết vì sao trả về'),
-      findsOneWidget,
-    );
-    expect(
-      (await source.loadBatch(batchId))?.status,
-      RewardBatchStatus.pending,
-    );
+    await tester.tap(find.text('+ 2 đề xuất khác · Xem tất cả'));
+    await tester.pumpAndSettle();
+    expect(find.text('+ 2 đề xuất khác · Xem tất cả'), findsNothing);
   });
 
   testWidgets('H06 (AUTH-01): lớp theo cơ sở, tìm tên bé', (tester) async {
@@ -292,17 +298,13 @@ void main() {
       true,
     ),
     (
-      'Chờ Hiệu trưởng duyệt',
+      'Chờ xử lý (Hiệu trưởng)',
       PrincipalApprovalsScreen(source: FakePrincipalRewardSource()),
       true,
     ),
     (
       'Khen thưởng cuối năm',
-      RewardBatchScreen(
-        id: batchId,
-        source: FakePrincipalRewardSource(),
-        onDone: () {},
-      ),
+      RewardBatchScreen(id: batchId, source: FakePrincipalRewardSource()),
       false,
     ),
     (

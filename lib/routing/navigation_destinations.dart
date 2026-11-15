@@ -108,7 +108,7 @@ abstract final class NavDestinations {
       NavTab.home,
     ),
     NavDestination(
-      'Duyệt',
+      'Chờ xử lý',
       AppIcons.approval,
       RoutePaths.vicePrincipalApprovals,
       NavTab.primary,
@@ -135,7 +135,7 @@ abstract final class NavDestinations {
       NavTab.home,
     ),
     NavDestination(
-      'Duyệt',
+      'Chờ xử lý',
       AppIcons.approval,
       RoutePaths.principalApprovals,
       NavTab.primary,

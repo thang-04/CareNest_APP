@@ -36,7 +36,7 @@ Phân trang: `data` = `{ items, page, size, totalElements, totalPages }`; query 
 | 200 / 201 | Dùng `data`; sau ghi ⇒ refetch dữ liệu liên quan |
 | 400 | Map `data` field errors vào form; không có field ⇒ hiển thị `desc` |
 | 401 | Luồng auth (`AUTH_FLOW.md` — SKELETON): làm mới phiên nếu có cơ chế, không thì về Login + xóa dữ liệu phiên |
-| 403 | Màn hình "không có quyền"; không retry |
+| 403 | Màn hình "không có quyền"; không retry. `errorCode` 1301 `MOBILE_STAFF_READ_ONLY` (BGH chỉ xem trên App, `BE:` ADR-0026) ⇒ báo "Thao tác này làm trên CareNest Web"; 1302 `MOBILE_STAFF_WRITE_BLOCKED` ⇒ cùng thông báo, log path (lỗi BE cần sửa). Phân nhánh theo `errorCode`, không theo `desc` |
 | 404 | "Không tìm thấy" (BE có thể trả 404 thay 403 để ẩn dữ liệu trẻ ngoài scope) |
 | 409 | Trạng thái đã đổi (vd. số suất đã xác nhận) ⇒ refetch + thông báo |
 | 413 / 415 | Ảnh/tệp quá lớn hoặc sai loại ⇒ báo người dùng |
@@ -46,13 +46,13 @@ Phân trang: `data` = `{ items, page, size, totalElements, totalPages }`; query 
 
 Ngôn ngữ `desc`: ví dụ trong guide BE là tiếng Anh — hiển thị trực tiếp hay map sang thông điệp tiếng Việt theo status là **OPEN** (hỏi trước khi chọn).
 
-## Retry & offline (PROPOSED)
+## Retry & offline (retry PROPOSED; không offline — user 2026-11-14)
 
 - Tự retry (có backoff, giới hạn số lần) chỉ cho `GET` và thao tác ghi idempotent.
-- **Batch điểm danh lớp/ngày** (có mặt là ăn — ATT-02, không gửi báo ăn riêng; kèm nhiệt độ đầu ngày — HLT-07): idempotent upsert theo lớp/ngày (BE PAT-IDEMPOTENT-BATCH, `BE:docs/knowledge/PATTERNS.md`); HTTP method TBD ⇒ gửi lại toàn bộ payload an toàn, không tạo trùng. Mất mạng ⇒ giữ batch, đánh dấu "chưa lưu", gửi lại khi có mạng; lưu tạm theo `.claude/rules/security-storage.md`.
+- **Batch điểm danh lớp/ngày** (có mặt là ăn — ATT-02, không gửi báo ăn riêng; kèm sức khỏe đầu ngày — HLT-07; BE ghi sức khỏe từng trẻ qua API riêng `DailyHealthRequest`): idempotent upsert theo lớp/ngày (BE PAT-IDEMPOTENT-BATCH, `BE:docs/knowledge/PATTERNS.md`); HTTP method TBD ⇒ gửi lại toàn bộ payload an toàn, không tạo trùng. Mất mạng ⇒ báo lỗi, giữ batch trên màn, đánh dấu "chưa lưu", người dùng bấm gửi lại; không lưu xuống máy (không offline — user 2026-11-14).
 - Gửi lại sau giờ chốt (ATT-06, HT cấu hình) ⇒ BE từ chối trừ khi PHT đã mở lại điểm danh (ATT-08) — hiển thị `desc`, không tự sửa giờ. Sửa sau khi suất đã xác nhận ⇒ BE đánh dấu cần xác nhận lại (ATT-07, NUT-03); APP không cần logic riêng.
 - Ghi không idempotent (tạo, confirm, approve): không retry mù; chặn double-submit; mất kết nối giữa chừng ⇒ refetch để kiểm tra trước khi gửi lại.
-- Offline toàn app: **không** trong scope hiện tại; chỉ batch nhập của giáo viên (PROPOSED, cần chốt).
+- Offline: **không** hỗ trợ, kể cả batch nhập của giáo viên (user 2026-11-14).
 
 ## Khi contract thiếu hoặc lệch
 Không bịa shape. Ghi đề xuất (path, request, `data`, status lỗi, ví dụ) để thống nhất với BE; lệch thực tế ⇒ incident APP + đề xuất mục `BE:docs/knowledge/CROSS_MODULE_ISSUES.md` (CMR-06).

@@ -1,5 +1,7 @@
 # CareNest Mobile — thiết kế lại theo style Clay nổi
 
+> **Đã thay thế 2026-11-14:** user chốt App theo đúng Figma "CareNest App (Moqups)" (style phẳng: xanh `#1565E0`, nền `#F5F8FC`, card trắng viền mảnh bo 12, nút/ô nhập bo 8, không bóng clay); màn có bản sửa theo bản sửa, màn khác theo khung gốc. Style và bố cục dưới đây chỉ còn giá trị lịch sử. Nguồn hiện hành: `DESIGN.md` §5, §7, §9 và plan `docs/plans/active/2026-11-13-app-ui-redraw.md` Phase 6.
+
 Kết quả Phase 0 của plan `docs/plans/active/2026-10-13-fe-aligned-mobile-ui.md`. User chọn trên wireframe ngày 2026-10-14. Tài liệu này là đặc tả để dựng Flutter; quyết định bổ sung Q1–Q5 ở cuối.
 
 ## Nguồn

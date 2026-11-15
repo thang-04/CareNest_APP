@@ -44,7 +44,8 @@ Cách xử lý nhanh lỗi môi trường: cài đặt toolchain, build Android/
 - Đã thử không hiệu quả: pub get --offline với SDK cũ vẫn fail; enforce-lockfile với SDK mới trước khi đồng bộ vẫn exit 65.
 - Flutter mới tự thêm analyzer.exclude cho build/android/ios/web/windows/macos/linux vào analysis_options.yaml; đây là migration của SDK, không đổi rule lint.
 - Giới hạn: PATH mặc định và SDK trong IDE chưa được đổi/kiểm chứng; kết quả trên dùng SDK mới qua PATH tiến trình. Chưa build Android/iOS hoặc chạy máy thật; Android còn license chưa chấp nhận.
-- Incident: APP-ENV-261008-flutter-sdk-mismatch (workaround cho đến khi terminal/IDE chọn đúng SDK).
+- 15/11: `D:\Flutter_Setup\stable-3.47.6` từng mất; PATH chọn Flutter 3.44.0 ở `C:\Users\admin\Downloads\flutter`. `flutter pub get --enforce-lockfile` exit 65 nhưng verify vẫn PASS, vì Flutter dùng `.dart_tool/package_config.json` cũ ⇒ chạy enforce-lockfile trước verify để biết SDK có khớp lockfile. Đã cài lại 3.47.6 cùng chỗ (manifest chính thức, SHA256 khớp); dùng lại 3 lệnh PowerShell ở trên.
+- Incident: APP-ENV-261008-flutter-sdk-mismatch (workaround cho đến khi PATH mặc định/IDE chọn 3.47.6).
 
 ## Xem màn bằng mắt (chụp ảnh)
 

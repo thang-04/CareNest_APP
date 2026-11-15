@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-enum KitchenTaskKind { menu, mealCounts, quantities, receipt, cooking }
+enum KitchenTaskKind { menu, mealCounts, quantities, mealSamples, sampleLog }
 
 /// Mức nhấn badge: cần làm / có thay đổi / đã xong / thông tin.
 enum KitchenBadgeLevel { todo, changed, done, info }

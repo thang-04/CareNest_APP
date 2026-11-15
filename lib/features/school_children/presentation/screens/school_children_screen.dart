@@ -192,7 +192,7 @@ class _SchoolChildrenScreenState extends State<SchoolChildrenScreen> {
         return Padding(
           padding: const EdgeInsets.only(top: AppSpacing.space2),
           child: Text(
-            'Chạm một lớp để xem danh sách trẻ. Thêm trẻ, xếp lớp thực hiện trên CareNest Web.',
+            'Chạm một lớp để xem danh sách trẻ, chạm một bé để xem hồ sơ. Thêm trẻ, xếp lớp thực hiện trên CareNest Web.',
             style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
           ),
         );
@@ -223,7 +223,11 @@ class _ClassRow extends StatelessWidget {
       child: AppCard(
         flush: true,
         child: AppListRow(
-          leading: const AppIconTile(icon: AppIcons.classGroup),
+          leading: const Icon(
+            AppIcons.classGroup,
+            size: AppSizes.iconTile,
+            color: AppColors.primary,
+          ),
           title: name,
           subtitle: Text(campus),
           trailing: Text(

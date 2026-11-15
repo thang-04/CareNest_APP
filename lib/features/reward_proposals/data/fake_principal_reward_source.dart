@@ -3,7 +3,7 @@ import 'package:carenest_app/features/reward_proposals/domain/reward_batch.dart'
 import 'package:carenest_app/features/reward_proposals/domain/reward_proposal.dart';
 
 /// Dữ liệu giả mockup H02 / H04: đợt khen thưởng cuối năm cơ sở chính gồm đúng 7 đề xuất hợp lệ
-/// Phó HT gửi ở V12, cùng hai đợt đã xử lý gần đây. Bản dùng chung để Tổng quan và tab Duyệt thấy cùng số.
+/// Phó HT gửi ở V12, cùng hai đợt đã xử lý gần đây. Bản dùng chung để Tổng quan và tab Chờ xử lý thấy cùng số.
 class FakePrincipalRewardSource implements PrincipalRewardSource {
   FakePrincipalRewardSource();
 
@@ -55,49 +55,4 @@ class FakePrincipalRewardSource implements PrincipalRewardSource {
   @override
   Future<RewardBatch?> loadBatch(String id) async =>
       (await _ensure()).where((batch) => batch.id == id).firstOrNull;
-
-  void _replace(String id, RewardBatch Function(RewardBatch) update) {
-    final batches = _batches!;
-    final index = batches.indexWhere((batch) => batch.id == id);
-    if (index < 0) throw StateError('Không tìm thấy đợt đề xuất');
-    batches[index] = update(batches[index]);
-  }
-
-  @override
-  Future<void> approve(
-    String id, {
-    required Set<String> approvedIds,
-    String? note,
-  }) async {
-    await _ensure();
-    _replace(
-      id,
-      (batch) => RewardBatch(
-        id: batch.id,
-        title: batch.title,
-        campusName: batch.campusName,
-        reviewNote: batch.reviewNote,
-        proposals: batch.proposals,
-        status: RewardBatchStatus.approved,
-        decisionNote: 'Đã duyệt 12/10 · ${approvedIds.length} bé',
-      ),
-    );
-  }
-
-  @override
-  Future<void> returnToVicePrincipal(String id, {required String note}) async {
-    await _ensure();
-    _replace(
-      id,
-      (batch) => RewardBatch(
-        id: batch.id,
-        title: batch.title,
-        campusName: batch.campusName,
-        reviewNote: batch.reviewNote,
-        proposals: batch.proposals,
-        status: RewardBatchStatus.returned,
-        decisionNote: 'Trả về 12/10 · $note',
-      ),
-    );
-  }
 }

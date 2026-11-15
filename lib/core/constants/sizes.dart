@@ -23,26 +23,29 @@ abstract final class AppSpacing {
       width >= wideBreakpoint ? pagePaddingWide : pagePadding;
 }
 
-/// Bo góc (DESIGN.md §5.3).
+/// Bo góc theo Figma App phẳng (user chốt 14/11).
 abstract final class AppRadius {
-  static const double xs = 6;
-  static const double sm = 12;
-  static const double md = 14;
-  static const double lg = 16;
-  static const double xl = 20;
-  // Card, thẻ số liệu: 28 theo style Clay (DESIGN.md §5.3)
-  static const double xxl = 28;
-  static const double xxxl = 32;
+  static const double xs = 4;
+  static const double sm = 8;
+  static const double md = 10;
+  static const double lg = 10;
+  static const double xl = 12;
+  // Card, thẻ số liệu: 12
+  static const double xxl = 12;
+  static const double xxxl = 16;
+  // Nút, ô nhập, chip chọn: 8
+  static const double control = 8;
   static const double pill = 9999;
 }
 
 /// Kích thước nền trước text scaling (DESIGN.md §5.4).
 abstract final class AppSizes {
-  static const double buttonHeight = 52;
+  static const double buttonHeight = 48;
   static const double buttonSmallHeight = 44;
-  static const double inputHeight = 52;
+  static const double inputHeight = 48;
   static const double minimumTapTarget = 48;
-  static const double badgeHeight = 28;
+  // Badge chỉ đọc theo Figma: cao 24, chữ 12
+  static const double badgeHeight = 24;
   static const double filterChipHeight = 36;
   static const double listRowMinHeight = 64;
   static const double iconTileSize = 40;
@@ -52,9 +55,9 @@ abstract final class AppSizes {
   static const double iconBadge = 14;
   static const double appBarHeight = 56;
 
-  /// Thanh dưới và vùng nút đáy nổi cách mép màn (DESIGN.md §8.1).
-  static const double floatingBarInset = 12;
-  static const double bottomNavigationHeight = 72;
+  /// Vùng nút đáy cách mép màn (DESIGN.md §8.1).
+  static const double floatingBarInset = 16;
+  static const double bottomNavigationHeight = 64;
   static const double navigationIndicatorWidth = 64;
   static const double navigationIndicatorHeight = 32;
   static const double heroHeight = 224;

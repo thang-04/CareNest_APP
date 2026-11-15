@@ -13,7 +13,7 @@ class MeasureKid {
     this.weight,
     this.measuredWhen,
     this.previous,
-    this.published = true,
+    this.editReason,
   });
 
   final String childId;
@@ -30,26 +30,29 @@ class MeasureKid {
 
   /// "05/09: 103 cm · 16,8 kg"
   final String? previous;
-  final bool published;
+
+  /// Lý do sửa số đo đã lưu — bắt buộc khi sửa, BE lưu lịch sử (HLT-13).
+  /// Lưu là công bố cho phụ huynh, không có bước công bố riêng (HLT-11).
+  final String? editReason;
 }
 
-/// Kết quả xếp loại BE tính theo chuẩn của trường (HLT-03, P-13 PENDING) — APP chỉ hiển thị.
+/// Kết quả xếp loại hệ thống tính (HLT-12, HLT-18) — APP chỉ hiển thị, GV không chọn.
 @immutable
 class MeasureResult {
   const MeasureResult({
     required this.label,
     required this.detail,
-    required this.position,
+    required this.scale,
   });
 
-  /// "Bình thường"
+  /// "Bình thường" — một mục trong [scale].
   final String label;
 
   /// "Cân nặng/tuổi · Chiều cao/tuổi đạt"
   final String detail;
 
-  /// 0..1 trên thang Thiếu cân – Bình thường – Thừa cân, BE trả.
-  final double position;
+  /// Các mức hiển thị, BE trả: "Thiếu cân", "Bình thường", "Thừa cân".
+  final List<String> scale;
 }
 
 @immutable

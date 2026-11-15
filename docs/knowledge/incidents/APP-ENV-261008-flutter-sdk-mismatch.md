@@ -36,6 +36,11 @@ Dự án yêu cầu Dart ^3.12.0; chưa có package config, analyzer báo không
 | 6 | User duyệt; flutter pub get bằng SDK mới | Exit 0; đúng 5 package đổi; SDK tự thêm analyzer.exclude | Giữ migration bỏ qua thư mục build/nền tảng sinh tự động |
 | 7 | node scripts/verify.mjs bằng SDK mới | PASS: format/analyze ok, 27 test, fail 0, skip 0 | Đã kiểm chứng dự án với SDK mới |
 | 8 | enforce-lockfile sau cập nhật | Exit 0, hash lockfile không đổi | Dependency đã đồng bộ và ổn định |
+| 9 | 15/11: kiểm SDK trên PATH (cmd, Git Bash) | Flutter 3.44.0 / Dart 3.12.0 ở `C:\Users\admin\Downloads\flutter`; `D:\Flutter_Setup\stable-3.47.6` không còn | SDK chốt ngày 10/08 đã mất khỏi máy |
+| 10 | 15/11: `node scripts/verify.mjs`, `flutter build apk --debug` bằng 3.44.0 | PASS 220 test; build APK được; lockfile không đổi | PASS không chứng minh khớp lockfile: dùng `.dart_tool/package_config.json` cũ (10/10, 5 package bản cũ) |
+| 11 | 15/11: `flutter pub get --enforce-lockfile` bằng 3.44.0 | Exit 65, "Would change 5 dependencies" | Muốn biết SDK có khớp lockfile thì chạy enforce-lockfile, không dựa vào verify |
+| 12 | 15/11: user cho phép cài lại 3.47.6 theo manifest chính thức | SHA256 khớp; giải nén vào `D:\Flutter_Setup\stable-3.47.6\flutter` | Cài lại đúng chỗ cũ để docs và lệnh cũ dùng được |
+| 13 | 15/11: SDK 3.47.6 qua PATH tiến trình: enforce-lockfile, verify, build APK | Exit 0; PASS 220 test; build APK được; package_config khớp lockfile; git không đổi | Code redraw chạy được trên SDK của lockfile |
 
 ## Root cause
 Thiết bị/môi trường: SDK trên PATH thấp hơn pubspec.yaml:22 (Dart ^3.12.0) và pubspec.lock:262-263 (Flutter >=3.44.0). Lỗi lộ trong checkout này vì máy chọn SDK 3.41.8, trong khi dự án/lockfile được tạo bằng SDK mới hơn.
@@ -43,6 +48,7 @@ Flutter 3.47.6 cần intl 0.20.3, matcher 0.12.20, meta 1.19.0, test_api 0.7.12,
 
 ## Fix
 SDK mới: D:\Flutter_Setup\stable-3.47.6\flutter. User đã duyệt cập nhật lockfile trên dev. Đã đồng bộ đúng 5 package, pub get/enforce-lockfile exit 0 và verify PASS 27 test. Flutter tự cập nhật analyzer.exclude trong analysis_options.yaml. Status workaround vì các lệnh kiểm tra chỉ chọn SDK qua PATH tiến trình; SDK IDE/PATH mặc định chưa đổi hoặc kiểm chứng.
+15/11: SDK 3.47.6 mất khỏi máy; user cho phép cài lại cùng chỗ, kiểm chứng lại PASS (Attempts 12–13). Vẫn workaround: PATH mặc định và IDE còn chọn Flutter 3.44.0 ở `C:\Users\admin\Downloads\flutter`.
 
 ## Regression test
 Trước sửa: pub get bằng SDK cũ exit 1; enforce-lockfile bằng SDK mới với lock cũ exit 65.
@@ -55,3 +61,4 @@ Android license và thiếu C++ workload cho Windows desktop là vấn đề ri�
 
 ## Lesson
 Đối chiếu SDK thực sự được PATH/IDE nhận với pubspec và lockfile. Tải SDK mới còn cần chọn đúng SDK, resolve package và chạy verify.
+Verify PASS chưa đủ: Flutter có thể chạy bằng `.dart_tool/package_config.json` cũ, khác lockfile. Khi đổi máy hoặc SDK, chạy `flutter pub get --enforce-lockfile` trước verify.

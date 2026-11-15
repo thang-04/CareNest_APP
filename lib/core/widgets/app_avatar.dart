@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 
-/// Avatar chữ cái, màu theo tên giống web `avatarTone`/`initials` (DESIGN.md §7.3).
+/// Avatar chữ cái theo Figma App: một chữ đầu của tên gọi, nền `primarySoft`, chữ `primary`.
+/// `toneOf`/`initialsOf` giữ cách tính của web để đối chiếu (DESIGN.md §7.3).
 /// Không dùng ảnh trẻ trong mock/test (AGENTS.md nguyên tắc 4).
 class AppAvatar extends StatelessWidget {
   const AppAvatar({super.key, required this.name, this.size = AppSizes.avatar});
@@ -30,24 +31,34 @@ class AppAvatar extends StatelessWidget {
         .toUpperCase();
   }
 
+  /// Chữ đầu của từ cuối (tên gọi), viết hoa: "Nguyễn Minh Anh" ⇒ "A".
+  static String letterOf(String name) {
+    final words = name.split(' ').where((word) => word.isNotEmpty);
+    if (words.isEmpty) return '';
+    return String.fromCharCode(words.last.runes.first).toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final tone = toneOf(name);
     return ExcludeSemantics(
       child: Container(
         width: size,
         height: size,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppColors.avatarBackgrounds[tone],
+          color: AppColors.primarySoft,
           shape: BoxShape.circle,
         ),
-        child: Text(
-          initialsOf(name),
-          style: TextStyle(
-            fontSize: size * 0.36,
-            fontWeight: FontWeight.w700,
-            color: AppColors.avatarForegrounds[tone],
+        // Chữ phóng lớn ⇒ thu chữ trong vòng tròn thay vì cắt
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            letterOf(name),
+            style: TextStyle(
+              fontSize: size * 0.4,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
+            ),
           ),
         ),
       ),

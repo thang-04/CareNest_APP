@@ -1,7 +1,7 @@
 import 'package:carenest_app/features/reward_proposals/domain/reward_proposal.dart';
 
 /// Dữ liệu giả mockup V12: 8 đề xuất chờ xét (7 hợp lệ, 1 không hợp lệ), tên trẻ khớp danh sách Mầm 3A.
-/// Bản dùng chung để Trang chủ và tab Duyệt thấy cùng số.
+/// Bản dùng chung để Trang chủ và tab Chờ xử lý thấy cùng số.
 class FakeRewardProposalSource implements RewardProposalSource {
   FakeRewardProposalSource();
 
@@ -43,20 +43,4 @@ class FakeRewardProposalSource implements RewardProposalSource {
 
   @override
   Future<List<RewardProposal>> load() async => List.of(_items);
-
-  void _move(bool valid, RewardStage to) {
-    for (var i = 0; i < _items.length; i++) {
-      final item = _items[i];
-      if (item.stage == RewardStage.pending && item.isValid == valid) {
-        _items[i] = item.moved(to);
-      }
-    }
-  }
-
-  @override
-  Future<void> sendValidToPrincipal() async =>
-      _move(true, RewardStage.sentToPrincipal);
-
-  @override
-  Future<void> returnInvalid() async => _move(false, RewardStage.returned);
 }

@@ -11,7 +11,6 @@ import 'package:carenest_app/features/account/presentation/screens/account_scree
 import 'package:carenest_app/features/account/presentation/screens/personal_info_screen.dart';
 import 'package:carenest_app/features/activity_schedule/presentation/screens/activity_schedule_screen.dart';
 import 'package:carenest_app/features/approvals/presentation/screens/approvals_screen.dart';
-import 'package:carenest_app/features/approvals/presentation/screens/meal_adjustment_screen.dart';
 import 'package:carenest_app/features/approvals/presentation/screens/principal_approvals_screen.dart';
 import 'package:carenest_app/features/attendance/data/fake_attendance_source.dart';
 import 'package:carenest_app/features/attendance/presentation/screens/attendance_screen.dart';
@@ -24,27 +23,25 @@ import 'package:carenest_app/features/campus_children/presentation/screens/campu
 import 'package:carenest_app/features/campuses/presentation/screens/campuses_screen.dart';
 import 'package:carenest_app/features/class_leave_notices/presentation/screens/class_leave_screen.dart';
 import 'package:carenest_app/features/class_roster/presentation/screens/class_roster_screen.dart';
-import 'package:carenest_app/features/cooking_status/presentation/screens/cooking_status_screen.dart';
 import 'package:carenest_app/features/daily_review/presentation/screens/daily_review_detail_screen.dart';
 import 'package:carenest_app/features/daily_review/presentation/screens/daily_review_list_screen.dart';
 import 'package:carenest_app/features/dev_preview/presentation/screens/role_preview_screen.dart';
 import 'package:carenest_app/features/food_quantities/presentation/screens/food_quantities_screen.dart';
 import 'package:carenest_app/features/health_measure/presentation/screens/health_measure_detail_screen.dart';
 import 'package:carenest_app/features/health_measure/presentation/screens/health_measure_list_screen.dart';
-import 'package:carenest_app/features/ingredient_receipt/presentation/screens/ingredient_receipt_screen.dart';
-import 'package:carenest_app/features/ingredient_receipt/presentation/screens/shortage_report_screen.dart';
 import 'package:carenest_app/features/kitchen_home/presentation/screens/kitchen_home_screen.dart';
+import 'package:carenest_app/features/kitchen_meal_samples/presentation/screens/meal_sample_screen.dart';
 import 'package:carenest_app/features/kitchen_meals/presentation/screens/kitchen_meals_screen.dart';
+import 'package:carenest_app/features/kitchen_sample_log/presentation/screens/sample_log_screen.dart';
 import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_form_screen.dart';
 import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_list_screen.dart';
+import 'package:carenest_app/features/meal_count_confirm/data/fake_meal_count_confirm_source.dart';
 import 'package:carenest_app/features/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
-import 'package:carenest_app/features/meal_photos/domain/meal_photos.dart';
-import 'package:carenest_app/features/meal_photos/presentation/screens/meal_photo_capture_screen.dart';
-import 'package:carenest_app/features/meal_photos/presentation/screens/meal_photo_send_screen.dart';
 import 'package:carenest_app/features/my_child/presentation/screens/child_activities_screen.dart';
 import 'package:carenest_app/features/my_child/presentation/screens/child_attendance_screen.dart';
 import 'package:carenest_app/features/my_child/presentation/screens/child_profile_screen.dart';
 import 'package:carenest_app/features/my_child/presentation/screens/my_child_screen.dart';
+import 'package:carenest_app/features/notifications/data/fake_notification_source.dart';
 import 'package:carenest_app/features/notifications/presentation/screens/notification_detail_screen.dart';
 import 'package:carenest_app/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:carenest_app/features/nutrition_balance/presentation/screens/nutrition_balance_screen.dart';
@@ -56,13 +53,16 @@ import 'package:carenest_app/features/parent_menu/presentation/screens/weekly_me
 import 'package:carenest_app/features/pickup/presentation/screens/pickup_list_screen.dart';
 import 'package:carenest_app/features/pickup/presentation/screens/pickup_verify_screen.dart';
 import 'package:carenest_app/features/principal_overview/presentation/screens/principal_overview_screen.dart';
+import 'package:carenest_app/features/reward_proposals/data/fake_principal_reward_source.dart';
+import 'package:carenest_app/features/reward_proposals/data/fake_reward_proposal_source.dart';
+import 'package:carenest_app/features/reward_proposals/domain/reward_batch.dart';
+import 'package:carenest_app/features/reward_proposals/domain/reward_proposal.dart';
 import 'package:carenest_app/features/reward_proposals/presentation/screens/reward_batch_screen.dart';
 import 'package:carenest_app/features/reward_proposals/presentation/screens/reward_proposals_screen.dart';
 import 'package:carenest_app/features/school_children/presentation/screens/school_children_screen.dart';
 import 'package:carenest_app/features/school_menu/presentation/screens/school_menu_overview_screen.dart';
 import 'package:carenest_app/features/school_menu/presentation/screens/school_menu_screen.dart';
 import 'package:carenest_app/features/teacher_home/presentation/screens/teacher_home_screen.dart';
-import 'package:carenest_app/features/vice_principal_home/presentation/screens/campus_kitchen_screen.dart';
 import 'package:carenest_app/features/vice_principal_home/presentation/screens/campus_menu_screen.dart';
 import 'package:carenest_app/features/vice_principal_home/presentation/screens/vice_principal_home_screen.dart';
 import 'package:carenest_app/routing/navigation_destinations.dart';
@@ -274,31 +274,6 @@ List<GoRoute> _teacherRoutes() {
         onReviewToday: () => context.pushReplacement(RoutePaths.teacherReviews),
       ),
     ),
-    GoRoute(
-      path: RoutePaths.teacherMealPhotos,
-      builder: (context, state) => MealPhotoCaptureScreen(
-        onNext: (slot) => context.push(
-          Uri(
-            path: RoutePaths.teacherMealPhotosSend,
-            queryParameters: {'slot': slot.name},
-          ).toString(),
-        ),
-      ),
-    ),
-    GoRoute(
-      path: RoutePaths.teacherMealPhotosSend,
-      builder: (context, state) {
-        final slot = MealSlot.values
-            .where((item) => item.name == state.uri.queryParameters['slot'])
-            .firstOrNull;
-        if (slot == null) return const NotFoundScreen();
-        // Gửi xong ⇒ về Trang chủ, bỏ hai màn chụp/gửi khỏi back stack
-        return MealPhotoSendScreen(
-          slot: slot,
-          onSent: () => context.go(RoutePaths.teacherToday),
-        );
-      },
-    ),
   ];
 }
 
@@ -313,32 +288,17 @@ List<GoRoute> _kitchenRoutes() => [
     builder: (context, state) => const FoodQuantitiesScreen(),
   ),
   GoRoute(
-    path: RoutePaths.kitchenReceipts,
-    builder: (context, state) => IngredientReceiptScreen(
-      onReportShortage: () => context.push(RoutePaths.kitchenShortage),
-      onConfirmed: () => context.pop(),
-    ),
+    path: RoutePaths.kitchenMealSamples,
+    builder: (context, state) => MealSampleScreen(onSaved: () => context.pop()),
   ),
   GoRoute(
-    path: RoutePaths.kitchenShortage,
-    builder: (context, state) =>
-        ShortageReportScreen(onSent: () => context.pop()),
-  ),
-  GoRoute(
-    path: RoutePaths.kitchenCooking,
-    builder: (context, state) => const CookingStatusScreen(),
+    path: RoutePaths.kitchenSampleLog,
+    builder: (context, state) => SampleLogScreen(onSaved: () => context.pop()),
   ),
 ];
 
-/// Màn con của Phó HT. Ngữ cảnh (nhóm tuổi, ngày) ở query; sai định dạng ⇒ về mặc định.
+/// Màn con của Phó HT, chỉ xem (AUTH-21, BE ADR-0026). Ngữ cảnh (nhóm tuổi, ngày) ở query; sai định dạng ⇒ về mặc định.
 List<GoRoute> _vicePrincipalRoutes() => [
-  GoRoute(
-    path: '${RoutePaths.vicePrincipalAdjustments}/:id',
-    builder: (context, state) => MealAdjustmentScreen(
-      id: state.pathParameters['id']!,
-      onDone: () => context.pop(),
-    ),
-  ),
   GoRoute(
     path: RoutePaths.vicePrincipalRewards,
     builder: (context, state) => const RewardProposalsScreen(),
@@ -346,10 +306,6 @@ List<GoRoute> _vicePrincipalRoutes() => [
   GoRoute(
     path: RoutePaths.vicePrincipalMealConfirm,
     builder: (context, state) => const MealCountConfirmScreen(),
-  ),
-  GoRoute(
-    path: RoutePaths.vicePrincipalKitchen,
-    builder: (context, state) => const CampusKitchenScreen(),
   ),
   GoRoute(
     path: RoutePaths.vicePrincipalMenu,
@@ -370,14 +326,12 @@ List<GoRoute> _vicePrincipalRoutes() => [
   ),
 ];
 
-/// Màn con của Hiệu trưởng. Cơ sở, lớp, nhóm tuổi, ngày là ngữ cảnh ở query.
+/// Màn con của Hiệu trưởng, chỉ xem (AUTH-21, BE ADR-0026). Cơ sở, lớp, nhóm tuổi, ngày là ngữ cảnh ở query.
 List<GoRoute> _principalRoutes() => [
   GoRoute(
     path: '${RoutePaths.principalRewardBatches}/:id',
-    builder: (context, state) => RewardBatchScreen(
-      id: state.pathParameters['id']!,
-      onDone: () => context.pop(),
-    ),
+    builder: (context, state) =>
+        RewardBatchScreen(id: state.pathParameters['id']!),
   ),
   GoRoute(
     path: RoutePaths.principalChildren,
@@ -462,6 +416,41 @@ String _maskPhone(String phone) {
   return '${digits.substring(0, 3)}$hidden${digits.substring(digits.length - 3)}';
 }
 
+/// Số trên tab theo Figma: GV và bếp ở tab Thông báo (GV 01, Bếp 01); PHT/HT ở tab Chờ xử lý (PHT 02, HT 01);
+/// phụ huynh xem số chưa đọc ở chuông đầu màn. Tải một lần mỗi vai trò để thanh đáy không nháy khi đổi tab.
+// TODO(Giáp): lấy số chưa đọc và số việc chờ từ API khi nối BE; bản giả đếm từ dữ liệu giả.
+final _tabBadges = <AppRole, Future<Map<NavTab, int>>>{};
+
+Future<Map<NavTab, int>> _loadTabBadges(AppRole role) async {
+  switch (role) {
+    case AppRole.teacher || AppRole.kitchen:
+      return {
+        NavTab.notifications: FakeNotificationSource.byRole[role]!
+            .where((item) => item.unread)
+            .length,
+      };
+    case AppRole.vicePrincipal:
+      // Cùng cách đếm việc của màn Chờ xử lý: sổ suất chưa xác nhận + đợt khen thưởng còn chờ
+      final meals = await FakeMealCountConfirmSource.shared.loadToday();
+      final rewards = await FakeRewardProposalSource.shared.load();
+      final pendingRewards = rewards.any(
+        (item) => item.stage == RewardStage.pending,
+      );
+      return {
+        NavTab.primary: (meals.confirmed ? 0 : 1) + (pendingRewards ? 1 : 0),
+      };
+    case AppRole.principal:
+      final batches = await FakePrincipalRewardSource.shared.loadBatches();
+      return {
+        NavTab.primary: batches
+            .where((batch) => batch.status == RewardBatchStatus.pending)
+            .length,
+      };
+    case AppRole.parent:
+      return const {};
+  }
+}
+
 /// Một nhánh tab cho mỗi đích; Thông báo và Tài khoản dùng chung mọi vai trò,
 /// đích chưa có màn thì hiện "Sắp có". Màn con mở trên navigator gốc (ẩn thanh đáy).
 StatefulShellRoute _roleShell(
@@ -472,7 +461,14 @@ StatefulShellRoute _roleShell(
 ) {
   return StatefulShellRoute.indexedStack(
     builder: (context, state, navigationShell) =>
-        AppShell(navigationShell: navigationShell, destinations: destinations),
+        FutureBuilder<Map<NavTab, int>>(
+          future: _tabBadges.putIfAbsent(role, () => _loadTabBadges(role)),
+          builder: (context, snapshot) => AppShell(
+            navigationShell: navigationShell,
+            destinations: destinations,
+            badges: snapshot.data ?? const {},
+          ),
+        ),
     branches: [
       for (final destination in destinations)
         StatefulShellBranch(
