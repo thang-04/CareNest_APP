@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
+import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
+import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
+import 'package:carenest_app/core/widgets/app_stat_tile.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
-import 'package:carenest_app/core/theme/app_text_styles.dart';
-import 'package:carenest_app/core/widgets/app_card.dart';
-import 'package:carenest_app/features/kitchen_meals/domain/kitchen_meals.dart';
+import 'package:carenest_app/features/kitchen_meals/presentation/widgets/meal_count_table.dart';
 import 'package:carenest_app/features/meal_count_confirm/data/fake_meal_count_confirm_source.dart';
 import 'package:carenest_app/features/meal_count_confirm/domain/meal_count_draft.dart';
-import 'package:carenest_app/features/vice_principal_home/presentation/widgets/stat_strip.dart';
 
-/// Phó HT · Số suất hôm nay — Figma PHT 04, chỉ xem (AUTH-21, BE ADR-0026). Số do BE tổng hợp từ điểm danh (NUT-01);
-/// PHT xác nhận gửi bếp trên CareNest Web (NUT-02), App chỉ hiện trạng thái.
+/// Phó HT · Chốt suất ăn trong ngày — mockup V04. Người xác nhận PENDING P-05 (mockup giao Phó HT).
+/// Số do BE tổng hợp từ điểm danh; APP chỉ xem và gửi xác nhận.
 class MealCountConfirmScreen extends StatefulWidget {
   const MealCountConfirmScreen({super.key, this.source});
 
@@ -29,11 +29,27 @@ class _MealCountConfirmScreenState extends State<MealCountConfirmScreen> {
   late final MealCountConfirmSource _source =
       widget.source ?? FakeMealCountConfirmSource.shared;
   late Future<MealCountDraft> _draft = _source.loadToday();
+  bool _confirming = false;
+
+  Future<void> _confirm() async {
+    setState(() => _confirming = true);
+    try {
+      final updated = await _source.confirm();
+      if (!mounted) return;
+      setState(() => _draft = Future.value(updated));
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+          const SnackBar(content: Text('Chưa gửi được. Thử lại sau.')),
+        );
+      }
+    }
+    if (mounted) setState(() => _confirming = false);
+  }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final status = AppStatusColors.of(context);
     return FutureBuilder<MealCountDraft>(
       future: _draft,
       builder: (context, snapshot) {
@@ -43,7 +59,7 @@ class _MealCountConfirmScreenState extends State<MealCountConfirmScreen> {
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Số suất hôm nay'),
+                const Text('Chốt suất ăn'),
                 if (draft != null)
                   Text(
                     '${DateLabels.weekdayDayMonth(draft.date)} · tổng hợp lúc ${DateLabels.time24(draft.summarizedAt)}',
@@ -69,44 +85,45 @@ class _MealCountConfirmScreenState extends State<MealCountConfirmScreen> {
             _ => ListView(
               padding: const EdgeInsets.all(AppSpacing.pagePadding),
               children: [
-                StatStrip(
-                  tinted: true,
-                  items: [
-                    StatStripItem(
+                AppStatRow(
+                  tiles: [
+                    AppStatTile(
                       value: '${draft.total}',
                       label: 'Tổng suất',
-                      color: AppColors.primary,
+                      tone: AppStatusTone.blue,
                     ),
-                    StatStripItem(value: '${draft.regular}', label: 'Thường'),
-                    StatStripItem(
+                    AppStatTile(value: '${draft.regular}', label: 'Thường'),
+                    AppStatTile(
                       value: '${draft.alternative}',
                       label: 'Thay thế',
-                      color: status.tone(AppStatusTone.teal).foreground,
+                      tone: AppStatusTone.teal,
                     ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.space3),
-                _ClassCountTable(classes: draft.classes),
+                if (draft.confirmedAt case final at?) ...[
+                  AppBanner(
+                    kind: AppBannerKind.success,
+                    message:
+                        'Đã gửi bếp lúc ${DateLabels.time24(at)} · ${draft.mealLabel} ${draft.total} suất',
+                  ),
+                  const SizedBox(height: AppSpacing.space3),
+                ] else ...[
+                  AppBanner(
+                    kind: AppBannerKind.info,
+                    message:
+                        '${draft.mealLabel} · hạn xác nhận ${DateLabels.time24(draft.deadline)}',
+                  ),
+                  const SizedBox(height: AppSpacing.space3),
+                ],
+                MealCountTable(classes: draft.classes),
                 if (draft.adjustmentNote case final note?) ...[
                   const SizedBox(height: AppSpacing.space3),
                   AppBanner(kind: AppBannerKind.warning, message: note),
                 ],
-                const SizedBox(height: AppSpacing.space4),
-                // Trạng thái xác nhận đặt dưới bảng như mockup PHT 04
-                if (draft.confirmedAt case final at?)
-                  AppBanner(
-                    kind: AppBannerKind.success,
-                    message:
-                        'Đã xác nhận gửi bếp lúc ${DateLabels.time24(at)} · ${draft.mealLabel} ${draft.total} suất',
-                  )
-                else
-                  const AppBanner(
-                    kind: AppBannerKind.warning,
-                    message: 'Chưa xác nhận — xác nhận trên CareNest Web',
-                  ),
-                const SizedBox(height: AppSpacing.space4),
+                const SizedBox(height: AppSpacing.space3),
                 Text(
-                  'Chỉ xem. Số suất tự tổng hợp từ điểm danh; xác nhận gửi bếp và mở lại điểm danh thực hiện trên CareNest Web.',
+                  'Số suất tự tổng hợp từ điểm danh, Phó HT chỉ xem và xác nhận. Sửa sau giờ chốt đi qua mục Yêu cầu chờ duyệt.',
                   style: textTheme.bodyMedium?.copyWith(
                     color: AppColors.textMuted,
                   ),
@@ -114,171 +131,21 @@ class _MealCountConfirmScreenState extends State<MealCountConfirmScreen> {
               ],
             ),
           },
+          bottomNavigationBar: draft == null || draft.confirmed
+              ? null
+              : AppBottomDock(
+                  children: [
+                    AppButton(
+                      label: 'Xác nhận gửi bếp (${draft.total} suất)',
+                      loadingLabel: 'Đang gửi bếp',
+                      isLoading: _confirming,
+                      expand: true,
+                      onPressed: _confirm,
+                    ),
+                  ],
+                ),
         );
       },
-    );
-  }
-}
-
-/// Bảng suất theo lớp của PHT 04: ghi chú dị ứng dưới tên lớp, lớp có điều chỉnh (NUT-04) tô nền cam.
-/// Số và ghi chú do BE trả; không tên trẻ.
-class _ClassCountTable extends StatelessWidget {
-  const _ClassCountTable({required this.classes});
-
-  final List<ClassMealCount> classes;
-
-  static const _classFlex = 5;
-  static const _numberFlex = 3;
-
-  @override
-  Widget build(BuildContext context) {
-    final header = Theme.of(
-      context,
-    ).textTheme.labelSmall?.copyWith(color: AppColors.textMuted);
-    return AppCard(
-      flush: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ExcludeSemantics(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.space4,
-                AppSpacing.space3 + 2,
-                AppSpacing.space4,
-                AppSpacing.space2,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: _classFlex,
-                    child: Text('LỚP', style: header),
-                  ),
-                  Expanded(
-                    flex: _numberFlex,
-                    child: Text(
-                      'THƯỜNG',
-                      textAlign: TextAlign.center,
-                      style: header,
-                    ),
-                  ),
-                  Expanded(
-                    flex: _numberFlex,
-                    child: Text(
-                      'THAY THẾ',
-                      textAlign: TextAlign.end,
-                      style: header,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          for (final (i, row) in classes.indexed) ...[
-            // Dòng tô nền đã tự tách ⇒ bỏ kẻ quanh nó
-            if (!row.changed && !(i > 0 && classes[i - 1].changed))
-              const Divider(
-                indent: AppSpacing.space4,
-                endIndent: AppSpacing.space4,
-              ),
-            _ClassCountRow(row: row),
-          ],
-          const SizedBox(height: AppSpacing.space1),
-        ],
-      ),
-    );
-  }
-}
-
-class _ClassCountRow extends StatelessWidget {
-  const _ClassCountRow({required this.row});
-
-  final ClassMealCount row;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final teal = AppStatusColors.of(context).tone(AppStatusTone.teal);
-    final number = textTheme.titleSmall?.copyWith(
-      fontWeight: FontWeight.w700,
-      fontFeatures: AppTextStyles.tabularFigures,
-    );
-    final note = row.note;
-    final content = Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: _ClassCountTable._classFlex,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(row.className, style: textTheme.titleSmall),
-              if (note != null && note.isNotEmpty)
-                Text(
-                  '${note[0].toUpperCase()}${note.substring(1)}',
-                  style: textTheme.labelMedium?.copyWith(
-                    color: teal.foreground,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-            ],
-          ),
-        ),
-        Expanded(
-          flex: _ClassCountTable._numberFlex,
-          child: Text(
-            '${row.regular}',
-            textAlign: TextAlign.center,
-            style: number,
-          ),
-        ),
-        Expanded(
-          flex: _ClassCountTable._numberFlex,
-          child: Text(
-            '${row.alternative}',
-            textAlign: TextAlign.end,
-            style: number?.copyWith(
-              color: teal.foreground,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ],
-    );
-    return Semantics(
-      container: true,
-      label: [
-        row.className,
-        '${row.regular} suất thường',
-        '${row.alternative} suất thay thế',
-        ?note,
-        if (row.changed) 'có điều chỉnh',
-      ].join(', '),
-      excludeSemantics: true,
-      child: row.changed
-          // Lớp có số đổi do GV sửa điểm danh (NUT-04): dải nền cam lùi vào trong card, chữ vẫn thẳng cột
-          ? Container(
-              margin: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.space1 + 2,
-                vertical: 2,
-              ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.space2 + 2,
-                vertical: AppSpacing.space2,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.warningSoft,
-                borderRadius: BorderRadius.circular(AppRadius.sm),
-              ),
-              child: content,
-            )
-          : Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.space4,
-                vertical: AppSpacing.space3,
-              ),
-              child: content,
-            ),
     );
   }
 }

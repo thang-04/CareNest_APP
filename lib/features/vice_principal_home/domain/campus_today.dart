@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-/// Loại mục trên Trang chủ Phó HT ⇒ chọn icon và màn (chỉ xem) mở ra.
-enum CampusTaskKind { mealCount, approvals, menu, children }
+/// Loại việc trên Trang chủ Phó HT ⇒ chọn icon và màn mở ra.
+enum CampusTaskKind { confirmMeals, approvals, kitchen, menu, children }
 
 /// Mức nhấn của badge việc: cần làm / có mới / đang theo dõi / đã xong / chỉ xem.
 enum CampusBadgeLevel { todo, fresh, watch, done, view }
@@ -57,24 +57,27 @@ class MorningStep {
   final String? note;
 }
 
-/// Việc chờ PHT xử lý trên Web: số suất chưa xác nhận (NUT-02), đề xuất khen thưởng chờ xét (OBS-14).
-enum CampusPendingKind { mealCount, rewards }
+enum CampusPendingKind { mealAdjustment, rewards }
 
-/// Một việc chờ xử lý hiện ở Trang chủ (PROPOSED). Trên App chỉ mở màn xem (AUTH-21, BE ADR-0026).
+/// Một mục chờ Phó HT duyệt hiện ở Trang chủ (PROPOSED): điều chỉnh suất mở thẳng màn duyệt theo `id`.
 @immutable
 class CampusPendingItem {
   const CampusPendingItem({
     required this.kind,
     required this.title,
     required this.note,
+    this.id,
   });
 
   final CampusPendingKind kind;
 
-  /// "Số suất chưa xác nhận"
+  /// ID điều chỉnh suất; null với đề xuất khen thưởng (mở cả danh sách).
+  final String? id;
+
+  /// "Điều chỉnh suất · Mầm 3A"
   final String title;
 
-  /// "182 suất · hạn 08:30"
+  /// "+1 suất · 09:05"
   final String note;
 }
 
@@ -90,7 +93,7 @@ class CampusToday {
     required this.present,
     required this.excused,
     required this.absent,
-    required this.pendingCount,
+    required this.pendingApprovals,
     required this.tasks,
     this.morning = const [],
     this.pending = const [],
@@ -107,16 +110,38 @@ class CampusToday {
   final int present;
   final int excused;
   final int absent;
-  final int pendingCount;
+  final int pendingApprovals;
   final List<CampusTask> tasks;
 
   /// Rỗng ⇒ BE chưa trả mốc (vd. ngày không học), màn ẩn thẻ mốc.
   final List<MorningStep> morning;
 
-  /// Việc chờ PHT xử lý trên Web.
+  /// Mục chờ Phó HT duyệt, mới nhất trước.
   final List<CampusPendingItem> pending;
+}
+
+/// Bếp của cơ sở cho màn trạng thái bếp (V05): bếp nào, phiếu xuất kho, báo thiếu gần nhất.
+@immutable
+class CampusKitchen {
+  const CampusKitchen({
+    required this.kitchenLabel,
+    required this.slipNote,
+    this.shortageTitle,
+    this.shortageNote,
+  });
+
+  /// "Bếp cơ sở chính · Cô Nguyễn Thị Mai"
+  final String kitchenLabel;
+
+  /// "Phiếu xuất kho PXK-1012 · đã duyệt 08:50"
+  final String slipNote;
+
+  /// "Báo thiếu từ bếp · 07:55"
+  final String? shortageTitle;
+  final String? shortageNote;
 }
 
 abstract interface class CampusTodaySource {
   Future<CampusToday> loadToday();
+  Future<CampusKitchen> loadKitchen();
 }

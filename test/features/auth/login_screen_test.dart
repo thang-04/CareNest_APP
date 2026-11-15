@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
@@ -31,31 +30,20 @@ void main() {
     },
   );
 
-  testWidgets(
-    'Redraw AC-1: ghi chú đổi mật khẩu lần đầu, không nhắc ảnh chân dung',
-    (tester) async {
-      usePhoneSize(tester);
-      await pumpLogin(tester, const LoginScreen());
-      expect(
-        find.text(
-          'Tài khoản do nhà trường cấp qua SMS. Lần đầu đăng nhập: đổi mật khẩu.',
-        ),
-        findsOneWidget,
-      );
-      expect(find.textContaining('chân dung'), findsNothing);
-    },
-  );
-
-  testWidgets('Figma PH01: form trên nền màn, không card, không tiêu đề', (
+  testWidgets('Bố cục A: form trong card, ghi chú SMS ngoài card', (
     tester,
   ) async {
     usePhoneSize(tester);
     await pumpLogin(tester, const LoginScreen());
-    expect(find.byType(AppCard), findsNothing);
-    expect(find.text('Đăng nhập'), findsOneWidget);
-    expect(find.byIcon(AppIcons.phone), findsOneWidget);
-    expect(find.byIcon(AppIcons.lock), findsOneWidget);
-    expect(tester.takeException(), isNull);
+    Finder inCard(Finder finder) =>
+        find.descendant(of: find.byType(AppCard), matching: finder);
+    expect(inCard(find.text('Số điện thoại')), findsOneWidget);
+    expect(inCard(find.text('Mật khẩu')), findsOneWidget);
+    expect(
+      inCard(find.widgetWithText(FilledButton, 'Đăng nhập')),
+      findsOneWidget,
+    );
+    expect(inCard(find.textContaining('cấp qua SMS')), findsNothing);
   });
 
   testWidgets('AC-3: để trống ⇒ báo lỗi dưới ô, không gọi onSubmit', (

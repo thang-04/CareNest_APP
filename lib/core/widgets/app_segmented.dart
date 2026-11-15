@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/motion.dart';
+import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 
-/// Segmented phẳng: rãnh `track` viên thuốc, ô chọn trắng có viền, chữ `primary` (Figma PHT 02, Bếp 05).
+/// Segmented Clay: rãnh lõm (gradient tối dần lên trên), ô chọn trắng nổi (DESIGN.md §7.1).
 class AppSegmented<T> extends StatelessWidget {
   const AppSegmented({
     super.key,
@@ -23,7 +24,13 @@ class AppSegmented<T> extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space1),
       decoration: BoxDecoration(
-        color: AppColors.track,
+        // Flutter không có bóng trong ⇒ rãnh lõm bằng nền đậm hơn ở mép trên
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppColors.border, AppColors.track],
+          stops: [0, 0.45],
+        ),
         borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Row(
@@ -50,8 +57,8 @@ class AppSegmented<T> extends StatelessWidget {
                           ? AppColors.surface
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(AppRadius.pill),
-                      border: value == selected
-                          ? Border.all(color: AppColors.border)
+                      boxShadow: value == selected
+                          ? AppShadows.buttonSecondary
                           : null,
                     ),
                     child: Text(
@@ -62,7 +69,7 @@ class AppSegmented<T> extends StatelessWidget {
                             ? FontWeight.w600
                             : FontWeight.w500,
                         color: value == selected
-                            ? AppColors.primary
+                            ? AppColors.textPrimary
                             : AppColors.textSecondary,
                       ),
                     ),

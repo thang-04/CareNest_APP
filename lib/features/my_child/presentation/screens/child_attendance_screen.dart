@@ -17,7 +17,7 @@ import 'package:carenest_app/features/my_child/presentation/widgets/my_child_wid
 extension on AttendanceDayStatus {
   String get label => switch (this) {
     AttendanceDayStatus.present => 'Có mặt',
-    AttendanceDayStatus.excused => 'Vắng có phép',
+    AttendanceDayStatus.excused => 'Nghỉ có phép',
     AttendanceDayStatus.absent => 'Vắng',
   };
 
@@ -28,8 +28,7 @@ extension on AttendanceDayStatus {
   };
 }
 
-/// Điểm danh & bữa ăn theo tháng (Figma PH10 bản sửa). Số đếm là BE trả (ATT-01, ATT-04);
-/// có mặt là ăn đủ các bữa đã cấu hình nên không ghi từng bữa, không đếm suất huỷ (ATT-02).
+/// Điểm danh & bữa ăn theo tháng — mockup P10. Số đếm là BE trả (ATT-01, ATT-04).
 class ChildAttendanceScreen extends StatefulWidget {
   const ChildAttendanceScreen({
     super.key,
@@ -109,6 +108,11 @@ class _ChildAttendanceScreenState extends State<ChildAttendanceScreen> {
                     value: '${month.absentCount}',
                     label: 'Vắng',
                     tone: AppStatusTone.red,
+                  ),
+                  AppStatTile(
+                    value: '${month.cancelledMealCount}',
+                    label: 'Suất huỷ',
+                    tone: AppStatusTone.gray,
                   ),
                 ],
               ),
@@ -197,23 +201,29 @@ class _DayDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppCardHeader(
-          title: DateLabels.weekdayDate(day.date),
-          trailing: AppStatusBadge(
-            label: day.status.label,
-            tone: day.status.tone,
-          ),
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: AppSpacing.space2,
+          runSpacing: AppSpacing.space2,
+          children: [
+            Text(DateLabels.weekdayDate(day.date), style: textTheme.titleSmall),
+            AppStatusBadge(label: day.status.label, tone: day.status.tone),
+          ],
         ),
         const SizedBox(height: AppSpacing.space2),
         if (day.arrivedAt case final arrived?)
           InfoLine(label: 'Đến lớp', value: DateLabels.time24(arrived)),
+        if (day.mealsLine case final meals?)
+          InfoLine(label: 'Bữa', value: meals),
         if (day.pickupLine case final pickup?)
           InfoLine(label: 'Đón về', value: pickup),
-        if (day.status == AttendanceDayStatus.excused)
-          const InfoLine(label: 'Ghi chú', value: 'Theo đơn xin nghỉ'),
+        if (day.mealCancelled)
+          const InfoLine(label: 'Suất ăn', value: 'Đã huỷ theo đơn xin nghỉ'),
       ],
     );
   }

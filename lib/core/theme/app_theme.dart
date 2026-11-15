@@ -5,19 +5,19 @@ import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/theme/app_text_styles.dart';
 
-/// Light theme duy nhất theo Figma App phẳng (user chốt 14/11; DESIGN.md §4.3, §9).
+/// Light theme duy nhất (DESIGN.md §4.3, §4.4, §9).
 ThemeData buildLightTheme() {
-  // ColorScheme.primary = brand (nền nút chính, chữ trắng) — §4.3
+  // ColorScheme.primary = brand (nền nút chính), không phải token `primary` (link) — §4.3
   const scheme = ColorScheme(
     brightness: Brightness.light,
     primary: AppColors.brand,
     onPrimary: AppColors.onBrand,
     primaryContainer: AppColors.primarySoft,
-    onPrimaryContainer: AppColors.primaryText,
+    onPrimaryContainer: AppColors.onBrand,
     secondary: AppColors.primary,
     onSecondary: AppColors.surface,
     secondaryContainer: AppColors.primarySoft,
-    onSecondaryContainer: AppColors.primaryText,
+    onSecondaryContainer: AppColors.onBrand,
     error: AppColors.danger,
     onError: AppColors.surface,
     errorContainer: AppColors.dangerSoft,
@@ -47,18 +47,16 @@ ThemeData buildLightTheme() {
   );
   final textTheme = AppTextStyles.textTheme(base.textTheme);
 
-  final control = RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(AppRadius.control),
-  );
+  const pill = StadiumBorder();
   const buttonSize = Size(64, AppSizes.buttonHeight);
   const buttonPadding = EdgeInsets.symmetric(horizontal: AppSpacing.space6);
 
   return base.copyWith(
     textTheme: textTheme,
     extensions: [AppStatusColors.light],
-    // Figma: thanh tiêu đề trắng, kẻ dưới mảnh tách khỏi nền màn
+    // Clay: thanh tiêu đề cùng nền màn, không kẻ dưới; card bên dưới tự tách bằng bóng
     appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.background,
       surfaceTintColor: Colors.transparent,
       foregroundColor: AppColors.textPrimary,
       elevation: 0,
@@ -66,7 +64,6 @@ ThemeData buildLightTheme() {
       centerTitle: false,
       toolbarHeight: AppSizes.appBarHeight,
       titleTextStyle: textTheme.titleLarge,
-      shape: const Border(bottom: BorderSide(color: AppColors.border)),
     ),
     dividerTheme: const DividerThemeData(
       color: AppColors.border,
@@ -77,11 +74,11 @@ ThemeData buildLightTheme() {
       style: FilledButton.styleFrom(
         backgroundColor: AppColors.brand,
         foregroundColor: AppColors.onBrand,
-        disabledBackgroundColor: AppColors.borderStrong,
-        disabledForegroundColor: AppColors.surface,
+        disabledBackgroundColor: AppColors.track,
+        disabledForegroundColor: AppColors.textDisabled,
         minimumSize: buttonSize,
         padding: buttonPadding,
-        shape: control,
+        shape: pill,
         elevation: 0,
         textStyle: textTheme.labelLarge,
       ),
@@ -89,11 +86,11 @@ ThemeData buildLightTheme() {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.primary,
+        foregroundColor: AppColors.textPrimary,
         minimumSize: buttonSize,
         padding: buttonPadding,
-        shape: control,
-        side: const BorderSide(color: AppColors.primary),
+        shape: pill,
+        side: const BorderSide(color: AppColors.borderStrong),
         textStyle: textTheme.labelLarge,
       ),
     ),
@@ -102,7 +99,7 @@ ThemeData buildLightTheme() {
         foregroundColor: AppColors.primary,
         minimumSize: const Size(AppSizes.minimumTapTarget, 48),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space2),
-        shape: control,
+        shape: pill,
         textStyle: textTheme.labelLarge,
       ),
     ),
@@ -139,23 +136,21 @@ ThemeData buildLightTheme() {
         borderRadius: BorderRadius.all(Radius.circular(AppRadius.xxxl)),
       ),
     ),
-    // Thanh đáy phẳng cao 64, nhãn luôn hiện, ô chọn `primarySoft` sau icon (Figma App)
+    // Thanh đáy cao 72, nhãn luôn hiện, viên 64×32 `primarySoft` sau icon (§8.1)
     navigationBarTheme: NavigationBarThemeData(
       height: AppSizes.bottomNavigationHeight,
       backgroundColor: AppColors.surface,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       indicatorColor: AppColors.primarySoft,
-      indicatorShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-      ),
+      indicatorShape: const StadiumBorder(),
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       iconTheme: WidgetStateProperty.resolveWith(
         (states) => IconThemeData(
           size: AppSizes.iconNavigation,
           color: states.contains(WidgetState.selected)
               ? AppColors.primary
-              : AppColors.textMuted,
+              : AppColors.textSecondary,
         ),
       ),
       labelTextStyle: WidgetStateProperty.resolveWith(
@@ -166,22 +161,13 @@ ThemeData buildLightTheme() {
               : FontWeight.w500,
           color: states.contains(WidgetState.selected)
               ? AppColors.primary
-              : AppColors.textMuted,
+              : AppColors.textSecondary,
         ),
       ),
     ),
     badgeTheme: const BadgeThemeData(
-      backgroundColor: AppColors.danger,
+      backgroundColor: AppColors.dangerText,
       textColor: AppColors.surface,
-    ),
-    // TextField thô (vd. ô thân nhiệt): viền `outline` bo 8, focus viền `primary` (mặc định M3).
-    // Chỉ đặt `border` để ô tự vẽ khung (`InputBorder.none`) không bị theme thêm viền.
-    // Không đặt contentPadding: theme cộng vào cả ô `isCollapsed` của AppTextField
-    inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.control),
-        borderSide: const BorderSide(color: AppColors.borderStrong),
-      ),
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
       color: AppColors.primary,

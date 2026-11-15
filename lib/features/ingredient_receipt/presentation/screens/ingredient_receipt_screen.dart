@@ -227,7 +227,9 @@ class _ItemRow extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
-          color: short ? danger.main : AppColors.border,
+          color: short
+              ? danger.main
+              : AppColors.surface.withValues(alpha: 0.85),
           width: short ? 1.5 : 1,
         ),
         boxShadow: AppShadows.card,

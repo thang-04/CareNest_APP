@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
+import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
+import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
+import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
-import 'package:carenest_app/core/widgets/app_card.dart';
+import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_filter_chip.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
+import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/class_leave_notices/data/fake_class_leave_source.dart';
 import 'package:carenest_app/features/class_leave_notices/domain/class_leave_notice.dart';
 import 'package:carenest_app/features/class_roster/data/fake_class_roster_source.dart';
 
-/// Đơn xin nghỉ của lớp — Figma GV03 (bản sửa). Chỉ liệt kê đơn nghỉ của phụ huynh, không có trẻ vắng không đơn
-/// (như Web). GV chỉ xem: không duyệt, không đánh dấu đã xem (ATT-05).
+/// Đơn xin nghỉ của lớp — mockup T03. GV chỉ xem/ghi nhận, không có duyệt (ATT-05).
 class ClassLeaveScreen extends StatefulWidget {
   const ClassLeaveScreen({
     super.key,
@@ -48,9 +51,26 @@ class _ClassLeaveScreenState extends State<ClassLeaveScreen> {
     }
   }
 
+  // Ghi nhận đã xem là thao tác BE; bản giả chỉ đổi trên màn
+  void _markSeen() => setState(
+    () => _entries = [for (final entry in _entries!) entry.markSeen()],
+  );
+
+  static (String, AppStatusTone) _badge(ClassLeaveState state) =>
+      switch (state) {
+        ClassLeaveState.fresh => ('Mới', AppStatusTone.blue),
+        ClassLeaveState.seen => ('Đã xem', AppStatusTone.green),
+        ClassLeaveState.absentNoNotice => ('Vắng', AppStatusTone.red),
+      };
+
   @override
   Widget build(BuildContext context) {
     final entries = _entries;
+    final fresh =
+        entries
+            ?.where((entry) => entry.state == ClassLeaveState.fresh)
+            .length ??
+        0;
     final visible = entries == null
         ? const <ClassLeaveEntry>[]
         : _upcomingOnly
@@ -77,7 +97,7 @@ class _ClassLeaveScreenState extends State<ClassLeaveScreen> {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.space3),
+          const SizedBox(height: AppSpacing.space4),
           if (_error != null)
             AppErrorState(
               title: 'Chưa tải được đơn xin nghỉ',
@@ -93,43 +113,71 @@ class _ClassLeaveScreenState extends State<ClassLeaveScreen> {
             )
           else ...[
             for (final entry in visible) ...[
-              _EntryCard(entry: entry),
+              _EntryCard(entry: entry, badge: _badge(entry.state)),
               const SizedBox(height: AppSpacing.space3),
             ],
             const AppBanner(
               message:
-                  'Ngày có đơn tự ghi Vắng có phép, không có suất. GV chỉ xem đơn.',
+                  'Hệ thống đã tự huỷ suất ăn các ngày nghỉ và báo cho bếp.',
             ),
           ],
+        ],
+      ),
+      bottomNavigationBar: AppBottomDock(
+        children: [
+          AppButton(
+            label: fresh == 0
+                ? 'Đã xem hết đơn mới'
+                : 'Đánh dấu đã xem ($fresh đơn)',
+            expand: true,
+            onPressed: fresh == 0 ? null : _markSeen,
+          ),
         ],
       ),
     );
   }
 }
 
-/// Một đơn: tên bé, ngày nghỉ, lý do, người gửi. Cả danh sách là đơn nghỉ ⇒ không lặp badge Vắng có phép.
 class _EntryCard extends StatelessWidget {
-  const _EntryCard({required this.entry});
+  const _EntryCard({required this.entry, required this.badge});
 
   final ClassLeaveEntry entry;
+  final (String, AppStatusTone) badge;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return AppCard(
-      dense: true,
+    final fresh = entry.state == ClassLeaveState.fresh;
+    final muted = textTheme.bodyMedium?.copyWith(color: AppColors.textMuted);
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.space4),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(
+          color: fresh
+              ? AppColors.primary
+              : AppColors.surface.withValues(alpha: 0.85),
+          width: fresh ? 1.5 : 1,
+        ),
+        boxShadow: AppShadows.card,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(entry.childName, style: textTheme.titleSmall),
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: AppSpacing.space2,
+            runSpacing: AppSpacing.space1,
+            children: [
+              Text(entry.childName, style: textTheme.titleSmall),
+              AppStatusBadge(label: badge.$1, tone: badge.$2),
+            ],
+          ),
           const SizedBox(height: AppSpacing.space1),
           Text(entry.period, style: textTheme.bodyMedium),
-          Text(
-            'Lý do: ${entry.reason}',
-            style: textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
+          Text('Lý do: ${entry.reason}', style: muted),
           const SizedBox(height: AppSpacing.space1),
           Text(
             entry.meta,

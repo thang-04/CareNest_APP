@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
-import 'package:carenest_app/core/widgets/app_button.dart';
-import 'package:carenest_app/core/widgets/app_task_card.dart';
+import 'package:carenest_app/features/approvals/data/fake_meal_adjustment_source.dart';
 import 'package:carenest_app/features/approvals/presentation/screens/approvals_screen.dart';
+import 'package:carenest_app/features/approvals/presentation/screens/meal_adjustment_screen.dart';
 import 'package:carenest_app/features/campus_children/data/fake_campus_children_source.dart';
 import 'package:carenest_app/features/campus_children/presentation/screens/campus_children_screen.dart';
+import 'package:carenest_app/features/cooking_status/data/fake_cooking_status_source.dart';
 import 'package:carenest_app/features/meal_count_confirm/data/fake_meal_count_confirm_source.dart';
 import 'package:carenest_app/features/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
 import 'package:carenest_app/features/nutrition_balance/presentation/screens/nutrition_balance_screen.dart';
@@ -14,13 +15,13 @@ import 'package:carenest_app/features/parent_home/data/fake_parent_home_source.d
 import 'package:carenest_app/features/reward_proposals/data/fake_reward_proposal_source.dart';
 import 'package:carenest_app/features/reward_proposals/presentation/screens/reward_proposals_screen.dart';
 import 'package:carenest_app/features/vice_principal_home/data/fake_campus_today_source.dart';
+import 'package:carenest_app/features/vice_principal_home/presentation/screens/campus_kitchen_screen.dart';
 import 'package:carenest_app/features/vice_principal_home/presentation/screens/campus_menu_screen.dart';
 import 'package:carenest_app/features/vice_principal_home/presentation/screens/vice_principal_home_screen.dart';
 
 import '../../helpers/pump_app.dart';
 
 final today = DateTime(2026, 10, 12);
-final confirmedAt = DateTime(2026, 10, 12, 8, 25);
 
 Future<void> pumpScreen(
   WidgetTester tester,
@@ -46,110 +47,99 @@ String? labelOf(String prefix) => find
     ?.debugSemantics
     ?.label;
 
-FakeCampusTodaySource homeSource({
-  FakeMode mode = FakeMode.data,
-  DateTime? mealsConfirmedAt,
-}) => FakeCampusTodaySource(
-  mode: mode,
-  delay: Duration.zero,
-  rewards: FakeRewardProposalSource(),
-  mealCount: FakeMealCountConfirmSource(confirmedAt: mealsConfirmedAt),
-);
-
-/// AUTH-21, BE ADR-0026: màn BGH không có nút gửi thao tác ghi.
-void expectNoWriteActions() {
-  for (final label in ['Duyệt', 'Từ chối', 'Xem & chốt', 'Trả về Phó HT']) {
-    expect(find.text(label), findsNothing, reason: label);
-  }
-  for (final prefix in [
-    'Xác nhận gửi bếp',
-    'Gửi HT (',
-    'Trả lại (',
-    'Duyệt (',
-  ]) {
-    expect(find.textContaining(prefix), findsNothing, reason: prefix);
-  }
-  expect(find.byType(Checkbox), findsNothing);
-}
+FakeCampusTodaySource homeSource({FakeMode mode = FakeMode.data}) =>
+    FakeCampusTodaySource(
+      mode: mode,
+      delay: Duration.zero,
+      meals: FakeMealAdjustmentSource(),
+      rewards: FakeRewardProposalSource(),
+      mealCount: FakeMealCountConfirmSource(),
+      cooking: FakeCookingStatusSource(),
+    );
 
 void main() {
-  testWidgets(
-    'V01 (AUTH-08, AUTH-21): thẻ cơ sở, số hôm nay, số suất chờ xác nhận trên Web',
-    (tester) async {
-      await pumpScreen(
-        tester,
-        VicePrincipalHomeScreen(source: homeSource()),
-        inScaffold: true,
-      );
-      expect(find.text('Chào thầy,'), findsOneWidget);
-      expect(find.text('Lê Văn Bình'), findsOneWidget);
-      expect(find.text('Cơ sở chính – Thượng Hồng'), findsOneWidget);
-      expect(find.text('6 lớp · 182 bé có mặt / 196'), findsOneWidget);
-      expect(find.bySemanticsLabel('Có mặt: 182'), findsOneWidget);
-      expect(find.bySemanticsLabel('Có phép: 9'), findsOneWidget);
-      expect(find.bySemanticsLabel('Vắng: 5'), findsOneWidget);
-      expect(find.bySemanticsLabel('Chờ xử lý: 2'), findsOneWidget);
-      expect(find.text('Theo dõi hôm nay'), findsOneWidget);
-      expect(find.text('Chưa xác nhận'), findsOneWidget);
-      expect(find.text('Tổng hợp 08:15 · hạn 08:30'), findsOneWidget);
-      // Số suất chưa xác nhận ⇒ thẻ có viền nhấn như Figma PHT 01
-      expect(
-        tester
-            .widget<AppTaskCard>(
-              find.widgetWithText(AppTaskCard, 'Số suất hôm nay'),
-            )
-            .highlighted,
-        isTrue,
-      );
-      expectNoWriteActions();
-      await tester.scrollUntilVisible(find.text('Trẻ của cơ sở'), 200);
-      expect(find.text('Số suất · 8 đề xuất khen thưởng'), findsOneWidget);
-      expect(find.text('2 việc'), findsOneWidget);
-      // NUT-14 REMOVED: không còn trạng thái bếp; chỉ dị ứng, không ăn chay / ăn kiêng
-      expect(find.text('Trạng thái bếp'), findsNothing);
-      expect(find.textContaining('ăn kiêng'), findsNothing);
-      expect(find.textContaining('Ăn chay'), findsNothing);
-    },
-  );
+  testWidgets('V01 (AUTH-08): mốc buổi sáng, chốt suất là mốc cần làm', (
+    tester,
+  ) async {
+    await pumpScreen(
+      tester,
+      VicePrincipalHomeScreen(
+        source: homeSource(),
+        cookingSource: FakeCookingStatusSource(),
+      ),
+      inScaffold: true,
+    );
+    expect(find.text('Sáng nay'), findsOneWidget);
+    expect(
+      find.text('Cơ sở chính – Thượng Hồng · Thứ Hai, 12/10'),
+      findsOneWidget,
+    );
+    expect(
+      labelOf('08:00, Khoá điểm danh'),
+      '08:00, Khoá điểm danh, 6/6 lớp đã điểm danh · 182/196 bé có mặt, đã xong',
+    );
+    expect(labelOf('08:30, Chốt suất ăn'), endsWith(', cần làm'));
+    expect(
+      labelOf('08:40, Bếp nhận số'),
+      '08:40, Bếp nhận số, Sau khi chốt suất, chưa tới',
+    );
+    expect(find.text('Xem & chốt'), findsOneWidget);
+    expect(find.text('Xem bếp'), findsNothing);
+    await tester.scrollUntilVisible(find.text('Điều chỉnh suất · Mầm 3A'), 200);
+    expect(find.text('Chờ duyệt (3)'), findsOneWidget);
+    expect(find.text('+1 suất · 09:05'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Trẻ của cơ sở'), 200);
+    expect(find.text('Bữa trưa: Đang nấu'), findsOneWidget);
+    // Chốt suất và duyệt đã nằm ở mốc và mục chờ duyệt ⇒ không lặp thành việc
+    expect(find.text('Chốt suất ăn hôm nay'), findsNothing);
+    expect(find.text('Yêu cầu chờ duyệt'), findsNothing);
+  });
 
   testWidgets(
-    'V01: đã xác nhận trên Web ⇒ nhãn Đã xác nhận, chỉ còn việc khen thưởng',
+    'V01: đã chốt suất ⇒ hết nút chốt, bữa trưa là mốc đang diễn ra',
     (tester) async {
+      final mealCount = FakeMealCountConfirmSource();
+      await mealCount.confirm();
       await pumpScreen(
         tester,
         VicePrincipalHomeScreen(
-          source: homeSource(mealsConfirmedAt: confirmedAt),
+          source: FakeCampusTodaySource(
+            delay: Duration.zero,
+            meals: FakeMealAdjustmentSource(),
+            rewards: FakeRewardProposalSource(),
+            mealCount: mealCount,
+            cooking: FakeCookingStatusSource(),
+          ),
+          cookingSource: FakeCookingStatusSource(),
         ),
         inScaffold: true,
       );
-      expect(find.text('Đã xác nhận'), findsOneWidget);
-      expect(find.text('Đã gửi bếp 08:25 · 182 suất'), findsOneWidget);
-      expect(find.bySemanticsLabel('Chờ xử lý: 1'), findsOneWidget);
+      expect(find.text('Xem & chốt'), findsNothing);
+      expect(labelOf('08:30, Chốt suất ăn'), contains('Đã gửi bếp 08:25'));
       expect(
-        tester
-            .widget<AppTaskCard>(
-              find.widgetWithText(AppTaskCard, 'Số suất hôm nay'),
-            )
-            .highlighted,
-        isFalse,
+        labelOf('10:45, Bữa trưa'),
+        endsWith('Bếp: Đang nấu, đang diễn ra'),
       );
-      await tester.scrollUntilVisible(find.text('1 việc'), 200);
-      expect(find.text('8 đề xuất khen thưởng'), findsOneWidget);
+      expect(find.text('Xem bếp'), findsOneWidget);
     },
   );
 
-  testWidgets('V01: không có việc ⇒ trạng thái rỗng', (tester) async {
+  testWidgets('V01: không có yêu cầu ⇒ trạng thái rỗng, không còn việc lặp', (
+    tester,
+  ) async {
     await pumpScreen(
       tester,
-      VicePrincipalHomeScreen(source: homeSource(mode: FakeMode.empty)),
+      VicePrincipalHomeScreen(
+        source: homeSource(mode: FakeMode.empty),
+        cookingSource: FakeCookingStatusSource(),
+      ),
       inScaffold: true,
     );
-    expect(find.bySemanticsLabel('Chờ xử lý: 0'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('Chưa có việc cần theo dõi'),
+      find.text('Không có yêu cầu chờ duyệt'),
       200,
     );
-    expect(find.byType(AppTaskCard), findsNothing);
+    expect(find.text('Theo dõi khác'), findsNothing);
   });
 
   testWidgets('V01: lỗi tải ⇒ Thử lại, không để khung chờ chạy mãi', (
@@ -157,95 +147,106 @@ void main() {
   ) async {
     await pumpScreen(
       tester,
-      VicePrincipalHomeScreen(source: homeSource(mode: FakeMode.error)),
+      VicePrincipalHomeScreen(
+        source: homeSource(mode: FakeMode.error),
+        cookingSource: FakeCookingStatusSource(),
+      ),
       inScaffold: true,
     );
     await tester.scrollUntilVisible(find.text('Thử lại'), 200);
   });
 
-  testWidgets('V02 (AUTH-21): chờ xử lý chỉ xem, lọc theo loại', (
-    tester,
-  ) async {
+  testWidgets('V02: lọc theo loại yêu cầu', (tester) async {
     await pumpScreen(
       tester,
       ApprovalsScreen(
-        mealSource: FakeMealCountConfirmSource(),
+        mealSource: FakeMealAdjustmentSource(),
         rewardSource: FakeRewardProposalSource(),
       ),
       inScaffold: true,
     );
-    expect(find.text('Chờ xử lý'), findsOneWidget);
-    expect(find.text('2 việc'), findsOneWidget);
-    expect(find.text('Số suất chưa xác nhận'), findsOneWidget);
-    expect(find.textContaining('Chỉ xem.'), findsOneWidget);
+    expect(find.text('3 mới'), findsOneWidget);
+    expect(find.text('Điều chỉnh suất · Mầm 3A'), findsOneWidget);
     await tester.tap(find.text('Khen thưởng').first);
     await tester.pumpAndSettle();
-    expect(find.text('Số suất chưa xác nhận'), findsNothing);
-    expect(find.text('8 đề xuất từ giáo viên chờ xét'), findsOneWidget);
-    expectNoWriteActions();
+    expect(find.text('Điều chỉnh suất · Mầm 3A'), findsNothing);
+    expect(find.text('7 đề xuất từ giáo viên'), findsNothing);
+    expect(find.text('8 đề xuất từ giáo viên'), findsOneWidget);
   });
 
-  testWidgets('V02: số suất đã xác nhận ⇒ không còn việc suất ăn', (
+  testWidgets('V03 (NUT-03): từ chối phải có lý do; duyệt xong rời danh sách', (
     tester,
   ) async {
+    final source = FakeMealAdjustmentSource();
+    var done = 0;
     await pumpScreen(
       tester,
-      ApprovalsScreen(
-        mealSource: FakeMealCountConfirmSource(confirmedAt: confirmedAt),
-        rewardSource: FakeRewardProposalSource(),
+      MealAdjustmentScreen(
+        id: 'adj-mam-3a',
+        source: source,
+        onDone: () => done++,
       ),
-      inScaffold: true,
     );
-    expect(find.text('1 việc'), findsOneWidget);
-    expect(find.text('Số suất chưa xác nhận'), findsNothing);
+    expect(labelOf('Mầm 3A: từ 24'), 'Mầm 3A: từ 24 thành 25 suất');
+    expect(find.bySemanticsLabel('Sau khi duyệt: 183'), findsOneWidget);
+    expect(find.text('Nguyễn Minh Anh'), findsOneWidget);
+
+    await tester.tap(find.text('Từ chối'));
+    await tester.pumpAndSettle();
+    expect(done, 0);
+    expect(find.textContaining('Nhập lý do'), findsOneWidget);
+
+    await tester.tap(find.text('Duyệt'));
+    await tester.pumpAndSettle();
+    expect(done, 1);
+    expect(await source.loadPending(), hasLength(1));
   });
 
-  testWidgets('V04 (NUT-02, AUTH-21): số suất chỉ xem, xác nhận trên Web', (
+  testWidgets('V03: ID không có ⇒ không tìm thấy, không có nút duyệt', (
     tester,
   ) async {
     await pumpScreen(
       tester,
-      MealCountConfirmScreen(source: FakeMealCountConfirmSource()),
+      MealAdjustmentScreen(
+        id: 'khong-co',
+        source: FakeMealAdjustmentSource(),
+        onDone: () {},
+      ),
     );
-    expect(find.text('Số suất hôm nay'), findsOneWidget);
+    expect(find.text('Không tìm thấy yêu cầu'), findsOneWidget);
+    expect(find.text('Duyệt'), findsNothing);
+  });
+
+  testWidgets('V04 (NUT-02, P-05): xác nhận gửi bếp xong thì hết nút', (
+    tester,
+  ) async {
+    final source = FakeMealCountConfirmSource();
+    await pumpScreen(tester, MealCountConfirmScreen(source: source));
     expect(find.text('Thứ Hai, 12/10 · tổng hợp lúc 08:15'), findsOneWidget);
     expect(find.bySemanticsLabel('Tổng suất: 182'), findsOneWidget);
     expect(
       labelOf('Chồi 1'),
-      'Chồi 1, 29 suất thường, 2 suất thay thế, dị ứng trứng',
+      'Chồi 1, 29 suất thường, 2 suất thay thế, ăn chay',
     );
-    expect(find.textContaining('xác nhận trên CareNest Web'), findsOneWidget);
-    expect(find.byType(AppButton), findsNothing);
-    expectNoWriteActions();
+    await tester.tap(find.text('Xác nhận gửi bếp (182 suất)'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Đã gửi bếp lúc 08:25'), findsOneWidget);
+    expect(find.textContaining('Xác nhận gửi bếp'), findsNothing);
   });
 
-  testWidgets('Figma audit: PHT 04 trạng thái chưa xác nhận nằm dưới bảng', (
+  testWidgets('V05 (NUT-14): chỉ xem, có phiếu xuất kho và báo thiếu', (
     tester,
   ) async {
     await pumpScreen(
       tester,
-      MealCountConfirmScreen(source: FakeMealCountConfirmSource()),
-    );
-    final banner = find.text('Chưa xác nhận — xác nhận trên CareNest Web');
-    await tester.scrollUntilVisible(banner, 200);
-    expect(
-      tester.getTopLeft(banner).dy,
-      greaterThan(tester.getTopLeft(find.text('Lá 2')).dy),
-    );
-  });
-
-  testWidgets('V04: đã xác nhận ⇒ hiện giờ xác nhận', (tester) async {
-    await pumpScreen(
-      tester,
-      MealCountConfirmScreen(
-        source: FakeMealCountConfirmSource(confirmedAt: confirmedAt),
-      ),
+      CampusKitchenScreen(cookingSource: FakeCookingStatusSource()),
     );
     expect(
-      find.textContaining('Đã xác nhận gửi bếp lúc 08:25'),
+      find.text('Phiếu xuất kho PXK-1012 · đã duyệt 07:30'),
       findsOneWidget,
     );
-    expect(find.byType(AppButton), findsNothing);
+    expect(find.textContaining('Chuyển sang'), findsNothing);
+    await tester.scrollUntilVisible(find.text('Báo thiếu từ bếp · 07:55'), 200);
   });
 
   testWidgets('V06 → V07: nút cân đối mang nhóm + ngày đang chọn', (
@@ -257,11 +258,6 @@ void main() {
       200,
     );
     expect(find.text('Xem cân đối dinh dưỡng'), findsOneWidget);
-    // Câu chỉ xem nằm trong banner đã duyệt (Figma PHT 06), AUTH-21
-    expect(
-      find.text('Lập và duyệt trên CareNest Web · App chỉ xem'),
-      findsOneWidget,
-    );
   });
 
   testWidgets('V07 (NUT-06): nhãn Đạt / Thiếu là chữ, có cảnh báo', (
@@ -301,8 +297,7 @@ void main() {
     );
     expect(find.text('196 bé'), findsOneWidget);
     expect(find.text('Dị ứng (4)'), findsOneWidget);
-    // Plan 14/11 AC-4: không có lọc ăn kiêng / ăn chay
-    expect(find.textContaining('Ăn kiêng'), findsNothing);
+    expect(find.text('Ăn kiêng (4)'), findsOneWidget);
 
     await tester.tap(find.text('Dị ứng (4)'));
     await tester.pumpAndSettle();
@@ -322,41 +317,61 @@ void main() {
     expect(find.text('Mạc Tùng Lâm'), findsNothing);
   });
 
-  testWidgets(
-    'V12 (OBS-10, AUTH-21): hợp lệ có chữ; chỉ xem, không gửi HT / trả lại',
-    (tester) async {
-      await pumpScreen(
-        tester,
-        RewardProposalsScreen(source: FakeRewardProposalSource()),
-      );
-      expect(find.text('Chờ xét (8)'), findsOneWidget);
-      expect(
-        labelOf('Vũ Đức Huy'),
-        'Vũ Đức Huy, Mầm 3A, Bé chăm ngoan, 4/10 phiếu – chưa đủ điều kiện, Không hợp lệ',
-      );
-      expect(find.byType(AppButton), findsNothing);
-      expectNoWriteActions();
-      await tester.scrollUntilVisible(find.textContaining('Chỉ xem.'), 200);
-      await tester.scrollUntilVisible(find.text('Đã gửi HT'), -200);
-      await tester.tap(find.text('Đã gửi HT'));
-      await tester.pumpAndSettle();
-      expect(find.text('Chưa gửi đề xuất nào cho Hiệu trưởng'), findsOneWidget);
-    },
-  );
+  testWidgets('V12 (OBS-10): hợp lệ có chữ; gửi HT và trả lại chuyển tab', (
+    tester,
+  ) async {
+    final source = FakeRewardProposalSource();
+    await pumpScreen(tester, RewardProposalsScreen(source: source));
+    expect(find.text('Chờ xét (8)'), findsOneWidget);
+    expect(
+      labelOf('Vũ Đức Huy'),
+      'Vũ Đức Huy, Mầm 3A, Bé chăm ngoan, 4/10 phiếu – chưa đủ điều kiện, Không hợp lệ',
+    );
+    await tester.tap(find.text('Gửi HT (7)'));
+    await tester.pumpAndSettle();
+    expect(find.text('Chờ xét (1)'), findsOneWidget);
+    await tester.tap(find.text('Trả lại (1)'));
+    await tester.pumpAndSettle();
+    expect(find.text('Không còn đề xuất chờ xét'), findsOneWidget);
+    await tester.tap(find.text('Đã gửi HT'));
+    await tester.pumpAndSettle();
+    expect(find.text('Nguyễn Minh Anh'), findsOneWidget);
+  });
 
   for (final (name, screen, scaffold) in <(String, Widget, bool)>[
-    ('Trang chủ Phó HT', VicePrincipalHomeScreen(source: homeSource()), true),
     (
-      'Chờ xử lý',
+      'Trang chủ Phó HT',
+      VicePrincipalHomeScreen(
+        source: homeSource(),
+        cookingSource: FakeCookingStatusSource(),
+      ),
+      true,
+    ),
+    (
+      'Yêu cầu chờ duyệt',
       ApprovalsScreen(
-        mealSource: FakeMealCountConfirmSource(),
+        mealSource: FakeMealAdjustmentSource(),
         rewardSource: FakeRewardProposalSource(),
       ),
       true,
     ),
     (
-      'Số suất hôm nay',
+      'Duyệt điều chỉnh suất',
+      MealAdjustmentScreen(
+        id: 'adj-mam-3a',
+        source: FakeMealAdjustmentSource(),
+        onDone: () {},
+      ),
+      false,
+    ),
+    (
+      'Chốt suất ăn',
       MealCountConfirmScreen(source: FakeMealCountConfirmSource()),
+      false,
+    ),
+    (
+      'Trạng thái bếp',
+      CampusKitchenScreen(cookingSource: FakeCookingStatusSource()),
       false,
     ),
     ('Thực đơn tuần', const CampusMenuScreen(), false),

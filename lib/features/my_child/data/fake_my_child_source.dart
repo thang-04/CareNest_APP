@@ -2,8 +2,8 @@ import 'package:carenest_app/features/my_child/domain/my_child.dart';
 import 'package:carenest_app/features/parent_home/data/fake_parent_home_source.dart';
 
 /// Dữ liệu giả theo mockup P08–P13, không phải dữ liệu thật của trẻ (AGENTS.md nguyên tắc 4).
-/// Khớp nhau giữa các màn: có mặt 07:42 ngày 12/10, ăn hết bữa trưa, đơn nghỉ 13/10,
-/// tháng 10 có 8 ngày có mặt + 1 ngày vắng có phép (13/10).
+/// Khớp nhau giữa các màn: có mặt 07:42 ngày 12/10, ăn hết bữa trưa, đơn nghỉ 13/10 GV chưa xem,
+/// tháng 10 có 8 ngày có mặt + 1 ngày nghỉ có phép (13/10, suất đã huỷ).
 class FakeMyChildSource implements MyChildSource {
   const FakeMyChildSource();
 
@@ -16,16 +16,10 @@ class FakeMyChildSource implements MyChildSource {
   static DailyReview _review(String childId) => DailyReview(
     teacher: _teacherFull(childId),
     tags: const [
-      ReviewTag(level: ReviewLevel.achieved, label: 'Ăn uống: Đạt'),
-      ReviewTag(level: ReviewLevel.achieved, label: 'Ngủ: Đạt'),
-      ReviewTag(level: ReviewLevel.achieved, label: 'Cảm xúc: Đạt'),
-      ReviewTag(level: ReviewLevel.achieved, label: 'Hành vi: Đạt'),
-      ReviewTag(level: ReviewLevel.achieved, label: 'Tham gia hoạt động: Đạt'),
-      ReviewTag(
-        level: ReviewLevel.needsEffort,
-        label: 'Kiến thức – kỹ năng: Cần cố gắng',
-      ),
-      ReviewTag(level: ReviewLevel.achieved, label: 'Sức khỏe: Đạt'),
+      ReviewTag(criterion: ReviewCriterion.health, label: 'Sức khỏe: Tốt'),
+      ReviewTag(criterion: ReviewCriterion.emotion, label: 'Cảm xúc: Vui vẻ'),
+      ReviewTag(criterion: ReviewCriterion.learning, label: 'Học tập: Đạt'),
+      ReviewTag(criterion: ReviewCriterion.behavior, label: 'Hành vi tốt'),
     ],
     note:
         'Bé hào hứng tô màu, tự xếp đồ dùng gọn gàng. Cần nhắc bé uống thêm nước.',
@@ -59,13 +53,14 @@ class FakeMyChildSource implements MyChildSource {
     review: _review(childId),
     upcomingLeave: const LeaveSummary(
       title: 'Đơn xin nghỉ 13/10',
-      detail: 'Vắng có phép 13/10',
+      detail: 'Suất ăn 13/10 đã huỷ',
+      seenByTeacher: false,
     ),
   );
 
   @override
   Future<HealthSummary> loadHealth(String childId) async => HealthSummary(
-    measuredOn: DateTime(2026, 10, 5),
+    measuredOn: DateTime(2026, 10, 12),
     height: '104 cm',
     weight: '17,2 kg',
     nutritionLabel: 'Bình thường',
@@ -85,12 +80,12 @@ class FakeMyChildSource implements MyChildSource {
   Future<DevelopmentSummary> loadDevelopment(
     String childId,
   ) async => DevelopmentSummary(
-    commentTitle: 'Nhận xét tháng 9/2026',
-    commentNote:
+    weekRange: '05/10 – 09/10',
+    weekNote:
         'Bé mạnh dạn phát biểu, biết chia sẻ đồ chơi với bạn. Cần luyện thêm kỹ năng cầm bút.',
-    commentAuthor: '${_teacherFull(childId)} · 30/09/2026',
-    commentConfirmed: true,
-    previousCommentTitle: 'Nhận xét tháng 8/2026',
+    weekAuthor: '${_teacherFull(childId)} · 09/10/2026',
+    weekConfirmed: true,
+    monthlyTitle: 'Nhận xét tháng 9/2026',
     flagMonth: 'Tháng 10',
     flagsEarned: 2,
     flagsNeeded: 3,
@@ -140,6 +135,7 @@ class FakeMyChildSource implements MyChildSource {
       date: DateTime(2026, 10, day),
       status: AttendanceDayStatus.present,
       arrivedAt: _at(day, 7, arriveMinute),
+      mealsLine: 'đã ăn sáng · trưa · chiều',
       pickupLine: '16:45 · Mẹ',
     );
     return AttendanceMonth(
@@ -147,6 +143,7 @@ class FakeMyChildSource implements MyChildSource {
       presentCount: 8,
       excusedCount: 1,
       absentCount: 0,
+      cancelledMealCount: 1,
       days: [
         present(1, 50),
         present(2, 45),
@@ -159,6 +156,7 @@ class FakeMyChildSource implements MyChildSource {
         AttendanceDay(
           date: DateTime(2026, 10, 13),
           status: AttendanceDayStatus.excused,
+          mealCancelled: true,
         ),
       ],
     );

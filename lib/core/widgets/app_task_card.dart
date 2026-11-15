@@ -37,8 +37,7 @@ class AppTaskCard extends StatelessWidget {
       borderColor: highlighted ? AppColors.primary : null,
       child: AppListRow(
         title: title,
-        // Ô icon 36 như Figma để tên việc đủ chỗ cạnh badge
-        leading: AppIconTile(icon: icon, tone: tone, size: 36),
+        leading: AppIconTile(icon: icon, tone: tone),
         subtitle: subtitle == null
             ? null
             : Text(subtitle!, maxLines: 2, overflow: TextOverflow.ellipsis),

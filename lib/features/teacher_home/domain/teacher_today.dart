@@ -1,8 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 /// Loại việc trên Trang chủ Giáo viên ⇒ chọn icon và màn mở ra.
-/// Không có CSVC (BE FAC REMOVED) và ảnh bữa ăn (ảnh mẫu do bếp cơ sở chụp — NUT-16).
-enum TeacherTaskKind { attendance, leave, review, pickup, health }
+enum TeacherTaskKind { attendance, leave, review, pickup, health, mealPhotos }
 
 /// Mức nhấn của badge việc: cần làm ngay / có mới / thông tin.
 enum TaskBadgeLevel { todo, fresh, info }

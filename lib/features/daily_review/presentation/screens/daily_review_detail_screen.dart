@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
-import 'package:carenest_app/core/constants/motion.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
-import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
@@ -18,8 +16,7 @@ import 'package:carenest_app/features/class_roster/data/fake_class_roster_source
 import 'package:carenest_app/features/daily_review/data/fake_daily_review_source.dart';
 import 'package:carenest_app/features/daily_review/domain/daily_review.dart';
 
-/// Đánh giá hằng ngày — một bé (Figma GV04.1 bản sửa): 7 mặt, mức Đạt / Cần cố gắng / Chưa đạt (OBS-02),
-/// mặc định Đạt, GV chỉ sửa bé khác thường; ghi chú không bắt buộc (OBS-01).
+/// Đánh giá hằng ngày — một bé (mockup T04.1): tiêu chí có cấu trúc + ghi chú (OBS-01).
 /// Không hiển thị giáo án (OBS-08); dòng hoạt động chỉ là ngữ cảnh.
 class DailyReviewDetailScreen extends StatefulWidget {
   const DailyReviewDetailScreen({
@@ -62,10 +59,7 @@ class _DailyReviewDetailScreenState extends State<DailyReviewDetailScreen> {
       setState(() {
         _day = day;
         _kid = kid;
-        _answers = {
-          for (final criterion in day.criteria)
-            criterion.id: kid?.answers[criterion.id] ?? criterion.defaultOption,
-        };
+        _answers = {...?kid?.answers};
         _flagged = kid?.flagged ?? false;
         _note.text = kid?.note ?? '';
       });
@@ -157,7 +151,7 @@ class _DailyReviewDetailScreenState extends State<DailyReviewDetailScreen> {
                   title: 'Hoạt động · ${DateLabels.dayMonth(day.date)}',
                   message: day.activityLine,
                 ),
-                const SizedBox(height: AppSpacing.space3),
+                const SizedBox(height: AppSpacing.space4),
                 Text(
                   '${kid.fullName} · ${kid.presenceLine.toLowerCase()} · ${DateLabels.dayMonth(day.date)}',
                   style: textTheme.titleSmall,
@@ -193,9 +187,8 @@ class _DailyReviewDetailScreenState extends State<DailyReviewDetailScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.space2),
+                  const SizedBox(height: AppSpacing.space3),
                 ],
-                const SizedBox(height: AppSpacing.space1),
                 AppTextField(
                   label: 'Ghi chú cho phụ huynh',
                   controller: _note,
@@ -204,10 +197,11 @@ class _DailyReviewDetailScreenState extends State<DailyReviewDetailScreen> {
                 ),
                 const SizedBox(height: AppSpacing.space3),
                 // Phiếu bé ngoan OBS-10 PROPOSED: chỉ gợi ý, GV/BGH quyết định
-                _FlagToggle(
+                AppFilterChip(
                   label: 'Gắn cờ: ${day.flagLabel}',
+                  icon: AppIcons.flag,
                   selected: _flagged,
-                  onTap: _saving
+                  onSelected: _saving
                       ? null
                       : () => setState(() => _flagged = !_flagged),
                 ),
@@ -230,77 +224,6 @@ class _DailyReviewDetailScreenState extends State<DailyReviewDetailScreen> {
                 ),
               ],
             ),
-    );
-  }
-}
-
-/// Gắn cờ cả dòng (Figma GV04.1): bật thì nền + viền xanh lá, tắt thì trắng viền mảnh.
-class _FlagToggle extends StatelessWidget {
-  const _FlagToggle({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final green = AppStatusColors.of(context).tone(AppStatusTone.green);
-    final foreground = selected ? green.foreground : AppColors.textSecondary;
-    final radius = BorderRadius.circular(AppRadius.lg);
-    return Semantics(
-      container: true,
-      button: true,
-      toggled: selected,
-      label: label,
-      excludeSemantics: true,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: radius,
-          child: AnimatedContainer(
-            duration: AppMotion.fast,
-            curve: AppMotion.curve,
-            constraints: const BoxConstraints(
-              minHeight: AppSizes.minimumTapTarget,
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.space4,
-              vertical: AppSpacing.space3,
-            ),
-            decoration: BoxDecoration(
-              color: selected ? green.background : AppColors.surface,
-              borderRadius: radius,
-              border: Border.all(
-                color: selected ? green.border : AppColors.border,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  selected ? AppIcons.flag : AppIcons.flagOutline,
-                  size: AppSizes.iconInline,
-                  color: foreground,
-                ),
-                const SizedBox(width: AppSpacing.space3),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: foreground,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

@@ -12,7 +12,6 @@ Future<void> pumpAttendance(
   WidgetTester tester, {
   FakeMode mode = FakeMode.data,
   bool failSave = false,
-  bool schoolDay = true,
   double textScale = 1,
 }) async {
   usePhoneSize(tester, textScale: textScale);
@@ -24,7 +23,6 @@ Future<void> pumpAttendance(
         source: FakeAttendanceSource(
           mode: mode,
           failSave: failSave,
-          schoolDay: schoolDay,
           delay: Duration.zero,
         ),
       ),
@@ -43,32 +41,18 @@ String countOf(String label) => find
     .split(': ')
     .last;
 
-/// Danh sách chính; ô nhiệt độ cũng có Scrollable riêng nên phải chọn rõ.
-final listScrollable = find.byType(Scrollable).first;
-
 /// Cuộn tới nút theo nhãn đọc màn hình rồi bấm (danh sách dựng lười).
 Future<void> tapLabel(WidgetTester tester, String label) async {
   // Nhãn khớp đầu chuỗi: node có thể gộp thêm chữ con
   final finder = find.bySemanticsLabel(RegExp('^${RegExp.escape(label)}'));
-  await tester.scrollUntilVisible(finder, 150, scrollable: listScrollable);
-  await tester.ensureVisible(finder);
-  await tester.pumpAndSettle();
-  await tester.tap(finder);
-  await tester.pump();
-}
-
-/// Cuộn phần tử ra giữa màn rồi bấm (tránh mép dưới sát dock).
-Future<void> tapCentered(WidgetTester tester, Finder finder) async {
-  await tester.scrollUntilVisible(finder, 150, scrollable: listScrollable);
-  await Scrollable.ensureVisible(tester.element(finder), alignment: 0.5);
-  await tester.pumpAndSettle();
+  await tester.scrollUntilVisible(finder, 150);
   await tester.tap(finder);
   await tester.pump();
 }
 
 /// Về đầu danh sách để đọc các ô đếm.
 Future<void> scrollToTop(WidgetTester tester) async {
-  await tester.drag(listScrollable, const Offset(0, 3000));
+  await tester.drag(find.byType(Scrollable).first, const Offset(0, 3000));
   await tester.pumpAndSettle();
 }
 
@@ -100,160 +84,32 @@ void main() {
   });
 
   testWidgets(
-    'Redraw AC-10 (ATT-04, ATT-09): bé có đơn khóa ở Có phép (theo đơn); không đơn bấm Vắng là vắng',
+    'T02 (ATT-04): bé có đơn bấm Vắng vẫn là có phép; không đơn là vắng',
     (tester) async {
       await pumpAttendance(tester);
-      final locked = find.bySemanticsLabel(
-        'Phạm Khánh Linh: có phép theo đơn, không đổi được',
-      );
-      await tester.scrollUntilVisible(locked, 150, scrollable: listScrollable);
-      expect(locked, findsOneWidget);
-      expect(find.bySemanticsLabel('Phạm Khánh Linh: vắng'), findsNothing);
-      expect(find.bySemanticsLabel('Phạm Khánh Linh: có mặt'), findsNothing);
-      expect(find.text('Có phép (theo đơn)'), findsWidgets);
+      await tapLabel(tester, 'Phạm Khánh Linh: vắng');
       await scrollToTop(tester);
-      await tester.tap(find.text('Đánh dấu tất cả có mặt'));
-      await tester.pump();
       expect(countOf('Có phép'), '2');
       await tapLabel(tester, 'Nguyễn Minh Anh: vắng');
       await scrollToTop(tester);
       expect(countOf('Vắng'), '2');
-      expect(countOf('Có phép'), '2');
     },
   );
 
-  testWidgets(
-    'Redraw AC-10 (ATT-02, HLT-07): không báo ăn; bé có mặt kiểm tra sức khỏe, thân nhiệt không bắt buộc',
-    (tester) async {
-      await pumpAttendance(tester);
-      expect(find.text('Điểm danh & sức khỏe'), findsOneWidget);
-      expect(
-        find.text(
-          'Chạm 1 lần cho cả lớp, rồi kiểm tra sức khỏe đầu ngày từng bé có mặt.',
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining('Ăn 1 bữa', skipOffstage: false),
-        findsNothing,
-      );
-      expect(find.textContaining('báo ăn', skipOffstage: false), findsNothing);
-      expect(find.textContaining('Báo ăn', skipOffstage: false), findsNothing);
-      // Chưa có mặt ⇒ chưa có ô sức khỏe
-      expect(find.byType(TextField), findsNothing);
-      await tapLabel(tester, 'Nguyễn Minh Anh: có mặt');
-      final input = find.descendant(
-        of: find.byKey(const ValueKey('temperature-child-1')),
-        matching: find.byType(TextField),
-      );
-      await tester.scrollUntilVisible(input, 150, scrollable: listScrollable);
-      expect(
-        find.bySemanticsLabel(
-          RegExp('Thân nhiệt đầu ngày của Nguyễn Minh Anh'),
-        ),
-        findsWidgets,
-      );
-      await tester.enterText(input, '36,6');
-      await tester.pump();
-      expect(tester.widget<TextField>(input).controller!.text, '36,6');
-      expect(find.text('°C'), findsOneWidget);
-      await tester.enterText(input, '39.85');
-      await tester.pump();
-      expect(tester.widget<TextField>(input).controller!.text, '39.8');
-      // Khoảng BE nhận 20,0–45,0 °C
-      await tester.enterText(input, '46');
-      await tester.pump();
-      expect(find.text('Thân nhiệt phải từ 20,0 đến 45,0 °C'), findsOneWidget);
-      await tester.enterText(input, '30');
-      await tester.pump();
-      expect(find.text('Thân nhiệt phải từ 20,0 đến 45,0 °C'), findsNothing);
-      // Bấm Vắng ⇒ bỏ ô sức khỏe
-      await tapLabel(tester, 'Nguyễn Minh Anh: vắng');
-      expect(find.byType(TextField), findsNothing);
-    },
-  );
-
-  testWidgets(
-    'Plan 14/11 AC-1 (HLT-07): quan sát bắt buộc; có dấu hiệu phải ghi biểu hiện hoặc ghi chú; trẻ vẫn được nhận',
-    (tester) async {
-      await pumpAttendance(tester);
-      await tapLabel(tester, 'Nguyễn Minh Anh: có mặt');
-      final input = find.descendant(
-        of: find.byKey(const ValueKey('temperature-child-1')),
-        matching: find.byType(TextField),
-      );
-      await tester.scrollUntilVisible(input, 150, scrollable: listScrollable);
-      await tester.enterText(input, '38,2');
-      await tester.pump();
-      // Chỉ nhập thân nhiệt, chưa chọn quan sát ⇒ không lưu, báo lỗi đúng bé
-      await tester.tap(find.text('Lưu điểm danh (4/28)'));
-      await tester.pumpAndSettle();
-      await scrollToTop(tester);
-      expect(find.text('Còn 1 bé ghi sức khỏe chưa đủ'), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.text('Chọn kết quả quan sát sau khi kiểm tra trẻ'),
-        150,
-        scrollable: listScrollable,
-      );
-      // Có dấu hiệu nhưng chưa ghi biểu hiện / ghi chú
-      final noted = find.byKey(const ValueKey('observation-child-1-noted'));
-      await tapCentered(tester, noted);
-      expect(find.text('Ghi biểu hiện hoặc ghi chú cần lưu ý'), findsOneWidget);
-      expect(find.text('Báo phụ huynh đón về sớm'), findsOneWidget);
-      expect(find.text('Không nhận trẻ'), findsNothing);
-      for (final symptom in ['Sốt', 'Ho', 'Sổ mũi', 'Cảm cúm', 'Mệt mỏi']) {
-        expect(find.text(symptom), findsOneWidget);
-      }
-      final fever = find.text('Sốt');
-      await tapCentered(tester, fever);
-      await scrollToTop(tester);
-      expect(find.text('Còn 1 bé ghi sức khỏe chưa đủ'), findsNothing);
-      // Chuyển viện bắt buộc nơi đến và giờ
-      final referral = find.text('Chuyển cơ sở y tế / cấp cứu');
-      await tapCentered(tester, referral);
-      await scrollToTop(tester);
-      await tester.tap(find.text('Lưu điểm danh (4/28)'));
-      await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(
-        find.text('Nhập nơi chuyển trẻ đến'),
-        150,
-        scrollable: listScrollable,
-      );
-      // Đổi về không ghi nhận bất thường ⇒ bỏ biểu hiện, xử trí, hết lỗi
-      final noConcern = find.byKey(
-        const ValueKey('observation-child-1-noConcern'),
-      );
-      await tapCentered(tester, noConcern);
-      expect(find.text('Sốt'), findsNothing);
-      expect(find.text('Nhập nơi chuyển trẻ đến'), findsNothing);
-      await scrollToTop(tester);
-      expect(
-        find.text('Sức khỏe đầu ngày: 1/1 bé có mặt đã kiểm tra'),
-        findsOneWidget,
-      );
-      await tester.tap(find.text('Lưu điểm danh (4/28)'));
-      await tester.pumpAndSettle();
-      expect(find.text('Đã lưu điểm danh cả lớp.'), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'Plan 14/11 AC-2 (P-19): ngày nghỉ theo lịch trường không điểm danh',
-    (tester) async {
-      await pumpAttendance(tester, schoolDay: false);
-      expect(find.text('Hôm nay trường nghỉ'), findsOneWidget);
-      expect(find.text('Đánh dấu tất cả có mặt'), findsNothing);
-      expect(find.textContaining('Lưu điểm danh'), findsNothing);
-    },
-  );
-
-  testWidgets(
-    'Plan 14/11 (ATT-09): trẻ vắng không đơn chỉ có trạng thái Vắng, không ghi chú',
-    (tester) async {
-      await pumpAttendance(tester);
-      expect(find.text('Chưa có đơn', skipOffstage: false), findsNothing);
-    },
-  );
+  testWidgets('T02 (ATT-02): bấm tên bé có mặt để báo không ăn', (
+    tester,
+  ) async {
+    await pumpAttendance(tester);
+    await tapLabel(tester, 'Nguyễn Minh Anh: có mặt');
+    await tapLabel(tester, 'Báo ăn cho Nguyễn Minh Anh');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Không ăn'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Đơn nghỉ 13/10 · Không ăn ▾', skipOffstage: false),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('Lưu lỗi ⇒ banner, giữ nguyên lựa chọn, nút Lưu lại', (
     tester,
@@ -294,19 +150,6 @@ void main() {
 
   testWidgets('AC-10: chữ lớn 2.0 ở 360×800 không tràn layout', (tester) async {
     await pumpAttendance(tester, textScale: 2);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('AC-10: chữ lớn 2.0, mở phần có dấu hiệu, không tràn', (
-    tester,
-  ) async {
-    await pumpAttendance(tester, textScale: 2);
-    await tapLabel(tester, 'Nguyễn Minh Anh: có mặt');
-    await tapCentered(
-      tester,
-      find.byKey(const ValueKey('observation-child-1-noted')),
-    );
-    await tapCentered(tester, find.text('Chuyển cơ sở y tế / cấp cứu'));
     expect(tester.takeException(), isNull);
   });
 }

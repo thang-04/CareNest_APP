@@ -15,8 +15,8 @@ import 'package:carenest_app/features/class_roster/data/fake_class_roster_source
 import 'package:carenest_app/features/health_measure/data/fake_health_measure_source.dart';
 import 'package:carenest_app/features/health_measure/domain/health_measure.dart';
 
-/// Đo chiều cao, cân nặng — một bé (Figma GV07.1 bản sửa). Xếp loại do hệ thống tính, GV không chọn (HLT-12);
-/// lưu là công bố cho phụ huynh (HLT-11); sửa số đã lưu phải có lý do (HLT-13); không chẩn đoán (HLT-04).
+/// Đo chiều cao, cân nặng — một bé (mockup T07.1). Kết quả xếp loại do BE tính (P-13 PENDING),
+/// APP không tự so chuẩn; không chẩn đoán (HLT-04).
 class HealthMeasureDetailScreen extends StatefulWidget {
   const HealthMeasureDetailScreen({
     super.key,
@@ -43,13 +43,10 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
   MeasureKid? _kid;
   final _height = TextEditingController();
   final _weight = TextEditingController();
-  final _reason = TextEditingController();
   MeasureResult? _result;
+  bool _publish = true;
   bool _saving = false;
   String? _error;
-  String? _reasonError;
-
-  bool get _editingSaved => _kid?.state == MeasureState.measured;
 
   @override
   void initState() {
@@ -64,6 +61,7 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
         _kid = kid;
         _height.text = kid?.height ?? '';
         _weight.text = kid?.weight ?? '';
+        _publish = kid?.published ?? true;
       });
       _preview();
     });
@@ -73,7 +71,6 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
   void dispose() {
     _height.dispose();
     _weight.dispose();
-    _reason.dispose();
     super.dispose();
   }
 
@@ -94,21 +91,9 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
       setState(() => _error = 'Nhập đủ chiều cao và cân nặng.');
       return;
     }
-    final changed =
-        _height.text.trim() != (kid.height ?? '') ||
-        _weight.text.trim() != (kid.weight ?? '');
-    final reason = _reason.text.trim();
-    if (_editingSaved && changed && reason.isEmpty) {
-      setState(() {
-        _error = null;
-        _reasonError = 'Nhập lý do sửa số đo.';
-      });
-      return;
-    }
     setState(() {
       _saving = true;
       _error = null;
-      _reasonError = null;
     });
     await _source.save(
       MeasureKid(
@@ -120,34 +105,12 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
         weight: _weight.text.trim(),
         measuredWhen: 'vừa xong',
         previous: kid.previous,
-        editReason: _editingSaved && changed ? reason : null,
+        published: _publish,
       ),
     );
     if (!mounted) return;
     setState(() => _saving = false);
     widget.onSaved();
-  }
-
-  /// Hai ô số đo cạnh nhau như Figma; chữ phóng lớn ⇒ xếp dọc để nhãn không bị cắt.
-  Widget _pair(BuildContext context, Widget first, Widget second) {
-    if (MediaQuery.textScalerOf(context).scale(1) > 1.3) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          first,
-          const SizedBox(height: AppSpacing.space3),
-          second,
-        ],
-      );
-    }
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: first),
-        const SizedBox(width: AppSpacing.space3),
-        Expanded(child: second),
-      ],
-    );
   }
 
   @override
@@ -206,41 +169,39 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.space3),
-                _pair(
-                  context,
-                  AppTextField(
-                    label: 'Chiều cao (cm)',
-                    labelSuffix: '*',
-                    controller: _height,
-                    enabled: !_saving,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: numberOnly,
-                    onChanged: (_) => _preview(),
+                const SizedBox(height: AppSpacing.space4),
+                AppTextField(
+                  label: 'Chiều cao (cm)',
+                  labelSuffix: '*',
+                  controller: _height,
+                  enabled: !_saving,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
                   ),
-                  AppTextField(
-                    label: 'Cân nặng (kg)',
-                    labelSuffix: '*',
-                    controller: _weight,
-                    enabled: !_saving,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: numberOnly,
-                    onChanged: (_) => _preview(),
-                  ),
+                  inputFormatters: numberOnly,
+                  onChanged: (_) => _preview(),
                 ),
-                if (_result case final result?) ...[
-                  const SizedBox(height: AppSpacing.space3),
+                const SizedBox(height: AppSpacing.space3),
+                AppTextField(
+                  label: 'Cân nặng (kg)',
+                  labelSuffix: '*',
+                  controller: _weight,
+                  enabled: !_saving,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: numberOnly,
+                  onChanged: (_) => _preview(),
+                ),
+                const SizedBox(height: AppSpacing.space4),
+                if (_result case final result?)
                   AppCard(
                     dense: true,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          'Kết quả do hệ thống tính (chỉ hiển thị)',
+                          'Kết quả tính theo quy tắc của trường',
                           style: textTheme.titleSmall,
                         ),
                         const SizedBox(height: AppSpacing.space2),
@@ -262,50 +223,27 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
                           ],
                         ),
                         const SizedBox(height: AppSpacing.space3),
-                        // Chỉ hiển thị, không bấm được: thang mức BE trả, mức đang áp dụng tô màu + chữ đậm
-                        Semantics(
-                          container: true,
-                          label: 'Phân loại: ${result.label}',
-                          excludeSemantics: true,
-                          child: _ScaleBar(
-                            levels: result.scale,
-                            current: result.label,
-                          ),
-                        ),
+                        _ResultScale(position: result.position),
                       ],
                     ),
                   ),
-                ],
-                if (_editingSaved) ...[
-                  const SizedBox(height: AppSpacing.space3),
-                  AppTextField(
-                    label: 'Lý do sửa',
-                    labelSuffix: '*',
-                    hint: 'Ví dụ: cân lại do lần trước bé mặc áo khoác',
-                    controller: _reason,
-                    multiline: true,
-                    enabled: !_saving,
-                    errorText: _reasonError,
-                    helperText: 'Bắt buộc khi sửa số đo đã lưu.',
-                  ),
-                ],
                 const SizedBox(height: AppSpacing.space3),
                 AppCard(
-                  dense: true,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Lưu là công bố cho phụ huynh',
+                  flush: true,
+                  // ListTile vẽ hiệu ứng chạm lên Material gần nhất ⇒ cần Material trong suốt trong card
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: SwitchListTile(
+                      value: _publish,
+                      onChanged: _saving
+                          ? null
+                          : (value) => setState(() => _publish = value),
+                      title: Text(
+                        'Công bố cho phụ huynh',
                         style: textTheme.titleSmall,
                       ),
-                      Text(
-                        'Phụ huynh xem ở mục Sức khỏe',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    ],
+                      subtitle: const Text('Phụ huynh xem ở mục Sức khỏe'),
+                    ),
                   ),
                 ),
                 if (_error != null) ...[
@@ -314,7 +252,7 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
                 ],
                 const SizedBox(height: AppSpacing.space3),
                 Text(
-                  'Không phải chẩn đoán y tế. Sửa số đo phải nhập lý do, lịch sử được lưu.',
+                  'Không phải chẩn đoán y tế. Lịch sử chỉnh sửa được lưu lại.',
                   style: textTheme.bodyMedium?.copyWith(
                     color: AppColors.textMuted,
                   ),
@@ -338,69 +276,83 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
   }
 }
 
-/// Thang phân loại chỉ đọc: mỗi mức một đoạn, mức hiện tại tô xanh lá có chấm, nhãn dưới từng đoạn.
-class _ScaleBar extends StatelessWidget {
-  const _ScaleBar({required this.levels, required this.current});
+/// Thang Thiếu cân – Bình thường – Thừa cân; vị trí chấm do BE trả, có nhãn chữ bên dưới.
+class _ResultScale extends StatelessWidget {
+  const _ResultScale({required this.position});
 
-  final List<String> levels;
-  final String current;
+  final double position;
 
   @override
   Widget build(BuildContext context) {
     final green = AppStatusColors.of(context).tone(AppStatusTone.green);
-    final textTheme = Theme.of(context).textTheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var i = 0; i < levels.length; i++) ...[
-          if (i > 0) const SizedBox(width: AppSpacing.space1),
-          Expanded(
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 12,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: levels[i] == current
-                              ? green.border
-                              : AppColors.track,
-                          borderRadius: BorderRadius.circular(AppRadius.pill),
-                        ),
+    final labelStyle = Theme.of(context).textTheme.labelMedium?.copyWith(
+      color: AppColors.textMuted,
+      fontWeight: FontWeight.w500,
+    );
+    return ExcludeSemantics(
+      child: Column(
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) => SizedBox(
+              height: 16,
+              child: Stack(
+                alignment: Alignment.centerLeft,
+                children: [
+                  Container(
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: AppColors.track,
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                    ),
+                  ),
+                  Positioned(
+                    left: constraints.maxWidth / 3,
+                    width: constraints.maxWidth / 3,
+                    child: Container(
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: green.border,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
                       ),
-                      if (levels[i] == current)
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: green.main,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.space1),
-                Text(
-                  levels[i],
-                  textAlign: TextAlign.center,
-                  style: textTheme.labelMedium?.copyWith(
-                    color: levels[i] == current
-                        ? green.foreground
-                        : AppColors.textMuted,
-                    fontWeight: levels[i] == current
-                        ? FontWeight.w600
-                        : FontWeight.w500,
+                  Positioned(
+                    left: (constraints.maxWidth - 14) * position.clamp(0, 1),
+                    child: Container(
+                      width: 14,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: green.foreground,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
+          const SizedBox(height: AppSpacing.space1),
+          Row(
+            children: [
+              Expanded(child: Text('Thiếu cân', style: labelStyle)),
+              Expanded(
+                child: Text(
+                  'Bình thường',
+                  textAlign: TextAlign.center,
+                  style: labelStyle,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  'Thừa cân',
+                  textAlign: TextAlign.end,
+                  style: labelStyle,
+                ),
+              ),
+            ],
+          ),
         ],
-      ],
+      ),
     );
   }
 }

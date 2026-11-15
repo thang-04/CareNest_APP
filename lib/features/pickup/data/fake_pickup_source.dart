@@ -86,27 +86,15 @@ class FakePickupSource implements PickupSource {
     ..._kids.values.where((kid) => kid.pickedUp),
   ];
 
-  /// Các lần gọi phụ huynh đã ghi (kể cả không trả bé).
-  final List<PickupCall> calls = [];
-
-  void _markPickedUp(String childId, String by) {
+  @override
+  Future<void> handOver(String childId, RegisteredGuardian guardian) async {
     final kid = _kids[childId]!;
     _kids[childId] = PickupKid(
       childId: kid.childId,
       fullName: kid.fullName,
       guardians: kid.guardians,
       pickedUpAt: DateTime(2026, 10, 12, 16, 45),
-      pickedUpBy: by,
+      pickedUpBy: guardian.relation,
     );
-  }
-
-  @override
-  Future<void> handOver(String childId, RegisteredGuardian guardian) async =>
-      _markPickedUp(childId, guardian.relation);
-
-  @override
-  Future<void> recordCall(PickupCall call) async {
-    calls.add(call);
-    if (call.handedOver) _markPickedUp(call.childId, call.pickupPerson!);
   }
 }
