@@ -2,13 +2,13 @@
 title: Màn Ban giám hiệu trên App chỉ xem
 status: approved
 owner: chưa gán
-jira: TBD-3 / FE-FEAT-0   # mã tạm (chưa có task Jira APP, khác task BE); sửa khi user cung cấp mã thật
-branch: feature/TBD-3-FE-FEAT-0-bgh-view-only   # tên tạm, tạo từ origin/dev
+jira: G94-87 / FE-FEAT-49   # user chốt 15/11, trước là mã tạm TBD-3
+branch: feature/G94-194-FE-FEAT-49-app-ui-redraw   # code đưa vào nhánh redraw (Phase 3); nhánh tạm feature/TBD-3-FE-FEAT-0-bgh-view-only không dùng nữa
 modules: [vice-principal, principal]
 rules: [AUTH-21, AUTH-07, NUT-02, NUT-04, NUT-14, OBS-10, OBS-14]
 risk: medium
 created: 2026-11-13
-updated: 2026-11-13
+updated: 2026-11-15
 ---
 # Màn Ban giám hiệu trên App chỉ xem
 
@@ -130,3 +130,7 @@ Hiện trạng APP (`origin/dev` 4419486, code giống `dev` local):
 ### 2026-11-13 — Commit và push (user cho phép)
 - Đổi tên nhánh tạm `feature/G94-TBD-FE-FEAT-TBD-bgh-view-only` thành `feature/TBD-3-FE-FEAT-0-bgh-view-only`: hook `commit-msg` chỉ nhận mã `[A-Z][A-Z0-9]+-[0-9]+`. Commit `TBD-3` (màn BGH chỉ xem); commit riêng `TBD-2` ghi quyết định 13/11 (OTP SMS phụ huynh, không bắt tải ảnh) vào `AUTH_FLOW.md`, `NAVIGATION.md`. Không commit `.claude/settings.json` (khối plugin cá nhân), `docs/architecture/package-diagram-mobile.drawio` (không thuộc task); `stash@{0}` giữ nguyên.
 - Tiếp: user cung cấp mã Jira thật ⇒ đổi tên nhánh/commit; Figma bản Phụ huynh chờ hạn mức MCP.
+
+### 2026-11-15 — Mã Jira thật (user)
+- Mã thật: G94-87 (user 15/11). Commit BGH chỉ xem trên nhánh `feature/G94-194-FE-FEAT-49-app-ui-redraw` đổi từ `196a147` TBD-3 thành `24ae286` G94-87: code giữ nguyên, các commit sau nó đổi hash; force push được user cho phép.
+- Commit `TBD-2` (`3253153`) không chuyển sang: docs AUTH-27 ngày 14/11 trên nhánh redraw đã thay nội dung này. Nhánh tạm `feature/TBD-3-FE-FEAT-0-bgh-view-only` không dùng nữa; chỉ xóa khi user đồng ý.

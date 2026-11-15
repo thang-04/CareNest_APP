@@ -8,7 +8,7 @@ modules: [attendance, health, identity-access, notification, nutrition]
 rules: [ATT-04, ATT-06, ATT-08, AUTH-21, AUTH-22, AUTH-27, HLT-07, HLT-14, HLT-18, NUT-02, OBS-06, OBS-29, PAR-04, PAR-05, PAR-07, PCK-04]
 risk: medium
 created: 2026-11-14
-updated: 2026-11-14
+updated: 2026-11-15
 ---
 # Quyết định nghiệp vụ App 14/11 — đề xuất BE và việc sửa App
 
@@ -102,7 +102,7 @@ User cho phép; BE nhánh `feature/G94-87-BE-FEAT-0-app-rules-sms-reset` (chưa 
 - Tiếp: mã Jira App ⇒ Phase 1 (sửa code giả).
 
 ### 2026-11-14 — Phase 1 (xong, chờ user review)
-- Commit (nhánh `feature/G94-194-FE-FEAT-49-app-ui-redraw`, chưa push): `75aa7e7` G94-332 · `c38a9bc` G94-232 · `b04d113` G94-194 (bỏ "Ăn chay") · `c35dd5b` G94-194 (chuyển chế độ) · `47a0651` G94-334. Trước đó tách 3 commit cho thay đổi có sẵn: `196a147` TBD-3, `83fbe9d` G94-194, `d10195f` G94-87.
+- Commit (nhánh `feature/G94-194-FE-FEAT-49-app-ui-redraw`; hash sau khi đổi mã TBD-3 thành G94-87 ngày 15/11): `e67fd44` G94-332 · `935e1c8` G94-232 · `c6554f5` G94-194 (bỏ "Ăn chay") · `1317b4d` G94-194 (chuyển chế độ) · `c6cc0d0` G94-334. Trước đó tách 3 commit cho thay đổi có sẵn: `24ae286` G94-87 (trước là TBD-3), `a5e1055` G94-194, `5ae0d63` G94-87.
 - AC-1..AC-6 có test `Plan 14/11 AC-n`; thêm test PAR-07 cho Thông báo.
 - Khác plan: (AC-6) chế độ cuối chỉ nhớ trong phiên — lưu bền chờ plan nền App thêm storage (`TODO(Giáp)` trong `app_modes.dart`); không sửa vùng dùng chung `lib/core`, `lib/routing`. (AC-3) không có cờ `canCancel` từ BE: App hiện nút khi đơn còn ngày từ hôm nay, BE trả `LEAVE_CANNOT_CANCEL` thì báo. Thông báo bỏ ảnh đính kèm và người gửi (BE `NotificationResponse` không có).
 - Sửa kèm: hàng nút Có mặt / Vắng tràn ngang khi chữ 2.0 và nút đang chọn in đậm (đổi `Row` ⇒ `Wrap`).
