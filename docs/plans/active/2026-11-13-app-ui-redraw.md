@@ -8,7 +8,7 @@ modules: [leave_notice, parent_menu, my_child, auth, attendance, class_leave_not
 rules: [ATT-02, ATT-04, ATT-05, ATT-09, HLT-07, HLT-11, HLT-12, HLT-13, OBS-01, OBS-02, OBS-06, OBS-10, OBS-13, PCK-02, PCK-04, NUT-16, PAR-01, AUTH-19]
 risk: medium
 created: 2026-11-13
-updated: 2026-11-14
+updated: 2026-11-15
 ---
 # UI App theo bản sửa Figma 13/11 (phụ huynh, giáo viên) — dữ liệu giả
 
@@ -123,3 +123,9 @@ updated: 2026-11-14
 - Còn chờ dữ liệu/BE: cách xưng hô "Chào thầy/cô" đang viết cứng; cờ dòng điều chỉnh ở PHT 04; giờ đón (GV 06), "Đổi bé" ở GV 07.1, đơn "mới" ở GV 03 chưa có field.
 - `node scripts/verify.mjs` → `VERIFY PASS full | format ok | analyze ok | tests 219 fail 0 skip 0`; `node scripts/check-ai-layer.mjs` → 0 lỗi (8 cảnh báo E2/E7 có sẵn). So ảnh: build web, chụp 44 màn khổ 360×760 cạnh ảnh khung Figma (ảnh ngoài repo).
 - Commit: chưa commit
+
+### 2026-11-15 — Trước PR vào `dev` (user)
+- Commit BGH chỉ xem (Phase 3) đổi mã TBD-3 thành G94-87: tạo lại 11 commit từ commit đó, code giữ nguyên, hash mới (chi tiết ở plan `docs/plans/active/2026-11-13-bgh-view-only.md`).
+- App chỉ làm Android và iOS: xóa `linux/`, `macos/`, `windows/`; bỏ 3 nền tảng này khỏi `.metadata` và dòng `ephemeral/` tương ứng ở `.gitignore`. Giữ `web/` để xem và chụp màn so Figma khi dev (user 15/11). `analysis_options.yaml` giữ nguyên (mục exclude do SDK thêm).
+- Verify: `node scripts/verify.mjs` → `VERIFY PASS full | format ok | analyze ok | tests 220 fail 0 skip 0`; `node scripts/check-ai-layer.mjs` → 0 lỗi (8 cảnh báo E2/E7 có sẵn).
+- Commit: `G94-194: Remove Linux, macOS and Windows platforms`
