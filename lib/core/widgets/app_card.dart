@@ -5,7 +5,7 @@ import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 
-/// Card phẳng: trắng, bo 12, viền `border`; padding 20 (dày 16) (Figma App, DESIGN.md §7.1).
+/// Card Clay: trắng đặc, bo 28, viền sáng, bóng card; padding 20 (dày 16) (DESIGN.md §7.1).
 class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
@@ -34,8 +34,9 @@ class AppCard extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xxl),
         boxShadow: AppShadows.card,
+        // Viền trắng mờ làm mép sáng của card clay, thay bóng trong mà Flutter không có
         border: borderColor == null
-            ? Border.all(color: AppColors.border)
+            ? Border.all(color: AppColors.surface.withValues(alpha: 0.85))
             : Border.all(color: borderColor!, width: 1.5),
       ),
       clipBehavior: Clip.antiAlias,
@@ -45,14 +46,14 @@ class AppCard extends StatelessWidget {
   }
 }
 
-/// Card nổi bật của trang chủ (thẻ bé, thẻ lớp, số suất): trắng, bo 12, viền nhạt theo tông.
-/// Mỗi màn tối đa một thẻ này để giữ thứ bậc.
+/// Card nổi bật của trang chủ (thẻ bé, thẻ lớp, số suất): nền chuyển nhẹ từ màu tông sang trắng,
+/// bo 28, bóng card. Mỗi màn tối đa một thẻ này để giữ thứ bậc.
 class AppFeaturedCard extends StatelessWidget {
   const AppFeaturedCard({super.key, required this.child, this.tint});
 
   final Widget child;
 
-  /// Màu viền nhạt; null ⇒ viền `border`.
+  /// Màu phủ góc trên trái; null ⇒ `brand`.
   final Color? tint;
 
   @override
@@ -60,13 +61,17 @@ class AppFeaturedCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space5),
       decoration: BoxDecoration(
-        color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xxl),
-        border: Border.all(
-          color: tint == null
-              ? AppColors.border
-              : Color.lerp(AppColors.surface, tint, 0.3)!,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.lerp(AppColors.surface, tint ?? AppColors.brand, 0.26)!,
+            AppColors.surface,
+          ],
+          stops: const [0, 0.72],
         ),
+        border: Border.all(color: AppColors.surface.withValues(alpha: 0.85)),
         boxShadow: AppShadows.card,
       ),
       child: child,
@@ -122,7 +127,7 @@ class AppCardHeader extends StatelessWidget {
       MediaQuery.textScalerOf(context).scale(1) > 1.3;
 }
 
-/// Ô icon tròn 40, nền nhạt theo tông, icon màu tông; mặc định `primarySoft` + `primary` (Figma App).
+/// Ô icon tròn 40, nền chuyển nhẹ theo tông + quầng màu (Clay); mặc định theo `primary`.
 class AppIconTile extends StatelessWidget {
   const AppIconTile({
     super.key,
@@ -139,12 +144,21 @@ class AppIconTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final status = AppStatusColors.of(context);
     final colors = tone == null ? null : status.tone(tone!);
+    final main = colors?.main ?? status.link;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: colors?.background ?? AppColors.primarySoft,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.lerp(AppColors.surface, main, 0.26)!,
+            Color.lerp(AppColors.surface, main, 0.09)!,
+          ],
+        ),
         shape: BoxShape.circle,
+        boxShadow: AppShadows.tinted(main),
       ),
       child: Icon(
         icon,

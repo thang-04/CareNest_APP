@@ -5,6 +5,7 @@ import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/theme/app_text_styles.dart';
+import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
@@ -13,8 +14,7 @@ import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/features/food_quantities/data/fake_food_quantity_source.dart';
 import 'package:carenest_app/features/food_quantities/domain/food_quantities.dart';
 
-/// Định lượng thực phẩm — Figma Bếp 04 (bản sửa, không phiếu xuất kho).
-/// Chỉ hiển thị số BE tính (NUT-06, NUT-07), không tính lại.
+/// Định lượng thực phẩm — mockup K04. Chỉ hiển thị số BE tính (NUT-06, NUT-07), không tính lại.
 class FoodQuantitiesScreen extends StatelessWidget {
   const FoodQuantitiesScreen({
     super.key,
@@ -40,20 +40,20 @@ class FoodQuantitiesScreen extends StatelessWidget {
           }
           final teal = AppStatusColors.of(context).tone(AppStatusTone.teal);
           final header = textTheme.labelSmall?.copyWith(
-            // Nhỏ hơn labelSmall để tiêu đề cột vừa một dòng như Figma
-            fontSize: 11,
-            letterSpacing: 0.3,
             color: AppColors.textMuted,
           );
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.pagePadding),
             children: [
-              AppBanner(
-                kind: AppBannerKind.success,
-                title: '${plan.mealLabel} · ${plan.servings} suất đã xác nhận',
-                message: 'Định lượng hệ thống tính theo số suất',
-              ),
-              const SizedBox(height: AppSpacing.space3),
+              if (plan.slip case final slip?) ...[
+                AppBanner(
+                  kind: AppBannerKind.success,
+                  title: 'Phiếu xuất kho ${slip.code} · Đã duyệt',
+                  message:
+                      '${slip.approvedBy} duyệt lúc ${DateLabels.time24(slip.approvedAt)}',
+                ),
+                const SizedBox(height: AppSpacing.space3),
+              ],
               AppCard(
                 flush: true,
                 child: Column(
@@ -63,7 +63,7 @@ class FoodQuantitiesScreen extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(
                           AppSpacing.space4,
-                          AppSpacing.space3,
+                          AppSpacing.space4,
                           AppSpacing.space4,
                           AppSpacing.space2,
                         ),
@@ -71,7 +71,7 @@ class FoodQuantitiesScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                'THỰC PHẨM · ${plan.mealLabel.toUpperCase()} (${plan.servings} suất)',
+                                'THỰC PHẨM · ${plan.mealLabel.toUpperCase()} (${plan.servings} SUẤT)',
                                 style: header,
                               ),
                             ),
@@ -82,11 +82,7 @@ class FoodQuantitiesScreen extends StatelessWidget {
                       ),
                     ),
                     for (final (i, line) in plan.lines.indexed) ...[
-                      if (i > 0)
-                        const Divider(
-                          indent: AppSpacing.space4,
-                          endIndent: AppSpacing.space4,
-                        ),
+                      if (i > 0) const Divider(),
                       Semantics(
                         container: true,
                         label: '${line.food}, ${line.usage}: ${line.amount}',
@@ -94,7 +90,7 @@ class FoodQuantitiesScreen extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.space4,
-                            vertical: AppSpacing.space2 + 2,
+                            vertical: AppSpacing.space3,
                           ),
                           child: Row(
                             children: [
@@ -108,19 +104,16 @@ class FoodQuantitiesScreen extends StatelessWidget {
                                     ),
                                     Text(
                                       line.usage,
-                                      style: textTheme.labelMedium?.copyWith(
+                                      style: textTheme.bodyMedium?.copyWith(
                                         color: AppColors.textMuted,
-                                        fontWeight: FontWeight.w400,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: AppSpacing.space3),
                               Text(
                                 line.amount,
                                 style: textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w700,
                                   fontFeatures: AppTextStyles.tabularFigures,
                                   color: line.forAlternative
                                       ? teal.foreground
@@ -132,7 +125,7 @@ class FoodQuantitiesScreen extends StatelessWidget {
                         ),
                       ),
                     ],
-                    const SizedBox(height: AppSpacing.space1),
+                    const SizedBox(height: AppSpacing.space2),
                   ],
                 ),
               ),
@@ -143,10 +136,11 @@ class FoodQuantitiesScreen extends StatelessWidget {
       bottomNavigationBar: AppBottomDock(
         children: [
           AppButton(
-            label: 'Xem cách chế biến',
+            label: 'Xem phiếu xuất kho & cách chế biến',
             variant: AppButtonVariant.secondary,
             expand: true,
-            onPressed: () => openComingSoon(context, 'Cách chế biến'),
+            onPressed: () =>
+                openComingSoon(context, 'Phiếu xuất kho & cách chế biến'),
           ),
         ],
       ),

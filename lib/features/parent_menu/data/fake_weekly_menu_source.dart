@@ -49,9 +49,10 @@ class FakeWeeklyMenuSource implements WeeklyMenuSource {
                 ? 'Bé dị ứng hải sản · dùng suất thay thế cho món có cá, tôm, cua'
                 : 'Bé không có dị ứng đã khai báo · dùng thực đơn chuẩn',
             allergyAlert: hasAllergy,
-            // Chỉ hôm nay (12/10) bếp đã có ảnh mẫu
+            // Chỉ hôm nay (12/10) đã có ảnh GV đăng
             photos: i == 0
                 ? MealPhotoSet(
+                    postedBy: hasAllergy ? 'Cô Thư' : 'Cô Hà',
                     postedAt: DateTime(2026, 10, 12, 11, 5),
                     slots: const ['Bữa sáng', 'Bữa trưa', 'Bữa chiều'],
                   )

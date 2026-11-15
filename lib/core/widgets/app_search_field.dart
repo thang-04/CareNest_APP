@@ -43,15 +43,15 @@ class AppSearchField extends StatelessWidget {
             vertical: AppSpacing.space3,
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.control),
+            borderRadius: BorderRadius.circular(AppRadius.pill),
             borderSide: const BorderSide(color: AppColors.borderStrong),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.control),
+            borderRadius: BorderRadius.circular(AppRadius.pill),
             borderSide: const BorderSide(color: AppColors.borderStrong),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.control),
+            borderRadius: BorderRadius.circular(AppRadius.pill),
             borderSide: const BorderSide(color: AppColors.primary),
           ),
         ),

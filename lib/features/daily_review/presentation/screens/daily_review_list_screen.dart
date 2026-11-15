@@ -16,7 +16,7 @@ import 'package:carenest_app/features/class_roster/data/fake_class_roster_source
 import 'package:carenest_app/features/daily_review/data/fake_daily_review_source.dart';
 import 'package:carenest_app/features/daily_review/domain/daily_review.dart';
 
-/// Đánh giá hằng ngày — danh sách bé (Figma GV04). Bé vắng không cần đánh giá.
+/// Đánh giá hằng ngày — danh sách bé (mockup T04). Bé vắng không cần đánh giá.
 class DailyReviewListScreen extends StatefulWidget {
   const DailyReviewListScreen({
     super.key,
@@ -151,8 +151,9 @@ class _DailyReviewListScreenState extends State<DailyReviewListScreen> {
                       : () => _open(kid),
                 ),
               ),
-              const SizedBox(height: AppSpacing.space3),
+              const SizedBox(height: AppSpacing.space2),
             ],
+            const SizedBox(height: AppSpacing.space2),
             Text(
               'Chạm một bé để mở màn đánh giá trong ngày. Bé vắng không cần đánh giá.',
               style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
@@ -166,21 +167,8 @@ class _DailyReviewListScreenState extends State<DailyReviewListScreen> {
   static String _subtitle(KidReview kid, ReviewDay day) => switch (kid.state) {
     KidReviewState.absent => kid.presenceLine,
     KidReviewState.pending => '${kid.presenceLine} · chưa đánh giá',
-    KidReviewState.done => _doneSummary(kid, day),
+    KidReviewState.done => [
+      for (final criterion in day.criteria) ?kid.answers[criterion.id],
+    ].join(' · '),
   };
-
-  // Tóm tắt ngắn như mockup: chỉ nêu mặt khác mức mặc định, đủ mặc định thì gộp một câu
-  static String _doneSummary(KidReview kid, ReviewDay day) {
-    final changed = [
-      for (final criterion in day.criteria)
-        if (kid.answers[criterion.id] case final answer?
-            when answer != criterion.defaultOption)
-          '${criterion.title}: $answer',
-    ];
-    if (changed.isNotEmpty) return changed.join(' · ');
-    final defaults = {for (final c in day.criteria) c.defaultOption};
-    return defaults.length == 1
-        ? '${defaults.single} cả ${day.criteria.length} mặt'
-        : 'Đã đánh giá ${day.criteria.length} mặt';
-  }
 }

@@ -7,17 +7,18 @@ import 'package:carenest_app/core/theme/app_text_styles.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/my_child/domain/my_child.dart';
 
-/// Nhãn đánh giá hằng ngày; tông theo mức (OBS-02), nghĩa nằm ở chữ (không chỉ màu).
+/// Nhãn đánh giá hằng ngày; tông theo tiêu chí, nghĩa nằm ở chữ (không chỉ màu).
 class ReviewTagWrap extends StatelessWidget {
   const ReviewTagWrap({super.key, required this.tags});
 
   final List<ReviewTag> tags;
 
-  // Không dùng tông blue: badge blue không icon tự có chấm, lệch với các nhãn khác
-  static AppStatusTone toneOf(ReviewLevel level) => switch (level) {
-    ReviewLevel.achieved => AppStatusTone.green,
-    ReviewLevel.needsEffort => AppStatusTone.orange,
-    ReviewLevel.notAchieved => AppStatusTone.red,
+  static AppStatusTone toneOf(ReviewCriterion criterion) => switch (criterion) {
+    // Không dùng tông blue: badge blue không icon tự có chấm, lệch với các nhãn khác
+    ReviewCriterion.health ||
+    ReviewCriterion.emotion ||
+    ReviewCriterion.behavior => AppStatusTone.green,
+    ReviewCriterion.learning => AppStatusTone.teal,
   };
 
   @override
@@ -27,7 +28,7 @@ class ReviewTagWrap extends StatelessWidget {
       runSpacing: AppSpacing.space2,
       children: [
         for (final tag in tags)
-          AppStatusBadge(label: tag.label, tone: toneOf(tag.level)),
+          AppStatusBadge(label: tag.label, tone: toneOf(tag.criterion)),
       ],
     );
   }
@@ -180,59 +181,4 @@ class InfoLine extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Khung viền nét đứt bo 12 cho mục chưa có kết quả (khen thưởng chờ BGH duyệt — Figma PH12).
-class DashedBox extends StatelessWidget {
-  const DashedBox({super.key, required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      foregroundPainter: const _DashedBorderPainter(
-        color: AppColors.borderStrong,
-        radius: AppRadius.xxl,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.space4),
-        child: child,
-      ),
-    );
-  }
-}
-
-class _DashedBorderPainter extends CustomPainter {
-  const _DashedBorderPainter({required this.color, required this.radius});
-
-  final Color color;
-  final double radius;
-
-  static const _dash = 5.0;
-  static const _gap = 4.0;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-    final outline = Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(
-          (Offset.zero & size).deflate(0.6),
-          Radius.circular(radius),
-        ),
-      );
-    for (final metric in outline.computeMetrics()) {
-      for (var start = 0.0; start < metric.length; start += _dash + _gap) {
-        canvas.drawPath(metric.extractPath(start, start + _dash), paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DashedBorderPainter oldDelegate) =>
-      oldDelegate.color != color || oldDelegate.radius != radius;
 }

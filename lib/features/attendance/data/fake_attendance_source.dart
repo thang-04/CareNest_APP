@@ -9,20 +9,16 @@ abstract interface class AttendanceSource {
 }
 
 /// Dữ liệu giả lớp Mầm 3A (28 trẻ) đầu giờ 12/10: GV chưa nhập; Khánh Linh và Minh Châu có đơn nghỉ;
-/// Đức Huy vắng không đơn — chỉ trạng thái Vắng, không ghi chú (như Web, ATT-09).
+/// Đức Huy vắng không đơn (cô Hà đã gọi phụ huynh) — khớp màn Đơn xin nghỉ của lớp.
 class FakeAttendanceSource implements AttendanceSource {
   FakeAttendanceSource({
     this.mode = FakeMode.data,
     this.failSave = false,
-    this.schoolDay = true,
     this.delay = const Duration(milliseconds: 400),
   });
 
   final FakeMode mode;
   final bool failSave;
-
-  /// false ⇒ giả lập ngày nghỉ theo lịch trường (P-19).
-  final bool schoolDay;
   final Duration delay;
 
   static const classId = FakeClassRosterSource.classId;
@@ -31,6 +27,8 @@ class FakeAttendanceSource implements AttendanceSource {
     'child-1': 'Đơn nghỉ 13/10',
     'k-02': 'Dị ứng hải sản',
     'k-03': 'Ốm · đơn 11–13/10',
+    'k-04': 'Chưa có đơn',
+    'k-05': 'Ăn 1 bữa · Trưa',
     'k-08': 'Việc gia đình · đơn 12/10',
   };
   static const _onLeave = {'k-03', 'k-08'};
@@ -45,6 +43,7 @@ class FakeAttendanceSource implements AttendanceSource {
             : kid.id == 'k-04'
             ? AttendanceStatus.unexcused
             : AttendanceStatus.notRecorded,
+        eats: !_onLeave.contains(kid.id) && kid.id != 'k-04',
         note: _notes[kid.id],
         hasLeaveNotice: _onLeave.contains(kid.id),
       ),
@@ -63,9 +62,8 @@ class FakeAttendanceSource implements AttendanceSource {
         childCount: list.length,
       ),
       date: FakeParentHomeSource.today,
-      kids: schoolDay ? list : const [],
-      lockAt: schoolDay ? '08:30' : null,
-      isSchoolDay: schoolDay,
+      kids: list,
+      lockAt: '08:30',
     );
   }
 

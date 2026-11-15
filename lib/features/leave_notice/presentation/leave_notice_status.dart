@@ -2,26 +2,28 @@ import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/features/leave_notice/domain/leave_notice.dart';
 
-/// Không có trạng thái chờ duyệt hay GV đã xem (ATT-05): đã gửi / đã hủy / hủy phần còn lại (ATT-04).
+/// Không có trạng thái chờ duyệt (ATT-05, DESIGN.md §6.2): chỉ GV đã xem / chưa xem / đã huỷ.
 extension LeaveNoticeView on LeaveNotice {
   String get statusLabel => switch (status) {
-    LeaveNoticeStatus.submitted when isPartlyCancelled =>
-      'Hủy từ ${DateLabels.dayMonth(effectiveTo.add(const Duration(days: 1)))}',
-    LeaveNoticeStatus.submitted => 'Đã gửi',
-    LeaveNoticeStatus.cancelled => 'Đã hủy',
+    LeaveNoticeStatus.cancelled => 'Đã huỷ',
+    _ when seenByTeacher => 'GV đã xem',
+    _ => 'GV chưa xem',
   };
 
   AppStatusTone get statusTone => switch (status) {
-    LeaveNoticeStatus.submitted when isPartlyCancelled => AppStatusTone.orange,
-    LeaveNoticeStatus.submitted => AppStatusTone.green,
     LeaveNoticeStatus.cancelled => AppStatusTone.gray,
+    _ when seenByTeacher => AppStatusTone.green,
+    _ => AppStatusTone.approval,
   };
 
-  /// "13/10/2026" hoặc "11/10 – 13/10/2026"
-  String get periodLabel => DateLabels.range(from, to);
+  /// "13/10/2026 · Cả ngày" hoặc "11/10 – 13/10/2026 · Cả ngày"
+  String get periodLabel => '${DateLabels.range(from, to)} · ${session.label}';
+}
 
-  /// Hủy phần còn lại: các ngày đầu vẫn Vắng có phép (BE `effectiveTo`).
-  String? get remainingLabel => isPartlyCancelled
-      ? 'Vẫn nghỉ có phép: ${DateLabels.range(from, effectiveTo)}'
-      : null;
+extension LeaveSessionView on LeaveSession {
+  String get label => switch (this) {
+    LeaveSession.fullDay => 'Cả ngày',
+    LeaveSession.morning => 'Buổi sáng',
+    LeaveSession.afternoon => 'Buổi chiều',
+  };
 }

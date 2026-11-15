@@ -16,16 +16,16 @@ class DayEvent {
   final String label;
 }
 
-/// Mức đánh giá ngày (OBS-02): Đạt / Cần cố gắng / Chưa đạt.
-enum ReviewLevel { achieved, needsEffort, notAchieved }
+/// Tiêu chí đánh giá hằng ngày; danh sách thật do trường cấu hình (OBS-02, P-11).
+enum ReviewCriterion { health, emotion, learning, behavior }
 
 @immutable
 class ReviewTag {
-  const ReviewTag({required this.level, required this.label});
+  const ReviewTag({required this.criterion, required this.label});
 
-  final ReviewLevel level;
+  final ReviewCriterion criterion;
 
-  /// "Sức khỏe: Đạt"
+  /// "Sức khỏe: Tốt"
   final String label;
 }
 
@@ -41,12 +41,15 @@ class DailyReview {
 
 @immutable
 class LeaveSummary {
-  const LeaveSummary({required this.title, required this.detail});
+  const LeaveSummary({
+    required this.title,
+    required this.detail,
+    required this.seenByTeacher,
+  });
 
   final String title;
-
-  /// "Vắng có phép 13/10" (ATT-04)
   final String detail;
+  final bool seenByTeacher;
 }
 
 @immutable
@@ -98,15 +101,14 @@ class HealthSummary {
   final String? nutritionLabel;
 }
 
-/// Nhận xét định kỳ theo tháng, học kỳ, cuối năm — không có kỳ tuần (OBS-06).
 @immutable
 class DevelopmentSummary {
   const DevelopmentSummary({
-    required this.commentTitle,
-    required this.commentNote,
-    required this.commentAuthor,
-    required this.commentConfirmed,
-    required this.previousCommentTitle,
+    required this.weekRange,
+    required this.weekNote,
+    required this.weekAuthor,
+    required this.weekConfirmed,
+    required this.monthlyTitle,
     required this.flagMonth,
     required this.flagsEarned,
     required this.flagsNeeded,
@@ -114,16 +116,14 @@ class DevelopmentSummary {
     required this.yearEndNote,
   });
 
-  /// "Nhận xét tháng 9/2026"
-  final String commentTitle;
-  final String commentNote;
+  /// "05/10 – 09/10"
+  final String weekRange;
+  final String weekNote;
 
-  /// "Cô Trần Thu Hà · 30/09/2026"
-  final String commentAuthor;
-  final bool commentConfirmed;
-
-  /// Kỳ nhận xét trước, vd. "Nhận xét tháng 8/2026"
-  final String previousCommentTitle;
+  /// "Cô Trần Thu Hà · 09/10/2026"
+  final String weekAuthor;
+  final bool weekConfirmed;
+  final String monthlyTitle;
 
   /// Phiếu bé ngoan (OBS-10 PROPOSED): số phiếu và ngưỡng do BE trả.
   final String flagMonth;
@@ -173,17 +173,21 @@ class AttendanceDay {
     required this.date,
     required this.status,
     this.arrivedAt,
+    this.mealsLine,
     this.pickupLine,
+    this.mealCancelled = false,
   });
 
   final DateTime date;
-
-  /// Có mặt là ăn đủ các bữa đã cấu hình, không ghi từng bữa (ATT-02).
   final AttendanceDayStatus status;
   final DateTime? arrivedAt;
 
+  /// "đã ăn sáng · trưa · chiều" — không dùng ký tự ✓ vì font Be Vietnam Pro không có
+  final String? mealsLine;
+
   /// "16:45 · Mẹ"
   final String? pickupLine;
+  final bool mealCancelled;
 }
 
 /// Một tháng điểm danh; các số đếm là BE trả, không đếm từ danh sách ngày trên máy.
@@ -194,6 +198,7 @@ class AttendanceMonth {
     required this.presentCount,
     required this.excusedCount,
     required this.absentCount,
+    required this.cancelledMealCount,
     required this.days,
   });
 
@@ -201,6 +206,7 @@ class AttendanceMonth {
   final int presentCount;
   final int excusedCount;
   final int absentCount;
+  final int cancelledMealCount;
   final List<AttendanceDay> days;
 }
 

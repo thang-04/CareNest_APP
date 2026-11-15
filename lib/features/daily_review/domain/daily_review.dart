@@ -1,13 +1,12 @@
 import 'package:flutter/foundation.dart';
 
-/// Mặt đánh giá ngày do BE trả (OBS-02, P-11) — APP không có danh sách cứng.
+/// Tiêu chí đánh giá do trường cấu hình (OBS-02, P-11) — APP không có danh sách cứng.
 @immutable
 class ReviewCriterionDef {
   const ReviewCriterionDef({
     required this.id,
     required this.title,
     required this.options,
-    required this.defaultOption,
   });
 
   final String id;
@@ -15,11 +14,8 @@ class ReviewCriterionDef {
   /// "Sức khỏe"
   final String title;
 
-  /// "Đạt", "Cần cố gắng", "Chưa đạt" (OBS-02)
+  /// "Tốt", "Bình thường", "Cần chú ý"
   final List<String> options;
-
-  /// Mức mặc định khi bé chưa có đánh giá: GV chỉ sửa bé khác thường (OBS-01).
-  final String defaultOption;
 }
 
 enum KidReviewState { pending, done, absent }

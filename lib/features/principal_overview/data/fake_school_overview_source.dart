@@ -1,4 +1,5 @@
 import 'package:carenest_app/features/campus_children/data/fake_campus_children_source.dart';
+import 'package:carenest_app/features/cooking_status/domain/cooking_status.dart';
 import 'package:carenest_app/features/parent_home/data/fake_parent_home_source.dart';
 import 'package:carenest_app/features/principal_overview/domain/school_overview.dart';
 import 'package:carenest_app/features/reward_proposals/data/fake_principal_reward_source.dart';
@@ -51,6 +52,7 @@ class FakeSchoolOverviewSource implements SchoolOverviewSource {
           presentRatio: 0.93,
           presentRate: '93%',
           confirmedMeals: 182,
+          kitchenStage: CookingStage.cooking,
         ),
         CampusSnapshot(
           name: 'Cơ sở 2',
@@ -59,6 +61,7 @@ class FakeSchoolOverviewSource implements SchoolOverviewSource {
           presentRatio: 0.94,
           presentRate: '94%',
           confirmedMeals: 124,
+          kitchenStage: CookingStage.cooking,
         ),
       ],
       pending: mode == FakeMode.empty

@@ -75,17 +75,10 @@ class FakeHealthMeasureSource implements HealthMeasureSource {
     return const MeasureResult(
       label: 'Bình thường',
       detail: 'Cân nặng/tuổi · Chiều cao/tuổi đạt',
-      scale: ['Thiếu cân', 'Bình thường', 'Thừa cân'],
+      position: 0.5,
     );
   }
 
-  /// Bản cũ của các số đo đã sửa — lịch sử giả thay cho BE (HLT-13).
-  final List<MeasureKid> history = [];
-
   @override
-  Future<void> save(MeasureKid kid) async {
-    final old = _kids[kid.childId];
-    if (old != null && old.state == MeasureState.measured) history.add(old);
-    _kids[kid.childId] = kid;
-  }
+  Future<void> save(MeasureKid kid) async => _kids[kid.childId] = kid;
 }

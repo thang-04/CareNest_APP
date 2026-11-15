@@ -9,7 +9,7 @@ import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_otp_field.dart';
 import 'package:carenest_app/features/auth/presentation/widgets/auth_not_connected.dart';
 
-/// Xác thực OTP (Figma PH16). Mã đúng/sai và hạn gửi lại do BE quyết định.
+/// Xác thực OTP — mockup P16. Mã đúng/sai và hạn gửi lại do BE quyết định.
 class OtpVerifyScreen extends StatefulWidget {
   const OtpVerifyScreen({
     super.key,
@@ -95,14 +95,11 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
               children: [
                 TextSpan(
                   text: widget.maskedPhone ?? 'số điện thoại của bạn',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ],
             ),
-            style: textTheme.bodyMedium?.copyWith(
+            style: textTheme.bodyLarge?.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
