@@ -8,12 +8,12 @@ Cập nhật: 2026-11-15 (code App đã theo Figma bản sửa 13/11 và quyết
 | --- | --- |
 | Source code APP | UI 5 vai trò theo Figma bản sửa 13/11 và quyết định 14/11, style phẳng của Figma thay style Clay (plan `docs/plans/active/2026-11-13-app-ui-redraw.md`, `docs/plans/active/2026-11-14-app-business-decisions.md`; bản mockup trước đó: `docs/plans/completed/2026-10-13-ui-mockup-redesign.md`). **Dữ liệu giả**, chưa gọi API. Màn theo role chỉ có trong debug (xem `docs/architecture/NAVIGATION.md`). Phụ huynh, Giáo viên, Bếp dùng App; Phó HT và Hiệu trưởng chỉ xem (AUTH-21, ADR-0026). Phần còn lệch BE và chưa làm: bảng dưới |
 | AI context + docs | Bản đầu (routing, workflow, feature map theo role) |
-| Framework | Flutter CONFIRMED (user, 2026-10-08) — quy chuẩn `DESIGN.md` |
+| Framework | Flutter CONFIRMED (user, 2026-10-08) — quy chuẩn `DESIGN.md`. SDK theo lockfile: Flutter 3.47.6 / Dart 3.13.5 (10/08); 15/11 cài lại ở `D:\Flutter_Setup\stable-3.47.6\flutter`, dùng qua PATH của tiến trình (PATH mặc định còn 3.44.0) — `docs/quality/VERIFICATION.md` mục 2026-11-15 |
 | Thư viện nền | Navigation: `go_router` CONFIRMED · user duyệt 13/11: `flutter_riverpod`, `dio`, `flutter_appauth`, `flutter_secure_storage`, `json_serializable`, `firebase_core` + `firebase_messaging` — chưa thêm vào `pubspec.yaml`, chờ plan nền App có mã Jira (`docs/architecture/MOBILE_ARCHITECTURE.md`) |
 | Nền tảng | Sản phẩm Android + iOS; Capstone chỉ build Android (user 14/11). Repo chỉ giữ `android/`, `ios/` và `web/` (web chỉ để xem/chụp màn khi dev); đã xóa `linux/`, `macos/`, `windows/` (user 15/11). Không offline (user 14/11) |
 | Auth | Đăng nhập PKCE qua trang Keycloak có theme CareNest (user 13/11; BE mobile client không cho password grant; theme là task BE). Quên mật khẩu: SMS OTP cho phụ huynh, GV, bếp, màn trong App (BE AUTH-27; API `POST /auth/password/forgot/sms` ở nhánh BE `feature/G94-87-BE-FEAT-0-app-rules-sms-reset`; SMS thật chờ BE G94-298). Endpoint/thời hạn token theo `BE:docs/contracts/AUTH_CONTRACT.md` — `docs/integration/AUTH_FLOW.md` |
 | Push provider | FCM qua `firebase_messaging` (user 13/11); mọi thông báo BE đều push, danh mục theo role (BE PAR-07, `docs/integration/PUSH_NOTIFICATION.md`); BE có `PUT /me/devices`, `GET /me/notifications` |
-| BE | Đã có skeleton nền móng (response chuẩn, prefix API, OpenAPI); chưa có auth và nghiệp vụ — xem `BE:docs/context/CURRENT_STATE.md` |
+| BE | `dev` đã có auth: Keycloak + Resource Server (ADR-0011, PR #6 ngày 31/10); client App `carenest-mobile` public + PKCE S256 (`BE:docs/contracts/AUTH_CONTRACT.md`). Đã có API cho cơ cấu trường, trẻ/tiếp nhận, điểm danh + sức khỏe trong ngày, số suất + bán trú, sức khỏe (đợt khám, cân đo), kế hoạch giáo dục. Bảng endpoint: `docs/integration/BE_API_INDEX.md` (sinh từ `BE:docs/api/openapi.yaml`). Chi tiết: `BE:docs/context/CURRENT_STATE.md` |
 
 ## Feature theo role
 

@@ -34,3 +34,12 @@ Làn L:            ghi đủ vào Progress log của plan; chat chỉ tóm tắt
 - node scripts/check-ai-layer.mjs → exit 0: 0 lỗi, 4 cảnh báo E7 về glob data/offline/controllers/providers chưa có file.
 - Chưa kiểm chứng: build Android/iOS, emulator/máy thật, API BE, cấu hình SDK trong IDE và PATH mặc định. Android còn license chưa chấp nhận.
 - Plan: docs/plans/completed/2026-10-08-flutter-sdk-3-47-6.md.
+
+## 2026-11-15 — Verify và build Android trước PR G94-194
+- Môi trường kiểm tra: Windows 11, Flutter 3.44.0 / Dart 3.12.0 trên PATH (`C:\Users\admin\Downloads\flutter\bin`). Thư mục `D:\Flutter_Setup\stable-3.47.6` của mục 2026-10-08 không còn trên máy; không tìm thấy SDK 3.47.6 khác.
+- Lockfile vẫn theo Flutter 3.47.6. `flutter pub get --enforce-lockfile` → exit 65 ("Would change 5 dependencies": intl, matcher, meta, test_api, vector_math về bản cũ); lockfile không đổi.
+- `node scripts/verify.mjs` → `VERIFY PASS full | format ok | analyze ok | tests 220 fail 0 skip 0`; `flutter build apk --debug` → `√ Built build\app\outputs\flutter-apk\app-debug.apk`. Cả hai không resolve lại package: dùng `.dart_tool/package_config.json` sinh ngày 10/10 bằng pub 3.12.0 (intl 0.20.2, matcher 0.12.19, meta 1.18.0, test_api 0.7.11, vector_math 2.2.0), khác lockfile.
+- Cài lại Flutter 3.47.6 (user cho phép 15/11): tải `stable/windows/flutter_windows_3.47.6-stable.zip` theo manifest `releases_windows.json`, SHA256 khớp, giải nén vào `D:\Flutter_Setup\stable-3.47.6\flutter`; chỉ chọn qua PATH của tiến trình.
+- Với Flutter 3.47.6 / Dart 3.13.5: `flutter pub get --enforce-lockfile` → exit 0; `node scripts/verify.mjs` → `VERIFY PASS full | format ok | analyze ok | tests 220 fail 0 skip 0`; `flutter build apk --debug` → `√ Built build\app\outputs\flutter-apk\app-debug.apk`. `.dart_tool/package_config.json` giờ khớp lockfile; không file nào trong git đổi.
+- Chưa kiểm chứng: chạy APK trên emulator/máy thật; iOS; API BE. PATH mặc định và SDK trong IDE vẫn chọn Flutter 3.44.0.
+- Incident: APP-ENV-261008-flutter-sdk-mismatch (tái diễn 15/11; workaround lại sau khi cài 3.47.6).

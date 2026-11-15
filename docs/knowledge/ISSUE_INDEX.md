@@ -7,5 +7,5 @@ ID: `APP-BUG-` (code) · `APP-CASE-` (edge case nghiệp vụ/UX) · `APP-ENV-` 
 | ID | Màn hình/feature | Triệu chứng (từ khóa + chuỗi lỗi + thiết bị/OS) | Root cause (1 câu, `?` nếu chưa rõ) | Status |
 | --- | --- | --- | --- | --- |
 | APP-ENV-261008-verify-quoted-bat | harness verify | `node scripts/verify.mjs` Windows: "The system cannot find the path specified." khi gọi flutter/dart | cmd + tên `.bat` trong ngoặc kép làm `%~dp0` sai | fixed |
-| APP-ENV-261008-flutter-sdk-mismatch | toolchain | Windows: Dart 3.11.5, version solving failed; SDK mới: lockfile không khớp | Đã đồng bộ 5 package và verify PASS với SDK mới; IDE/PATH mặc định còn cần chọn SDK mới | workaround |
+| APP-ENV-261008-flutter-sdk-mismatch | toolchain | Windows: Dart 3.11.5, version solving failed; SDK mới: lockfile không khớp; 15/11: PATH chọn Flutter 3.44.0, enforce-lockfile exit 65 nhưng verify vẫn PASS | 10/08 đồng bộ 5 package với Flutter 3.47.6; 15/11 cài lại 3.47.6, enforce-lockfile và verify PASS qua PATH tiến trình; PATH mặc định/IDE còn 3.44.0 | workaround |
 | APP-BUG-261014-greeting-bell-semantics-merge | parent-home | Trình đọc màn hình: lời chào + chuông gộp một nút, mất "Thông báo, N chưa đọc" sau khi bỏ hero | `Semantics(header/button)` thiếu `container: true` nên gộp vào nút cha chung | fixed |
