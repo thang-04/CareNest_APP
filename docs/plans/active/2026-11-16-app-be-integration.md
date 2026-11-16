@@ -525,3 +525,35 @@ Rollback chung: `USE_MOCK=true` (mặc định) giữ hành vi `dev` hiện tạ
 - User: duyệt plan, chọn Native, cho tạo nhánh `feature/TBD-4-FE-FEAT-0-app-foundation`, commit nhỏ theo từng phần.
 - Nhánh tạo từ `origin/dev` `a811d3d` (không track `origin/dev`).
 - Task 0 Step 1: `pubspec.lock` trả về bản commit; `flutter pub get --enforce-lockfile` (3.47.6) exit 0. VS Code: workspace `D:\project_capstone\project\web\.vscode\settings.json` đặt `dart.flutterSdkPath` = `D:\Flutter_Setup\stable-3.47.6\flutter` (cài đặt user cũ trỏ tới thư mục không còn, nên extension dùng Flutter 3.44.0 trên PATH).
+
+### 2026-11-16 — Phase 1a: Task 0–4 (chờ review)
+- Verify: `node scripts/verify.mjs` (Flutter 3.47.6) → `VERIFY PASS full | format ok | design ok | analyze ok | tests 238 fail 0 skip 0`; `flutter pub get --enforce-lockfile` exit 0; `flutter build apk --debug` → `√ Built build\app\outputs\flutter-apk\app-debug.apk`; `node scripts/check-ai-layer.mjs` → 0 lỗi.
+- Gói đã thêm: `flutter_riverpod` 3.5.0, `dio` 5.11.1, `flutter_appauth` 13.0.0, `flutter_secure_storage` 11.2.0, `json_annotation` 4.12.0; dev `json_serializable` 6.15.2, `build_runner` 2.17.1.
+- Khác plan:
+  - Commit nhỏ hơn 1 commit/task (user 16/11).
+  - `AccessTokenSource` được ném `AppFailure` khi refresh không tới được Keycloak ⇒ App báo lỗi mạng, không đăng xuất nhầm (Review Focus 2). Task 6 phải đổi `OidcUnavailable` sang `NetworkFailure`.
+  - Mapper giữ nguyên `AppFailure` mà interceptor bọc trong `DioException`.
+  - Log che id số trong path thành `{id}`, path có tiền tố `/api`.
+  - `LastModeStore` ở file riêng `lib/core/storage/last_mode_store.dart`.
+  - Bảng `BE_API_INDEX.md` sinh từ worktree chạy BE `D:\project_capstone\CareNest_BE-devdb` (đưa lên `origin/dev` `f76e9092`); clone BE chính đang ở nhánh G94-329.
+  - Task 0 Step 5–6 (`adb reverse`, tài khoản seed) dời tới trước Task 10.
+- Bảng commit → task (đổi sang mã Jira thật trước PR):
+
+| Commit | Task plan | Nội dung |
+| --- | --- | --- |
+| `1ad0f31` | Task 0 | Plan |
+| `84b8f69` | Task 0 | Sinh lại `BE_API_INDEX.md` |
+| `7d67fa8` | Task 1 | Cấu hình Android/iOS cho redirect PKCE |
+| `8a880b5` | Task 1 | Thêm dependency |
+| `04a7316` | Task 1 | Biến OIDC + `Env.missingKeys` |
+| `35c04f6` | Task 1 | `env/local.example.json`, ignore `*.g.dart` |
+| `95eef62` | Task 2 | `AppFailure` + `unwrapEnvelope` |
+| `b4908a2` | Task 2 | `mapDioException` |
+| `1bac206` | Task 3 | `ApiClient` + `FakeHttpAdapter` |
+| `38038dc` | Task 3 | Mapper giữ lỗi của interceptor |
+| `57a419f` | Task 3 | `AuthInterceptor` + `createApiDio` |
+| `34c17fd` | Task 3 | `SafeLogInterceptor` |
+| `2d7457c` | Task 4 | `TokenStorage` |
+| `3662941` | Task 4 | `LastModeStore` |
+
+- Tiếp: user review 1a ⇒ Phase 1b (Task 5–6).
