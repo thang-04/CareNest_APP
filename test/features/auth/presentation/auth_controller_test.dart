@@ -240,6 +240,20 @@ void main() {
     expect(h.state, _signedOut(AuthNotice.signInFailed));
   });
 
+  test('signIn_whileLoginPageOpen_opensItOnce', () async {
+    final page = Completer<OidcTokens>();
+    h.oidc.signInResults.add(page);
+    h.me(roles: ['TEACHER']);
+
+    final first = h.controller.signIn(loginHint: '0900000001');
+    await h.controller.signIn(loginHint: '0900000001');
+    page.complete(fakeTokens('1', now: h.now));
+    await first;
+
+    expect(h.oidc.signInCalls, 1);
+    expect(h.state, _signedIn(AppMode.teacher));
+  });
+
   test('signOut_clearsUserAndMode', () async {
     await h.restoredAs(roles: ['TEACHER', 'PARENT'], childIds: [7]);
     await h.controller.switchMode(AppMode.parent);

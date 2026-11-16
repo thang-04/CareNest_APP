@@ -64,6 +64,8 @@ class AuthController extends Notifier<AuthState> {
   Future<void> retry() => start();
 
   Future<void> signIn({String? loginHint}) async {
+    // Trang đăng nhập đang mở ⇒ bỏ lượt mới: AppAuth Android từ chối 2 lượt cùng lúc
+    if (state is AuthSigningIn) return;
     final session = ++_session;
     state = const AuthSigningIn();
     try {
