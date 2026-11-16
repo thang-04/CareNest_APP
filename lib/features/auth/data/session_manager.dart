@@ -79,12 +79,18 @@ class SessionManager implements AccessTokenSource {
   @override
   Future<bool> refreshAfterUnauthorized() => _refreshForRequest();
 
+  /// Xóa phiên trên máy rồi trả về ngay; thu hồi ở Keycloak chạy nền, không bắt UI chờ mạng.
   Future<void> signOut() async {
     _generation++;
     final refresh = _refresh;
     _clearMemory();
     await _storage.clear();
-    if (refresh == null) return;
+    if (refresh != null) unawaited(_revokeQuietly(refresh));
+  }
+
+  void dispose() => _ended.close();
+
+  Future<void> _revokeQuietly(String refresh) async {
     try {
       await _oidc.revoke(refresh);
     } on OidcFailure {
@@ -92,14 +98,12 @@ class SessionManager implements AccessTokenSource {
     }
   }
 
-  void dispose() => _ended.close();
-
-  // Request đang chạy: lỗi mạng khi refresh ⇒ NetworkFailure, không coi là hết phiên
+  // Request đang chạy: lỗi khi refresh ⇒ NetworkFailure/ServerFailure, không coi là hết phiên
   Future<bool> _refreshForRequest() async {
     try {
       return await _refreshShared(notifyEnded: true);
-    } on OidcUnavailable {
-      throw const NetworkFailure();
+    } on OidcUnavailable catch (failure) {
+      throw failure.network ? const NetworkFailure() : const ServerFailure();
     }
   }
 
@@ -122,6 +126,11 @@ class SessionManager implements AccessTokenSource {
           idToken: tokens.idToken ?? _idToken,
         ),
       );
+      if (generation != _generation) {
+        // Đăng xuất chen vào lúc đang ghi ⇒ không để token vừa ghi sống lại ở lần mở App sau
+        if (_refresh == null) await _storage.clear();
+        return false;
+      }
       _apply(tokens);
       return true;
     } on OidcInvalidGrant {

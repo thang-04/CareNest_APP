@@ -185,6 +185,39 @@ void main() {
     expect(await session.validAccessToken(), isNull);
   });
 
+  test('signOut_duringRefreshStorageWrite_doesNotRestoreSession', () async {
+    final gated = _GatedStore();
+    final gatedStorage = TokenStorage(gated, env: 'test');
+    final s = SessionManager(oidc: oidc, storage: gatedStorage, now: () => now);
+    addTearDown(s.dispose);
+    oidc.signInResults.add(fakeTokens('1', now: now));
+    await s.signIn();
+    oidc.refreshResults.add(fakeTokens('2', now: now));
+    gated.gate = Completer<void>();
+
+    final refresh = s.refreshAfterUnauthorized();
+    await Future<void>.delayed(Duration.zero);
+    final signOut = s.signOut();
+    gated.gate!.complete();
+    await signOut;
+
+    expect(await refresh, isFalse);
+    expect(await s.validAccessToken(), isNull);
+    expect(await gatedStorage.read(), isNull);
+  });
+
+  test('refresh_rejectedByProvider_throwsServerFailure', () async {
+    await signedIn();
+    oidc.refreshResults.add(
+      const OidcUnavailable('unauthorized_client', network: false),
+    );
+
+    await expectLater(
+      session.refreshAfterUnauthorized(),
+      throwsA(isA<ServerFailure>()),
+    );
+  });
+
   test('signOut_revokeFails_stillClears', () async {
     await signedIn();
     oidc.revokeError = const OidcUnavailable('offline');
@@ -194,4 +227,16 @@ void main() {
     expect(await storage.read(), isNull);
     expect(await session.validAccessToken(), isNull);
   });
+}
+
+/// Store giữ lệnh ghi refresh token tới khi mở cổng (đăng xuất chen vào giữa lúc ghi).
+class _GatedStore extends MemorySecureStore {
+  Completer<void>? gate;
+
+  @override
+  Future<void> write(String key, String value) async {
+    final pending = gate;
+    if (pending != null && key.endsWith('refresh_token')) await pending.future;
+    return super.write(key, value);
+  }
 }
