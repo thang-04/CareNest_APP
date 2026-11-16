@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -279,4 +281,128 @@ void main() {
     expect(h.http.requests, hasLength(1));
     expect(h.state, _signedIn(AppMode.teacher));
   });
+
+  group('review fixes', () {
+    test('onResumed_networkError_staysSignedIn', () async {
+      await h.restoredAs(roles: ['TEACHER']);
+      h.now = h.now.add(const Duration(seconds: 61));
+      h.http.enqueue(FakeReply.envelope(503, errorCode: 1013));
+
+      await h.controller.onResumed();
+
+      expect(h.state, _signedIn(AppMode.teacher));
+    });
+
+    test('onResumed_afterFailure_retriesOnNextResume', () async {
+      await h.restoredAs(roles: ['TEACHER']);
+      h.now = h.now.add(const Duration(seconds: 61));
+      h.http.enqueue(FakeReply.envelope(503, errorCode: 1013));
+      await h.controller.onResumed();
+
+      h.now = h.now.add(const Duration(seconds: 5));
+      h.http.enqueue(FakeReply.envelope(403, errorCode: 1015));
+      await h.controller.onResumed();
+
+      expect(h.state, _blocked(AuthBlockReason.accountUnavailable));
+    });
+
+    test('signOut_whileResumeRefetchInFlight_staysSignedOut', () async {
+      await h.restoredAs(roles: ['TEACHER']);
+      h.now = h.now.add(const Duration(seconds: 61));
+      final late = Completer<FakeReply>();
+      h.http.enqueueLater(late.future);
+
+      final resumed = h.controller.onResumed();
+      await Future<void>.delayed(Duration.zero);
+      await h.controller.signOut();
+      late.complete(FakeReply.envelope(200, data: fakeMe(roles: ['TEACHER'])));
+      await resumed;
+
+      expect(h.state, _signedOut());
+    });
+
+    test('signOut_whileSignInLoadsAccount_staysSignedOut', () async {
+      h.oidc.signInResults.add(fakeTokens('1', now: h.now));
+      final late = Completer<FakeReply>();
+      h.http.enqueueLater(late.future);
+
+      final signingIn = h.controller.signIn();
+      await _settle(() => h.http.requests.isNotEmpty);
+      await h.controller.signOut();
+      late.complete(FakeReply.envelope(200, data: fakeMe(roles: ['TEACHER'])));
+      await signingIn;
+
+      expect(h.state, _signedOut());
+    });
+
+    test('signOut_doesNotWaitForRevoke', () async {
+      await h.restoredAs(roles: ['TEACHER']);
+      h.oidc.revokeGate = Completer<void>().future;
+
+      await h.controller.signOut().timeout(const Duration(seconds: 1));
+
+      expect(h.state, _signedOut());
+      expect(await h.tokens.read(), isNull);
+      expect(h.oidc.revoked, ['r1']);
+    });
+
+    test('start_keycloakRejectsRefresh_showsGenericRetry', () async {
+      await h.storedSession();
+      h.oidc.refreshResults.add(
+        const OidcUnavailable('unauthorized_client', network: false),
+      );
+
+      await h.controller.start();
+
+      expect(
+        h.state,
+        isA<AuthRetryNeeded>().having(
+          (s) => s.failure,
+          'failure',
+          isA<ServerFailure>(),
+        ),
+      );
+    });
+
+    test('start_unexpectedStorageError_showsRetry', () async {
+      final broken = _Harness(store: _ThrowingStore());
+      addTearDown(broken.container.dispose);
+
+      await broken.controller.start();
+
+      expect(broken.state, isA<AuthRetryNeeded>());
+    });
+
+    test('signOut_storageError_stillSignedOut', () async {
+      final store = _ThrowingStore(throwOnRead: false);
+      final failing = _Harness(store: store);
+      addTearDown(failing.container.dispose);
+      await failing.restoredAs(roles: ['TEACHER']);
+      store.throwOnDelete = true;
+
+      await failing.controller.signOut();
+
+      expect(failing.state, _signedOut());
+    });
+  });
+}
+
+/// Store lỗi không phải PlatformException (plugin hỏng bất thường).
+class _ThrowingStore extends MemorySecureStore {
+  _ThrowingStore({this.throwOnRead = true});
+
+  final bool throwOnRead;
+  bool throwOnDelete = false;
+
+  @override
+  Future<String?> read(String key) async {
+    if (throwOnRead) throw StateError('storage broken');
+    return super.read(key);
+  }
+
+  @override
+  Future<void> delete(String key) async {
+    if (throwOnDelete) throw StateError('storage broken');
+    return super.delete(key);
+  }
 }

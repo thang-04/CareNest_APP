@@ -13,6 +13,9 @@ class FakeOidcClient implements OidcClient {
   String? lastLoginHint;
   Object? revokeError;
 
+  /// Có giá trị ⇒ revoke treo tới khi future xong (mạng chậm).
+  Future<void>? revokeGate;
+
   int get refreshCalls => refreshedWith.length;
 
   @override
@@ -31,6 +34,7 @@ class FakeOidcClient implements OidcClient {
   @override
   Future<void> revoke(String refreshToken) async {
     revoked.add(refreshToken);
+    if (revokeGate != null) await revokeGate;
     if (revokeError != null) throw revokeError!;
   }
 

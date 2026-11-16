@@ -35,8 +35,12 @@ class FakeHttpAdapter implements HttpClientAdapter {
 
   final List<FakeReply> _replies;
   final List<RequestOptions> requests = [];
+  final List<Future<FakeReply>> _pending = [];
 
   void enqueue(FakeReply reply) => _replies.add(reply);
+
+  /// Response trả chậm: request kế tiếp chờ tới khi future xong (test response đến muộn).
+  void enqueueLater(Future<FakeReply> reply) => _pending.add(reply);
 
   @override
   Future<ResponseBody> fetch(
@@ -51,10 +55,14 @@ class FakeHttpAdapter implements HttpClientAdapter {
         extra: Map.of(options.extra),
       ),
     );
-    if (_replies.isEmpty) {
+    final FakeReply reply;
+    if (_pending.isNotEmpty) {
+      reply = await _pending.removeAt(0);
+    } else if (_replies.isEmpty) {
       throw StateError('FakeHttpAdapter: no reply for ${options.uri}');
+    } else {
+      reply = _replies.removeAt(0);
     }
-    final reply = _replies.removeAt(0);
     return ResponseBody.fromString(
       reply.text,
       reply.status,
