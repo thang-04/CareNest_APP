@@ -14,7 +14,10 @@ import 'package:carenest_app/features/auth/presentation/providers/auth_providers
 /// Đăng nhập với BE thật: SĐT + mật khẩu nhập ở trang Keycloak (PKCE — BE AUTH_CONTRACT).
 /// Bố cục giống màn Đăng nhập giả (Clay, logo giữa, card). Chưa có "Quên mật khẩu" (chờ BE, plan 16/11).
 class SignInScreen extends ConsumerWidget {
-  const SignInScreen({super.key});
+  const SignInScreen({super.key, this.onActivate});
+
+  /// Mở "Kích hoạt tài khoản" (phụ huynh nhận mã SMS — ADR-0026).
+  final VoidCallback? onActivate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,6 +83,17 @@ class SignInScreen extends ConsumerWidget {
                               .read(authControllerProvider.notifier)
                               .signIn(),
                         ),
+                        if (onActivate != null) ...[
+                          const SizedBox(height: AppSpacing.space2),
+                          AppButton(
+                            label: 'Kích hoạt tài khoản',
+                            variant: AppButtonVariant.text,
+                            expand: true,
+                            onPressed: state is AuthSigningIn
+                                ? null
+                                : onActivate,
+                          ),
+                        ],
                       ],
                     ),
                   ),

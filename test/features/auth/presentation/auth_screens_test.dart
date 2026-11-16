@@ -54,6 +54,20 @@ void main() {
       expect(fake.calls, ['signIn:']);
     });
 
+    testWidgets('signInScreen_activateLink_callsCallback', (tester) async {
+      var opened = false;
+      await _pump(
+        tester,
+        const AuthSignedOut(),
+        SignInScreen(onActivate: () => opened = true),
+      );
+
+      await tester.tap(find.text('Kích hoạt tài khoản'));
+      await tester.pump();
+
+      expect(opened, isTrue);
+    });
+
     testWidgets('signInScreen_showsExpiredNotice', (tester) async {
       await _pump(
         tester,

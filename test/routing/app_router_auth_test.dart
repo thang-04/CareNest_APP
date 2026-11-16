@@ -4,9 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
+import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/features/auth/domain/entities/app_mode.dart';
 import 'package:carenest_app/features/auth/presentation/controllers/auth_state.dart';
 import 'package:carenest_app/features/auth/presentation/providers/auth_providers.dart';
+import 'package:carenest_app/features/auth/presentation/screens/activation_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:carenest_app/routing/app_router.dart';
 import 'package:carenest_app/routing/route_paths.dart';
@@ -35,6 +37,7 @@ Future<_Setup> _pumpReal(WidgetTester tester, AuthState initial) async {
     refresh: refresh,
     readAuth: () => container.read(authControllerProvider),
     onSignOut: () => fake.signOut(),
+    onSwitchMode: fake.switchMode,
   );
   addTearDown(router.dispose);
   await tester.pumpWidget(
@@ -107,6 +110,43 @@ void main() {
     expect(_location(setup.router), RoutePaths.parentToday);
   });
 
+  testWidgets('signIn_activateLink_opensActivation', (tester) async {
+    final setup = await _pumpReal(tester, const AuthSignedOut());
+
+    await tester.tap(find.text('Kích hoạt tài khoản'));
+    await tester.pumpAndSettle();
+
+    // push: cấu hình router vẫn báo /login, màn trên cùng là Kích hoạt
+    expect(find.byType(ActivationScreen), findsOneWidget);
+    expect(setup.router.canPop(), isTrue);
+  });
+
+  testWidgets('account_showsSignedInUser', (tester) async {
+    final setup = await _pumpReal(
+      tester,
+      AuthSignedIn(fakeUser(), AppMode.teacher),
+    );
+
+    setup.router.go(RoutePaths.teacherAccount);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Người dùng thử'), findsOneWidget);
+    expect(find.text('0900000001 · Giáo viên'), findsOneWidget);
+    expect(find.textContaining('Chuyển sang chế độ'), findsNothing);
+  });
+
+  testWidgets('account_modeSwitch_callsSwitchMode', (tester) async {
+    final user = fakeUser(roles: {'TEACHER', 'PARENT'}, childIds: [7]);
+    final setup = await _pumpReal(tester, AuthSignedIn(user, AppMode.teacher));
+    setup.router.go(RoutePaths.teacherAccount);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Chuyển sang chế độ phụ huynh'));
+    await tester.pump();
+
+    expect(setup.fake.calls, contains('switchMode:parent'));
+  });
+
   testWidgets('accountLogout_callsSignOut', (tester) async {
     final setup = await _pumpReal(
       tester,
@@ -118,11 +158,10 @@ void main() {
     await tester.scrollUntilVisible(find.text('Đăng xuất'), 200);
     await tester.tap(find.text('Đăng xuất'));
     await tester.pumpAndSettle();
-    final confirm = find.text('Đăng xuất').last;
-    if (confirm.evaluate().isNotEmpty) {
-      await tester.tap(confirm);
-      await tester.pumpAndSettle();
-    }
+    expect(setup.fake.calls, isNot(contains('signOut')));
+
+    await tester.tap(find.widgetWithText(AppButton, 'Đăng xuất').last);
+    await tester.pumpAndSettle();
 
     expect(setup.fake.calls, contains('signOut'));
   });

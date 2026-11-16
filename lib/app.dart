@@ -39,6 +39,8 @@ class _CareNestAppState extends ConsumerState<CareNestApp>
       refresh: _authChanges,
       readAuth: () => ref.read(authControllerProvider),
       onSignOut: () => ref.read(authControllerProvider.notifier).signOut(),
+      onSwitchMode: (mode) =>
+          ref.read(authControllerProvider.notifier).switchMode(mode),
     );
     WidgetsBinding.instance.addObserver(this);
     Future.microtask(() {

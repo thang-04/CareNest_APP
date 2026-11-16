@@ -6,6 +6,7 @@ import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/layouts/app_shell.dart';
 import 'package:carenest_app/core/widgets/app_coming_soon.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
+import 'package:carenest_app/features/account/data/fake_account_source.dart';
 import 'package:carenest_app/features/account/domain/account_profile.dart';
 import 'package:carenest_app/features/account/presentation/screens/account_screen.dart';
 import 'package:carenest_app/features/account/presentation/screens/personal_info_screen.dart';
@@ -15,7 +16,9 @@ import 'package:carenest_app/features/approvals/presentation/screens/meal_adjust
 import 'package:carenest_app/features/approvals/presentation/screens/principal_approvals_screen.dart';
 import 'package:carenest_app/features/attendance/data/fake_attendance_source.dart';
 import 'package:carenest_app/features/attendance/presentation/screens/attendance_screen.dart';
+import 'package:carenest_app/features/auth/domain/entities/app_mode.dart';
 import 'package:carenest_app/features/auth/presentation/controllers/auth_state.dart';
+import 'package:carenest_app/features/auth/presentation/screens/activation_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/blocked_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
@@ -81,6 +84,7 @@ GoRouter buildAppRouter({
   Listenable? refresh,
   AuthState Function()? readAuth,
   Future<void> Function()? onSignOut,
+  Future<void> Function(AppMode mode)? onSwitchMode,
 }) {
   final rootKey = GlobalKey<NavigatorState>();
   if (readAuth != null) {
@@ -89,6 +93,7 @@ GoRouter buildAppRouter({
       refresh: refresh,
       readAuth: readAuth,
       onSignOut: onSignOut,
+      onSwitchMode: onSwitchMode,
     );
   }
   return GoRouter(
@@ -144,12 +149,19 @@ GoRouter _buildSessionRouter(
   required Listenable? refresh,
   required AuthState Function() readAuth,
   required Future<void> Function()? onSignOut,
+  required Future<void> Function(AppMode mode)? onSwitchMode,
 }) {
   // Đổi người dùng không được thấy ngữ cảnh con của người trước
   void signOut() {
     SelectedChild.reset();
     onSignOut?.call();
   }
+
+  final account = _AccountTab(
+    onLogout: signOut,
+    source: _SessionAccountSource(readAuth),
+    modeSwitches: () => _modeSwitches(readAuth(), onSwitchMode),
+  );
 
   return GoRouter(
     navigatorKey: rootKey,
@@ -164,22 +176,75 @@ GoRouter _buildSessionRouter(
       ),
       GoRoute(
         path: RoutePaths.login,
-        builder: (context, state) => const SignInScreen(),
+        builder: (context, state) =>
+            SignInScreen(onActivate: () => context.push(RoutePaths.activate)),
+      ),
+      GoRoute(
+        path: RoutePaths.activate,
+        builder: (context, state) => const ActivationScreen(),
       ),
       GoRoute(
         path: RoutePaths.blocked,
         builder: (context, state) => const BlockedScreen(),
       ),
-      ..._staffAndParentRoutes(rootKey, onLogout: signOut),
+      ..._staffAndParentRoutes(rootKey, account: account),
     ],
     errorBuilder: (context, state) => const NotFoundScreen(),
   );
 }
 
+/// Tab Tài khoản: bản giả để mọi giá trị null (hồ sơ giả, Đăng xuất về Đăng nhập).
+class _AccountTab {
+  const _AccountTab({this.onLogout, this.source, this.modeSwitches});
+
+  final VoidCallback? onLogout;
+  final AccountSource? source;
+  final List<AccountModeSwitch> Function()? modeSwitches;
+}
+
+/// Hồ sơ ở tab Tài khoản lấy từ `/accounts/me` của phiên hiện tại.
+class _SessionAccountSource implements AccountSource {
+  const _SessionAccountSource(this._readAuth);
+
+  final AuthState Function() _readAuth;
+
+  @override
+  Future<AccountProfile> loadProfile(AppRole role) async {
+    final state = _readAuth();
+    if (state is! AuthSignedIn) throw StateError('Chưa đăng nhập');
+    return AccountProfile(
+      fullName: state.user.fullName,
+      phone: state.user.username,
+      role: role,
+    );
+  }
+}
+
+List<AccountModeSwitch> _modeSwitches(
+  AuthState state,
+  Future<void> Function(AppMode mode)? onSwitchMode,
+) {
+  if (state is! AuthSignedIn || onSwitchMode == null) return const [];
+  return [
+    for (final mode in state.user.modes)
+      if (mode != state.mode)
+        AccountModeSwitch(
+          label: 'Chuyển sang chế độ ${_modeLabel(mode)}',
+          onTap: () => onSwitchMode(mode),
+        ),
+  ];
+}
+
+String _modeLabel(AppMode mode) => switch (mode) {
+  AppMode.teacher => 'giáo viên',
+  AppMode.kitchen => 'bếp',
+  AppMode.parent => 'phụ huynh',
+};
+
 /// Shell + màn con của phụ huynh, GV, bếp; dùng chung cho bản giả và bản thật.
 List<RouteBase> _staffAndParentRoutes(
   GlobalKey<NavigatorState> rootKey, {
-  VoidCallback? onLogout,
+  _AccountTab account = const _AccountTab(),
 }) => [
   _roleShell(rootKey, AppRole.parent, NavDestinations.parent, {
     RoutePaths.parentToday: (context, state) => const ParentHomeScreen(),
@@ -188,12 +253,12 @@ List<RouteBase> _staffAndParentRoutes(
           ? MyChildTab.health
           : MyChildTab.today,
     ),
-  }, onLogout: onLogout),
+  }, account: account),
   ..._parentChildRoutes(),
   _roleShell(rootKey, AppRole.teacher, NavDestinations.teacher, {
     RoutePaths.teacherToday: (context, state) => const TeacherHomeScreen(),
     RoutePaths.teacherClass: (context, state) => const ClassRosterScreen(),
-  }, onLogout: onLogout),
+  }, account: account),
   ..._teacherRoutes(),
   GoRoute(
     path: RoutePaths.teacherAttendance,
@@ -209,7 +274,7 @@ List<RouteBase> _staffAndParentRoutes(
       footerNote:
           'Chỉ xem. Thực đơn mẫu theo nhóm tuổi do Phó hiệu trưởng lập và công bố trên web.',
     ),
-  }, onLogout: onLogout),
+  }, account: account),
   ..._kitchenRoutes(),
 ];
 
@@ -528,13 +593,13 @@ String _maskPhone(String phone) {
 
 /// Một nhánh tab cho mỗi đích; Thông báo và Tài khoản dùng chung mọi vai trò,
 /// đích chưa có màn thì hiện "Sắp có". Màn con mở trên navigator gốc (ẩn thanh đáy).
-/// `onLogout` null (bản giả) ⇒ Đăng xuất chỉ về màn Đăng nhập.
+/// `account` mặc định (bản giả) ⇒ hồ sơ giả, Đăng xuất chỉ về màn Đăng nhập.
 StatefulShellRoute _roleShell(
   GlobalKey<NavigatorState> rootKey,
   AppRole role,
   List<NavDestination> destinations,
   Map<String, GoRouterWidgetBuilder> screens, {
-  VoidCallback? onLogout,
+  _AccountTab account = const _AccountTab(),
 }) {
   return StatefulShellRoute.indexedStack(
     builder: (context, state, navigationShell) =>
@@ -563,11 +628,13 @@ StatefulShellRoute _roleShell(
                       : null,
                   // Bản thật: thu hồi phiên, router tự về Đăng nhập theo AuthState
                   onLogout:
-                      onLogout ??
+                      account.onLogout ??
                       () {
                         SelectedChild.reset();
                         context.go(RoutePaths.login);
                       },
+                  modeSwitches: account.modeSwitches?.call() ?? const [],
+                  source: account.source ?? const FakeAccountSource(),
                 ),
                 _ =>
                   screens[destination.path]?.call(context, state) ??
