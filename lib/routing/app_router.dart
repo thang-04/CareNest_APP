@@ -15,10 +15,14 @@ import 'package:carenest_app/features/approvals/presentation/screens/meal_adjust
 import 'package:carenest_app/features/approvals/presentation/screens/principal_approvals_screen.dart';
 import 'package:carenest_app/features/attendance/data/fake_attendance_source.dart';
 import 'package:carenest_app/features/attendance/presentation/screens/attendance_screen.dart';
+import 'package:carenest_app/features/auth/presentation/controllers/auth_state.dart';
+import 'package:carenest_app/features/auth/presentation/screens/blocked_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/new_password_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/otp_verify_screen.dart';
+import 'package:carenest_app/features/auth/presentation/screens/session_loading_screen.dart';
+import 'package:carenest_app/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:carenest_app/features/campus_children/data/fake_campus_children_source.dart';
 import 'package:carenest_app/features/campus_children/presentation/screens/campus_children_screen.dart';
 import 'package:carenest_app/features/campuses/presentation/screens/campuses_screen.dart';
@@ -66,12 +70,27 @@ import 'package:carenest_app/features/vice_principal_home/presentation/screens/c
 import 'package:carenest_app/features/vice_principal_home/presentation/screens/campus_menu_screen.dart';
 import 'package:carenest_app/features/vice_principal_home/presentation/screens/vice_principal_home_screen.dart';
 import 'package:carenest_app/routing/navigation_destinations.dart';
+import 'package:carenest_app/routing/route_access_policy.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
 /// `enablePreview` mặc định theo debug: màn theo vai trò còn phụ thuộc PENDING và chưa có auth
 /// ⇒ bản release chỉ có Đăng nhập và luồng quên mật khẩu (docs/architecture/NAVIGATION.md).
-GoRouter buildAppRouter({bool enablePreview = kDebugMode}) {
+/// `readAuth` có giá trị (chạy với BE thật, `USE_MOCK=false`) ⇒ router theo phiên: [_buildSessionRouter].
+GoRouter buildAppRouter({
+  bool enablePreview = kDebugMode,
+  Listenable? refresh,
+  AuthState Function()? readAuth,
+  Future<void> Function()? onSignOut,
+}) {
   final rootKey = GlobalKey<NavigatorState>();
+  if (readAuth != null) {
+    return _buildSessionRouter(
+      rootKey,
+      refresh: refresh,
+      readAuth: readAuth,
+      onSignOut: onSignOut,
+    );
+  }
   return GoRouter(
     navigatorKey: rootKey,
     initialLocation: RoutePaths.login,
@@ -92,38 +111,7 @@ GoRouter buildAppRouter({bool enablePreview = kDebugMode}) {
           path: RoutePaths.preview,
           builder: (context, state) => const RolePreviewScreen(),
         ),
-        _roleShell(rootKey, AppRole.parent, NavDestinations.parent, {
-          RoutePaths.parentToday: (context, state) => const ParentHomeScreen(),
-          RoutePaths.parentChild: (context, state) => MyChildScreen(
-            initialTab: state.uri.queryParameters['tab'] == 'health'
-                ? MyChildTab.health
-                : MyChildTab.today,
-          ),
-        }),
-        ..._parentChildRoutes(),
-        _roleShell(rootKey, AppRole.teacher, NavDestinations.teacher, {
-          RoutePaths.teacherToday: (context, state) =>
-              const TeacherHomeScreen(),
-          RoutePaths.teacherClass: (context, state) =>
-              const ClassRosterScreen(),
-        }),
-        ..._teacherRoutes(),
-        GoRoute(
-          path: RoutePaths.teacherAttendance,
-          // Lớp đang chọn là state; bản dữ liệu giả chỉ có một lớp
-          builder: (context, state) =>
-              const AttendanceScreen(classId: FakeAttendanceSource.classId),
-        ),
-        _roleShell(rootKey, AppRole.kitchen, NavDestinations.kitchen, {
-          RoutePaths.kitchenHome: (context, state) => const KitchenHomeScreen(),
-          RoutePaths.kitchenMenu: (context, state) => SchoolMenuScreen(
-            asTab: true,
-            initialDay: FakeParentHomeSource.today,
-            footerNote:
-                'Chỉ xem. Thực đơn mẫu theo nhóm tuổi do Phó hiệu trưởng lập và công bố trên web.',
-          ),
-        }),
-        ..._kitchenRoutes(),
+        ..._staffAndParentRoutes(rootKey),
         _roleShell(
           rootKey,
           AppRole.vicePrincipal,
@@ -148,6 +136,82 @@ GoRouter buildAppRouter({bool enablePreview = kDebugMode}) {
     errorBuilder: (context, state) => const NotFoundScreen(),
   );
 }
+
+/// Router khi chạy với BE thật: chuyển màn theo [AuthState] ([redirectFor]); chỉ shell phụ huynh,
+/// GV, bếp (BGH chờ BE — plan 16/11 quyết định 4); không Xem thử, không Quên mật khẩu (quyết định 5).
+GoRouter _buildSessionRouter(
+  GlobalKey<NavigatorState> rootKey, {
+  required Listenable? refresh,
+  required AuthState Function() readAuth,
+  required Future<void> Function()? onSignOut,
+}) {
+  // Đổi người dùng không được thấy ngữ cảnh con của người trước
+  void signOut() {
+    SelectedChild.reset();
+    onSignOut?.call();
+  }
+
+  return GoRouter(
+    navigatorKey: rootKey,
+    initialLocation: RoutePaths.splash,
+    refreshListenable: refresh,
+    redirect: (context, state) =>
+        redirectFor(readAuth(), state.matchedLocation),
+    routes: [
+      GoRoute(
+        path: RoutePaths.splash,
+        builder: (context, state) => const SessionLoadingScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.login,
+        builder: (context, state) => const SignInScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.blocked,
+        builder: (context, state) => const BlockedScreen(),
+      ),
+      ..._staffAndParentRoutes(rootKey, onLogout: signOut),
+    ],
+    errorBuilder: (context, state) => const NotFoundScreen(),
+  );
+}
+
+/// Shell + màn con của phụ huynh, GV, bếp; dùng chung cho bản giả và bản thật.
+List<RouteBase> _staffAndParentRoutes(
+  GlobalKey<NavigatorState> rootKey, {
+  VoidCallback? onLogout,
+}) => [
+  _roleShell(rootKey, AppRole.parent, NavDestinations.parent, {
+    RoutePaths.parentToday: (context, state) => const ParentHomeScreen(),
+    RoutePaths.parentChild: (context, state) => MyChildScreen(
+      initialTab: state.uri.queryParameters['tab'] == 'health'
+          ? MyChildTab.health
+          : MyChildTab.today,
+    ),
+  }, onLogout: onLogout),
+  ..._parentChildRoutes(),
+  _roleShell(rootKey, AppRole.teacher, NavDestinations.teacher, {
+    RoutePaths.teacherToday: (context, state) => const TeacherHomeScreen(),
+    RoutePaths.teacherClass: (context, state) => const ClassRosterScreen(),
+  }, onLogout: onLogout),
+  ..._teacherRoutes(),
+  GoRoute(
+    path: RoutePaths.teacherAttendance,
+    // Lớp đang chọn là state; bản dữ liệu giả chỉ có một lớp
+    builder: (context, state) =>
+        const AttendanceScreen(classId: FakeAttendanceSource.classId),
+  ),
+  _roleShell(rootKey, AppRole.kitchen, NavDestinations.kitchen, {
+    RoutePaths.kitchenHome: (context, state) => const KitchenHomeScreen(),
+    RoutePaths.kitchenMenu: (context, state) => SchoolMenuScreen(
+      asTab: true,
+      initialDay: FakeParentHomeSource.today,
+      footerNote:
+          'Chỉ xem. Thực đơn mẫu theo nhóm tuổi do Phó hiệu trưởng lập và công bố trên web.',
+    ),
+  }, onLogout: onLogout),
+  ..._kitchenRoutes(),
+];
 
 /// Màn con của Phụ huynh: route chỉ mang ID con; ID không thuộc danh sách con ⇒ 404.
 List<GoRoute> _parentChildRoutes() {
@@ -464,12 +528,14 @@ String _maskPhone(String phone) {
 
 /// Một nhánh tab cho mỗi đích; Thông báo và Tài khoản dùng chung mọi vai trò,
 /// đích chưa có màn thì hiện "Sắp có". Màn con mở trên navigator gốc (ẩn thanh đáy).
+/// `onLogout` null (bản giả) ⇒ Đăng xuất chỉ về màn Đăng nhập.
 StatefulShellRoute _roleShell(
   GlobalKey<NavigatorState> rootKey,
   AppRole role,
   List<NavDestination> destinations,
-  Map<String, GoRouterWidgetBuilder> screens,
-) {
+  Map<String, GoRouterWidgetBuilder> screens, {
+  VoidCallback? onLogout,
+}) {
   return StatefulShellRoute.indexedStack(
     builder: (context, state, navigationShell) =>
         AppShell(navigationShell: navigationShell, destinations: destinations),
@@ -495,11 +561,13 @@ StatefulShellRoute _roleShell(
                   onOpenCampuses: role == AppRole.principal
                       ? () => context.push(RoutePaths.principalCampuses)
                       : null,
-                  // Chưa có phiên thật ⇒ đăng xuất chỉ về Đăng nhập, xoá back stack
-                  onLogout: () {
-                    SelectedChild.reset();
-                    context.go(RoutePaths.login);
-                  },
+                  // Bản thật: thu hồi phiên, router tự về Đăng nhập theo AuthState
+                  onLogout:
+                      onLogout ??
+                      () {
+                        SelectedChild.reset();
+                        context.go(RoutePaths.login);
+                      },
                 ),
                 _ =>
                   screens[destination.path]?.call(context, state) ??
