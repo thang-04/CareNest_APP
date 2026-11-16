@@ -127,6 +127,19 @@ Mọi vai trò dùng chung tab Thông báo (`<tab>/:id` mở chi tiết) và Tà
 
 Đích thanh đáy khai báo một lần ở `lib/routing/navigation_destinations.dart`.
 
+## Chạy với BE thật (`USE_MOCK=false`, plan 2026-11-16)
+
+Router theo phiên (`buildAppRouter(readAuth: ...)`, luật ở `lib/routing/route_access_policy.dart`); chỉ là UX, quyền thật do BE kiểm (AUTH-07).
+
+| Trạng thái phiên | Màn | Ghi chú |
+| --- | --- | --- |
+| Đang khôi phục / cần thử lại | `/splash` | Mất mạng, 503 ⇒ "Thử lại", giữ token |
+| Chưa đăng nhập / đang đăng nhập | `/login` (Đăng nhập Keycloak), `/activate` (Kích hoạt tài khoản) | Không có Xem thử, không có Quên mật khẩu (chờ BE) |
+| Tài khoản không dùng được | `/blocked` | BGH/Admin (403 1101) hoặc khóa/chưa có hồ sơ (1015/1014); chỉ Đăng xuất |
+| Đã đăng nhập | Shell của chế độ: `/teacher…`, `/kitchen…`, `/parent…` | Route ngoài chế độ hiện tại ⇒ về màn chính của chế độ; đổi chế độ ở Tài khoản ⇒ sang shell mới |
+
+Đăng xuất hoặc phiên hết ⇒ về `/login`, back stack bị xóa. BGH (`/vice-principal…`, `/principal…`) chưa đăng ký ở bản thật: chờ nhánh BE TBD-1 (plan 2026-11-16 quyết định 4).
+
 ## Deep link (từ push)
 
 Đích PROPOSED: tổng quan con (Parent) · chi tiết cập nhật mới (Parent) · suất ăn đã xác nhận / xác nhận lại (Kitchen) · trạng thái sự cố (Teacher). Payload chỉ có loại + ID; mở màn hình rồi tải qua API (`docs/integration/PUSH_NOTIFICATION.md`).
