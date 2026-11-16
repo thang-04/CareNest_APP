@@ -1,6 +1,12 @@
 abstract final class RoutePaths {
   static const login = '/login';
 
+  /// Chỉ có khi chạy với BE thật (`USE_MOCK=false`): chờ khôi phục phiên, kích hoạt tài khoản,
+  /// tài khoản không dùng được trên App.
+  static const splash = '/splash';
+  static const activate = '/activate';
+  static const blocked = '/blocked';
+
   /// Luồng quên mật khẩu có ở cả bản release; chưa nối máy chủ thì màn tự báo.
   static const forgotPassword =
       '/forgot-password'; // carenest:allow-secret — đường dẫn route, không phải mật khẩu
