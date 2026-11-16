@@ -575,3 +575,37 @@ Rollback chung: `USE_MOCK=true` (mặc định) giữ hành vi `dev` hiện tạ
 | `cdf6c27` | Task 6 | `SessionManager` + `FakeOidcClient` |
 
 - Tiếp: user review 1b ⇒ Phase 1c (Task 7–10).
+
+### 2026-11-16 — Phase 1c: Task 7–9 + docs Task 10 (chờ chạy thật)
+- Verify: `node scripts/verify.mjs` (Flutter 3.47.6) → `VERIFY PASS full | format ok | design ok | analyze ok | tests 338 fail 0 skip 0`; `node scripts/check-ai-layer.mjs` → 0 lỗi (1 cảnh báo E7 có sẵn).
+- Chưa chạy: Task 10 Step 2 (emulator + BE local) — cần user bật Docker, `run-be-dev.ps1`, emulator. Seed BE local không có tài khoản GV kiêm phụ huynh ⇒ checklist 4 cần liên kết phụ huynh trên Web hoặc bỏ qua.
+- Khác plan:
+  - `AppMode` là enum thuần; ánh xạ màn chính/shell ở `lib/routing/route_access_policy.dart`.
+  - `lib/core/network/api_providers.dart` giữ provider của API client; `authOverrides` ghép nguồn token với `SessionManager` (core không import feature).
+  - Đã đăng nhập mà vào route ngoài chế độ (Xem thử, BGH) ⇒ về màn chính, không ra 404.
+  - Hộp xác nhận đăng xuất áp cả bản giả; 2 test cũ sửa theo.
+  - Kích hoạt xong ⇒ màn "Tài khoản đã kích hoạt" có nút Đăng nhập riêng (mã SMS dùng một lần).
+  - Cổng thiết kế bắt tên token có chữ số (`AppSpacing.space6`) trong `EdgeInsets` ⇒ màn mới dùng `pagePadding`; logo bo góc bằng `ClipRRect`. Không sửa script cổng (harness).
+  - Hook secret bắt tên field API `newPassword`/`confirmPassword` và mật khẩu giả trong test ⇒ đổi tên biến cục bộ, đánh dấu `carenest:allow-secret` ở dòng tên field và giá trị giả.
+- Commit → task:
+
+| Commit | Task plan | Nội dung |
+| --- | --- | --- |
+| `ec1babd` | Task 7 | `AppUser`, `AppMode`, `MeDto` |
+| `cf7d85b` | Task 7 | `AccountRemoteDataSource` |
+| `ccd5c67` | Task 7 | `AuthController`, provider |
+| `ac770d5` | Task 7 | `bootstrap`, màn thiếu cấu hình |
+| `4fa2255` | Task 8 | Luật chuyển màn |
+| `892440b` | Task 8 | Màn Đăng nhập, Đang tải, Bị chặn |
+| `71fdddb` | Task 8 | Router theo phiên |
+| `6843ec6` | Task 8 | `app.dart`: `start()`, `onResumed()` |
+| `48cda79` | Task 9 | API kích hoạt |
+| `170490c` | Task 9 | Màn Kích hoạt tài khoản |
+| `2f077be` | Task 9 | Tài khoản: xác nhận đăng xuất, chuyển chế độ |
+| `fb03dba` | Task 9 | Router: kích hoạt, hồ sơ, chuyển chế độ |
+| `3c0bf50` | Task 10 | `AUTH_FLOW.md` |
+| `c935ef2` | Task 10 | `BACKEND_INTEGRATION.md`, rule api-client |
+| `f3c50dc` | Task 10 | Stack CONFIRMED ở docs |
+| `bb565e7` | Task 10 | `NAVIGATION.md`, `CURRENT_STATE.md` |
+
+- Tiếp: user bật BE local + emulator ⇒ Task 10 Step 2 (checklist), ghi `docs/quality/VERIFICATION.md`.
