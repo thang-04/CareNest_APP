@@ -103,7 +103,7 @@ updated: 2026-11-16
 - **AC-8** (ADR-0022, quyết định 7): Given tài khoản có `TEACHER` + `PARENT` và `childIds` không rỗng, Then mở chế độ GV; màn Tài khoản có "Chuyển sang chế độ phụ huynh"; mở lại App giữ chế độ cuối.
 - **AC-9** (AUTH-18, ADR-0026): Given phụ huynh nhận SMS mã kích hoạt, When nhập SĐT, mã 6 số, mật khẩu mới 2 lần ở "Kích hoạt tài khoản", Then App mở trang Keycloak có sẵn tên đăng nhập BE trả. Mã sai hoặc hết hạn (400 / 1006) ⇒ "Mã kích hoạt sai hoặc đã hết hạn. Liên hệ nhà trường để gửi lại mã."
 - **AC-10** (quyết định 5): Màn Đăng nhập thật (`USE_MOCK=false`) không có lối vào "Quên mật khẩu".
-- **AC-11:** `USE_MOCK=true` (mặc định) ⇒ App chạy như `dev` hiện tại (Đăng nhập giả + Xem thử theo vai trò). `USE_MOCK=false` mà thiếu `API_BASE_URL` hoặc `OIDC_ISSUER` ⇒ màn lỗi cấu hình nêu tên biến thiếu.
+- **AC-11:** `USE_MOCK=true` (mặc định) ⇒ App chạy như `dev` hiện tại (Đăng nhập giả + Xem thử theo vai trò), trừ hộp xác nhận đăng xuất thêm ở Task 9. `USE_MOCK=false` mà thiếu `API_BASE_URL` hoặc `OIDC_ISSUER` ⇒ màn lỗi cấu hình nêu tên biến thiếu.
 
 ## Key decisions
 | Quyết định | Chọn | Phương án khác | Vì sao |
@@ -609,3 +609,10 @@ Rollback chung: `USE_MOCK=true` (mặc định) giữ hành vi `dev` hiện tạ
 | `bb565e7` | Task 10 | `NAVIGATION.md`, `CURRENT_STATE.md` |
 
 - Tiếp: user bật BE local + emulator ⇒ Task 10 Step 2 (checklist), ghi `docs/quality/VERIFICATION.md`.
+
+### 2026-11-16 — Task 10 + review toàn nhánh (chờ user review)
+- Task 10 Step 2 theo cách B (user chọn — máy không chạy nổi emulator): script kiểm contract BE `f76e9092` + Keycloak local trên PC, 30/30 PASS; `flutter build apk --debug --dart-define-from-file=env/local.example.json` → `√ Built`. Chi tiết: `docs/quality/VERIFICATION.md` mục 2026-11-16. Chạy trên điện thoại Android thật: chưa, cần trước khi merge.
+- Review toàn nhánh (reviewer mới): "with fixes" — 0 Critical, 3 Important, 10 Minor. Đã sửa 3 Important + 4 Minor nâng mức theo tác động: lỗi khi quay lại App không còn đẩy về màn chờ; kết quả đến muộn sau đăng xuất bị bỏ; màn Thử lại nói đúng loại lỗi và có "Đăng xuất"; đăng xuất không chờ Keycloak; lỗi lạ không kẹt màn chờ; refresh chen lúc đăng xuất không làm token sống lại; "Thông tin cá nhân" hiện người đang đăng nhập.
+- Verify: `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 353 fail 0 skip 0`.
+- Để sau (Minor, user quyết): bấm Đăng nhập 2 lần sau kích hoạt; xóa con đang chọn ở mọi kiểu đăng xuất (cần khi Phase 4 có dữ liệu thật); 401 đến sau lần refresh vừa xong gây refresh thêm; `dataExtractionRules` cho chuyển máy; tách interface domain cho auth trước Phase 2; đưa script kiểm contract vào repo.
+- Commit → task: `a2e5b48`, `003a393`, `7ff6366`, `9074e47`, `0cde30e` (sửa sau review, Task 5–9); `a25db3c` (Task 10, kiểm chứng).
