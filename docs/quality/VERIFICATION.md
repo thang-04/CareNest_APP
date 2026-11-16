@@ -46,3 +46,12 @@ Làn L:            ghi đủ vào Progress log của plan; chat chỉ tóm tắt
   - Refresh → token mới, refresh token đổi mới mỗi lần. Logout POST `client_id` + `refresh_token` → 204; refresh token đó sau logout → 400 `invalid_grant`.
   - `GET /accounts/me` không token → 401 `errorCode` 1002; `POST /parent-activation` mã sai → 400 `errorCode` 1006; refresh token rác → 400 `invalid_grant`.
 - Chưa kiểm (máy dev không chạy nổi emulator — user 16/11 chọn kiểm contract): App thật trên thiết bị (AppAuth mở Custom Tabs và nhận redirect vào App, `flutter_secure_storage` trên Android, các màn Đăng nhập/Kích hoạt/Tài khoản), tài khoản GV kiêm phụ huynh (seed local không có), khóa tài khoản rồi quay lại App, iOS. Chạy trên điện thoại Android thật (USB + `adb reverse tcp:8080 tcp:8080`, `tcp:8180 tcp:8180`) trước khi merge.
+
+## 2026-11-16 — Sửa 3 Minor sau review: đăng nhập 2 lần, xóa con đang chọn, script kiểm contract
+- Môi trường như mục trên (Flutter 3.47.6, BE `dev` `f76e9092` + Keycloak local).
+- Test RED trước khi sửa: `signIn_whileLoginPageOpen_opensItOnce` (Expected 1, Actual 2 lượt AppAuth), `activate_whileLoginPageOpen_signInButtonBusy` (nút gọi đăng nhập lần 2), `realMode_sessionExpired_clearsSelectedChild` (Expected `child-1`, Actual `child-2`).
+- `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 356 fail 0 skip 0`.
+- `node scripts/check-ai-layer.mjs` → 0 lỗi, 1 cảnh báo E7 có sẵn (`lib/**/offline/**/*.dart` chưa có file).
+- `node --test scripts/__tests__/*.test.mjs` → 61 pass, 0 fail.
+- `node scripts/check-auth-contract.mjs` (script nay trong repo): mật khẩu seed đúng → 30/30 PASS, exit 0; thiếu `CARENEST_SEED_PASSWORD` → exit 2; realm sai → FAIL discovery, exit 1; mật khẩu sai → 4 FAIL đăng nhập, exit 1.
+- Chưa kiểm: như mục trên (chạy trên điện thoại Android thật trước khi merge).

@@ -616,3 +616,11 @@ Rollback chung: `USE_MOCK=true` (mặc định) giữ hành vi `dev` hiện tạ
 - Verify: `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 353 fail 0 skip 0`.
 - Để sau (Minor, user quyết): bấm Đăng nhập 2 lần sau kích hoạt; xóa con đang chọn ở mọi kiểu đăng xuất (cần khi Phase 4 có dữ liệu thật); 401 đến sau lần refresh vừa xong gây refresh thêm; `dataExtractionRules` cho chuyển máy; tách interface domain cho auth trước Phase 2; đưa script kiểm contract vào repo.
 - Commit → task: `a2e5b48`, `003a393`, `7ff6366`, `9074e47`, `0cde30e` (sửa sau review, Task 5–9); `a25db3c` (Task 10, kiểm chứng).
+
+### 2026-11-16 — Sửa Minor 1, 2, 6 (user chọn)
+- Đăng nhập khi trang Keycloak đang mở ⇒ bỏ lượt mới (AppAuth Android từ chối 2 lượt cùng lúc); nút "Đăng nhập" ở thẻ "Tài khoản đã kích hoạt" hiện đang xử lý như màn Đăng nhập.
+- Mọi đường về Đăng nhập (đăng xuất ở Tài khoản/màn chặn/màn Thử lại, hết phiên, 401) xóa con đang chọn, làm một chỗ ở `lib/app.dart`; router bỏ lần reset riêng của tab Tài khoản. `app.dart`, `app_router.dart` là vùng dùng chung: `impact.mjs` → dùng bởi `bootstrap.dart` / `app.dart`, 0 màn hình bị lan.
+- Script kiểm contract vào repo: `scripts/check-auth-contract.mjs`, mật khẩu seed qua `CARENEST_SEED_PASSWORD`, cách chạy ở `docs/integration/AUTH_FLOW.md`.
+- Verify: `tests 356 fail 0 skip 0`; chi tiết `docs/quality/VERIFICATION.md`.
+- Còn để sau: 401 đến sau lần refresh vừa xong gây refresh thêm; `dataExtractionRules` cho chuyển máy; tách interface domain cho auth (làm đầu Phase 2).
+- Commit → task: `f24ae1b` (Minor 1, Task 7), `5f0d71a` (Minor 1, Task 9); `78a4c89` (Minor 2, Task 8); `aa95fa6` (Minor 6, Task 10).
