@@ -9,6 +9,7 @@ import 'package:carenest_app/core/storage/last_mode_store.dart';
 import 'package:carenest_app/core/storage/secure_store.dart';
 import 'package:carenest_app/core/storage/token_storage.dart';
 import 'package:carenest_app/features/auth/data/datasources/account_remote_data_source.dart';
+import 'package:carenest_app/features/auth/data/datasources/activation_remote_data_source.dart';
 import 'package:carenest_app/features/auth/data/datasources/app_auth_oidc_client.dart';
 import 'package:carenest_app/features/auth/data/datasources/oidc_client.dart';
 import 'package:carenest_app/features/auth/data/session_manager.dart';
@@ -56,6 +57,10 @@ final sessionManagerProvider = Provider<SessionManager>((ref) {
 
 final accountRemoteDataSourceProvider = Provider<AccountRemoteDataSource>(
   (ref) => AccountRemoteDataSource(ref.watch(apiClientProvider)),
+);
+
+final activationRemoteDataSourceProvider = Provider<ActivationRemoteDataSource>(
+  (ref) => ActivationRemoteDataSource(ref.watch(apiClientProvider)),
 );
 
 final authControllerProvider = NotifierProvider<AuthController, AuthState>(
