@@ -135,6 +135,21 @@ void main() {
     expect(find.textContaining('Chuyển sang chế độ'), findsNothing);
   });
 
+  testWidgets('personalInfo_showsSignedInUser', (tester) async {
+    final setup = await _pumpReal(
+      tester,
+      AuthSignedIn(fakeUser(), AppMode.teacher),
+    );
+
+    setup.router.go(
+      '${RoutePaths.teacherAccount}/${RoutePaths.profileSegment}',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Người dùng thử'), findsWidgets);
+    expect(find.text('Trần Thu Hà'), findsNothing);
+  });
+
   testWidgets('account_modeSwitch_callsSwitchMode', (tester) async {
     final user = fakeUser(roles: {'TEACHER', 'PARENT'}, childIds: [7]);
     final setup = await _pumpReal(tester, AuthSignedIn(user, AppMode.teacher));

@@ -655,7 +655,10 @@ StatefulShellRoute _roleShell(
                   GoRoute(
                     path: RoutePaths.profileSegment,
                     parentNavigatorKey: rootKey,
-                    builder: (context, state) => PersonalInfoScreen(role: role),
+                    builder: (context, state) => PersonalInfoScreen(
+                      role: role,
+                      source: account.source ?? const FakeAccountSource(),
+                    ),
                   ),
                   GoRoute(
                     path: RoutePaths.passwordSegment,
