@@ -92,8 +92,6 @@ available:
     - docs/quality/DEFINITION_OF_DONE.md
 
 skeleton_only:   # tồn tại nhưng chưa có nội dung chốt — không dùng làm nguồn
-  - docs/architecture/STATE_MANAGEMENT.md
-  - docs/integration/AUTH_FLOW.md
   - docs/integration/PUSH_NOTIFICATION.md
 
 planned:
