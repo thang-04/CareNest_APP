@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
+import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/otp_verify_screen.dart';
@@ -265,6 +266,8 @@ void main() {
 
       await tester.ensureVisible(find.text('Đăng xuất'));
       await tester.tap(find.text('Đăng xuất'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(AppButton, 'Đăng xuất').last);
       await tester.pumpAndSettle();
       expect(find.byType(LoginScreen), findsOneWidget);
     },
