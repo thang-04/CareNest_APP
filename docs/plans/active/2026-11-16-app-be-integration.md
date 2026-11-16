@@ -557,3 +557,21 @@ Rollback chung: `USE_MOCK=true` (mặc định) giữ hành vi `dev` hiện tạ
 | `3662941` | Task 4 | `LastModeStore` |
 
 - Tiếp: user review 1a ⇒ Phase 1b (Task 5–6).
+
+### 2026-11-16 — Phase 1b: Task 5–6 (chờ review)
+- Verify: `node scripts/verify.mjs` (Flutter 3.47.6) → `VERIFY PASS full | format ok | design ok | analyze ok | tests 264 fail 0 skip 0`.
+- `AppAuthOidcClient` theo API `flutter_appauth` 13.0.0: `AuthorizationTokenRequest(... promptValues: ['login'], allowInsecureConnections: debug + issuer http)`, refresh qua `token(TokenRequest(refreshToken: ...))`, đăng xuất POST `{issuer}/protocol/openid-connect/logout`. `invalid_grant` ⇒ `OidcInvalidGrant`; đóng trang ⇒ `OidcCancelled`; lỗi khác ⇒ `OidcUnavailable`.
+- `SessionManager`: refresh dùng chung một `Future`; kết quả của phiên cũ bị bỏ sau đăng xuất; lỗi mạng khi refresh lúc đang dùng ⇒ `NetworkFailure`, giữ token.
+- Khác plan:
+  - Response Keycloak thiếu access token, hạn hoặc refresh token ⇒ `OidcUnavailable`. Refresh không trả refresh token mới ⇒ giữ token cũ.
+  - `restore()` gặp `invalid_grant` trả `RestoreResult.ended`, không phát `sessionEnded` (chỉ phát khi đang dùng App).
+  - Đăng xuất xóa storage trước, rồi mới thu hồi ở Keycloak.
+  - Tên biến cục bộ `access`/`refresh`: hook pre-commit coi `accessToken = …` là secret.
+- Commit → task:
+
+| Commit | Task plan | Nội dung |
+| --- | --- | --- |
+| `421eb0b` | Task 5 | `OidcClient` + `AppAuthOidcClient` |
+| `cdf6c27` | Task 6 | `SessionManager` + `FakeOidcClient` |
+
+- Tiếp: user review 1b ⇒ Phase 1c (Task 7–10).
