@@ -135,6 +135,15 @@ void main() {
     );
   });
 
+  test('mapWrappedAppFailure_returnsIt', () {
+    const inner = ServiceUnavailableFailure(status: 503, errorCode: 1013);
+
+    expect(
+      mapDioException(DioException(requestOptions: _options, error: inner)),
+      same(inner),
+    );
+  });
+
   test('mapUnknownFormatException_isContract', () {
     expect(
       mapDioException(

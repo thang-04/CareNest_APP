@@ -5,6 +5,9 @@ import 'package:carenest_app/core/errors/app_failure.dart';
 /// Chuyển lỗi Dio thành [AppFailure]. Response lỗi phân loại theo HTTP status; `errorCode`, `desc`
 /// lấy từ envelope nếu có (body HTML của proxy vẫn phân loại theo status).
 AppFailure mapDioException(DioException e) {
+  // Interceptor đã chuẩn hóa sẵn (vd. refresh token mất mạng) ⇒ giữ nguyên
+  final inner = e.error;
+  if (inner is AppFailure) return inner;
   switch (e.type) {
     case DioExceptionType.cancel:
       return const CancelledFailure();
