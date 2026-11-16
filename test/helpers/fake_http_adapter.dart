@@ -44,7 +44,13 @@ class FakeHttpAdapter implements HttpClientAdapter {
     Stream<Uint8List>? requestStream,
     Future<void>? cancelFuture,
   ) async {
-    requests.add(options);
+    // Chụp lại header/extra lúc gửi: lần gửi lại sau refresh sửa chính RequestOptions này
+    requests.add(
+      options.copyWith(
+        headers: Map.of(options.headers),
+        extra: Map.of(options.extra),
+      ),
+    );
     if (_replies.isEmpty) {
       throw StateError('FakeHttpAdapter: no reply for ${options.uri}');
     }
