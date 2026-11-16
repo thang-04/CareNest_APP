@@ -162,6 +162,32 @@ void main() {
     await expectLater(client.refresh('r1'), throwsA(isA<OidcUnavailable>()));
   });
 
+  test('refresh_oauthRejection_isNotNetwork', () async {
+    appAuth.error = _platformError('unauthorized_client');
+
+    await expectLater(
+      client.refresh('r1'),
+      throwsA(
+        isA<OidcUnavailable>().having((f) => f.network, 'network', isFalse),
+      ),
+    );
+  });
+
+  test('refresh_platformErrorWithoutOAuthCode_isNetwork', () async {
+    appAuth.error = FlutterAppAuthPlatformException(
+      code: 'token_failed',
+      message: 'Network error',
+      platformErrorDetails: FlutterAppAuthPlatformErrorDetails(),
+    );
+
+    await expectLater(
+      client.refresh('r1'),
+      throwsA(
+        isA<OidcUnavailable>().having((f) => f.network, 'network', isTrue),
+      ),
+    );
+  });
+
   test('revoke_postsFormToLogoutEndpoint', () async {
     http.enqueue(FakeReply.text(204, '', contentType: 'text/plain'));
 

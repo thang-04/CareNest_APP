@@ -104,9 +104,11 @@ OidcFailure mapAppAuthError(Object error) {
   if (error is FlutterAppAuthUserCancelledException) {
     return const OidcCancelled();
   }
-  if (error is FlutterAppAuthPlatformException &&
-      error.platformErrorDetails.error == 'invalid_grant') {
-    return const OidcInvalidGrant();
+  if (error is FlutterAppAuthPlatformException) {
+    final oauthError = error.platformErrorDetails.error;
+    if (oauthError == 'invalid_grant') return const OidcInvalidGrant();
+    // Có mã lỗi OAuth ⇒ Keycloak đã trả lời và từ chối, không phải mất mạng
+    if (oauthError != null) return OidcUnavailable(oauthError, network: false);
   }
   if (error is PlatformException) return OidcUnavailable(error.code);
   return OidcUnavailable(error);

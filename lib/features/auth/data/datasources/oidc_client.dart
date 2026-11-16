@@ -31,11 +31,13 @@ final class OidcInvalidGrant extends OidcFailure {
   const OidcInvalidGrant();
 }
 
-/// Không liên lạc được Keycloak hoặc kết quả không dùng được ⇒ cho thử lại, không đăng xuất.
+/// Không dùng được Keycloak lúc này ⇒ cho thử lại, không đăng xuất. `network` = lỗi mạng;
+/// `false` = Keycloak từ chối vì cấu hình (vd. `unauthorized_client`) — báo lỗi chung, không bảo kiểm mạng.
 final class OidcUnavailable extends OidcFailure {
-  const OidcUnavailable(this.cause);
+  const OidcUnavailable(this.cause, {this.network = true});
 
   final Object cause;
+  final bool network;
 
   @override
   String toString() => 'OidcUnavailable($cause)';
