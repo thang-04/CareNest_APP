@@ -31,6 +31,9 @@ Nguồn contract: `BE:docs/contracts/AUTH_CONTRACT.md` (BE `dev`). Plan: `docs/p
 - Hộp xác nhận ⇒ xóa token trên máy, về Đăng nhập ngay (xóa back stack); POST `{issuer}/protocol/openid-connect/logout` với `client_id` + `refresh_token` chạy nền, lỗi mạng bỏ qua. Kiểm 16/11 trên BE local: logout 204, refresh token cũ sau đó bị từ chối (`invalid_grant`).
 - Mọi đường về Đăng nhập (đăng xuất ở Tài khoản, màn chặn, màn Thử lại; hết phiên; 401 ở `/accounts/me`) ⇒ xóa ngữ cảnh con đang chọn (`lib/app.dart`).
 
+## Kiểm với BE local
+- `CARENEST_SEED_PASSWORD=<mật khẩu seed> node scripts/check-auth-contract.mjs` (PowerShell: `$env:CARENEST_SEED_PASSWORD='<...>'; node scripts/check-auth-contract.mjs`): chạy luồng PKCE như AppAuth với tài khoản seed từng role, kiểm `/accounts/me`, refresh, logout, mã lỗi 1002 / 1006 / 1101. Cần BE + Keycloak local đang chạy; mật khẩu seed theo `BE:docs/TAI_KHOAN_DEV.md`. Không thay cho chạy trên máy thật (Custom Tabs, secure storage).
+
 ## Chưa làm
 - Quên mật khẩu: chờ API SMS ở nhánh BE `feature/G94-87-BE-FEAT-0-app-rules-sms-reset` (plan 16/11 quyết định 5); bản thật ẩn lối vào.
 - Đăng ký/hủy device push token (`PUT|DELETE /me/devices`): Phase 7 (FCM).
