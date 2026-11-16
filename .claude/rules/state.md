@@ -7,7 +7,7 @@ paths:
 
 # State & cache rules
 
-> Thư viện state/cache: chưa chọn (hỏi trước khi chọn). Nguyên tắc: `docs/architecture/STATE_MANAGEMENT.md`.
+> Thư viện state/DI: `flutter_riverpod` (CONFIRMED — user 2026-11-13). Nguyên tắc: `docs/architecture/STATE_MANAGEMENT.md`.
 
 - **Server state** (dữ liệu từ BE) tách khỏi **UI state** (form đang nhập, tab đang chọn). BE là nguồn sự thật; client chỉ cache.
 - Cache key gồm đủ ngữ cảnh: user + role + childId/classId/campusId + ngày. Đổi user/role/con/lớp không được thấy dữ liệu cũ.

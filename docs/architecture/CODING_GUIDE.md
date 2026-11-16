@@ -71,6 +71,10 @@ Các URL trên chỉ là ví dụ. Không chạy release với mock hoặc thi�
 | `API_BASE_URL` | Base URL của API | `core/config/env.dart` |
 | `USE_MOCK` | Chọn repository mock hay thật | Điểm ghép dependency |
 | `APP_ENV` | `development`, `staging`, `production` nếu dự án cần | `core/config/env.dart` |
+| `OIDC_ISSUER` | Issuer Keycloak, vd. `http://localhost:8180/realms/carenest` | `core/config/env.dart` |
+| `OIDC_CLIENT_ID`, `OIDC_REDIRECT_URI` | Mặc định `carenest-mobile`, `carenest://oauth/callback` | `core/config/env.dart` |
+
+Chạy với BE thật: `flutter run --dart-define-from-file=env/local.json` (chép từ `env/local.example.json`; `env/*.json` khác mẫu không commit). `USE_MOCK=false` mà thiếu `API_BASE_URL` hoặc `OIDC_ISSUER` ⇒ App mở màn lỗi cấu hình nêu tên biến (`Env.missingKeys`).
 
 Dùng `String.fromEnvironment` / `bool.fromEnvironment` tập trung trong `env.dart`. Thiếu cấu hình bắt buộc phải được phát hiện khi bootstrap. `--dart-define` không phải nơi cất bí mật; không nhúng mật khẩu, signing key hoặc token cố định vào app.
 
@@ -337,7 +341,9 @@ Ví dụ đường dẫn `features/feature_name/` chỉ minh họa tổ chức, 
 <a id="section-5"></a>
 ## 5. Đăng nhập, phiên và lưu token
 
-Mục này mô tả xác thực. Khung vai trò/điều hướng ở DESIGN.md §B5.2; quy tắc kế thừa nghiệp vụ ở mục 9. API và OTP dưới đây là PROPOSED/OPEN cho tới khi backend và SRS chốt. DESIGN.md §15 còn mở form app/web hay Keycloak: chốt phương án trước khi tích hợp. Mẫu UI đăng nhập ở DESIGN.md §B5–B6 không tự xác nhận cơ chế auth.
+Mục này mô tả xác thực. Khung vai trò/điều hướng ở DESIGN.md §B5.2; quy tắc kế thừa nghiệp vụ ở mục 9.
+
+**Đã chốt (user 2026-11-13, BE `AUTH_CONTRACT`):** App dùng OAuth2 Authorization Code + PKCE qua trang Keycloak (client `carenest-mobile`, không password grant), không dùng form mật khẩu của App hay endpoint `/mobile/auth/*` ở §5.2. Chi tiết đang chạy: `docs/integration/AUTH_FLOW.md`; code `lib/features/auth/` (`AppAuthOidcClient`, `SessionManager`, `AuthController`). Các mục 5.2 và 5.7 dưới đây giữ làm tham khảo, không áp dụng; 5.3–5.6 vẫn đúng, với thay đổi: refresh token luôn lưu secure storage (không có tùy chọn "ghi nhớ"), tài khoản lấy từ `GET /accounts/me`.
 
 ### 5.1 Chọn cơ chế cho native
 
