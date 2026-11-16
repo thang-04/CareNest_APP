@@ -118,6 +118,34 @@ void main() {
     });
   });
 
+  group('SessionLoadingScreen review fixes', () {
+    testWidgets('retryScreen_nonNetworkFailure_showsGenericMessage', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        const AuthRetryNeeded(ContractFailure(status: 200)),
+        const SessionLoadingScreen(),
+      );
+
+      expect(find.text('Chưa mở được tài khoản'), findsOneWidget);
+      expect(find.text('Không kết nối được máy chủ'), findsNothing);
+    });
+
+    testWidgets('retryScreen_signOutButton_callsSignOut', (tester) async {
+      final fake = await _pump(
+        tester,
+        const AuthRetryNeeded(NetworkFailure()),
+        const SessionLoadingScreen(),
+      );
+
+      await tester.tap(find.text('Đăng xuất'));
+      await tester.pump();
+
+      expect(fake.calls, ['signOut']);
+    });
+  });
+
   group('BlockedScreen', () {
     testWidgets('blocked_webOnly_showsMessageAndSignOut', (tester) async {
       final fake = await _pump(
