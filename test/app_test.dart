@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/app.dart';
+import 'package:carenest_app/features/auth/domain/entities/app_mode.dart';
 import 'package:carenest_app/features/auth/presentation/controllers/auth_state.dart';
 import 'package:carenest_app/features/auth/presentation/providers/auth_providers.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/sign_in_screen.dart';
+import 'package:carenest_app/features/parent_home/presentation/selected_child.dart';
 
 import 'helpers/fake_auth_controller.dart';
 import 'helpers/pump_app.dart';
@@ -43,6 +45,23 @@ void main() {
     await tester.pump();
 
     expect(fake.calls, contains('onResumed'));
+  });
+
+  testWidgets('realMode_sessionExpired_clearsSelectedChild', (tester) async {
+    addTearDown(SelectedChild.reset);
+    final fake = await _pumpApp(tester, useMock: false);
+    fake.emit(
+      AuthSignedIn(fakeUser(roles: {'PARENT'}, childIds: [7]), AppMode.parent),
+    );
+    await tester.pumpAndSettle();
+    SelectedChild.notifier.value = 'child-2';
+
+    fake.emit(const AuthSignedOut(notice: AuthNotice.sessionExpired));
+    await tester.pumpAndSettle();
+    // Dữ liệu giả của Trang chủ phụ huynh trả sau 400 ms
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(SelectedChild.notifier.value, 'child-1');
   });
 
   testWidgets('mockMode_keepsFakeLogin', (tester) async {

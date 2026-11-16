@@ -28,7 +28,8 @@ Nguồn contract: `BE:docs/contracts/AUTH_CONTRACT.md` (BE `dev`). Plan: `docs/p
 - 400 `1006` ⇒ "Mã kích hoạt sai hoặc đã hết hạn. Liên hệ nhà trường để gửi lại mã."; 400 `1009` ⇒ lỗi mật khẩu theo `desc`.
 
 ## Đăng xuất
-- Hộp xác nhận ⇒ xóa token trên máy, về Đăng nhập ngay (xóa back stack; đăng xuất từ màn Tài khoản còn xóa ngữ cảnh con đang chọn); POST `{issuer}/protocol/openid-connect/logout` với `client_id` + `refresh_token` chạy nền, lỗi mạng bỏ qua. Kiểm 16/11 trên BE local: logout 204, refresh token cũ sau đó bị từ chối (`invalid_grant`).
+- Hộp xác nhận ⇒ xóa token trên máy, về Đăng nhập ngay (xóa back stack); POST `{issuer}/protocol/openid-connect/logout` với `client_id` + `refresh_token` chạy nền, lỗi mạng bỏ qua. Kiểm 16/11 trên BE local: logout 204, refresh token cũ sau đó bị từ chối (`invalid_grant`).
+- Mọi đường về Đăng nhập (đăng xuất ở Tài khoản, màn chặn, màn Thử lại; hết phiên; 401 ở `/accounts/me`) ⇒ xóa ngữ cảnh con đang chọn (`lib/app.dart`).
 
 ## Chưa làm
 - Quên mật khẩu: chờ API SMS ở nhánh BE `feature/G94-87-BE-FEAT-0-app-rules-sms-reset` (plan 16/11 quyết định 5); bản thật ẩn lối vào.

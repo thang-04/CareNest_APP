@@ -151,14 +151,9 @@ GoRouter _buildSessionRouter(
   required Future<void> Function()? onSignOut,
   required Future<void> Function(AppMode mode)? onSwitchMode,
 }) {
-  // Đổi người dùng không được thấy ngữ cảnh con của người trước
-  void signOut() {
-    SelectedChild.reset();
-    onSignOut?.call();
-  }
-
+  // Ngữ cảnh con của người trước được xóa ở `app.dart` khi về Đăng nhập
   final account = _AccountTab(
-    onLogout: signOut,
+    onLogout: () => onSignOut?.call(),
     source: _SessionAccountSource(readAuth),
     modeSwitches: () => _modeSwitches(readAuth(), onSwitchMode),
   );

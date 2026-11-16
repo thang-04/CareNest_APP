@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/config/env.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
+import 'package:carenest_app/features/auth/presentation/controllers/auth_state.dart';
 import 'package:carenest_app/features/auth/presentation/providers/auth_providers.dart';
+import 'package:carenest_app/features/parent_home/presentation/selected_child.dart';
 import 'package:carenest_app/routing/app_router.dart';
 
 /// `useMock` (mặc định theo `USE_MOCK`): `true` ⇒ dữ liệu giả + Xem thử như trước;
@@ -34,7 +36,11 @@ class _CareNestAppState extends ConsumerState<CareNestApp>
       _router = buildAppRouter();
       return;
     }
-    ref.listenManual(authControllerProvider, (_, _) => _authChanges.value++);
+    ref.listenManual(authControllerProvider, (_, next) {
+      // Mọi đường về Đăng nhập (đăng xuất, hết phiên, 401) ⇒ người sau không thấy ngữ cảnh con của người trước
+      if (next is AuthSignedOut) SelectedChild.reset();
+      _authChanges.value++;
+    });
     _router = buildAppRouter(
       refresh: _authChanges,
       readAuth: () => ref.read(authControllerProvider),
