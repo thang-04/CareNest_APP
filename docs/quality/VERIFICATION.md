@@ -34,3 +34,15 @@ Làn L:            ghi đủ vào Progress log của plan; chat chỉ tóm tắt
 - node scripts/check-ai-layer.mjs → exit 0: 0 lỗi, 4 cảnh báo E7 về glob data/offline/controllers/providers chưa có file.
 - Chưa kiểm chứng: build Android/iOS, emulator/máy thật, API BE, cấu hình SDK trong IDE và PATH mặc định. Android còn license chưa chấp nhận.
 - Plan: docs/plans/completed/2026-10-08-flutter-sdk-3-47-6.md.
+## 2026-11-16 — Phase 1 nền App: đăng nhập PKCE, API client (plan `docs/plans/active/2026-11-16-app-be-integration.md`)
+- Môi trường: Windows 11, Flutter 3.47.6 / Dart 3.13.5 qua PATH tiến trình (`D:\Flutter_Setup\stable-3.47.6\flutter\bin`); BE `dev` `f76e9092` chạy local (`run-be-dev.ps1`, DB local có seed), Keycloak + Postgres docker compose `carenest_be-devdb`.
+- `flutter pub get --enforce-lockfile` → exit 0.
+- `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 338 fail 0 skip 0`.
+- `flutter build apk --debug --dart-define-from-file=env/local.example.json` → `√ Built build\app\outputs\flutter-apk\app-debug.apk`.
+- Kiểm contract BE + Keycloak bằng script Node trên PC (mô phỏng luồng AppAuth: mở trang đăng nhập Keycloak, gửi form, bắt redirect `carenest://oauth/callback`, đổi code + `code_verifier`; script để ngoài repo, không in token) → 30/30 PASS:
+  - Discovery: `issuer` = `http://localhost:8180/realms/carenest`; `end_session_endpoint` = `{issuer}/protocol/openid-connect/logout`; redirect sai bị từ chối (400).
+  - GV `0343484905`, bếp `kitchen`, phụ huynh `0335474254`: đăng nhập PKCE được; token `azp` = `carenest-mobile`, `aud` có `carenest-api`, access 300 s, refresh 1800 s (phiên thường); `/accounts/me` 200 đúng role (phụ huynh `childIds` = 2).
+  - Hiệu trưởng `principal` với token App: `/accounts/me` → 403 `errorCode` 1101 (App hiện "dùng trên Web").
+  - Refresh → token mới, refresh token đổi mới mỗi lần. Logout POST `client_id` + `refresh_token` → 204; refresh token đó sau logout → 400 `invalid_grant`.
+  - `GET /accounts/me` không token → 401 `errorCode` 1002; `POST /parent-activation` mã sai → 400 `errorCode` 1006; refresh token rác → 400 `invalid_grant`.
+- Chưa kiểm (máy dev không chạy nổi emulator — user 16/11 chọn kiểm contract): App thật trên thiết bị (AppAuth mở Custom Tabs và nhận redirect vào App, `flutter_secure_storage` trên Android, các màn Đăng nhập/Kích hoạt/Tài khoản), tài khoản GV kiêm phụ huynh (seed local không có), khóa tài khoản rồi quay lại App, iOS. Chạy trên điện thoại Android thật (USB + `adb reverse tcp:8080 tcp:8080`, `tcp:8180 tcp:8180`) trước khi merge.

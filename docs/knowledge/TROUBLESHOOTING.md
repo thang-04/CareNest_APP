@@ -53,3 +53,11 @@ Cách xử lý nhanh lỗi môi trường: cài đặt toolchain, build Android/
 - Nguyên nhân: server debug của `web-server` chờ kết nối debug service và chỉ phục vụ ổn một client; đổi hash sau khi tải (Page.navigate hoặc `location.hash`) cho ra 404; `--screenshot` của Chrome dùng viewport rộng hơn `--window-size` nên cắt mép phải. Gốc chưa xác minh hết.
 - Xử lý: chụp bằng golden test tạm — `MaterialApp.router` + `buildAppRouter(enablePreview: true)`, `tester.view.physicalSize = Size(750, 1624)`, `devicePixelRatio = 2`, nạp font bằng `FontLoader` (`assets/fonts/BeVietnamPro-*.ttf`, `<flutter>/bin/cache/artifacts/material_fonts/materialicons-regular.otf`), `precacheImage` logo trong `tester.runAsync`, rồi `matchesGoldenFile` + `flutter test <file> --update-goldens`. Xoá file test và ảnh sau khi xem, không commit. Chạy lại không có `--update-goldens` mà ảnh khác ⇒ Flutter ghi ảnh so sánh vào `test/failures/`: xoá luôn thư mục này.
 - Đã thử không hiệu quả: `--virtual-time-budget`; CDP `Emulation.setDeviceMetricsOverride` + `setVirtualTimePolicy`; tắt throttle nền; `flutter build web --debug` + server tĩnh (route vẫn 404 sau tải). Tiến trình `dartvm` cũ giữ cổng sau khi dừng shell cha ⇒ `errno = 10048` khi chạy lại.
+
+## Kết nối BE local
+
+### Đăng nhập Keycloak được nhưng mọi API trả 401 trên emulator/máy thật (phòng ngừa, chưa gặp)
+- Môi trường: App chạy `--dart-define-from-file=env/local.json`, BE + Keycloak local trên PC (Keycloak 8180, BE 8080).
+- Nguyên nhân: token có `iss` theo host App dùng để mở Keycloak. Dùng `http://10.0.2.2:8180/...` thì `iss` khác issuer BE kiểm (`http://localhost:8180/realms/carenest`) ⇒ BE từ chối token.
+- Xử lý: giữ `localhost` trong `env/local.json` và chuyển cổng từ thiết bị về PC: `adb reverse tcp:8080 tcp:8080` và `adb reverse tcp:8180 tcp:8180` (emulator, máy thật qua USB hoặc wireless debugging). Bản debug cho phép HTTP (`android/app/src/debug/AndroidManifest.xml`); bản release chỉ HTTPS.
+- Kiểm nhanh không cần thiết bị: discovery `http://localhost:8180/realms/carenest/.well-known/openid-configuration` phải có `issuer` đúng như trên.
