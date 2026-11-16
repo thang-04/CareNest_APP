@@ -10,6 +10,7 @@ import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_otp_field.dart';
 import 'package:carenest_app/core/widgets/app_text_field.dart';
+import 'package:carenest_app/features/auth/presentation/controllers/auth_state.dart';
 import 'package:carenest_app/features/auth/presentation/providers/auth_providers.dart';
 
 /// Kích hoạt tài khoản phụ huynh bằng mã SMS (BE AUTH-18, ADR-0026): đặt mật khẩu rồi đăng nhập Keycloak
@@ -158,6 +159,7 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
 
   Widget _done(BuildContext context, String username) {
     final textTheme = Theme.of(context).textTheme;
+    final signingIn = ref.watch(authControllerProvider) is AuthSigningIn;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -173,6 +175,8 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
           const SizedBox(height: AppSpacing.space4),
           AppButton(
             label: 'Đăng nhập',
+            loadingLabel: 'Đang mở trang đăng nhập...',
+            isLoading: signingIn,
             expand: true,
             onPressed: () => _signIn(username),
           ),

@@ -100,6 +100,25 @@ void main() {
     expect(setup.fake.calls, ['signIn:0900000001', 'signIn:0900000001']);
   });
 
+  testWidgets('activate_whileLoginPageOpen_signInButtonBusy', (tester) async {
+    final setup = await _pump(tester);
+    setup.http.enqueue(
+      FakeReply.envelope(200, data: {'username': '0900000001'}),
+    );
+    await _fill(tester);
+    await tester.ensureVisible(_submit);
+    await tester.tap(_submit);
+    await tester.pumpAndSettle();
+
+    setup.fake.emit(const AuthSigningIn());
+    await tester.pump();
+    await tester.tap(find.byType(AppButton));
+    await tester.pump();
+
+    expect(setup.fake.calls, ['signIn:0900000001']);
+    expect(find.text('Đang mở trang đăng nhập...'), findsOneWidget);
+  });
+
   testWidgets('activate_1006_showsContactSchool', (tester) async {
     final setup = await _pump(tester);
     setup.http.enqueue(FakeReply.envelope(400, errorCode: 1006, desc: 'x'));
