@@ -10,6 +10,9 @@ verify.log
 .env
 .env.*
 !.env.example
+# Cấu hình chạy App với BE (--dart-define-from-file): chỉ commit file mẫu
+env/*.json
+!env/*.example.json
 *.pem
 *.key
 
