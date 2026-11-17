@@ -43,6 +43,22 @@ Future<void> tapLunchCamera(WidgetTester tester) async {
   await tester.tap(inCard('Bữa trưa · 10:45', 'Chụp ảnh'));
 }
 
+/// Lần tải đầu lỗi, các lần sau có dữ liệu.
+class _FailOnceSource extends FakeKitchenPhotoSource {
+  _FailOnceSource() : super(delay: Duration.zero);
+
+  var _failed = false;
+
+  @override
+  Future<KitchenPhotoDay> loadToday() async {
+    if (!_failed) {
+      _failed = true;
+      throw StateError('mất mạng');
+    }
+    return super.loadToday();
+  }
+}
+
 /// Tải được nhưng đăng ảnh lỗi.
 class _UploadFailsSource extends FakeKitchenPhotoSource {
   _UploadFailsSource() : super(delay: Duration.zero);
@@ -119,6 +135,15 @@ void main() {
     );
     expect(inCard('Bữa trưa · 10:45', 'Cần chụp'), findsOneWidget);
     expect(inCard('Bữa trưa · 10:45', 'Chụp ảnh'), findsOneWidget);
+  });
+
+  testWidgets('Ảnh mẫu: tải lỗi rồi Thử lại ⇒ hiện các nhóm tuổi', (
+    tester,
+  ) async {
+    await pumpPhotos(tester, source: _FailOnceSource());
+    await tester.tap(find.text('Thử lại'));
+    await tester.pumpAndSettle();
+    expect(find.text('Nhà trẻ 2/3'), findsOneWidget);
   });
 
   testWidgets('Ảnh mẫu: lỗi tải ⇒ báo lỗi có Thử lại', (tester) async {

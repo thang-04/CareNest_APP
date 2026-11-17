@@ -93,7 +93,9 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
               child: AppErrorState(
                 title: 'Chưa tải được ảnh mẫu',
                 message: 'Kiểm tra kết nối mạng rồi thử lại.',
-                onRetry: () => setState(() => _day = _source.loadToday()),
+                onRetry: () => setState(() {
+                  _day = _source.loadToday();
+                }),
               ),
             );
           }
