@@ -20,7 +20,9 @@ Không có chat (PAR-04) — trao đổi tức thời vẫn qua Zalo.
 - Endpoint: chưa có
 - Field: PAR-01 (thực đơn tuần/ngày, ảnh suất ăn — chốt 29/10, đóng P-13b).
 - Ảnh bữa ăn — **PROPOSED** (user 2026-10-13): (1) bếp chụp ảnh món khi nấu xong; (2) giáo viên chụp khay khi bếp giao tới lớp rồi đăng; phụ huynh xem ảnh món ăn trong thực đơn/lịch của con. BE NUT-16 hiện chỉ ghi bếp chụp ⇒ đề xuất cập nhật BE. Ảnh chỉ tải qua URL có auth; ảnh chụp khay suất ăn, không chụp mặt trẻ.
-- Lệch BE (28/10): NUT-16 CONFIRMED chỉ bếp chụp ảnh mẫu mỗi bữa, dùng chung toàn trường; dữ liệu giả `MealPhotoSet` ghi ảnh "GV đăng khi nhận suất" — cần sửa khi tích hợp.
+- Lệch BE (28/10): NUT-16 CONFIRMED chỉ bếp chụp ảnh mẫu mỗi bữa, dùng chung toàn trường; dữ liệu giả `MealPhotoSet` ghi ảnh "GV đăng khi nhận suất" — cần sửa khi tích hợp. **Đã sửa 17/11**: bỏ `MealPhotoSet`, dữ liệu giả ghi "Bếp đăng".
+- Ảnh mẫu theo nhóm tuổi — **đề xuất A, user 2026-11-17** (canvas "Ảnh bữa ăn theo nhóm tuổi"): mỗi nhóm tuổi có suất khác nhau nên bếp chụp ảnh mẫu theo nhóm tuổi, một bữa có thể nhiều ảnh (vd. bữa sáng 2–3 ảnh). Phụ huynh chỉ thấy ảnh nhóm tuổi của con, nằm ngay trong thẻ của bữa đó: 1 ảnh một ô rộng, 2 ảnh hai ô, 3 ảnh ba ô vuông, từ 4 ảnh ô thứ ba ghi "+n"; dưới ảnh "Ảnh mẫu nhóm <nhóm> · Bếp đăng <giờ>"; chạm ảnh mở xem toàn màn, vuốt qua các ảnh cùng bữa. Bữa đã qua giờ mà chưa có ảnh ⇒ "Bếp chưa đăng ảnh <bữa>"; chưa tới giờ ⇒ "Có ảnh sau <giờ ăn>". Trạng thái (`MealPhotos` posted / missing / upcoming) do nguồn dữ liệu trả, App không suy theo giờ máy.
+- Lệch BE (17/11, **chưa làm BE theo user**): `MealPhoto` hiện theo điểm trường + ngày + bữa, mỗi bữa 1 ảnh (đăng lại là thay). Để nối cần BE thêm nhóm tuổi, nhiều ảnh mỗi bữa, số ảnh cần cho từng bữa theo nhóm tuổi (giả định PHT cấu hình như NUT-17) và trạng thái ảnh theo bữa. Đến lúc đó App dùng dữ liệu giả.
 
 ### Sức khỏe (đã công bố)
 - BE: card `BE:docs/modules/health.md` · flow `BE:docs/business/flows/health-check.md` · rule HLT-02 (trend do BE tính), HLT-04, HLT-05 (diễn giải AI chỉ hiện khi đã duyệt), PAR-02
