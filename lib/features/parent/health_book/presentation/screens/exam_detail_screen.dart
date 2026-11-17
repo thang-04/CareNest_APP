@@ -17,7 +17,8 @@ import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dar
 
 /// Phụ huynh · Chi tiết đợt khám: đủ thông số phiếu Phụ lục II (user 17/11) — thông tin đợt,
 /// kết luận và tư vấn, tiền sử, dấu hiệu sinh tồn, dinh dưỡng, phát triển, tiêm chủng, 24 mục khám
-/// lâm sàng. Bỏ thông tin hành chính của phiếu. API phụ huynh hiện chỉ trả kết luận ⇒ dữ liệu giả.
+/// lâm sàng. Bỏ thông tin hành chính của phiếu. API phụ huynh hiện chỉ trả số đo + kết luận ngắn
+/// (`PublishedHealthResponse`) ⇒ dữ liệu giả.
 class ExamDetailScreen extends StatefulWidget {
   const ExamDetailScreen({
     super.key,

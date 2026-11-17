@@ -25,13 +25,15 @@ Không có chat (PAR-04) — trao đổi tức thời vẫn qua Zalo.
 - User 17/11 chốt thêm: số ảnh không giới hạn (bếp chụp bao nhiêu cũng được), mỗi bữa nhóm tuổi đó ăn cần ít nhất 1 ảnh; **số bữa** từng nhóm tuổi do Phó HT phụ trách dinh dưỡng cấu hình (NUT-17), vd. mẫu giáo 3 bữa, mẫu giáo lớn 2 bữa. Bé lớp Lá (dữ liệu giả: nhóm Lá ăn 2 bữa) chỉ thấy bữa trưa và bữa chiều; bữa trưa hôm nay "Bếp chưa đăng ảnh bữa trưa", khớp màn "Ảnh mẫu bữa ăn" của bếp (`docs/features/kitchen/README.md`).
 - Lệch BE (17/11, **chưa làm BE theo user**): `MealPhoto` hiện theo điểm trường + ngày + bữa, mỗi bữa 1 ảnh (đăng lại là thay). Để nối cần BE thêm nhóm tuổi, nhiều ảnh mỗi bữa, số bữa theo nhóm tuổi (PHT dinh dưỡng cấu hình theo NUT-17, user chốt 17/11) và trạng thái ảnh theo bữa. Đến lúc đó App dùng dữ liệu giả.
 
-### Sức khỏe (đã công bố)
-- BE: card `BE:docs/modules/health.md` · flow `BE:docs/business/flows/health-check.md` · rule HLT-02 (trend do BE tính), HLT-04, HLT-05 (diễn giải AI chỉ hiện khi đã duyệt), PAR-02
+### Sổ sức khỏe (đã công bố)
+- BE: card `BE:docs/modules/health.md` · flow `BE:docs/business/flows/health-check.md` · rule HLT-02 (trend do BE tính), HLT-04, HLT-05, HLT-21 (diễn giải AI chỉ hiện khi đã duyệt), PAR-02
 - Endpoint: chưa có
+- User 17/11 (canvas "Sổ sức khỏe"): màn riêng mở từ ô "Sổ sức khỏe" ở Trang chủ, thay tab Sức khỏe cũ của Bé của tôi (Bé của tôi còn Hôm nay | Phát triển). Ba phần: **Kỳ cân đo** (accordion, kỳ mới nhất mở sẵn: chiều cao, cân nặng, BMI, mức BMI theo tuổi, ghi chú của cô) · **Đợt khám** (mỗi đợt một thẻ; chạm mở màn Chi tiết đợt khám với đủ phiếu: kết luận + lời dặn, tiền sử, dấu hiệu sinh tồn, dinh dưỡng, phát triển, tiêm chủng, 24 mục khám lâm sàng; bỏ phần hành chính của phiếu) · **Xu hướng** (biểu đồ chiều cao, cân nặng theo thời gian thật, lọc 6 tháng | 12 tháng | Toàn bộ; chấm rỗng là số đo khi khám; nhận định AI đã được GV chủ nhiệm duyệt). Dữ liệu giả `FakeHealthBookSource`, route ở `docs/architecture/NAVIGATION.md`.
 - Phân loại theo WHO do BE trả (HLT-03, HLT-10; đóng P-13) — APP không tự tô màu "bất thường". Cân đo chỉ hiện sau khi GV/PHT công bố (HLT-11, PAR-03).
+- Lệch BE (17/11, cần thống nhất khi tích hợp): `GET /children/{childId}/health/published` (`PublishedHealthResponse`) chỉ trả số đo + kết luận ngắn của phiếu khám ⇒ màn Chi tiết đợt khám cần BE trả đủ các mục phiếu (trừ phần hành chính), tên bác sĩ, đơn vị khám. Nhận định đã duyệt chỉ có `summary` + `warnings` ⇒ phần Tổng quan / Cần chú ý / Điểm tích cực / Lưu ý về dữ liệu, tên khoảng phân tích và cờ "đã có số đo mới sau lần duyệt" (`stale`) cần BE trả theo phần, hoặc App gộp lại khi nối.
 - Từ 29/10 PAR-01 có thêm sức khỏe trong ngày và xử trí (HLT-14, báo ngay, không chờ công bố) — đối chiếu màn Hôm nay khi tích hợp.
-- Nhãn "Tình trạng dinh dưỡng" chỉ hiện khi BE trả nhãn (field null ⇒ ẩn dòng); bản giả có "Bình thường" ở debug. Biểu đồ cân nặng tự vẽ, không tô vùng chuẩn.
-- Dị ứng của con: card `BE:docs/modules/child.md` · HLT-06 (phụ huynh khai khi nhập học, mức nhẹ/nặng — đóng P-17), NUT-23
+- Biểu đồ tự vẽ (chưa chọn thư viện chart), không tô vùng chuẩn.
+- Dị ứng của con: card `BE:docs/modules/child.md` · HLT-06 (phụ huynh khai khi nhập học, mức nhẹ/nặng — đóng P-17), NUT-23. Hiện ở Hồ sơ của bé và Thực đơn tuần.
 
 ### Cập nhật phát triển (đã duyệt) & Hoạt động hằng ngày
 - BE: card `BE:docs/modules/learning-observation.md` · flow `BE:docs/business/flows/child-observation.md` · rule OBS-03, OBS-05, OBS-06, OBS-10, OBS-13, OBS-14, EDU-09, PAR-01, PAR-03

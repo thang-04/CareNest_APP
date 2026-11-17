@@ -28,7 +28,7 @@ Dùng chung mọi role: Thông báo (danh sách in-app, nếu BE có) · Tài kh
 | Chọn con / Tổng quan con | Danh sách con có GuardianLink; tóm tắt hôm nay | Chỉ con của mình (AUTH-04) |
 | Lịch sử điểm danh | Có mặt/vắng theo ngày | |
 | Bữa ăn | Thực đơn tuần + thực đơn ngày của con; thực đơn ngày có ảnh suất ăn hôm đó do bếp chụp | Chỉ field được phép (PAR-01, PAR-02, NUT-16) |
-| Sức khỏe | Số đo + trend đã **công bố**; diễn giải chỉ khi đã APPROVED | Không hiển thị AI DRAFT |
+| Sổ sức khỏe | Màn riêng từ Trang chủ (user 17/11): Kỳ cân đo · Đợt khám (+ chi tiết đợt khám) · Xu hướng; số đo + trend đã **công bố**; diễn giải chỉ khi đã APPROVED | Không hiển thị AI DRAFT |
 | Phát triển & hoạt động | Đánh giá ngày sau khi GV lưu (OBS-13); nhận xét định kỳ mọi kỳ (OBS-06); phiếu bé ngoan, khen thưởng (OBS-10, OBS-14); tên hoạt động trong ngày từ kế hoạch ngày (EDU-09) | Dữ liệu có công bố chỉ hiện sau công bố (PAR-03) |
 | Báo nghỉ | Gửi (ngày bắt đầu–kết thúc + lý do) / hủy / xem thông báo nghỉ của con (`leave:create`); không có bước duyệt | ATT-05; `SUBMITTED → CANCELLED`; con có đơn vẫn đến [P] P-20 |
 | Đón con | Ai đã đón con, giờ đón; thông báo khi con được đón | PCK-04; không đăng ký trước người đón hộ (PCK-03) |
@@ -118,7 +118,7 @@ Nhãn tab theo mockup `docs/design/figma/` (user 2026-10-13). Chưa có auth ⇒
 | `/principal/approvals/rewards/<id>`, `/principal/children`, `/principal/children/class?campus=<id>&class=<id>`, `/principal/menu`, `/principal/menu/nutrition?campus=<id>&group=<id>&day=<yyyy-mm-dd>`, `/principal/campuses` | Khen thưởng cuối năm (H04) · Danh sách trẻ (H06) · Trẻ của lớp · Thực đơn tuần (H07) · Cân đối dinh dưỡng · Cơ sở & Phó HT (H08) | không | OBS-10, OBS-14 (chốt 29/10); cơ sở, lớp, nhóm tuổi, ngày là ngữ cảnh ở query |
 | `/parent/leave-notices?child=<id>`, `/parent/leave-notices/new?child=<id>` | Đơn xin nghỉ đã gửi · Xin nghỉ cho bé (P04, P03) | không | Màn con, chỉ mang ID con |
 | `/parent/menu`, `/parent/activities`, `/parent/attendance`, `/parent/child-profile` (đều `?child=<id>`) | Thực đơn tuần · Hoạt động & đánh giá · Điểm danh & bữa ăn · Hồ sơ của bé (P05, P09, P10, P13) | không | ID không thuộc danh sách con ⇒ 404 |
-| `/parent/child?tab=health` | Tab Bé của tôi mở sẵn Sức khỏe | không | Con đang xem là state (`SelectedChild`), không nằm trong route |
+| `/parent/health?child=<id>`, `/parent/health/exams/<examId>?child=<id>` | Sổ sức khỏe: Kỳ cân đo · Đợt khám · Xu hướng (ô "Sổ sức khỏe" ở Trang chủ) · Chi tiết đợt khám | không | User 17/11, thay tab Sức khỏe cũ của Bé của tôi. Màn con ẩn thanh đáy, chỉ mang ID; con lạ ⇒ 404, đợt khám lạ ⇒ "Không tìm thấy đợt khám" |
 | `/parent/child?tab=development`, `/parent/child?tab=development&section=rewards` | Tab Bé của tôi mở sẵn Phát triển (ô "Đánh giá" ở Trang chủ) · cuộn tới phiếu bé ngoan + khen thưởng cuối năm (ô "Khen thưởng") | không | User 17/11. Dựng link bằng `RoutePaths.parentChildAt`; `tab` khác ⇒ Hôm nay |
 | `/teacher/attendance` | Điểm danh + báo ăn lớp đang chọn (T02) | không | Màn con; lớp là state, dữ liệu giả có một lớp. Lệch BE (28/10): còn báo ăn theo bé (ATT-02), chưa có nhiệt độ (HLT-07) — cần sửa khi tích hợp |
 | `/teacher/leave-notices`, `/teacher/schedule` | Đơn xin nghỉ của lớp (T03) · Lịch hoạt động (T10) | không | |
