@@ -46,6 +46,15 @@ Cách xử lý nhanh lỗi môi trường: cài đặt toolchain, build Android/
 - Giới hạn: PATH mặc định và SDK trong IDE chưa được đổi/kiểm chứng; kết quả trên dùng SDK mới qua PATH tiến trình. Chưa build Android/iOS hoặc chạy máy thật; Android còn license chưa chấp nhận.
 - Incident: APP-ENV-261008-flutter-sdk-mismatch (workaround cho đến khi terminal/IDE chọn đúng SDK).
 
+## Build Android
+
+### `Could not close incremental caches` ở `:<plugin>:compileDebugKotlin`
+- Môi trường: Windows 11, Flutter 3.47.6, AGP 9.0.1, Kotlin 2.3.20; project ở ổ D:, Pub cache ở ổ C:; chỉ plugin có mã Kotlin (`url_launcher_android`, `image_picker_android`)
+- Nguyên nhân: Kotlin incremental compilation không tính được đường dẫn tương đối giữa hai ổ đĩa
+- Xử lý: đã thêm `kotlin.incremental=false` vào `android/gradle.properties` (17/11). Nếu vẫn lỗi vì cache cũ: `android\gradlew.bat --stop`, xoá `build\<plugin>` bằng `rmdir /s /q`, build lại. Cách khác: đặt `PUB_CACHE` cùng ổ với project rồi `flutter clean` + `flutter pub get`
+- Đã thử không hiệu quả: chạy lại `flutter build apk` (lỗi lặp lại)
+- Incident: APP-ENV-261117-kotlin-ic-cross-drive
+
 ## Xem màn bằng mắt (chụp ảnh)
 
 ### Chrome headless chụp ra trang trắng hoặc "Không tìm thấy trang" với `flutter run -d web-server`

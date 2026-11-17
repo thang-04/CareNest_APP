@@ -8,4 +8,5 @@ ID: `APP-BUG-` (code) · `APP-CASE-` (edge case nghiệp vụ/UX) · `APP-ENV-` 
 | --- | --- | --- | --- | --- |
 | APP-ENV-261008-verify-quoted-bat | harness verify | `node scripts/verify.mjs` Windows: "The system cannot find the path specified." khi gọi flutter/dart | cmd + tên `.bat` trong ngoặc kép làm `%~dp0` sai | fixed |
 | APP-ENV-261008-flutter-sdk-mismatch | toolchain | Windows: Dart 3.11.5, version solving failed; SDK mới: lockfile không khớp | Đã đồng bộ 5 package và verify PASS với SDK mới; IDE/PATH mặc định còn cần chọn SDK mới | workaround |
+| APP-ENV-261117-kotlin-ic-cross-drive | build Android | `flutter build apk` Windows: `:image_picker_android:compileDebugKotlin` / `:url_launcher_android:compileDebugKotlin` "Could not close incremental caches", "Daemon compilation failed" | Kotlin incremental compilation hỏng khi project (ổ D:) và Pub cache (ổ C:) khác ổ; tắt bằng `kotlin.incremental=false` | fixed |
 | APP-BUG-261014-greeting-bell-semantics-merge | parent-home | Trình đọc màn hình: lời chào + chuông gộp một nút, mất "Thông báo, N chưa đọc" sau khi bỏ hero | `Semantics(header/button)` thiếu `container: true` nên gộp vào nút cha chung | fixed |
