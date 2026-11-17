@@ -93,13 +93,13 @@ void main() {
       top(find.text('Chị Nguyễn Thu Lan')),
       lessThan(top(find.text('Minh Anh'))),
     );
-    await tester.scrollUntilVisible(find.text('Sức khỏe'), 200);
+    await tester.scrollUntilVisible(find.text('Sổ sức khỏe'), 200);
     expect(top(find.text('Minh Anh')), lessThan(top(find.text('Việc nhanh'))));
     for (final label in [
       'Xin nghỉ cho bé',
       'Hoạt động & đánh giá',
       'Thực đơn tuần',
-      'Sức khỏe',
+      'Sổ sức khỏe',
     ]) {
       expect(find.text(label), findsOneWidget);
     }

@@ -40,6 +40,14 @@ abstract final class RoutePaths {
   static const parentAttendance = '/parent/attendance';
   static const parentChildProfile = '/parent/child-profile';
 
+  /// Sổ sức khỏe (Kỳ cân đo | Đợt khám | Xu hướng); ID con ở query như các màn con khác.
+  static const parentHealthBook = '/parent/health';
+  static const parentHealthExams = '$parentHealthBook/exams';
+
+  /// Chi tiết một đợt khám: ID đợt trên đường dẫn, ID con ở query.
+  static String parentHealthExam(String examId, {required String childId}) =>
+      withChild('$parentHealthExams/$examId', childId);
+
   static const teacherToday = '/teacher';
   static const teacherClass = '/teacher/class';
   static const teacherNotifications = '/teacher/notifications';

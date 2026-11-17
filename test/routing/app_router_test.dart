@@ -8,6 +8,8 @@ import 'package:carenest_app/features/auth/presentation/screens/forgot_password_
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/otp_verify_screen.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
+import 'package:carenest_app/features/parent/health_book/presentation/screens/exam_detail_screen.dart';
+import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
 import 'package:carenest_app/routing/app_router.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
@@ -134,6 +136,56 @@ void main() {
       );
     },
   );
+
+  testWidgets(
+    'Phụ huynh: Việc nhanh › Sổ sức khỏe mở sổ, chạm đợt khám mở chi tiết',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      router.go(RoutePaths.parentToday);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Sổ sức khỏe'), 200);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sổ sức khỏe'));
+      await tester.pumpAndSettle();
+      expect(find.byType(HealthBookScreen), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.text('Cân đo định kỳ tháng 10/2026'), findsOneWidget);
+
+      await tester.tap(find.text('Đợt khám'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Khám sức khỏe đầu năm học 2026-2027'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ExamDetailScreen), findsOneWidget);
+      expect(find.text('BS. Nguyễn Thị Hằng'), findsWidgets);
+
+      // Quay lại sổ, vẫn ở tab Đợt khám
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(find.text('Đợt khám sức khỏe'), findsOneWidget);
+    },
+  );
+
+  testWidgets('Phụ huynh: Sổ sức khỏe mở theo bé trên đường dẫn, bé lạ ⇒ 404', (
+    tester,
+  ) async {
+    final router = await pumpRouter(tester, enablePreview: true);
+    router.go(RoutePaths.withChild(RoutePaths.parentHealthBook, 'child-2'));
+    await tester.pumpAndSettle();
+    expect(find.text('Nguyễn Hoàng Bảo Ngọc'), findsOneWidget);
+
+    router.go(RoutePaths.parentHealthExam('exam2-2026', childId: 'child-2'));
+    await tester.pumpAndSettle();
+    expect(find.text('BS. Phạm Văn Đức'), findsWidgets);
+
+    for (final path in [
+      RoutePaths.withChild(RoutePaths.parentHealthBook, 'khong-co'),
+      RoutePaths.parentHealthExam('exam-2026', childId: 'khong-co'),
+    ]) {
+      router.go(path);
+      await tester.pumpAndSettle();
+      expect(find.text('Không tìm thấy trang'), findsOneWidget, reason: path);
+    }
+  });
 
   testWidgets('Bếp: Trang chủ mở Ảnh mẫu bữa ăn, màn con ẩn thanh đáy', (
     tester,

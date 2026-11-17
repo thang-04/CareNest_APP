@@ -206,10 +206,11 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                 () => _push(RoutePaths.parentMenu),
                 tone: AppStatusTone.green,
               ),
+              // User 17/11: Sổ sức khỏe là màn riêng (Kỳ cân đo | Đợt khám | Xu hướng)
               UtilityItem(
                 AppIcons.heart,
-                'Sức khỏe',
-                () => context.go(RoutePaths.parentChildAt('health')),
+                'Sổ sức khỏe',
+                () => _push(RoutePaths.parentHealthBook),
                 tone: AppStatusTone.red,
               ),
               // User 17/11: nhận xét tuần/tháng và phiếu bé ngoan + khen thưởng ở tab Phát triển

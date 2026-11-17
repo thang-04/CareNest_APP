@@ -44,6 +44,8 @@ import 'package:carenest_app/features/kitchen/ingredient_receipt/presentation/sc
 import 'package:carenest_app/features/kitchen/kitchen_home/presentation/screens/kitchen_home_screen.dart';
 import 'package:carenest_app/features/kitchen/kitchen_meals/presentation/screens/kitchen_meals_screen.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
+import 'package:carenest_app/features/parent/health_book/presentation/screens/exam_detail_screen.dart';
+import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_form_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_list_screen.dart';
 import 'package:carenest_app/features/management/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
@@ -350,6 +352,22 @@ List<GoRoute> _parentChildRoutes() {
     route(
       RoutePaths.parentChildProfile,
       (context, state, child) => ChildProfileScreen(childId: child.id),
+    ),
+    route(
+      RoutePaths.parentHealthBook,
+      (context, state, child) => HealthBookScreen(
+        child: child,
+        onOpenExam: (examId) => context.push<void>(
+          RoutePaths.parentHealthExam(examId, childId: child.id),
+        ),
+      ),
+    ),
+    route(
+      '${RoutePaths.parentHealthExams}/:examId',
+      (context, state, child) => ExamDetailScreen(
+        child: child,
+        examId: state.pathParameters['examId']!,
+      ),
     ),
   ];
 }
