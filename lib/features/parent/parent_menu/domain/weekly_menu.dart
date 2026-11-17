@@ -22,9 +22,26 @@ class MenuMeal {
 
 /// Ảnh mẫu một bữa theo nhóm tuổi của bé, bếp chụp (NUT-16); một bữa có thể nhiều ảnh
 /// (đề xuất A, user 17/11). BE chưa có API theo nhóm tuổi ⇒ dữ liệu giả; ảnh thật tải qua URL có auth.
+/// Trạng thái do nguồn dữ liệu trả, App không tự suy theo giờ máy.
 @immutable
-class MealPhotos {
-  const MealPhotos.posted({
+sealed class MealPhotos {
+  const MealPhotos();
+
+  const factory MealPhotos.posted({
+    required String ageGroup,
+    required DateTime postedAt,
+    required List<String> photoIds,
+  }) = PostedMealPhotos;
+
+  /// Đã qua giờ ăn mà bếp chưa đăng ảnh.
+  const factory MealPhotos.missing() = MissingMealPhotos;
+
+  /// Chưa tới giờ ăn.
+  const factory MealPhotos.upcoming() = UpcomingMealPhotos;
+}
+
+final class PostedMealPhotos extends MealPhotos {
+  const PostedMealPhotos({
     required this.ageGroup,
     required this.postedAt,
     required this.photoIds,
@@ -34,6 +51,14 @@ class MealPhotos {
   final String ageGroup;
   final DateTime postedAt;
   final List<String> photoIds;
+}
+
+final class MissingMealPhotos extends MealPhotos {
+  const MissingMealPhotos();
+}
+
+final class UpcomingMealPhotos extends MealPhotos {
+  const UpcomingMealPhotos();
 }
 
 /// Thực đơn một ngày đã công bố (NUT-08) cho một bé. Năng lượng và ghi chú dị ứng là chữ BE trả,

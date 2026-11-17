@@ -34,7 +34,7 @@ class FakeWeeklyMenuSource implements WeeklyMenuSource {
     final hasAllergy = childId == 'child-2';
     // child-2 học lớp Lá (FakeParentHomeSource) ⇒ thấy ảnh mẫu nhóm Lá
     final ageGroup = hasAllergy ? 'Lá' : 'Mầm';
-    // Chỉ hôm nay (12/10) có ảnh: bếp đã đăng bữa sáng và bữa trưa
+    // Chỉ hôm nay (12/10) có phần ảnh: bếp đã đăng bữa sáng và bữa trưa
     MealPhotos? photosOf(int day, int count, int hour, int minute) => day == 0
         ? MealPhotos.posted(
             ageGroup: ageGroup,
@@ -61,7 +61,13 @@ class FakeWeeklyMenuSource implements WeeklyMenuSource {
                 dishes: _lunches[i],
                 photos: photosOf(i, 2, 10, 52),
               ),
-              MenuMeal(name: 'Bữa chiều', time: '14:30', dishes: _snacks[i]),
+              MenuMeal(
+                name: 'Bữa chiều',
+                time: '14:30',
+                dishes: _snacks[i],
+                // Hôm nay chưa tới giờ bữa chiều
+                photos: i == 0 ? const MealPhotos.upcoming() : null,
+              ),
             ],
             energyNote:
                 'Năng lượng cả ngày: ${_energy[i]} kcal · đạt nhu cầu theo độ tuổi',

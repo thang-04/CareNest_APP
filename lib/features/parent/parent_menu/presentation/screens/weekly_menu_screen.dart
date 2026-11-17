@@ -96,6 +96,70 @@ class _WeeklyMenuScreenState extends State<WeeklyMenuScreen> {
     );
   }
 
+  List<Widget> _mealPhotos(
+    BuildContext context,
+    MenuMeal meal,
+    MealPhotos photos,
+  ) {
+    final textTheme = Theme.of(context).textTheme;
+    final muted = textTheme.bodyMedium?.copyWith(color: AppColors.textMuted);
+    final mealLower = meal.name.isEmpty
+        ? meal.name
+        : meal.name[0].toLowerCase() + meal.name.substring(1);
+    return switch (photos) {
+      PostedMealPhotos() => [
+        MealPhotoGrid(mealName: meal.name, count: photos.photoIds.length),
+        const SizedBox(height: AppSpacing.space2),
+        Text(
+          'Ảnh mẫu nhóm ${photos.ageGroup} · Bếp đăng ${DateLabels.time24(photos.postedAt)}',
+          style: muted,
+        ),
+      ],
+      MissingMealPhotos() => [
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.cardPaddingDense),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceMuted,
+            border: Border.all(color: AppColors.borderStrong),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                AppIcons.clock,
+                size: AppSizes.iconInline,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(width: AppSpacing.space2),
+              Flexible(
+                child: Text(
+                  'Bếp chưa đăng ảnh $mealLower',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      UpcomingMealPhotos() => [
+        Row(
+          children: [
+            const Icon(
+              AppIcons.image,
+              size: AppSizes.iconInline,
+              color: AppColors.textMuted,
+            ),
+            const SizedBox(width: AppSpacing.space2),
+            Expanded(child: Text('Có ảnh sau ${meal.time}', style: muted)),
+          ],
+        ),
+      ],
+    };
+  }
+
   List<Widget> _dayContent(BuildContext context, MenuDay day) {
     final textTheme = Theme.of(context).textTheme;
     return [
@@ -136,17 +200,7 @@ class _WeeklyMenuScreenState extends State<WeeklyMenuScreen> {
               ),
               if (meal.photos case final photos?) ...[
                 const SizedBox(height: AppSpacing.space3),
-                MealPhotoGrid(
-                  mealName: meal.name,
-                  count: photos.photoIds.length,
-                ),
-                const SizedBox(height: AppSpacing.space2),
-                Text(
-                  'Ảnh mẫu nhóm ${photos.ageGroup} · Bếp đăng ${DateLabels.time24(photos.postedAt)}',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textMuted,
-                  ),
-                ),
+                ..._mealPhotos(context, meal, photos),
               ],
             ],
           ),

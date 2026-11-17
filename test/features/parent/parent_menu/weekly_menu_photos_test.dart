@@ -93,6 +93,37 @@ void main() {
     expect(find.text('Ảnh mẫu nhóm Mầm · Bếp đăng 14:41'), findsOneWidget);
   });
 
+  testWidgets('Đề xuất A: qua giờ ăn mà bếp chưa đăng ⇒ báo chưa có ảnh', (
+    tester,
+  ) async {
+    await pumpMenu(tester, [
+      const MenuMeal(
+        name: 'Bữa trưa',
+        time: '10:45',
+        dishes: 'Cơm trắng · Canh rau ngót',
+        photos: MealPhotos.missing(),
+      ),
+    ]);
+    expect(find.text('Bếp chưa đăng ảnh bữa trưa'), findsOneWidget);
+    expect(find.textContaining('Ảnh mẫu nhóm'), findsNothing);
+  });
+
+  testWidgets('Đề xuất A: chưa tới giờ ăn ⇒ chỉ ghi lúc nào có ảnh', (
+    tester,
+  ) async {
+    await pumpMenu(tester, [
+      const MenuMeal(
+        name: 'Bữa chiều',
+        time: '14:30',
+        dishes: 'Chè đậu xanh',
+        photos: MealPhotos.upcoming(),
+      ),
+    ]);
+    expect(find.text('Có ảnh sau 14:30'), findsOneWidget);
+    expect(find.bySemanticsLabel('Ảnh bữa chiều'), findsNothing);
+    expect(find.textContaining('Bếp chưa đăng'), findsNothing);
+  });
+
   testWidgets('Đề xuất A: từ 4 ảnh thì ô thứ ba ghi số ảnh còn lại', (
     tester,
   ) async {
