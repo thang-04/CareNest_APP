@@ -70,9 +70,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       await widget.source.markAllRead();
       if (mounted) {
-        setState(
-          () => _items = [for (final item in _items!) item.markRead()],
-        );
+        setState(() => _items = [for (final item in _items!) item.markRead()]);
       }
     } catch (_) {
       if (mounted) setState(() => _markFailed = true);
@@ -259,7 +257,6 @@ class _NotificationCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
                               child: Text(
@@ -321,15 +318,12 @@ class _UnreadDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.space2),
-      child: Container(
-        width: AppSpacing.space2,
-        height: AppSpacing.space2,
-        decoration: const BoxDecoration(
-          color: AppColors.primary,
-          shape: BoxShape.circle,
-        ),
+    return Container(
+      width: AppSpacing.space2,
+      height: AppSpacing.space2,
+      decoration: const BoxDecoration(
+        color: AppColors.primary,
+        shape: BoxShape.circle,
       ),
     );
   }

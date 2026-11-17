@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/brand/app_logo.dart';
@@ -34,14 +35,14 @@ class _LiveLoginScreenState extends State<LiveLoginScreen> {
       child: Center(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSpacing.pagePadding),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const AppLogo(size: 140),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.space4),
                   AppCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -50,11 +51,11 @@ class _LiveLoginScreenState extends State<LiveLoginScreen> {
                           'Đăng nhập',
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.space4),
                         const Text(
                           'Đăng nhập bằng tài khoản nhà trường qua trang đăng nhập bảo mật.',
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.space4),
                         if (error != null)
                           Text(
                             '$error',

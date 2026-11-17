@@ -142,33 +142,34 @@ void main() {
     expect(api.calls, ['GET /me/notifications/77']);
   });
 
-  testWidgets('danh sách thật: nhóm theo ngày, nhãn loại, đánh dấu đã đọc gọi BE', (
-    tester,
-  ) async {
-    usePhoneSize(tester);
-    final api = DetailApi();
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: buildLightTheme(),
-        home: Scaffold(
-          body: NotificationsScreen(
-            role: AppRole.parent,
-            source: LiveNotificationSource(api),
-            today: DateTime(2026, 11, 18, 12),
-            onOpen: (_) {},
+  testWidgets(
+    'danh sách thật: nhóm theo ngày, nhãn loại, đánh dấu đã đọc gọi BE',
+    (tester) async {
+      usePhoneSize(tester);
+      final api = DetailApi();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildLightTheme(),
+          home: Scaffold(
+            body: NotificationsScreen(
+              role: AppRole.parent,
+              source: LiveNotificationSource(api),
+              today: DateTime(2026, 11, 18, 12),
+              onOpen: (_) {},
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('Hôm nay'), findsOneWidget);
-    expect(find.text('Trước đó'), findsOneWidget);
-    expect(find.text('Thông báo của trường'), findsOneWidget);
-    expect(find.text('Chưa đọc (1)'), findsOneWidget);
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Hôm nay'), findsOneWidget);
+      expect(find.text('Trước đó'), findsOneWidget);
+      expect(find.text('Thông báo của trường'), findsOneWidget);
+      expect(find.text('Chưa đọc (1)'), findsOneWidget);
 
-    await tester.tap(find.text('Đánh dấu đã đọc'));
-    await tester.pumpAndSettle();
-    expect(api.calls, contains('POST /me/notifications/read-all'));
-    expect(find.text('Chưa đọc (0)'), findsOneWidget);
-  });
+      await tester.tap(find.text('Đánh dấu đã đọc'));
+      await tester.pumpAndSettle();
+      expect(api.calls, contains('POST /me/notifications/read-all'));
+      expect(find.text('Chưa đọc (0)'), findsOneWidget);
+    },
+  );
 }

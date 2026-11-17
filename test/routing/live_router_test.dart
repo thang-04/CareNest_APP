@@ -56,32 +56,34 @@ Future<GoRouter> pumpLive(WidgetTester tester, List<String> roles) async {
 }
 
 void main() {
-  testWidgets('phiên thật Giáo viên: Thông báo có thanh đáy 4 tab, Tài khoản thật', (
-    tester,
-  ) async {
-    await pumpLive(tester, ['TEACHER']);
-    expect(find.byType(NavigationBar), findsOneWidget);
-    for (final tab in ['Trang chủ', 'Lớp học', 'Thông báo', 'Tài khoản']) {
-      expect(find.text(tab), findsWidgets);
-    }
-    expect(find.text('Chưa có thông báo'), findsOneWidget);
+  testWidgets(
+    'phiên thật Giáo viên: Thông báo có thanh đáy 4 tab, Tài khoản thật',
+    (tester) async {
+      await pumpLive(tester, ['TEACHER']);
+      expect(find.byType(NavigationBar), findsOneWidget);
+      for (final tab in ['Trang chủ', 'Lớp học', 'Thông báo', 'Tài khoản']) {
+        expect(find.text(tab), findsWidgets);
+      }
+      expect(find.text('Chưa có thông báo'), findsOneWidget);
 
-    await tester.tap(find.text('Tài khoản').last);
-    await tester.pumpAndSettle();
-    expect(find.text('Giáo viên Thử'), findsOneWidget);
-    expect(find.text('Đăng xuất'), findsOneWidget);
+      await tester.tap(find.text('Tài khoản').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Giáo viên Thử'), findsOneWidget);
+      expect(find.text('Đăng xuất'), findsOneWidget);
 
-    // Tab chưa nối API: báo "Sắp có", không hiện dữ liệu giả
-    await tester.tap(find.text('Lớp học').last);
-    await tester.pumpAndSettle();
-    expect(find.text('Tính năng này sẽ có trong bản sau.'), findsOneWidget);
-  });
+      // Tab chưa nối API: báo "Sắp có", không hiện dữ liệu giả
+      await tester.tap(find.text('Lớp học').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Tính năng này sẽ có trong bản sau.'), findsOneWidget);
+    },
+  );
 
-  testWidgets('vai trò không có trên App (BGH) ⇒ báo dùng Web, không vào khung', (
-    tester,
-  ) async {
-    await pumpLive(tester, ['PRINCIPAL']);
-    expect(find.text('Tài khoản này dùng trên Web'), findsOneWidget);
-    expect(find.byType(NavigationBar), findsNothing);
-  });
+  testWidgets(
+    'vai trò không có trên App (BGH) ⇒ báo dùng Web, không vào khung',
+    (tester) async {
+      await pumpLive(tester, ['PRINCIPAL']);
+      expect(find.text('Tài khoản này dùng trên Web'), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
+    },
+  );
 }

@@ -22,7 +22,8 @@ class LiveNotificationSource implements NotificationSource {
   @override
   Future<AppNotification?> loadDetail(AppRole role, String id) async {
     try {
-      final notification = await api.json('GET', '/me/notifications/$id') as Map;
+      final notification =
+          await api.json('GET', '/me/notifications/$id') as Map;
       final announcementId = notification['announcementId'];
       // Bản trong danh sách là tóm tắt; tin của trường lấy toàn văn, người gửi, tệp
       final announcement = announcementId == null
@@ -37,8 +38,7 @@ class LiveNotificationSource implements NotificationSource {
   }
 
   @override
-  Future<void> markAllRead() =>
-      api.json('POST', '/me/notifications/read-all');
+  Future<void> markAllRead() => api.json('POST', '/me/notifications/read-all');
 
   @override
   Future<void> saveAttachment(NotificationAttachment file) async {
@@ -78,16 +78,13 @@ class LiveNotificationSource implements NotificationSource {
   /// Mã loại BE ⇒ chỉ chọn icon; nhãn hiển thị vẫn là `typeLabel` BE trả.
   static NotificationKind _kindOf(String? type) => switch (type ?? '') {
     final t when t.startsWith('EDU_') => NotificationKind.approval,
-    final t
-        when t.contains('HEALTH') || t.startsWith('CHILD_TB') =>
+    final t when t.contains('HEALTH') || t.startsWith('CHILD_TB') =>
       NotificationKind.health,
     'MENU_PUBLISHED' => NotificationKind.menu,
     final t when t.startsWith('LEAVE_') => NotificationKind.leave,
-    final t
-        when t.startsWith('ATTENDANCE_') || t == 'CHILD_PICKED_UP' =>
+    final t when t.startsWith('ATTENDANCE_') || t == 'CHILD_PICKED_UP' =>
       NotificationKind.attendance,
-    final t
-        when t.startsWith('MEAL_') || t == 'CUTOFF_CHANGED' =>
+    final t when t.startsWith('MEAL_') || t == 'CUTOFF_CHANGED' =>
       NotificationKind.meal,
     final t
         when t.contains('EVALUATION') ||
