@@ -49,7 +49,8 @@ Nguồn chung: card `BE:docs/modules/nutrition.md` · flow `BE:docs/business/flo
 - Khung giờ (chưa tới / đang mở / đã hết) do nguồn dữ liệu trả, App không tự tính theo giờ máy.
 - Phụ huynh xem ảnh theo từng bữa trong Thực đơn tuần, ghi "Ảnh mẫu nhóm …" (`docs/features/parent/README.md`). Dữ liệu giả hai bên khớp nhau: nhóm Mầm có ảnh sáng và trưa; nhóm Lá ăn 2 bữa, chưa có ảnh trưa.
 - Lệch BE: `MealPhoto` hiện theo cơ sở + ngày + buổi (MORNING / LUNCH / AFTERNOON), **1 ảnh mỗi bữa** (đăng lại thì thay file), không theo nhóm tuổi ⇒ cần BE thêm nhóm tuổi và nhiều ảnh mỗi bữa trước khi tích hợp. Mã bữa trên App dùng đúng tên buổi của BE.
-- Camera thật cần plugin chụp ảnh (vd. `image_picker`), chưa có trong stack đã duyệt ⇒ hỏi trước khi thêm. Bản giả bấm nút thì thêm một ảnh giữ chỗ, chỉ giữ trong bộ nhớ.
+- Camera (user duyệt `image_picker` 17/11): nút mở app camera của máy, camera sau, ảnh thu nhỏ cạnh dài 1600 px, JPEG chất lượng 80 (`data/image_picker_camera.dart`). Ảnh vừa chụp hiện ngay trong thẻ bữa; huỷ chụp thì không đăng; không mở được camera thì báo kiểm tra quyền camera; đăng lỗi thì giữ ảnh và có nút "Đăng lại ảnh" gửi lại đúng ảnh đó (CODING_GUIDE §7.1). Nguồn giả giữ ảnh trong bộ nhớ, mất khi đóng app.
+- Chưa làm: phục hồi ảnh khi Android huỷ Activity lúc mở camera (`retrieveLostData`) — máy yếu có thể mất ảnh vừa chụp, bếp chụp lại; nén theo giới hạn upload của BE (chưa chọn gói nén); xoá ảnh chụp nhầm.
 - Endpoint: chưa có. Ảnh tải lên theo giới hạn upload BE; chỉ chụp suất ăn, không chụp trẻ.
 - Sổ lưu mẫu (NUT-21): chưa có màn.
 
