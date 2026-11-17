@@ -42,11 +42,11 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
   String? _groupId;
 
   static int _doneMeals(AgeGroupMeals group) =>
-      group.meals.where((meal) => meal.photoIds.isNotEmpty).length;
+      group.meals.where((meal) => meal.photos.isNotEmpty).length;
 
   static (String, AppStatusTone) _badge(SampleMeal meal) =>
-      meal.photoIds.isNotEmpty
-      ? ('Đã có ${meal.photoIds.length} ảnh', AppStatusTone.green)
+      meal.photos.isNotEmpty
+      ? ('Đã có ${meal.photos.length} ảnh', AppStatusTone.green)
       : switch (meal.window) {
           PhotoWindow.upcoming => ('Chưa tới giờ', AppStatusTone.gray),
           PhotoWindow.open => ('Cần chụp', AppStatusTone.orange),
@@ -241,9 +241,9 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
               AppStatusBadge(label: badge, tone: tone),
             ],
           ),
-          if (meal.photoIds.isNotEmpty) ...[
+          if (meal.photos.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.space3),
-            _PhotoTiles(count: meal.photoIds.length),
+            _PhotoTiles(photos: meal.photos),
           ],
           const SizedBox(height: AppSpacing.space2),
           Text(
@@ -254,7 +254,7 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
           if (meal.window == PhotoWindow.open) ...[
             const SizedBox(height: AppSpacing.space3),
             AppButton(
-              label: meal.photoIds.isEmpty ? 'Chụp ảnh' : 'Chụp thêm ảnh',
+              label: meal.photos.isEmpty ? 'Chụp ảnh' : 'Chụp thêm ảnh',
               icon: AppIcons.camera,
               variant: AppButtonVariant.secondary,
               small: true,
@@ -292,25 +292,43 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
   }
 }
 
-/// Ảnh đã đăng của một bữa: ô vuông, ba ô một hàng.
+/// Ảnh đã đăng của một bữa: ô vuông, ba ô một hàng. Ảnh vừa chụp hiện ảnh thật để bếp xem
+/// lại; ảnh chưa có tệp (dữ liệu giả, chưa có URL) là ô giữ chỗ.
 class _PhotoTiles extends StatelessWidget {
-  const _PhotoTiles({required this.count});
+  const _PhotoTiles({required this.photos});
 
-  final int count;
+  final List<SamplePhoto> photos;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final tile = (constraints.maxWidth - AppSpacing.space2 * 2) / 3;
+        // Giải mã ảnh ở cỡ ô, không giữ ảnh 1600 px trong bộ nhớ
+        final cacheSize = (tile * MediaQuery.devicePixelRatioOf(context))
+            .round();
         return Wrap(
           spacing: AppSpacing.space2,
           runSpacing: AppSpacing.space2,
           children: [
-            for (var i = 0; i < count; i++)
+            for (final photo in photos)
               SizedBox(
                 width: tile,
-                child: const AppPhotoPlaceholder(aspectRatio: 1),
+                child: switch (photo.bytes) {
+                  final bytes? => ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: Image.memory(
+                        bytes,
+                        fit: BoxFit.cover,
+                        cacheWidth: cacheSize,
+                        semanticLabel: 'Ảnh mẫu vừa chụp',
+                      ),
+                    ),
+                  ),
+                  null => const AppPhotoPlaceholder(aspectRatio: 1),
+                },
               ),
           ],
         );

@@ -15,8 +15,8 @@ class FakeKitchenPhotoSource implements KitchenPhotoSource {
   final FakeMode mode;
   final Duration delay;
 
-  /// Số ảnh đăng thêm theo "nhóm|bữa".
-  final Map<String, int> _added = {};
+  /// Ảnh đăng thêm theo "nhóm|bữa".
+  final Map<String, List<Uint8List>> _added = {};
 
   static const _windows = {
     'MORNING': ('Bữa sáng', '07:45', '07:30–08:30', PhotoWindow.closed),
@@ -38,14 +38,20 @@ class FakeKitchenPhotoSource implements KitchenPhotoSource {
 
   SampleMeal _meal(String groupId, String mealId, int posted) {
     final (name, time, windowLabel, window) = _windows[mealId]!;
-    final count = posted + (_added['$groupId|$mealId'] ?? 0);
+    final added = _added['$groupId|$mealId'] ?? const [];
     return SampleMeal(
       id: mealId,
       name: name,
       time: time,
       windowLabel: windowLabel,
       window: window,
-      photoIds: [for (var i = 1; i <= count; i++) '$groupId-$mealId-$i'],
+      photos: [
+        // Ảnh giả có sẵn: chưa có tệp, hiện ô giữ chỗ
+        for (var i = 1; i <= posted; i++)
+          SamplePhoto(id: '$groupId-$mealId-$i'),
+        for (final (i, bytes) in added.indexed)
+          SamplePhoto(id: '$groupId-$mealId-new-${i + 1}', bytes: bytes),
+      ],
     );
   }
 
@@ -83,8 +89,7 @@ class FakeKitchenPhotoSource implements KitchenPhotoSource {
     required Uint8List bytes,
   }) async {
     await Future<void>.delayed(delay);
-    final key = '$groupId|$mealId';
-    _added[key] = (_added[key] ?? 0) + 1;
+    (_added['$groupId|$mealId'] ??= []).add(bytes);
     return _day();
   }
 }

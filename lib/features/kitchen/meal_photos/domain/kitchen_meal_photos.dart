@@ -4,8 +4,18 @@ import 'package:flutter/foundation.dart';
 /// Nguồn dữ liệu trả, App không tự tính theo giờ máy.
 enum PhotoWindow { upcoming, open, closed }
 
+/// Một ảnh mẫu đã đăng. [bytes] chỉ có với ảnh vừa chụp trên máy (nguồn giả giữ trong bộ nhớ);
+/// ảnh từ BE tải qua URL có auth khi có API.
+@immutable
+class SamplePhoto {
+  const SamplePhoto({required this.id, this.bytes});
+
+  final String id;
+  final Uint8List? bytes;
+}
+
 /// Một bữa của một nhóm tuổi hôm nay. Bếp chụp bao nhiêu ảnh cũng được, mỗi bữa cần ít nhất
-/// 1 ảnh (user 17/11). Ảnh thật tải qua URL có auth khi có API.
+/// 1 ảnh (user 17/11).
 @immutable
 class SampleMeal {
   const SampleMeal({
@@ -14,7 +24,7 @@ class SampleMeal {
     required this.time,
     required this.windowLabel,
     required this.window,
-    this.photoIds = const [],
+    this.photos = const [],
   });
 
   /// Buổi theo BE MealPhoto.session: MORNING, LUNCH, AFTERNOON
@@ -29,7 +39,7 @@ class SampleMeal {
   /// Khung giờ đăng, "07:30–08:30"
   final String windowLabel;
   final PhotoWindow window;
-  final List<String> photoIds;
+  final List<SamplePhoto> photos;
 }
 
 /// Các bữa một nhóm tuổi ăn trong ngày: số bữa theo nhóm tuổi do Phó HT phụ trách dinh dưỡng

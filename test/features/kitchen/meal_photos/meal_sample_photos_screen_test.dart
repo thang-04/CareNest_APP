@@ -148,6 +148,30 @@ void main() {
     expect(inCard('Bữa trưa · 10:45', 'Chụp ảnh'), findsOneWidget);
   });
 
+  testWidgets('Ảnh mẫu: ảnh vừa chụp hiện ngay trong thẻ bữa', (tester) async {
+    await pumpPhotos(tester);
+    await tapLunchCamera(tester);
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: mealCard('Bữa trưa · 10:45'),
+        matching: find.byType(Image),
+      ),
+      findsOneWidget,
+    );
+    // Ảnh giả có sẵn chưa có tệp ⇒ vẫn là ô giữ chỗ
+    await tester.scrollUntilVisible(find.text('Mầm 2/3'), -200);
+    await tester.tap(find.text('Mầm 2/3'));
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: mealCard('Bữa sáng · 07:45'),
+        matching: find.byType(Image),
+      ),
+      findsNothing,
+    );
+  });
+
   testWidgets('Ảnh mẫu: huỷ camera ⇒ không đăng, không báo lỗi', (
     tester,
   ) async {
