@@ -242,28 +242,27 @@ class _RoundTile extends StatelessWidget {
             expanded: open,
             child: AppListRow(
               title: round.name,
-              subtitle: Text(
-                '${DateLabels.date(round.date)} · $height cm · $weight kg',
-              ),
-              // Chữ lớn: nhãn đã xuống dưới tiêu đề, mũi tên xuống dòng nếu thiếu chỗ
-              trailing: Wrap(
-                spacing: AppSpacing.space2,
-                runSpacing: AppSpacing.space1,
-                crossAxisAlignment: WrapCrossAlignment.center,
+              // Nhãn BMI dưới dòng số đo để tên kỳ và số đo không bị bẻ dòng
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AppStatusBadge(label: label, tone: tone),
-                  AnimatedRotation(
-                    turns: open ? 0.5 : 0,
-                    duration: MediaQuery.disableAnimationsOf(context)
-                        ? Duration.zero
-                        : AppMotion.fast,
-                    child: const Icon(
-                      AppIcons.chevronDown,
-                      size: AppSizes.iconNavigation,
-                      color: AppColors.textMuted,
-                    ),
+                  Text(
+                    '${DateLabels.date(round.date)} · $height cm · $weight kg',
                   ),
+                  const SizedBox(height: AppSpacing.space2),
+                  AppStatusBadge(label: label, tone: tone),
                 ],
+              ),
+              trailing: AnimatedRotation(
+                turns: open ? 0.5 : 0,
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : AppMotion.fast,
+                child: const Icon(
+                  AppIcons.chevronDown,
+                  size: AppSizes.iconNavigation,
+                  color: AppColors.textMuted,
+                ),
               ),
               onTap: onToggle,
             ),

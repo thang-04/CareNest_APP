@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
+import 'package:carenest_app/core/widgets/app_list_row.dart';
+import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/parent/health_book/data/fake_health_book_source.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
@@ -53,6 +55,27 @@ void main() {
     );
     expect(note('Bé vừa khỏi ốm'), findsNothing);
   });
+
+  testWidgets(
+    'Kỳ cân đo: nhãn BMI nằm dưới dòng số đo, bên phải chỉ có mũi tên',
+    (tester) async {
+      await pumpBook(tester);
+      final subtitle = find.text('15/07/2026 · 102,5 cm · 16,8 kg');
+      await tester.scrollUntilVisible(subtitle, 200);
+      final row = find.ancestor(
+        of: subtitle,
+        matching: find.byType(AppListRow),
+      );
+      final badge = find.descendant(
+        of: row,
+        matching: find.byType(AppStatusBadge),
+      );
+      expect(
+        tester.getTopLeft(badge).dy,
+        greaterThanOrEqualTo(tester.getBottomLeft(subtitle).dy),
+      );
+    },
+  );
 
   testWidgets('Kỳ cân đo: chạm để mở, chạm lần nữa để đóng', (tester) async {
     await pumpBook(tester);
