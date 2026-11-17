@@ -74,7 +74,7 @@ updated: 2026-11-16
 
 ## Global Constraints
 - SDK Flutter 3.47.6 / Dart 3.13.5 theo `pubspec.lock`. Chạy lệnh `flutter` qua PATH tiến trình `D:\Flutter_Setup\stable-3.47.6\flutter\bin`. `flutter pub get --enforce-lockfile` exit 0 trước khi verify.
-- Dependency chỉ gồm quyết định 1 và 10. Gói khác (`image_picker`, `flutter_local_notifications`, `shared_preferences`) ⇒ hỏi trước.
+- Dependency chỉ gồm quyết định 1 và 10. Gói khác (`flutter_local_notifications`, `shared_preferences`) ⇒ hỏi trước. `image_picker` user duyệt 17/11 cho camera ảnh mẫu bữa của bếp.
 - Envelope BE `{code, errorCode, desc, data}`; `code` == HTTP status. Phân nhánh lỗi theo status + `errorCode`, không so `desc`. `desc` là câu tiếng Việt, hiển thị được.
 - Access token chỉ ở bộ nhớ. Refresh token và id token chỉ ở `flutter_secure_storage`. Không log token, không đưa token vào URL. Bearer chỉ gửi tới host của `API_BASE_URL`.
 - Test, fixture, log không chứa dữ liệu trẻ thật hoặc token thật (AGENTS nguyên tắc 4).

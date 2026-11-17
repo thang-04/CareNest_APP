@@ -14,6 +14,7 @@
 | Font | BeVietnamPro đóng gói trong `assets/fonts/` (OFL) | CONFIRMED | user, 2026-10-08 |
 | Nền tảng build | Android, iOS; `web/` giữ để xem nhanh khi phát triển. Đã bỏ `linux/`, `macos/`, `windows/` (khôi phục: `flutter create --platforms=windows,macos,linux .`) | CONFIRMED | user, 2026-11-15 |
 | Mở trình gọi điện | `url_launcher` (^6.3.2), chỉ dùng scheme `tel` cho nút Gọi phụ huynh ở màn Trả trẻ | CONFIRMED | user, 2026-11-15 |
+| Chụp ảnh | `image_picker` (^1.2.4), chỉ mở camera cho bếp chụp ảnh mẫu bữa ăn; Android không khai quyền CAMERA (plugin gọi app camera của máy), iOS có `NSCameraUsageDescription`. Lock cần Flutter ≥ 3.47 | CONFIRMED | user, 2026-11-17 |
 | Verify | `node scripts/verify.mjs` ⇒ `dart format` check + `flutter analyze` + `flutter test` | CONFIRMED | user, 2026-10-08 |
 | State/DI | `flutter_riverpod` 3.x (`Provider`, `Notifier`); ghép ở `lib/bootstrap.dart` + `authOverrides` | CONFIRMED | user, 2026-11-13; plan `docs/plans/active/2026-11-16-app-be-integration.md` |
 | HTTP | `dio` qua `ApiClient` (`lib/core/network/`) | CONFIRMED | user, 2026-11-13 |
