@@ -161,28 +161,28 @@ class _InterpretationCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: AppSpacing.space2,
-            runSpacing: AppSpacing.space2,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Semantics(
-                    header: true,
-                    child: Text(
-                      'Nhận định xu hướng',
-                      style: textTheme.titleMedium,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        'Nhận định xu hướng',
+                        style: textTheme.titleMedium,
+                      ),
                     ),
-                  ),
-                  Text(
-                    '${interpretation.periodLabel} · duyệt ngày ${DateLabels.date(interpretation.approvedOn)}',
-                    style: muted,
-                  ),
-                ],
+                    Text(
+                      '${interpretation.periodLabel} · duyệt ngày ${DateLabels.date(interpretation.approvedOn)}',
+                      style: muted,
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: AppSpacing.space2),
               const AppStatusBadge(
                 label: 'Đã duyệt',
                 tone: AppStatusTone.green,

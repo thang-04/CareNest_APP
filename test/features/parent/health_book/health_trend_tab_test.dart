@@ -83,6 +83,11 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Đã duyệt'), findsOneWidget);
+    // Nhãn "Đã duyệt" cùng hàng tiêu đề, không rớt xuống dưới dòng ngày duyệt
+    expect(
+      tester.getTopLeft(find.text('Đã duyệt')).dy,
+      lessThan(tester.getBottomLeft(find.text('Nhận định xu hướng')).dy),
+    );
     expect(find.text('Tổng quan'), findsOneWidget);
     expect(find.textContaining('chiều cao của bé tăng từ 101 cm'), findsOne);
     await tester.scrollUntilVisible(
