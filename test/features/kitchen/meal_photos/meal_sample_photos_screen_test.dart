@@ -1,6 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
@@ -21,16 +20,18 @@ final _png = Uint8List.fromList(const [
   0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
 ]);
 
-/// Camera giả: trả ảnh PNG, hoặc null khi bếp huỷ.
+/// Camera giả: trả ảnh PNG, hoặc null khi bếp huỷ, hoặc ném lỗi.
 class _FakeCamera implements SamplePhotoCamera {
-  _FakeCamera({this.cancels = false});
+  _FakeCamera({this.cancels = false, this.error});
 
   final bool cancels;
+  final Object? error;
   var calls = 0;
 
   @override
   Future<Uint8List?> takePhoto() async {
     calls++;
+    if (error case final error?) throw error;
     return cancels ? null : _png;
   }
 }
@@ -128,6 +129,30 @@ void main() {
     expect(camera.calls, 1);
     expect(source.posted, [_png]);
     expect(inCard('Bữa trưa · 10:45', 'Đã có 1 ảnh'), findsOneWidget);
+  });
+
+  testWidgets('Ảnh mẫu: không mở được camera ⇒ báo, nút bấm lại được', (
+    tester,
+  ) async {
+    final source = _RecordingSource();
+    await pumpPhotos(
+      tester,
+      source: source,
+      camera: _FakeCamera(
+        error: PlatformException(code: 'camera_access_denied'),
+      ),
+    );
+    await tapLunchCamera(tester);
+    await tester.pumpAndSettle();
+    expect(source.posted, isEmpty);
+    expect(
+      inCard(
+        'Bữa trưa · 10:45',
+        'Không mở được camera. Kiểm tra quyền camera rồi thử lại.',
+      ),
+      findsOneWidget,
+    );
+    expect(inCard('Bữa trưa · 10:45', 'Chụp ảnh'), findsOneWidget);
   });
 
   testWidgets('Ảnh mẫu: huỷ camera ⇒ không đăng, không báo lỗi', (

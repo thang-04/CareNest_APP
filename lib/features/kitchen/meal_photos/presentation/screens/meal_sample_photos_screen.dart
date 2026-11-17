@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/app_icons.dart';
@@ -59,8 +61,12 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
   /// Bữa đang đăng ảnh theo "nhóm|bữa": khoá nút để không đăng trùng.
   final Set<String> _posting = {};
 
-  /// Bữa vừa đăng lỗi: báo ngay dưới nút, lần bấm sau thì xoá.
-  final Set<String> _failed = {};
+  /// Lỗi vừa gặp theo "nhóm|bữa": báo ngay dưới nút, lần bấm sau thì xoá.
+  final Map<String, String> _errors = {};
+
+  static const _cameraError =
+      'Không mở được camera. Kiểm tra quyền camera rồi thử lại.';
+  static const _uploadError = 'Chưa đăng được ảnh. Thử lại.';
 
   static String _postingKey(AgeGroupMeals group, SampleMeal meal) =>
       '${group.id}|${meal.id}';
@@ -69,9 +75,20 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
     final key = _postingKey(group, meal);
     setState(() {
       _posting.add(key);
-      _failed.remove(key);
+      _errors.remove(key);
     });
-    final bytes = await _camera.takePhoto();
+    final Uint8List? bytes;
+    try {
+      bytes = await _camera.takePhoto();
+    } catch (_) {
+      // Bị từ chối quyền hoặc máy không có app camera
+      if (!mounted) return;
+      setState(() {
+        _posting.remove(key);
+        _errors[key] = _cameraError;
+      });
+      return;
+    }
     if (!mounted) return;
     if (bytes == null) {
       // Bếp huỷ chụp: không đăng, không báo lỗi
@@ -95,7 +112,7 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
       if (!mounted) return;
       setState(() {
         _posting.remove(key);
-        _failed.add(key);
+        _errors[key] = _uploadError;
       });
     }
   }
@@ -228,12 +245,12 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
               loadingLabel: 'Đang đăng ảnh…',
               onPressed: () => _addPhoto(group, meal),
             ),
-            if (_failed.contains(_postingKey(group, meal))) ...[
+            if (_errors[_postingKey(group, meal)] case final error?) ...[
               const SizedBox(height: AppSpacing.space2),
               Semantics(
                 liveRegion: true,
                 child: Text(
-                  'Chưa đăng được ảnh. Thử lại.',
+                  error,
                   style: textTheme.bodyMedium?.copyWith(
                     color: AppColors.dangerText,
                   ),
