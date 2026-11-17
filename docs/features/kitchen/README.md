@@ -42,9 +42,16 @@ Nguồn chung: card `BE:docs/modules/nutrition.md` · flow `BE:docs/business/flo
 - APP so số nhập với số phiếu chỉ để nhắc khi nhập (viền đỏ + "Thiếu x kg"); chênh lệch chính thức do BE ghi khi xác nhận. Màn báo thiếu điền sẵn món đang thiếu, gửi cho Phó HT.
 - Lệch BE (28/10): bếp không ghi nhận hàng — PHT nhập kho khô và ghi kiểm nhận hàng tươi trên Web (NUT-11, NUT-12); thiếu nguyên liệu hoặc thiếu/thừa suất báo PHT qua Zalo/điện thoại, hệ thống không ghi (NUT-22). Màn K05/K06 cần bỏ khi tích hợp.
 
-### Ảnh mẫu bữa + sổ lưu mẫu — **chưa có màn**
-- BE: rule NUT-16 (bếp chụp ảnh mẫu mỗi bữa trên App, dùng chung toàn trường, phụ huynh xem trong thực đơn ngày — PAR-01), NUT-21 (ghi sổ lưu mẫu thức ăn mỗi bữa) · PENDING P-26 (mẫu sổ) · ADR-0009
+### Ảnh mẫu bữa theo nhóm tuổi — **màn dữ liệu giả (17/11)**; sổ lưu mẫu — chưa có màn
+- BE: rule NUT-16 (bếp chụp ảnh mẫu mỗi bữa trên App, dùng chung toàn trường, phụ huynh xem trong thực đơn ngày — PAR-01; khung giờ đăng do HT cấu hình, ngoài khung thì chặn), NUT-17 (số bữa theo nhóm tuổi), NUT-21 (ghi sổ lưu mẫu thức ăn mỗi bữa) · PENDING P-26 (mẫu sổ) · ADR-0009
+- User 17/11: bếp đăng ảnh **theo nhóm tuổi**. Số ảnh không giới hạn (bếp chụp bao nhiêu cũng được), nhưng **mỗi bữa nhóm đó ăn phải có ít nhất 1 ảnh**. Số bữa từng nhóm do hiệu trưởng cấu hình (vd. mẫu giáo ăn 3 bữa ⇒ chụp 3 bữa; mẫu giáo lớn ăn 2 bữa ⇒ chụp 2 bữa). BE NUT-17 ghi PHT phụ trách dinh dưỡng cấu hình — cần team chốt một bên.
+- Màn "Ảnh mẫu bữa ăn" (`/kitchen/photos`, mở từ việc "Ảnh mẫu bữa ăn" trên Trang chủ bếp): chip nhóm tuổi kèm số bữa đã có ảnh (vd. "Chồi 0/3"); câu "Nhóm … ăn N bữa mỗi ngày"; mỗi bữa một thẻ với trạng thái Chưa tới giờ / Cần chụp / Quá giờ, chưa có ảnh / Đã có N ảnh, ảnh ô vuông ba ô một hàng, dòng khung giờ đăng. Nút "Chụp ảnh" ("Chụp thêm ảnh" khi đã có ảnh) chỉ có khi bữa đang trong khung giờ đăng; đang đăng thì nút chờ, không đăng trùng; đăng lỗi báo ngay dưới nút.
+- Khung giờ (chưa tới / đang mở / đã hết) do nguồn dữ liệu trả, App không tự tính theo giờ máy.
+- Phụ huynh xem ảnh theo từng bữa trong Thực đơn tuần, ghi "Ảnh mẫu nhóm …" (`docs/features/parent/README.md`). Dữ liệu giả hai bên khớp nhau: nhóm Mầm có ảnh sáng và trưa; nhóm Lá ăn 2 bữa, chưa có ảnh trưa.
+- Lệch BE: `MealPhoto` hiện theo cơ sở + ngày + buổi (MORNING / LUNCH / AFTERNOON), **1 ảnh mỗi bữa** (đăng lại thì thay file), không theo nhóm tuổi ⇒ cần BE thêm nhóm tuổi và nhiều ảnh mỗi bữa trước khi tích hợp. Mã bữa trên App dùng đúng tên buổi của BE.
+- Camera thật cần plugin chụp ảnh (vd. `image_picker`), chưa có trong stack đã duyệt ⇒ hỏi trước khi thêm. Bản giả bấm nút thì thêm một ảnh giữ chỗ, chỉ giữ trong bộ nhớ.
 - Endpoint: chưa có. Ảnh tải lên theo giới hạn upload BE; chỉ chụp suất ăn, không chụp trẻ.
+- Sổ lưu mẫu (NUT-21): chưa có màn.
 
 ### Dị ứng cần cho nấu
 - BE: card `BE:docs/modules/child.md` · rule HLT-06 (phụ huynh khai khi nhập học, mức nhẹ/nặng — đóng P-17), AUTH-05, NUT-09, NUT-23 (nhẹ ⇒ bỏ món, tăng món khác; nặng ⇒ PHT chọn món thay thế)
