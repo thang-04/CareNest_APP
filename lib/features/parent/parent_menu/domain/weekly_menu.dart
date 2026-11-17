@@ -6,6 +6,7 @@ class MenuMeal {
     required this.name,
     required this.time,
     required this.dishes,
+    this.photos,
   });
 
   /// "Bữa sáng"
@@ -14,22 +15,25 @@ class MenuMeal {
   /// "07:45"
   final String time;
   final String dishes;
+
+  /// Ảnh mẫu của bữa cho nhóm tuổi của bé; null ⇒ ngày đó không có phần ảnh.
+  final MealPhotos? photos;
 }
 
-/// Ảnh bữa ăn GV đăng khi nhận suất (quyết định 8, PROPOSED); ảnh thật tải qua URL có auth.
+/// Ảnh mẫu một bữa theo nhóm tuổi của bé, bếp chụp (NUT-16); một bữa có thể nhiều ảnh
+/// (đề xuất A, user 17/11). BE chưa có API theo nhóm tuổi ⇒ dữ liệu giả; ảnh thật tải qua URL có auth.
 @immutable
-class MealPhotoSet {
-  const MealPhotoSet({
-    required this.postedBy,
+class MealPhotos {
+  const MealPhotos.posted({
+    required this.ageGroup,
     required this.postedAt,
-    required this.slots,
+    required this.photoIds,
   });
 
-  final String postedBy;
+  /// Nhãn nhóm tuổi, vd. "Mầm".
+  final String ageGroup;
   final DateTime postedAt;
-
-  /// Nhãn từng ảnh, vd. "Bữa trưa".
-  final List<String> slots;
+  final List<String> photoIds;
 }
 
 /// Thực đơn một ngày đã công bố (NUT-08) cho một bé. Năng lượng và ghi chú dị ứng là chữ BE trả,
@@ -42,7 +46,6 @@ class MenuDay {
     this.energyNote,
     this.allergyNote,
     this.allergyAlert = false,
-    this.photos,
   });
 
   final DateTime date;
@@ -52,7 +55,6 @@ class MenuDay {
 
   /// Bé có thực đơn thay thế ⇒ nhắc kiểu cảnh báo thay vì xác nhận.
   final bool allergyAlert;
-  final MealPhotoSet? photos;
 }
 
 @immutable

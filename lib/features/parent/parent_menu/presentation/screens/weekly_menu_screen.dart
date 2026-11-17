@@ -7,11 +7,11 @@ import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_day_strip.dart';
-import 'package:carenest_app/core/widgets/app_photo_placeholder.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/features/parent/parent_menu/data/fake_weekly_menu_source.dart';
 import 'package:carenest_app/features/parent/parent_menu/domain/weekly_menu.dart';
+import 'package:carenest_app/features/parent/parent_menu/presentation/widgets/meal_photo_grid.dart';
 
 /// Thực đơn tuần của bé — mockup P05. Chỉ thực đơn đã công bố (NUT-08).
 class WeeklyMenuScreen extends StatefulWidget {
@@ -102,33 +102,52 @@ class _WeeklyMenuScreenState extends State<WeeklyMenuScreen> {
       for (final meal in day.meals) ...[
         AppCard(
           dense: true,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Icon(
-                AppIcons.meal,
-                size: AppSizes.iconTile,
-                color: AppColors.primary,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    AppIcons.meal,
+                    size: AppSizes.iconTile,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: AppSpacing.space3),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${meal.name} · ${meal.time}',
+                          style: textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: AppSpacing.space1),
+                        Text(
+                          meal.dishes,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: AppSpacing.space3),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${meal.name} · ${meal.time}',
-                      style: textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: AppSpacing.space1),
-                    Text(
-                      meal.dishes,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
+              if (meal.photos case final photos?) ...[
+                const SizedBox(height: AppSpacing.space3),
+                MealPhotoGrid(
+                  mealName: meal.name,
+                  count: photos.photoIds.length,
                 ),
-              ),
+                const SizedBox(height: AppSpacing.space2),
+                Text(
+                  'Ảnh mẫu nhóm ${photos.ageGroup} · Bếp đăng ${DateLabels.time24(photos.postedAt)}',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -147,42 +166,6 @@ class _WeeklyMenuScreenState extends State<WeeklyMenuScreen> {
         ),
         const SizedBox(height: AppSpacing.space3),
       ],
-      if (day.photos case final photos?)
-        AppCard(
-          dense: true,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Ảnh bữa ăn · ${DateLabels.weekdayDayMonth(day.date)}',
-                    style: textTheme.titleSmall,
-                  ),
-                  Text(
-                    '${photos.postedBy} đăng ${DateLabels.time24(photos.postedAt)}',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.space3),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (var i = 0; i < photos.slots.length; i++) ...[
-                    if (i > 0) const SizedBox(width: AppSpacing.space2),
-                    Expanded(
-                      child: AppPhotoPlaceholder(caption: photos.slots[i]),
-                    ),
-                  ],
-                ],
-              ),
-            ],
-          ),
-        ),
     ];
   }
 }

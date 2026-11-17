@@ -32,6 +32,16 @@ class FakeWeeklyMenuSource implements WeeklyMenuSource {
   @override
   Future<WeeklyMenu> loadWeek(String childId) async {
     final hasAllergy = childId == 'child-2';
+    // child-2 học lớp Lá (FakeParentHomeSource) ⇒ thấy ảnh mẫu nhóm Lá
+    final ageGroup = hasAllergy ? 'Lá' : 'Mầm';
+    // Chỉ hôm nay (12/10) có ảnh: bếp đã đăng bữa sáng và bữa trưa
+    MealPhotos? photosOf(int day, int count, int hour, int minute) => day == 0
+        ? MealPhotos.posted(
+            ageGroup: ageGroup,
+            postedAt: DateTime(2026, 10, 12, hour, minute),
+            photoIds: [for (var n = 1; n <= count; n++) 'fake-$day-$hour-$n'],
+          )
+        : null;
     return WeeklyMenu(
       weekStart: weekStart,
       days: [
@@ -39,8 +49,18 @@ class FakeWeeklyMenuSource implements WeeklyMenuSource {
           MenuDay(
             date: weekStart.add(Duration(days: i)),
             meals: [
-              MenuMeal(name: 'Bữa sáng', time: '07:45', dishes: _breakfasts[i]),
-              MenuMeal(name: 'Bữa trưa', time: '10:45', dishes: _lunches[i]),
+              MenuMeal(
+                name: 'Bữa sáng',
+                time: '07:45',
+                dishes: _breakfasts[i],
+                photos: photosOf(i, 3, 7, 50),
+              ),
+              MenuMeal(
+                name: 'Bữa trưa',
+                time: '10:45',
+                dishes: _lunches[i],
+                photos: photosOf(i, 2, 10, 52),
+              ),
               MenuMeal(name: 'Bữa chiều', time: '14:30', dishes: _snacks[i]),
             ],
             energyNote:
@@ -49,14 +69,6 @@ class FakeWeeklyMenuSource implements WeeklyMenuSource {
                 ? 'Bé dị ứng hải sản · dùng suất thay thế cho món có cá, tôm, cua'
                 : 'Bé không có dị ứng đã khai báo · dùng thực đơn chuẩn',
             allergyAlert: hasAllergy,
-            // Chỉ hôm nay (12/10) đã có ảnh GV đăng
-            photos: i == 0
-                ? MealPhotoSet(
-                    postedBy: hasAllergy ? 'Cô Thư' : 'Cô Hà',
-                    postedAt: DateTime(2026, 10, 12, 11, 5),
-                    slots: const ['Bữa sáng', 'Bữa trưa', 'Bữa chiều'],
-                  )
-                : null,
           ),
       ],
     );
