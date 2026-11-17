@@ -34,14 +34,20 @@ class FakeWeeklyMenuSource implements WeeklyMenuSource {
     final hasAllergy = childId == 'child-2';
     // child-2 học lớp Lá (FakeParentHomeSource) ⇒ thấy ảnh mẫu nhóm Lá
     final ageGroup = hasAllergy ? 'Lá' : 'Mầm';
-    // Chỉ hôm nay (12/10) có phần ảnh: bếp đã đăng bữa sáng và bữa trưa
-    MealPhotos? photosOf(int day, int count, int hour, int minute) => day == 0
-        ? MealPhotos.posted(
+    // Số bữa theo nhóm tuổi do nhà trường cấu hình (user 17/11): nhóm Lá ăn trưa và chiều
+    final eatsBreakfast = ageGroup == 'Mầm';
+    // Chỉ hôm nay (12/10) có phần ảnh, khớp màn Ảnh mẫu bữa ăn của bếp:
+    // nhóm Mầm đã có 3 ảnh sáng và 2 ảnh trưa, nhóm Lá chưa có ảnh trưa
+    final lunchPhotos = eatsBreakfast ? 2 : 0;
+    MealPhotos? photosOf(int day, int count, int hour, int minute) => day != 0
+        ? null
+        : count == 0
+        ? const MealPhotos.missing()
+        : MealPhotos.posted(
             ageGroup: ageGroup,
             postedAt: DateTime(2026, 10, 12, hour, minute),
             photoIds: [for (var n = 1; n <= count; n++) 'fake-$day-$hour-$n'],
-          )
-        : null;
+          );
     return WeeklyMenu(
       weekStart: weekStart,
       days: [
@@ -49,17 +55,18 @@ class FakeWeeklyMenuSource implements WeeklyMenuSource {
           MenuDay(
             date: weekStart.add(Duration(days: i)),
             meals: [
-              MenuMeal(
-                name: 'Bữa sáng',
-                time: '07:45',
-                dishes: _breakfasts[i],
-                photos: photosOf(i, 3, 7, 50),
-              ),
+              if (eatsBreakfast)
+                MenuMeal(
+                  name: 'Bữa sáng',
+                  time: '07:45',
+                  dishes: _breakfasts[i],
+                  photos: photosOf(i, 3, 7, 50),
+                ),
               MenuMeal(
                 name: 'Bữa trưa',
                 time: '10:45',
                 dishes: _lunches[i],
-                photos: photosOf(i, 2, 10, 52),
+                photos: photosOf(i, lunchPhotos, 10, 52),
               ),
               MenuMeal(
                 name: 'Bữa chiều',

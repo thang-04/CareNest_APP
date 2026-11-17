@@ -45,6 +45,24 @@ Future<void> pumpMenu(WidgetTester tester, List<MenuMeal> meals) async {
 }
 
 void main() {
+  testWidgets('Nhóm Lá ăn 2 bữa ⇒ bé lớp Lá không có bữa sáng, khớp màn bếp', (
+    tester,
+  ) async {
+    usePhoneSize(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildLightTheme(),
+        home: WeeklyMenuScreen(childId: 'child-2', initialDay: _monday),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Bữa sáng'), findsNothing);
+    expect(find.textContaining('Bữa trưa'), findsWidgets);
+    // Bếp chưa đăng ảnh bữa trưa cho nhóm Lá (dữ liệu giả màn Ảnh mẫu bữa ăn)
+    expect(find.text('Bếp chưa đăng ảnh bữa trưa'), findsOneWidget);
+    expect(find.textContaining('Ảnh mẫu nhóm'), findsNothing);
+  });
+
   testWidgets('Đề xuất A: mỗi bữa có ô ảnh theo đúng số ảnh của bữa đó', (
     tester,
   ) async {
