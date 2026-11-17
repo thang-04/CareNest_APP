@@ -197,15 +197,17 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
     }
   }
 
-  String get _noticeMessage {
-    final teacher =
-        '${widget.child.homeroomTeacher} (GV lớp ${widget.child.className}) sẽ nhận được thông báo về đơn này.';
-    if (_session != LeaveSession.fullDay) return teacher;
+  String get _teacherNotice =>
+      '${widget.child.homeroomTeacher} (GV lớp ${widget.child.className}) sẽ nhận được thông báo về đơn này.';
+
+  /// Dòng đậm đầu hộp (Figma PH03). Nửa buổi chưa có luật suất ăn ⇒ không báo.
+  String? get _mealNotice {
+    if (_session != LeaveSession.fullDay) return null;
     // ATT-04 CONFIRMED: nghỉ cả ngày ⇒ huỷ suất các ngày đó
     final days = DateLabels.dayMonth(_from) == DateLabels.dayMonth(_to)
         ? 'ngày ${DateLabels.dayMonth(_from)}'
         : 'từ ${DateLabels.dayMonth(_from)} đến ${DateLabels.dayMonth(_to)}';
-    return 'Suất ăn $days sẽ được huỷ tự động. $teacher';
+    return 'Suất ăn $days sẽ được huỷ tự động.';
   }
 
   @override
@@ -275,7 +277,11 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: AppSpacing.space4),
-          AppBanner(kind: AppBannerKind.warning, message: _noticeMessage),
+          AppBanner(
+            kind: AppBannerKind.warning,
+            title: _mealNotice,
+            message: _teacherNotice,
+          ),
           if (_submitError != null) ...[
             const SizedBox(height: AppSpacing.space3),
             AppBanner(kind: AppBannerKind.danger, message: _submitError!),

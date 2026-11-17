@@ -101,6 +101,26 @@ void main() {
     expect(find.text('Lớp Mầm 3A'), findsOneWidget);
   });
 
+  testWidgets(
+    'Figma PH03: câu huỷ suất là dòng đậm riêng, dòng sau báo cô giáo',
+    (tester) async {
+      await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
+      await tester.scrollUntilVisible(
+        find.textContaining('Cô Hà (GV lớp Mầm 3A)'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(
+        find.text('Suất ăn ngày 13/10 sẽ được huỷ tự động.'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Cô Hà (GV lớp Mầm 3A) sẽ nhận được thông báo về đơn này.'),
+        findsOneWidget,
+      );
+    },
+  );
+
   testWidgets('P03: thiếu lý do ⇒ báo lỗi, không gửi', (tester) async {
     final source = FakeLeaveNoticeSource(delay: Duration.zero);
     var submitted = false;
