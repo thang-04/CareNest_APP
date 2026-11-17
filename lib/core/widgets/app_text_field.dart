@@ -138,9 +138,13 @@ class AppDateField extends StatelessWidget {
     required this.label,
     required this.value,
     required this.onTap,
+    this.labelSuffix,
   });
 
   final String label;
+
+  /// Vd. `*` cho ô bắt buộc, cùng kiểu với [AppTextField.labelSuffix].
+  final String? labelSuffix;
   final String value;
   final VoidCallback? onTap;
 
@@ -148,6 +152,7 @@ class AppDateField extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppFieldFrame(
       label: label,
+      labelSuffix: labelSuffix,
       compactLabel: true,
       onTap: onTap,
       trailing: const Padding(
