@@ -2,8 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/integration/mobile_session.dart';
+import 'package:carenest_app/features/account/data/live_account_source.dart';
 import 'package:carenest_app/features/auth/presentation/screens/live_login_screen.dart';
-import 'package:carenest_app/features/notifications/presentation/screens/live_notifications_screen.dart';
+import 'package:carenest_app/features/auth/presentation/screens/unsupported_role_screen.dart';
+import 'package:carenest_app/features/notifications/data/fake_notification_source.dart';
+import 'package:carenest_app/features/notifications/data/live_notification_source.dart';
+import 'package:carenest_app/features/notifications/domain/app_notification.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/constants/app_icons.dart';
@@ -103,22 +107,8 @@ GoRouter buildAppRouter({
                     : null,
               ),
       ),
-      if (session != null && api != null && signOut != null) ...[
-        GoRoute(
-          path: '/live/notifications',
-          redirect: (_, _) => session.signedIn ? null : RoutePaths.login,
-          builder: (_, _) =>
-              LiveNotificationsScreen(api: api, signOut: signOut),
-        ),
-        GoRoute(
-          path: '/live/notifications/:id',
-          redirect: (_, _) => session.signedIn ? null : RoutePaths.login,
-          builder: (_, state) => LiveNotificationDetailScreen(
-            api: api,
-            id: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
-          ),
-        ),
-      ],
+      if (session != null && api != null && signOut != null)
+        ..._liveRoutes(rootKey, session, api, signOut),
       _forgotPasswordRoute(enablePreview: enablePreview),
       if (enablePreview) ...[
         GoRoute(
@@ -495,15 +485,87 @@ String _maskPhone(String phone) {
   return '${digits.substring(0, 3)}$hidden${digits.substring(digits.length - 3)}';
 }
 
+/// Phiên đăng nhập thật: cùng khung thanh đáy như bản xem thử, dưới `/live/...`.
+/// Thông báo và Tài khoản đọc dữ liệu thật; tab chưa nối API hiện "Sắp có", không dùng dữ liệu giả.
+List<RouteBase> _liveRoutes(
+  GlobalKey<NavigatorState> rootKey,
+  MobileSession session,
+  MobileApi api,
+  Future<void> Function() signOut,
+) {
+  List<NavDestination> destinationsOf(AppRole role) => [
+    for (final d in switch (role) {
+      AppRole.parent => NavDestinations.parent,
+      AppRole.teacher => NavDestinations.teacher,
+      _ => NavDestinations.kitchen,
+    })
+      NavDestination(d.label, d.icon, '/live${d.path}', d.tab),
+  ];
+  String? notificationsPath() {
+    final role = liveRoleOf(session);
+    return role == null
+        ? null
+        : destinationsOf(
+            role,
+          ).firstWhere((d) => d.tab == NavTab.notifications).path;
+  }
+
+  String? guard() {
+    if (!session.signedIn) return RoutePaths.login;
+    return liveRoleOf(session) == null ? '/live/unsupported' : null;
+  }
+
+  final notifications = LiveNotificationSource(api);
+  final account = LiveAccountSource(session);
+  return [
+    // Lối vào cố định cho đăng nhập và push; chuyển sang tab Thông báo của vai trò
+    GoRoute(
+      path: '/live/notifications',
+      redirect: (_, _) => guard() ?? notificationsPath(),
+    ),
+    GoRoute(
+      path: '/live/notifications/:id',
+      redirect: (_, state) =>
+          guard() ?? '${notificationsPath()}/${state.pathParameters['id']}',
+    ),
+    GoRoute(
+      path: '/live/unsupported',
+      redirect: (_, _) => session.signedIn ? null : RoutePaths.login,
+      builder: (_, _) => UnsupportedRoleScreen(onSignOut: signOut),
+    ),
+    for (final role in [AppRole.parent, AppRole.teacher, AppRole.kitchen])
+      _roleShell(
+        rootKey,
+        role,
+        destinationsOf(role),
+        const {},
+        notifications: notifications,
+        account: account,
+        onLogout: signOut,
+        // Vào nhầm nhánh vai trò khác ⇒ về Thông báo của đúng vai trò
+        redirect: () =>
+            guard() ??
+            (liveRoleOf(session) == role ? null : notificationsPath()),
+      ),
+  ];
+}
+
 /// Một nhánh tab cho mỗi đích; Thông báo và Tài khoản dùng chung mọi vai trò,
 /// đích chưa có màn thì hiện "Sắp có". Màn con mở trên navigator gốc (ẩn thanh đáy).
+/// Truyền `account`/`onLogout` ⇒ phiên thật: tài khoản thật, mục chưa nối API mở "Sắp có".
 StatefulShellRoute _roleShell(
   GlobalKey<NavigatorState> rootKey,
   AppRole role,
   List<NavDestination> destinations,
-  Map<String, GoRouterWidgetBuilder> screens,
-) {
+  Map<String, GoRouterWidgetBuilder> screens, {
+  NotificationSource notifications = const FakeNotificationSource(),
+  AccountSource? account,
+  Future<void> Function()? onLogout,
+  String? Function()? redirect,
+}) {
+  final live = account != null;
   return StatefulShellRoute.indexedStack(
+    redirect: redirect == null ? null : (_, _) => redirect(),
     builder: (context, state, navigationShell) =>
         AppShell(navigationShell: navigationShell, destinations: destinations),
     branches: [
@@ -515,7 +577,17 @@ StatefulShellRoute _roleShell(
               builder: (context, state) => switch (destination.tab) {
                 NavTab.notifications => NotificationsScreen(
                   role: role,
+                  source: notifications,
                   onOpen: (id) => context.push('${destination.path}/$id'),
+                ),
+                NavTab.account when live => AccountScreen(
+                  role: role,
+                  source: account,
+                  onOpenProfile: () =>
+                      openComingSoon(context, 'Thông tin cá nhân'),
+                  onChangePassword: () =>
+                      openComingSoon(context, 'Đổi mật khẩu'),
+                  onLogout: () => onLogout?.call(),
                 ),
                 NavTab.account => AccountScreen(
                   role: role,
@@ -546,9 +618,11 @@ StatefulShellRoute _roleShell(
                     builder: (context, state) => NotificationDetailScreen(
                       role: role,
                       id: state.pathParameters['id']!,
+                      source: notifications,
                     ),
                   ),
                 ],
+                NavTab.account when live => const <RouteBase>[],
                 NavTab.account => [
                   GoRoute(
                     path: RoutePaths.profileSegment,
