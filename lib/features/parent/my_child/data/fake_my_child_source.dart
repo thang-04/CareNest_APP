@@ -59,24 +59,6 @@ class FakeMyChildSource implements MyChildSource {
   );
 
   @override
-  Future<HealthSummary> loadHealth(String childId) async => HealthSummary(
-    measuredOn: DateTime(2026, 10, 12),
-    height: '104 cm',
-    weight: '17,2 kg',
-    nutritionLabel: 'Bình thường',
-    weightTrend: const [
-      WeightPoint('T6', 15.9),
-      WeightPoint('T7', 16.3),
-      WeightPoint('T8', 16.6),
-      WeightPoint('T9', 16.8),
-      WeightPoint('T10', 17.2),
-    ],
-    dietLine: childId == 'child-2'
-        ? 'Dị ứng hải sản · ăn suất thay thế'
-        : 'Không có dị ứng · ăn suất thường',
-  );
-
-  @override
   Future<DevelopmentSummary> loadDevelopment(
     String childId,
   ) async => DevelopmentSummary(

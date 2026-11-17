@@ -43,24 +43,14 @@ void main() {
     },
   );
 
-  testWidgets(
-    'P11 / AC-8 (HLT-04): Sức khỏe có số đo, biểu đồ, câu không chẩn đoán',
-    (tester) async {
-      await pumpScreen(tester, const MyChildScreen(), inScaffold: true);
-      await tester.tap(find.text('Sức khỏe'));
-      await tester.pumpAndSettle();
-      expect(find.bySemanticsLabel('Chiều cao: 104 cm'), findsOneWidget);
-      expect(
-        find.bySemanticsLabel(RegExp('^Cân nặng các tháng: T6')),
-        findsOneWidget,
-      );
-      await tester.scrollUntilVisible(
-        find.textContaining('không thay thế chẩn đoán y tế'),
-        200,
-      );
-      expect(find.textContaining('điều trị'), findsNothing);
-    },
-  );
+  testWidgets('Bé của tôi còn 2 tab; sức khỏe nằm ở Sổ sức khỏe (user 17/11)', (
+    tester,
+  ) async {
+    await pumpScreen(tester, const MyChildScreen(), inScaffold: true);
+    expect(find.text('Hôm nay'), findsOneWidget);
+    expect(find.text('Phát triển'), findsOneWidget);
+    expect(find.text('Sức khỏe'), findsNothing);
+  });
 
   testWidgets('P12: Phát triển có nhận xét tuần, phiếu bé ngoan, khen thưởng', (
     tester,
@@ -153,7 +143,6 @@ void main() {
 
   for (final (name, screen, scaffold) in <(String, Widget, bool)>[
     ('Bé của tôi', const MyChildScreen(), true),
-    ('Sức khỏe', const MyChildScreen(initialTab: MyChildTab.health), true),
     (
       'Phát triển',
       const MyChildScreen(initialTab: MyChildTab.development),

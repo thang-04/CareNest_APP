@@ -68,40 +68,6 @@ class ChildToday {
 }
 
 @immutable
-class WeightPoint {
-  const WeightPoint(this.monthLabel, this.kg);
-
-  /// "T10"
-  final String monthLabel;
-  final double kg;
-}
-
-@immutable
-class HealthSummary {
-  const HealthSummary({
-    required this.measuredOn,
-    required this.height,
-    required this.weight,
-    required this.weightTrend,
-    required this.dietLine,
-    this.nutritionLabel,
-  });
-
-  final DateTime measuredOn;
-
-  /// "104 cm", "17,2 kg" — chuỗi BE định dạng sẵn.
-  final String height;
-  final String weight;
-  final List<WeightPoint> weightTrend;
-
-  /// "Không có dị ứng · ăn suất thường"
-  final String dietLine;
-
-  /// Nhãn BE trả khi có ngưỡng đã chốt (HLT-03 / P-13 PENDING); null ⇒ không hiện dòng này.
-  final String? nutritionLabel;
-}
-
-@immutable
 class DevelopmentSummary {
   const DevelopmentSummary({
     required this.weekRange,
@@ -252,7 +218,6 @@ class ChildProfile {
 
 abstract interface class MyChildSource {
   Future<ChildToday> loadToday(String childId);
-  Future<HealthSummary> loadHealth(String childId);
   Future<DevelopmentSummary> loadDevelopment(String childId);
   Future<ActivityDay> loadActivities(String childId);
   Future<AttendanceMonth> loadAttendance(String childId);

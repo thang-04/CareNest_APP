@@ -25,7 +25,7 @@ abstract final class RoutePaths {
   static const parentToday = '/parent';
   static const parentChild = '/parent/child';
 
-  /// Bé của tôi mở sẵn tab [tab] (`health` | `development`); [section] `rewards` ⇒ cuộn tới
+  /// Bé của tôi mở sẵn tab [tab] (`development`); [section] `rewards` ⇒ cuộn tới
   /// phiếu bé ngoan + khen thưởng cuối năm.
   static String parentChildAt(String tab, {String? section}) => Uri(
     path: parentChild,

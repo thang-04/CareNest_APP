@@ -75,7 +75,9 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Hôm nay'), findsOneWidget);
-    expect(find.text('Sức khỏe'), findsOneWidget);
+    expect(find.text('Phát triển'), findsOneWidget);
+    // Sức khỏe chuyển sang Sổ sức khỏe ở Trang chủ (user 17/11)
+    expect(find.text('Sức khỏe'), findsNothing);
   });
 
   testWidgets('Bếp mở thẳng tab Thực đơn', (tester) async {

@@ -246,7 +246,6 @@ List<RouteBase> _staffAndParentRoutes(
     RoutePaths.parentToday: (context, state) => const ParentHomeScreen(),
     RoutePaths.parentChild: (context, state) => MyChildScreen(
       initialTab: switch (state.uri.queryParameters['tab']) {
-        'health' => MyChildTab.health,
         'development' => MyChildTab.development,
         _ => MyChildTab.today,
       },

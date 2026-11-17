@@ -21,9 +21,10 @@ import 'package:carenest_app/features/parent/parent_home/presentation/selected_c
 import 'package:carenest_app/features/parent/parent_home/presentation/widgets/parent_home_cards.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
-enum MyChildTab { today, health, development }
+enum MyChildTab { today, development }
 
-/// Tab "Bé của tôi" — mockup P08 (Hôm nay), P11 (Sức khỏe), P12 (Phát triển).
+/// Tab "Bé của tôi" — mockup P08 (Hôm nay), P12 (Phát triển). Sức khỏe ở màn Sổ sức khỏe
+/// mở từ Trang chủ (user 17/11).
 class MyChildScreen extends StatefulWidget {
   const MyChildScreen({
     super.key,
@@ -50,7 +51,7 @@ class _MyChildScreenState extends State<MyChildScreen> {
   @override
   void didUpdateWidget(MyChildScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Mở tab từ lối tắt khác (vd. "Sức khỏe" ở Trang chủ) khi màn đã nằm trong nhánh tab
+    // Mở tab từ lối tắt khác (vd. "Đánh giá" ở Trang chủ) khi màn đã nằm trong nhánh tab
     if (oldWidget.initialTab == widget.initialTab &&
         oldWidget.focusRewards == widget.focusRewards) {
       return;
@@ -105,7 +106,6 @@ class _MyChildScreenState extends State<MyChildScreen> {
               AppSegmented<MyChildTab>(
                 segments: const [
                   (MyChildTab.today, 'Hôm nay'),
-                  (MyChildTab.health, 'Sức khỏe'),
                   (MyChildTab.development, 'Phát triển'),
                 ],
                 selected: _tab,
@@ -119,11 +119,6 @@ class _MyChildScreenState extends State<MyChildScreen> {
               switch (_tab) {
                 MyChildTab.today => _TodayTab(
                   key: ValueKey('today-$childId'),
-                  childId: childId,
-                  source: widget.source,
-                ),
-                MyChildTab.health => _HealthTab(
-                  key: ValueKey('health-$childId'),
                   childId: childId,
                   source: widget.source,
                 ),
@@ -284,140 +279,6 @@ class _TodayTab extends StatelessWidget {
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-class _HealthTab extends StatelessWidget {
-  const _HealthTab({super.key, required this.childId, required this.source});
-
-  final String childId;
-  final MyChildSource source;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return _Loader<HealthSummary>(
-      load: () => source.loadHealth(childId),
-      builder: (context, health) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          AppCard(
-            dense: true,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Lần đo gần nhất · ${DateLabels.date(health.measuredOn)}',
-                  style: textTheme.titleSmall,
-                ),
-                const SizedBox(height: AppSpacing.space3),
-                IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(child: _MeasureBox('Chiều cao', health.height)),
-                      const SizedBox(width: AppSpacing.space3),
-                      Expanded(child: _MeasureBox('Cân nặng', health.weight)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (health.nutritionLabel case final label?) ...[
-            const SizedBox(height: AppSpacing.space3),
-            AppCard(
-              dense: true,
-              child: Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: AppSpacing.space2,
-                runSpacing: AppSpacing.space2,
-                children: [
-                  Text('Tình trạng dinh dưỡng', style: textTheme.titleSmall),
-                  AppStatusBadge(label: label, tone: AppStatusTone.green),
-                ],
-              ),
-            ),
-          ],
-          const SizedBox(height: AppSpacing.space3),
-          AppCard(
-            dense: true,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Cân nặng ${health.weightTrend.length} tháng gần nhất (kg)',
-                  style: textTheme.titleSmall,
-                ),
-                const SizedBox(height: AppSpacing.space3),
-                WeightTrendChart(points: health.weightTrend),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.space3),
-          AppCard(
-            flush: true,
-            child: AppListRow(
-              leading: Icon(
-                AppIcons.heart,
-                size: AppSizes.iconTile,
-                color: AppStatusColors.of(
-                  context,
-                ).feedbackOf(AppFeedback.danger).main,
-              ),
-              title: 'Dị ứng & chế độ ăn',
-              subtitle: Text(health.dietLine),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.space3),
-          Text(
-            'Kết quả đo do giáo viên công bố, chỉ để theo dõi, không thay thế chẩn đoán y tế.',
-            style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MeasureBox extends StatelessWidget {
-  const _MeasureBox(this.label, this.value);
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Semantics(
-      container: true,
-      label: '$label: $value',
-      excludeSemantics: true,
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.space3),
-        decoration: BoxDecoration(
-          color: AppColors.primarySoft,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-        child: Column(
-          children: [
-            Text(
-              label,
-              style: textTheme.bodyMedium?.copyWith(color: AppColors.primary),
-            ),
-            const SizedBox(height: AppSpacing.space1),
-            Text(
-              value,
-              textAlign: TextAlign.center,
-              style: textTheme.headlineSmall?.copyWith(
-                color: AppColors.onBrand,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
