@@ -43,6 +43,7 @@ import 'package:carenest_app/features/kitchen/ingredient_receipt/presentation/sc
 import 'package:carenest_app/features/kitchen/ingredient_receipt/presentation/screens/shortage_report_screen.dart';
 import 'package:carenest_app/features/kitchen/kitchen_home/presentation/screens/kitchen_home_screen.dart';
 import 'package:carenest_app/features/kitchen/kitchen_meals/presentation/screens/kitchen_meals_screen.dart';
+import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_form_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_list_screen.dart';
 import 'package:carenest_app/features/management/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
@@ -428,6 +429,10 @@ List<GoRoute> _kitchenRoutes() => [
   GoRoute(
     path: RoutePaths.kitchenCooking,
     builder: (context, state) => const CookingStatusScreen(),
+  ),
+  GoRoute(
+    path: RoutePaths.kitchenPhotos,
+    builder: (context, state) => const MealSamplePhotosScreen(),
   ),
 ];
 

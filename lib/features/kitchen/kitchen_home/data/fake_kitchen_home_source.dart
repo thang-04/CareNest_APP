@@ -72,6 +72,14 @@ class FakeKitchenHomeSource implements KitchenHomeSource {
           badge: 'Cập nhật',
           level: KitchenBadgeLevel.info,
         ),
+        // Khớp ảnh mẫu giả: bữa trưa đang mở giờ đăng, Chồi và Lá chưa có ảnh
+        KitchenTask(
+          kind: KitchenTaskKind.mealPhotos,
+          title: 'Ảnh mẫu bữa ăn',
+          subtitle: 'Bữa trưa · 2 nhóm tuổi chưa có ảnh',
+          badge: 'Cần chụp',
+          level: KitchenBadgeLevel.todo,
+        ),
       ],
     );
   }

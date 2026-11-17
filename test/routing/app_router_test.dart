@@ -7,6 +7,7 @@ import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/otp_verify_screen.dart';
+import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
 import 'package:carenest_app/routing/app_router.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
@@ -81,6 +82,19 @@ void main() {
     await tester.pumpAndSettle();
     final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(bar.selectedIndex, 1);
+  });
+
+  testWidgets('Bếp: Trang chủ mở Ảnh mẫu bữa ăn, màn con ẩn thanh đáy', (
+    tester,
+  ) async {
+    final router = await pumpRouter(tester, enablePreview: true);
+    router.go(RoutePaths.kitchenHome);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Ảnh mẫu bữa ăn'), 200);
+    await tester.tap(find.text('Ảnh mẫu bữa ăn'));
+    await tester.pumpAndSettle();
+    expect(find.byType(MealSamplePhotosScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
   });
 
   testWidgets('Phó HT: màn con ẩn thanh đáy, ngữ cảnh lấy từ query', (
