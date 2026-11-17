@@ -5,6 +5,7 @@ import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
+import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_filter_chip.dart';
 import 'package:carenest_app/core/widgets/app_photo_placeholder.dart';
@@ -48,6 +49,37 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
     PhotoWindow.closed => 'Hết giờ đăng (${meal.windowLabel})',
     _ => 'Đăng được ${meal.windowLabel}',
   };
+
+  /// Bữa đang đăng ảnh theo "nhóm|bữa": khoá nút để không đăng trùng.
+  final Set<String> _posting = {};
+
+  /// Bữa vừa đăng lỗi: báo ngay dưới nút, lần bấm sau thì xoá.
+  final Set<String> _failed = {};
+
+  static String _postingKey(AgeGroupMeals group, SampleMeal meal) =>
+      '${group.id}|${meal.id}';
+
+  Future<void> _addPhoto(AgeGroupMeals group, SampleMeal meal) async {
+    final key = _postingKey(group, meal);
+    setState(() {
+      _posting.add(key);
+      _failed.remove(key);
+    });
+    try {
+      final day = await _source.addPhoto(groupId: group.id, mealId: meal.id);
+      if (!mounted) return;
+      setState(() {
+        _posting.remove(key);
+        _day = Future.value(day);
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _posting.remove(key);
+        _failed.add(key);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,13 +158,13 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
         ),
         for (final meal in group.meals) ...[
           const SizedBox(height: AppSpacing.space3),
-          _mealCard(context, meal),
+          _mealCard(context, group, meal),
         ],
       ],
     );
   }
 
-  Widget _mealCard(BuildContext context, SampleMeal meal) {
+  Widget _mealCard(BuildContext context, AgeGroupMeals group, SampleMeal meal) {
     final textTheme = Theme.of(context).textTheme;
     final title = '${meal.name} · ${meal.time}';
     final (badge, tone) = _badge(meal);
@@ -162,6 +194,32 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
             _windowNote(meal),
             style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
           ),
+          // Chỉ đăng trong khung giờ của bữa (NUT-16); máy thật cần plugin camera chưa duyệt
+          if (meal.window == PhotoWindow.open) ...[
+            const SizedBox(height: AppSpacing.space3),
+            AppButton(
+              label: meal.photoIds.isEmpty ? 'Chụp ảnh' : 'Chụp thêm ảnh',
+              icon: AppIcons.camera,
+              variant: AppButtonVariant.secondary,
+              small: true,
+              expand: true,
+              isLoading: _posting.contains(_postingKey(group, meal)),
+              loadingLabel: 'Đang đăng ảnh…',
+              onPressed: () => _addPhoto(group, meal),
+            ),
+            if (_failed.contains(_postingKey(group, meal))) ...[
+              const SizedBox(height: AppSpacing.space2),
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  'Chưa đăng được ảnh. Thử lại.',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.dangerText,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ],
       ),
     );

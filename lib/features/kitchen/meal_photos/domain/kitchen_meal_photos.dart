@@ -9,12 +9,16 @@ enum PhotoWindow { upcoming, open, closed }
 @immutable
 class SampleMeal {
   const SampleMeal({
+    required this.id,
     required this.name,
     required this.time,
     required this.windowLabel,
     required this.window,
     this.photoIds = const [],
   });
+
+  /// Buổi theo BE MealPhoto.session: MORNING, LUNCH, AFTERNOON
+  final String id;
 
   /// "Bữa sáng"
   final String name;
@@ -67,4 +71,10 @@ class KitchenPhotoDay {
 
 abstract interface class KitchenPhotoSource {
   Future<KitchenPhotoDay> loadToday();
+
+  /// Đăng thêm 1 ảnh cho bữa [mealId] của nhóm [groupId]; trả ngày đã cập nhật.
+  Future<KitchenPhotoDay> addPhoto({
+    required String groupId,
+    required String mealId,
+  });
 }
