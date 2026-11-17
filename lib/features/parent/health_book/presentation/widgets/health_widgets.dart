@@ -43,12 +43,16 @@ class HealthMetric {
   const HealthMetric(
     this.label,
     this.value, {
+    this.unit,
     this.status,
     this.abnormal = false,
   });
 
   final String label;
   final String value;
+
+  /// Đơn vị dài ("lần/phút") hiện riêng một dòng dưới số để ô hẹp không bẻ đôi chữ
+  final String? unit;
   final String? status;
   final bool abnormal;
 }
@@ -96,9 +100,11 @@ class _MetricTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final status = metric.status;
+    final unit = metric.unit;
+    final reading = unit == null ? metric.value : '${metric.value} $unit';
     return Semantics(
       container: true,
-      label: ['${metric.label}: ${metric.value}', ?status].join(', '),
+      label: ['${metric.label}: $reading', ?status].join(', '),
       excludeSemantics: true,
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -124,6 +130,14 @@ class _MetricTile extends StatelessWidget {
                             : textTheme.titleMedium)
                         ?.copyWith(color: AppColors.onBrand),
               ),
+              if (unit != null)
+                Text(
+                  unit,
+                  textAlign: TextAlign.center,
+                  style: textTheme.labelMedium?.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
               if (status != null) ...[
                 const SizedBox(height: AppSpacing.space1),
                 Text(
@@ -164,28 +178,31 @@ class HealthDetailRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: AppSpacing.space2),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                label,
-                style: abnormal ? textTheme.titleSmall : textTheme.bodyLarge,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.space3),
-            if (abnormal)
-              AppStatusBadge(label: value, tone: AppStatusTone.orange)
-            else
-              Flexible(
+        // Giá trị canh phải, dài tối đa nửa dòng; nhãn lấy phần còn lại
+        LayoutBuilder(
+          builder: (context, constraints) => Row(
+            children: [
+              Expanded(
                 child: Text(
-                  value,
-                  textAlign: TextAlign.end,
-                  style: textTheme.labelLarge?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  label,
+                  style: abnormal ? textTheme.titleSmall : textTheme.bodyLarge,
                 ),
               ),
-          ],
+              const SizedBox(width: AppSpacing.space3),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: constraints.maxWidth / 2),
+                child: abnormal
+                    ? AppStatusBadge(label: value, tone: AppStatusTone.orange)
+                    : Text(
+                        value,
+                        textAlign: TextAlign.end,
+                        style: textTheme.labelLarge?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: AppSpacing.space2),
       ],

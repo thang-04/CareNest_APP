@@ -157,6 +157,7 @@ class _ExamDetail extends StatelessWidget {
                   HealthMetric(
                     vital.label,
                     vital.value,
+                    unit: vital.unit,
                     status: vital.status,
                     abnormal: vital.abnormal,
                   ),

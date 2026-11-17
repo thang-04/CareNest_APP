@@ -73,6 +73,32 @@ void main() {
     expect(find.descendant(of: row, matching: find.text('Có')), findsOneWidget);
   });
 
+  testWidgets('Chi tiết đợt khám: giá trị ngắn hay dài đều canh phải', (
+    tester,
+  ) async {
+    await pumpExam(tester);
+    final label = find.text('Tiền sử bản thân');
+    await tester.scrollUntilVisible(label, 300);
+    final row = find.ancestor(of: label, matching: find.byType(Row)).first;
+    final value = find.descendant(of: row, matching: find.text('Không'));
+    expect(
+      tester.getRect(value).right,
+      moreOrLessEquals(tester.getRect(row).right, epsilon: 1),
+    );
+  });
+
+  testWidgets(
+    'Chi tiết đợt khám: đơn vị dấu hiệu sinh tồn nằm riêng một dòng',
+    (tester) async {
+      await pumpExam(tester);
+      await tester.scrollUntilVisible(find.text('Dấu hiệu sinh tồn'), 300);
+      await tester.pumpAndSettle();
+      expect(find.text('102', skipOffstage: false), findsOneWidget);
+      expect(find.text('lần/phút', skipOffstage: false), findsNWidgets(2));
+      expect(find.text('°C', skipOffstage: false), findsOneWidget);
+    },
+  );
+
   testWidgets('Chi tiết đợt khám: id không có trong sổ ⇒ báo không tìm thấy', (
     tester,
   ) async {

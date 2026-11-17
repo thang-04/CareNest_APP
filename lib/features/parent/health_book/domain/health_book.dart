@@ -68,18 +68,20 @@ class ExamSection {
   final List<ExamItem> items;
 }
 
-/// Dấu hiệu sinh tồn (phần II): "Nhiệt độ", "36,7 °C", "Bình thường".
+/// Dấu hiệu sinh tồn (phần II): "Nhiệt độ", "36,7", "°C", "Bình thường".
 @immutable
 class ExamVital {
   const ExamVital({
     required this.label,
     required this.value,
+    required this.unit,
     required this.status,
     this.abnormal = false,
   });
 
   final String label;
   final String value;
+  final String unit;
   final String status;
   final bool abnormal;
 }

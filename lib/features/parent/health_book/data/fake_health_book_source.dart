@@ -39,13 +39,20 @@ class FakeHealthBookSource implements HealthBookSource {
   ) => [
     ExamVital(
       label: 'Nhiệt độ',
-      value: '$temperature °C',
+      value: temperature,
+      unit: '°C',
       status: 'Bình thường',
     ),
-    ExamVital(label: 'Mạch', value: '$pulse lần/phút', status: 'Bình thường'),
+    ExamVital(
+      label: 'Mạch',
+      value: pulse,
+      unit: 'lần/phút',
+      status: 'Bình thường',
+    ),
     ExamVital(
       label: 'Nhịp thở',
-      value: '$rate lần/phút',
+      value: rate,
+      unit: 'lần/phút',
       status: 'Bình thường',
     ),
   ];
