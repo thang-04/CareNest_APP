@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,10 +11,52 @@ import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_s
 
 import '../../../helpers/pump_app.dart';
 
+/// PNG 1×1 trong suốt: ảnh "vừa chụp" giải mã được trong test.
+final _png = Uint8List.fromList(const [
+  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, //
+  0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+  0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
+  0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+  0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
+  0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+]);
+
+/// Camera giả: trả ảnh PNG, hoặc null khi bếp huỷ.
+class _FakeCamera implements SamplePhotoCamera {
+  _FakeCamera({this.cancels = false});
+
+  final bool cancels;
+  var calls = 0;
+
+  @override
+  Future<Uint8List?> takePhoto() async {
+    calls++;
+    return cancels ? null : _png;
+  }
+}
+
+/// Ghi lại ảnh được đăng.
+class _RecordingSource extends FakeKitchenPhotoSource {
+  _RecordingSource() : super(delay: Duration.zero);
+
+  final posted = <Uint8List>[];
+
+  @override
+  Future<KitchenPhotoDay> addPhoto({
+    required String groupId,
+    required String mealId,
+    required Uint8List bytes,
+  }) {
+    posted.add(bytes);
+    return super.addPhoto(groupId: groupId, mealId: mealId, bytes: bytes);
+  }
+}
+
 Future<void> pumpPhotos(
   WidgetTester tester, {
   double textScale = 1,
   KitchenPhotoSource? source,
+  SamplePhotoCamera? camera,
 }) async {
   usePhoneSize(tester, textScale: textScale);
   await tester.pumpWidget(
@@ -20,6 +64,7 @@ Future<void> pumpPhotos(
       theme: buildLightTheme(),
       home: MealSamplePhotosScreen(
         source: source ?? FakeKitchenPhotoSource(delay: Duration.zero),
+        camera: camera ?? _FakeCamera(),
       ),
     ),
   );
@@ -67,10 +112,40 @@ class _UploadFailsSource extends FakeKitchenPhotoSource {
   Future<KitchenPhotoDay> addPhoto({
     required String groupId,
     required String mealId,
+    required Uint8List bytes,
   }) async => throw StateError('mất mạng');
 }
 
 void main() {
+  testWidgets('Ảnh mẫu: Chụp ảnh mở camera, đăng đúng ảnh vừa chụp', (
+    tester,
+  ) async {
+    final camera = _FakeCamera();
+    final source = _RecordingSource();
+    await pumpPhotos(tester, source: source, camera: camera);
+    await tapLunchCamera(tester);
+    await tester.pumpAndSettle();
+    expect(camera.calls, 1);
+    expect(source.posted, [_png]);
+    expect(inCard('Bữa trưa · 10:45', 'Đã có 1 ảnh'), findsOneWidget);
+  });
+
+  testWidgets('Ảnh mẫu: huỷ camera ⇒ không đăng, không báo lỗi', (
+    tester,
+  ) async {
+    final source = _RecordingSource();
+    await pumpPhotos(
+      tester,
+      source: source,
+      camera: _FakeCamera(cancels: true),
+    );
+    await tapLunchCamera(tester);
+    await tester.pumpAndSettle();
+    expect(source.posted, isEmpty);
+    expect(inCard('Bữa trưa · 10:45', 'Cần chụp'), findsOneWidget);
+    expect(inCard('Bữa trưa · 10:45', 'Chụp ảnh'), findsOneWidget);
+  });
+
   testWidgets('Ảnh mẫu: mỗi nhóm tuổi chỉ có các bữa được cấu hình cho nhóm', (
     tester,
   ) async {

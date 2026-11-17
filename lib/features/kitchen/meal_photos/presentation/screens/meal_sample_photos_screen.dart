@@ -13,15 +13,19 @@ import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/data/fake_kitchen_photo_source.dart';
+import 'package:carenest_app/features/kitchen/meal_photos/data/image_picker_camera.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/domain/kitchen_meal_photos.dart';
 
 /// Bếp · Ảnh mẫu bữa ăn theo nhóm tuổi (user 17/11, canvas "Ảnh bữa ăn theo nhóm tuổi"):
 /// chọn nhóm tuổi, mỗi bữa nhóm đó ăn cần ít nhất 1 ảnh, chụp bao nhiêu cũng được;
 /// chỉ đăng trong khung giờ của bữa (NUT-16). BE chưa có API theo nhóm tuổi ⇒ dữ liệu giả.
 class MealSamplePhotosScreen extends StatefulWidget {
-  const MealSamplePhotosScreen({super.key, this.source});
+  const MealSamplePhotosScreen({super.key, this.source, this.camera});
 
   final KitchenPhotoSource? source;
+
+  /// Mặc định mở app camera của máy (`image_picker`).
+  final SamplePhotoCamera? camera;
 
   @override
   State<MealSamplePhotosScreen> createState() => _MealSamplePhotosScreenState();
@@ -30,6 +34,8 @@ class MealSamplePhotosScreen extends StatefulWidget {
 class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
   late final KitchenPhotoSource _source =
       widget.source ?? FakeKitchenPhotoSource();
+  late final SamplePhotoCamera _camera =
+      widget.camera ?? ImagePickerSamplePhotoCamera();
   late Future<KitchenPhotoDay> _day = _source.loadToday();
   String? _groupId;
 
@@ -65,8 +71,21 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
       _posting.add(key);
       _failed.remove(key);
     });
+    final bytes = await _camera.takePhoto();
+    if (!mounted) return;
+    if (bytes == null) {
+      // Bếp huỷ chụp: không đăng, không báo lỗi
+      setState(() {
+        _posting.remove(key);
+      });
+      return;
+    }
     try {
-      final day = await _source.addPhoto(groupId: group.id, mealId: meal.id);
+      final day = await _source.addPhoto(
+        groupId: group.id,
+        mealId: meal.id,
+        bytes: bytes,
+      );
       if (!mounted) return;
       setState(() {
         _posting.remove(key);

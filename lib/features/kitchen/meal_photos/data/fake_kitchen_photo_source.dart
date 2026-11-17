@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'package:carenest_app/features/kitchen/meal_photos/domain/kitchen_meal_photos.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 
@@ -78,6 +80,7 @@ class FakeKitchenPhotoSource implements KitchenPhotoSource {
   Future<KitchenPhotoDay> addPhoto({
     required String groupId,
     required String mealId,
+    required Uint8List bytes,
   }) async {
     await Future<void>.delayed(delay);
     final key = '$groupId|$mealId';

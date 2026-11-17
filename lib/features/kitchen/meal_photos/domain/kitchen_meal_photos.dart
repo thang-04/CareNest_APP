@@ -72,9 +72,15 @@ class KitchenPhotoDay {
 abstract interface class KitchenPhotoSource {
   Future<KitchenPhotoDay> loadToday();
 
-  /// Đăng thêm 1 ảnh cho bữa [mealId] của nhóm [groupId]; trả ngày đã cập nhật.
+  /// Đăng ảnh [bytes] vừa chụp cho bữa [mealId] của nhóm [groupId]; trả ngày đã cập nhật.
   Future<KitchenPhotoDay> addPhoto({
     required String groupId,
     required String mealId,
+    required Uint8List bytes,
   });
+}
+
+/// Camera chụp một ảnh mẫu; trả null khi bếp huỷ, ném lỗi khi không mở được camera.
+abstract interface class SamplePhotoCamera {
+  Future<Uint8List?> takePhoto();
 }
