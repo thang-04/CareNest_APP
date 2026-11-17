@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
+import 'package:carenest_app/core/theme/app_status_colors.dart';
+import 'package:carenest_app/core/widgets/app_card.dart';
+import 'package:carenest_app/core/widgets/app_status_badge.dart';
 
 /// Tiêu đề một phần của sổ kèm một câu giải thích.
 class HealthSectionHeader extends StatelessWidget {
@@ -136,6 +139,85 @@ class _MetricTile extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Dòng nhãn – giá trị của phiếu khám; giá trị bất thường hiện thành nhãn cam.
+class HealthDetailRow extends StatelessWidget {
+  const HealthDetailRow({
+    super.key,
+    required this.label,
+    required this.value,
+    this.abnormal = false,
+  });
+
+  final String label;
+  final String value;
+  final bool abnormal;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: AppSpacing.space2),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: abnormal ? textTheme.titleSmall : textTheme.bodyLarge,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.space3),
+            if (abnormal)
+              AppStatusBadge(label: value, tone: AppStatusTone.orange)
+            else
+              Flexible(
+                child: Text(
+                  value,
+                  textAlign: TextAlign.end,
+                  style: textTheme.labelLarge?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.space2),
+      ],
+    );
+  }
+}
+
+/// Thẻ một phần của phiếu khám: tiêu đề và nội dung.
+class HealthDetailCard extends StatelessWidget {
+  const HealthDetailCard({
+    super.key,
+    required this.title,
+    required this.children,
+  });
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      dense: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            header: true,
+            child: Text(title, style: Theme.of(context).textTheme.titleMedium),
+          ),
+          const SizedBox(height: AppSpacing.space1),
+          ...children,
+        ],
       ),
     );
   }
