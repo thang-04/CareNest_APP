@@ -1,5 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:carenest_app/core/integration/mobile_api.dart';
+import 'package:carenest_app/core/integration/mobile_session.dart';
+import 'package:carenest_app/features/auth/presentation/screens/live_login_screen.dart';
+import 'package:carenest_app/features/notifications/presentation/screens/live_notifications_screen.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/constants/app_icons.dart';
@@ -70,7 +74,13 @@ import 'package:carenest_app/routing/route_paths.dart';
 
 /// `enablePreview` mặc định theo debug: màn theo vai trò còn phụ thuộc PENDING và chưa có auth
 /// ⇒ bản release chỉ có Đăng nhập và luồng quên mật khẩu (docs/architecture/NAVIGATION.md).
-GoRouter buildAppRouter({bool enablePreview = kDebugMode}) {
+GoRouter buildAppRouter({
+  bool enablePreview = kDebugMode,
+  MobileSession? session,
+  MobileApi? api,
+  Future<void> Function()? signIn,
+  Future<void> Function()? signOut,
+}) {
   final rootKey = GlobalKey<NavigatorState>();
   return GoRouter(
     navigatorKey: rootKey,
@@ -79,13 +89,36 @@ GoRouter buildAppRouter({bool enablePreview = kDebugMode}) {
       GoRoute(path: '/', redirect: (context, state) => RoutePaths.login),
       GoRoute(
         path: RoutePaths.login,
-        builder: (context, state) => LoginScreen(
-          onForgotPassword: () => context.push(RoutePaths.forgotPassword),
-          onOpenPreview: enablePreview
-              ? () => context.push(RoutePaths.preview)
-              : null,
-        ),
+        builder: (context, state) => session != null && signIn != null
+            ? LiveLoginScreen(
+                signIn: signIn,
+                onPreview: enablePreview
+                    ? () => context.push(RoutePaths.preview)
+                    : null,
+              )
+            : LoginScreen(
+                onForgotPassword: () => context.push(RoutePaths.forgotPassword),
+                onOpenPreview: enablePreview
+                    ? () => context.push(RoutePaths.preview)
+                    : null,
+              ),
       ),
+      if (session != null && api != null && signOut != null) ...[
+        GoRoute(
+          path: '/live/notifications',
+          redirect: (_, _) => session.signedIn ? null : RoutePaths.login,
+          builder: (_, _) =>
+              LiveNotificationsScreen(api: api, signOut: signOut),
+        ),
+        GoRoute(
+          path: '/live/notifications/:id',
+          redirect: (_, _) => session.signedIn ? null : RoutePaths.login,
+          builder: (_, state) => LiveNotificationDetailScreen(
+            api: api,
+            id: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
+          ),
+        ),
+      ],
       _forgotPasswordRoute(enablePreview: enablePreview),
       if (enablePreview) ...[
         GoRoute(

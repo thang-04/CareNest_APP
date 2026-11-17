@@ -1,0 +1,88 @@
+import 'package:flutter/material.dart';
+import 'package:carenest_app/core/widgets/app_button.dart';
+import 'package:carenest_app/core/widgets/app_card.dart';
+import 'package:carenest_app/core/widgets/brand/app_logo.dart';
+
+class LiveLoginScreen extends StatefulWidget {
+  const LiveLoginScreen({super.key, required this.signIn, this.onPreview});
+  final Future<void> Function() signIn;
+  final VoidCallback? onPreview;
+  @override
+  State<LiveLoginScreen> createState() => _LiveLoginScreenState();
+}
+
+class _LiveLoginScreenState extends State<LiveLoginScreen> {
+  bool busy = false;
+  Object? error;
+  Future<void> submit() async {
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      await widget.signIn();
+    } catch (e) {
+      if (mounted) setState(() => error = e);
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    body: SafeArea(
+      child: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const AppLogo(size: 140),
+                  const SizedBox(height: 16),
+                  AppCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Đăng nhập',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Đăng nhập bằng tài khoản nhà trường qua trang đăng nhập bảo mật.',
+                        ),
+                        const SizedBox(height: 16),
+                        if (error != null)
+                          Text(
+                            '$error',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        AppButton(
+                          label: 'Đăng nhập',
+                          loadingLabel: 'Đang đăng nhập…',
+                          isLoading: busy,
+                          expand: true,
+                          onPressed: submit,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (widget.onPreview != null)
+                    TextButton(
+                      onPressed: widget.onPreview,
+                      child: const Text('Xem thử theo vai trò'),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
