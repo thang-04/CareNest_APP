@@ -243,9 +243,12 @@ List<RouteBase> _staffAndParentRoutes(
   _roleShell(rootKey, AppRole.parent, NavDestinations.parent, {
     RoutePaths.parentToday: (context, state) => const ParentHomeScreen(),
     RoutePaths.parentChild: (context, state) => MyChildScreen(
-      initialTab: state.uri.queryParameters['tab'] == 'health'
-          ? MyChildTab.health
-          : MyChildTab.today,
+      initialTab: switch (state.uri.queryParameters['tab']) {
+        'health' => MyChildTab.health,
+        'development' => MyChildTab.development,
+        _ => MyChildTab.today,
+      },
+      focusRewards: state.uri.queryParameters['section'] == 'rewards',
     ),
   }, account: account),
   ..._parentChildRoutes(),

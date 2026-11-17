@@ -84,6 +84,31 @@ void main() {
     expect(bar.selectedIndex, 1);
   });
 
+  testWidgets(
+    'Phụ huynh: tab=development mở Phát triển, section=rewards cuộn tới khen thưởng',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      // Chữ lớn để phần khen thưởng nằm dưới mép màn khi chưa cuộn
+      tester.platformDispatcher.textScaleFactorTestValue = 1.5;
+      final reviews = find.textContaining('Nhận xét tuần').hitTestable();
+      final rewards = find.text('Khen thưởng cuối năm').hitTestable();
+
+      router.go('/parent/child?tab=development');
+      await tester.pumpAndSettle();
+      expect(reviews, findsOneWidget);
+      expect(rewards, findsNothing);
+
+      router.go('/parent/child?tab=development&section=rewards');
+      await tester.pumpAndSettle();
+      expect(rewards, findsOneWidget);
+
+      // Bỏ section (vd. bấm "Đánh giá" sau "Khen thưởng") ⇒ về đầu tab
+      router.go('/parent/child?tab=development');
+      await tester.pumpAndSettle();
+      expect(reviews, findsOneWidget);
+    },
+  );
+
   testWidgets('Bếp: Trang chủ mở Ảnh mẫu bữa ăn, màn con ẩn thanh đáy', (
     tester,
   ) async {
