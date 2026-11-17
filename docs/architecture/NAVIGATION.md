@@ -119,6 +119,7 @@ Nhãn tab theo mockup `docs/design/figma/` (user 2026-10-13). Chưa có auth ⇒
 | `/parent/leave-notices?child=<id>`, `/parent/leave-notices/new?child=<id>` | Đơn xin nghỉ đã gửi · Xin nghỉ cho bé (P04, P03) | không | Màn con, chỉ mang ID con |
 | `/parent/menu`, `/parent/activities`, `/parent/attendance`, `/parent/child-profile` (đều `?child=<id>`) | Thực đơn tuần · Hoạt động & đánh giá · Điểm danh & bữa ăn · Hồ sơ của bé (P05, P09, P10, P13) | không | ID không thuộc danh sách con ⇒ 404 |
 | `/parent/child?tab=health` | Tab Bé của tôi mở sẵn Sức khỏe | không | Con đang xem là state (`SelectedChild`), không nằm trong route |
+| `/parent/child?tab=development`, `/parent/child?tab=development&section=rewards` | Tab Bé của tôi mở sẵn Phát triển (ô "Đánh giá" ở Trang chủ) · cuộn tới phiếu bé ngoan + khen thưởng cuối năm (ô "Khen thưởng") | không | User 17/11. Dựng link bằng `RoutePaths.parentChildAt`; `tab` khác ⇒ Hôm nay |
 | `/teacher/attendance` | Điểm danh + báo ăn lớp đang chọn (T02) | không | Màn con; lớp là state, dữ liệu giả có một lớp. Lệch BE (28/10): còn báo ăn theo bé (ATT-02), chưa có nhiệt độ (HLT-07) — cần sửa khi tích hợp |
 | `/teacher/leave-notices`, `/teacher/schedule` | Đơn xin nghỉ của lớp (T03) · Lịch hoạt động (T10) | không | |
 | `/teacher/reviews[/<childId>]`, `/teacher/pickup[/<childId>]`, `/teacher/health[/<childId>]` | Đánh giá hằng ngày (T04, T04.1) · Đón trẻ (T05, T06) · Đo sức khỏe (T07, T07.1) | không | Màn chi tiết mang ID trẻ trên đường dẫn Lệch BE (29/10): đánh giá 3 tiêu chí (OBS-02), đón trẻ theo người đã đăng ký (PCK-03) |

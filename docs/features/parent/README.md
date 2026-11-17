@@ -39,6 +39,7 @@ Không có chat (PAR-04) — trao đổi tức thời vẫn qua Zalo.
 - Đã chốt 29/10: phụ huynh nhận mọi kỳ nhận xét (OBS-06, đóng P-12); đánh giá ngày hiện sau khi GV lưu (OBS-13); dữ liệu có công bố chỉ hiện sau khi công bố (PAR-03, đóng P-13b).
 - "Hoạt động hằng ngày": phụ huynh thấy tên các hoạt động trong ngày của lớp (EDU-09), lấy từ kế hoạch ngày (OBS-07, ADR-0019). UI dữ liệu giả `/parent/activities` chỉ có ở bản debug (user cho dựng giả 2026-10-13, plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md` K1); bật ở release khi BE có API kế hoạch ngày.
 - Phiếu bé ngoan / khen thưởng cuối năm (tab Phát triển): OBS-10 (phiếu tuần, phụ huynh thấy ngay khi GV xác nhận), OBS-14 (khen cuối năm); làm cả hai: P-31 — số phiếu và ngưỡng là BE trả.
+- Lối tắt ở Trang chủ (user 17/11): mục "Việc nhanh" thêm hàng thứ ba gồm "Đánh giá" (mở tab Phát triển từ đầu: nhận xét tuần/tháng) và "Khen thưởng" (mở tab Phát triển, cuộn tới phiếu bé ngoan + khen thưởng cuối năm). Ô "Hoạt động & đánh giá" (đánh giá ngày) giữ nguyên. Không có màn mới; route `/parent/child?tab=development[&section=rewards]` (`docs/architecture/NAVIGATION.md`).
 
 ### Báo nghỉ (đơn nghỉ)
 - BE: card `BE:docs/modules/attendance.md` · flow `BE:docs/business/flows/leave-request.md` · rule ATT-05 (CONFIRMED), ATT-04, ATT-09, ATT-05b (PROPOSED) · permission `leave:create`
