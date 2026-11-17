@@ -1,24 +1,24 @@
 # Teacher — màn hình Mobile
 
-Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scope do BE kiểm tra). Teacher dùng cả Web và App; điểm danh chủ yếu trên App (ATT-01), màn hình mobile ưu tiên nhập nhanh tại lớp. Tổ trưởng chuyên môn là phân công trên tài khoản GV, không phải role đăng nhập (AUTH-23). App tập trung cho GV: điểm danh, sức khỏe, đánh giá, đón trẻ, thông báo (AUTH-21, user chốt 29/10); soạn kế hoạch giáo dục làm trên Web (EDU). GV cũ được xem lại lớp/năm học từng dạy, chỉ đọc (AUTH-03 mở rộng — BE chưa code).
+Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scope do BE kiểm tra). Teacher dùng cả Web và App; điểm danh chủ yếu trên App (ATT-01), màn hình mobile ưu tiên nhập nhanh tại lớp. Tổ trưởng chuyên môn là phân công trên tài khoản GV, không phải role đăng nhập (AUTH-23). App tập trung thao tác tại lớp: **điểm danh, sức khỏe/cân đo, trả trẻ**; đánh giá và nội dung còn lại ưu tiên chỉ xem (user chốt 16/11/2026). Soạn kế hoạch giáo dục làm trên Web (EDU). GV cũ được xem lại lớp/năm học từng dạy, chỉ đọc (AUTH-03 mở rộng — BE chưa code).
 
 ### Chọn lớp / ngày
 - BE: card `BE:docs/modules/school-structure.md`, `BE:docs/modules/identity-access.md` · rule AUTH-03
 - Endpoint: chưa có
 
-### Trang chủ giáo viên (bố cục D)
-- Giao diện (user 2026-10-14, `docs/design/mobile-redesign-clay.md`): lời chào → thẻ lớp nổi bật (tên lớp, sĩ số, hoạt động đang diễn ra, vòng "x/N đã điểm danh", hạn điểm danh, nút "Điểm danh ngay") → "Việc tiếp theo" trượt ngang. Hết việc điểm danh ⇒ không còn nút và hạn.
+### Trang chủ giáo viên
+- Giao diện (user 16/11/2026, `DESIGN.md`): lời chào → thẻ lớp nổi bật → hạn điểm danh → `Cần làm` gồm tối đa 3 lối chính **Điểm danh / Sức khỏe / Trả trẻ** → `Xem nhanh` cho đơn nghỉ và đánh giá. Ít chữ, danh sách dọc, vùng chạm ≥48; sức khỏe gom kiểm tra đầu ngày và cân nặng/chiều cao.
 - Vòng tiến độ cần **số bé đã điểm danh** do BE trả (`attendanceRecorded` ở `TeacherToday`, chưa có trong contract) ⇒ đề xuất khi viết endpoint trang chủ GV; APP không tự đếm. Không có số ⇒ không vẽ vòng.
 
 ### Điểm danh + nhiệt độ đầu ngày (nhập hàng loạt)
-- Mục đích: nhập Có mặt / Vắng cho cả lớp/ngày cùng lúc. Có mặt là ăn tất cả các bữa đã cấu hình cho nhóm tuổi; GV không nhập tham gia ăn riêng (ATT-02). Vắng có phép tự động khi phụ huynh đã gửi đơn nghỉ, còn lại không phép (ATT-04, ATT-09). Khi nhận trẻ, GV đo nhiệt độ mọi trẻ và nhập cùng màn điểm danh; không chụp ảnh trẻ, dặn dò miệng của phụ huynh không ghi (HLT-07).
+- Mục đích: nhập Có mặt / Vắng cho cả lớp/ngày cùng lúc. Theo yêu cầu APP ngày 16/11/2026, màn chính giữ hai lựa chọn như Web và có nút mở màn `Trẻ tham gia ăn`: trẻ Có mặt mặc định có ăn, GV có thể bỏ chọn nếu trẻ vẫn đi học nhưng hôm đó không ăn; trẻ Vắng tự động không ăn. Vắng có phép tự động khi phụ huynh đã gửi đơn nghỉ, còn lại không phép (ATT-04, ATT-09). Khi nhận trẻ, GV đo nhiệt độ mọi trẻ và nhập cùng màn điểm danh; không chụp ảnh trẻ, dặn dò miệng của phụ huynh không ghi (HLT-07).
 - BE: card `BE:docs/modules/attendance.md`, `BE:docs/modules/health.md` · flow `BE:docs/business/flows/attendance.md` · rule ATT-01, ATT-02, ATT-03, ATT-06, ATT-07, ATT-08, ATT-09, HLT-07
 - Endpoint: chưa có. Hướng BE: idempotent upsert theo lớp/ngày (BE PAT-IDEMPOTENT-BATCH, `BE:docs/knowledge/PATTERNS.md`); HTTP method TBD ⇒ retry an toàn (`docs/integration/BACKEND_INTEGRATION.md`).
 - Giờ chốt: một giờ chung toàn trường, HT cấu hình theo mùa (ATT-06, đóng P-03) — BE trả/từ chối khi quá giờ, APP hiển thị lỗi, không tự khóa theo giờ máy. Sau giờ chốt không nhận trẻ đến muộn (ATT-03); điểm danh/sửa sau giờ chốt chỉ khi PHT mở lại, có lý do (ATT-08). Sửa sau khi suất đã xác nhận ⇒ BE đánh dấu cần xác nhận lại (ATT-07, NUT-03; đóng P-04); APP không cảnh báo theo logic riêng.
 - PENDING: P-20 (trẻ có đơn nghỉ vẫn đến lớp) · P-21 (danh sách triệu chứng chọn nhanh) · P-22 (trẻ có dấu hiệu bất thường có nhận không) · P-23 (mức ưu tiên Capstone của sức khỏe đầu ngày).
 - Không: tự tính số suất từ số trẻ có mặt (NUT-01 — BE làm).
 - Mockup T02 (user 2026-10-13): mỗi bé hai nút Có mặt / Vắng; bé có đơn nghỉ bấm "Vắng" vẫn là có phép (ATT-04); báo ăn mặc định "có ăn", bấm tên bé để đổi. Mockup có "Ăn 1 bữa · Trưa" (báo ăn theo từng bữa) — BE đã bỏ báo ăn riêng từ 28/10, xem Lệch BE bên dưới.
-- Lệch BE (28/10): nút báo ăn theo bé và ghi chú "Ăn 1 bữa" (field `eats`) trái ATT-02; trạng thái chỉ Có mặt / Vắng với có phép tự động (ATT-09); chưa có ô nhiệt độ (HLT-07) — cần sửa khi tích hợp. Giờ khóa đã lấy từ field BE trả (`lockAt`), đúng ATT-06.
+- Lệch BE (16/11): BE ATT-02 vẫn suy ra Có mặt = ăn mọi bữa và bỏ qua `meals` client gửi. APP đã có UI chọn trẻ Có mặt nhưng không ăn theo yêu cầu mới, nhưng chỉ lưu được dữ liệu giả cho tới khi BE đổi contract; không được coi là đã nối API thật. Giờ khóa đã lấy từ field BE trả (`lockAt`), đúng ATT-06.
 
 ### Đánh giá hằng ngày (nhập hàng loạt)
 - BE: card `BE:docs/modules/learning-observation.md` · flow `BE:docs/business/flows/child-observation.md` · rule OBS-01, OBS-02, OBS-07, OBS-10, OBS-12, OBS-13
@@ -45,8 +45,8 @@ Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scop
 
 ### Cân đo, sức khỏe trong ngày
 - BE: card `BE:docs/modules/health.md` · flow `BE:docs/business/flows/health-check.md` · rule HLT-01 (mặc định 3 lần/năm, BE cấu hình — không hard-code chu kỳ), HLT-09 (GV cân đo lớp mình), HLT-10 (BE phân loại theo WHO, GV chỉnh kèm lý do), HLT-11 (phụ huynh thấy sau công bố), HLT-13 (sửa số đo kèm lý do, có lịch sử), HLT-14 (sức khỏe trong ngày: triệu chứng, xử trí, báo phụ huynh ngay). Nhiệt độ đầu ngày không thuộc màn này (HLT-07, mục Điểm danh).
-- Mockup T07 / T07.1 dựng dữ liệu giả ở bản debug (plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md` K1): danh sách đã / chưa đo, nhập chiều cao + cân nặng, "Kết quả tính theo quy tắc của trường" là **BE trả** (HLT-03 chuẩn WHO, HLT-10 — APP không so chuẩn), công tắc "Công bố cho phụ huynh" (HLT-11, PAR-03), câu "Không phải chẩn đoán y tế" (HLT-04).
-- Lệch BE (29/10): chưa có ô GV chỉnh phân loại kèm lý do (HLT-10), lịch sử sửa số đo (HLT-13); chưa có màn sức khỏe trong ngày (HLT-14).
+- App T07 / T07.1 (user 16/11/2026): danh sách đã/chưa đo; GV nhập chiều cao **40,0–150,0 cm** và cân nặng **3,0–60,0 kg** theo `HealthMeasurementRequest`; ghi chú tối đa 500 ký tự. Sửa số đo bắt buộc lý do tối đa 300 ký tự (HLT-13). Lưu là công bố ngay (HLT-11), không có công tắc công bố. "Kết quả" do BE trả; APP không tự phân loại/chẩn đoán.
+- Màn Sức khỏe là điểm vào chung: kiểm tra đầu ngày + lối `Cân nặng & chiều cao`; dữ liệu giả hiện sau interface nguồn dữ liệu cho tới phase nối API thật.
 
 ### Chụp và gửi ảnh bữa ăn — **PROPOSED**
 - Ảnh bữa ăn — **PROPOSED** (user 2026-10-13): (1) bếp chụp ảnh món khi nấu xong; (2) giáo viên chụp khay khi bếp giao tới lớp rồi đăng; phụ huynh xem ảnh món ăn trong thực đơn/lịch của con. BE NUT-16 hiện chỉ ghi bếp chụp ⇒ đề xuất cập nhật BE.

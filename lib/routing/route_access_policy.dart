@@ -1,4 +1,4 @@
-import 'package:carenest_app/features/account/domain/account_profile.dart';
+import 'package:carenest_app/features/shared/account/domain/account_profile.dart';
 import 'package:carenest_app/features/auth/domain/entities/app_mode.dart';
 import 'package:carenest_app/features/auth/presentation/controllers/auth_state.dart';
 import 'package:carenest_app/routing/route_paths.dart';

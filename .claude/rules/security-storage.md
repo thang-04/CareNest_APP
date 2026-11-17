@@ -3,7 +3,7 @@ paths:
   - "lib/core/storage/**/*.dart"
   - "lib/core/notifications/**/*.dart"
   - "lib/features/auth/**/*.dart"
-  - "lib/features/notifications/**/*.dart"
+  - "lib/features/shared/notifications/**/*.dart"
   - "lib/**/*log*.dart"
   - "lib/**/offline/**/*.dart"
 ---

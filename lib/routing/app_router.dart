@@ -6,16 +6,17 @@ import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/layouts/app_shell.dart';
 import 'package:carenest_app/core/widgets/app_coming_soon.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
-import 'package:carenest_app/features/account/data/fake_account_source.dart';
-import 'package:carenest_app/features/account/domain/account_profile.dart';
-import 'package:carenest_app/features/account/presentation/screens/account_screen.dart';
-import 'package:carenest_app/features/account/presentation/screens/personal_info_screen.dart';
-import 'package:carenest_app/features/activity_schedule/presentation/screens/activity_schedule_screen.dart';
-import 'package:carenest_app/features/approvals/presentation/screens/approvals_screen.dart';
-import 'package:carenest_app/features/approvals/presentation/screens/meal_adjustment_screen.dart';
-import 'package:carenest_app/features/approvals/presentation/screens/principal_approvals_screen.dart';
-import 'package:carenest_app/features/attendance/data/fake_attendance_source.dart';
-import 'package:carenest_app/features/attendance/presentation/screens/attendance_screen.dart';
+import 'package:carenest_app/features/shared/account/data/fake_account_source.dart';
+import 'package:carenest_app/features/shared/account/domain/account_profile.dart';
+import 'package:carenest_app/features/shared/account/presentation/screens/account_screen.dart';
+import 'package:carenest_app/features/shared/account/presentation/screens/personal_info_screen.dart';
+import 'package:carenest_app/features/teacher/activity_schedule/presentation/screens/activity_schedule_screen.dart';
+import 'package:carenest_app/features/management/approvals/presentation/screens/approvals_screen.dart';
+import 'package:carenest_app/features/management/approvals/presentation/screens/meal_adjustment_screen.dart';
+import 'package:carenest_app/features/management/approvals/presentation/screens/principal_approvals_screen.dart';
+import 'package:carenest_app/features/teacher/attendance/data/fake_attendance_source.dart';
+import 'package:carenest_app/features/teacher/attendance/presentation/screens/attendance_screen.dart';
+import 'package:carenest_app/features/teacher/daily_health/presentation/screens/daily_health_screen.dart';
 import 'package:carenest_app/features/auth/domain/entities/app_mode.dart';
 import 'package:carenest_app/features/auth/presentation/controllers/auth_state.dart';
 import 'package:carenest_app/features/auth/presentation/screens/activation_screen.dart';
@@ -26,52 +27,49 @@ import 'package:carenest_app/features/auth/presentation/screens/new_password_scr
 import 'package:carenest_app/features/auth/presentation/screens/otp_verify_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/session_loading_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/sign_in_screen.dart';
-import 'package:carenest_app/features/campus_children/data/fake_campus_children_source.dart';
-import 'package:carenest_app/features/campus_children/presentation/screens/campus_children_screen.dart';
-import 'package:carenest_app/features/campuses/presentation/screens/campuses_screen.dart';
-import 'package:carenest_app/features/class_leave_notices/presentation/screens/class_leave_screen.dart';
-import 'package:carenest_app/features/class_roster/presentation/screens/class_roster_screen.dart';
-import 'package:carenest_app/features/cooking_status/presentation/screens/cooking_status_screen.dart';
-import 'package:carenest_app/features/daily_review/presentation/screens/daily_review_detail_screen.dart';
-import 'package:carenest_app/features/daily_review/presentation/screens/daily_review_list_screen.dart';
-import 'package:carenest_app/features/dev_preview/presentation/screens/role_preview_screen.dart';
-import 'package:carenest_app/features/food_quantities/presentation/screens/food_quantities_screen.dart';
-import 'package:carenest_app/features/health_measure/presentation/screens/health_measure_detail_screen.dart';
-import 'package:carenest_app/features/health_measure/presentation/screens/health_measure_list_screen.dart';
-import 'package:carenest_app/features/ingredient_receipt/presentation/screens/ingredient_receipt_screen.dart';
-import 'package:carenest_app/features/ingredient_receipt/presentation/screens/shortage_report_screen.dart';
-import 'package:carenest_app/features/kitchen_home/presentation/screens/kitchen_home_screen.dart';
-import 'package:carenest_app/features/kitchen_meals/presentation/screens/kitchen_meals_screen.dart';
-import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_form_screen.dart';
-import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_list_screen.dart';
-import 'package:carenest_app/features/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
-import 'package:carenest_app/features/meal_photos/domain/meal_photos.dart';
-import 'package:carenest_app/features/meal_photos/presentation/screens/meal_photo_capture_screen.dart';
-import 'package:carenest_app/features/meal_photos/presentation/screens/meal_photo_send_screen.dart';
-import 'package:carenest_app/features/my_child/presentation/screens/child_activities_screen.dart';
-import 'package:carenest_app/features/my_child/presentation/screens/child_attendance_screen.dart';
-import 'package:carenest_app/features/my_child/presentation/screens/child_profile_screen.dart';
-import 'package:carenest_app/features/my_child/presentation/screens/my_child_screen.dart';
-import 'package:carenest_app/features/notifications/presentation/screens/notification_detail_screen.dart';
-import 'package:carenest_app/features/notifications/presentation/screens/notifications_screen.dart';
-import 'package:carenest_app/features/nutrition_balance/presentation/screens/nutrition_balance_screen.dart';
-import 'package:carenest_app/features/parent_home/data/fake_parent_home_source.dart';
-import 'package:carenest_app/features/parent_home/domain/parent_today.dart';
-import 'package:carenest_app/features/parent_home/presentation/screens/parent_home_screen.dart';
-import 'package:carenest_app/features/parent_home/presentation/selected_child.dart';
-import 'package:carenest_app/features/parent_menu/presentation/screens/weekly_menu_screen.dart';
-import 'package:carenest_app/features/pickup/presentation/screens/pickup_list_screen.dart';
-import 'package:carenest_app/features/pickup/presentation/screens/pickup_verify_screen.dart';
-import 'package:carenest_app/features/principal_overview/presentation/screens/principal_overview_screen.dart';
-import 'package:carenest_app/features/reward_proposals/presentation/screens/reward_batch_screen.dart';
-import 'package:carenest_app/features/reward_proposals/presentation/screens/reward_proposals_screen.dart';
-import 'package:carenest_app/features/school_children/presentation/screens/school_children_screen.dart';
-import 'package:carenest_app/features/school_menu/presentation/screens/school_menu_overview_screen.dart';
-import 'package:carenest_app/features/school_menu/presentation/screens/school_menu_screen.dart';
-import 'package:carenest_app/features/teacher_home/presentation/screens/teacher_home_screen.dart';
-import 'package:carenest_app/features/vice_principal_home/presentation/screens/campus_kitchen_screen.dart';
-import 'package:carenest_app/features/vice_principal_home/presentation/screens/campus_menu_screen.dart';
-import 'package:carenest_app/features/vice_principal_home/presentation/screens/vice_principal_home_screen.dart';
+import 'package:carenest_app/features/management/campus_children/data/fake_campus_children_source.dart';
+import 'package:carenest_app/features/management/campus_children/presentation/screens/campus_children_screen.dart';
+import 'package:carenest_app/features/management/campuses/presentation/screens/campuses_screen.dart';
+import 'package:carenest_app/features/teacher/class_leave_notices/presentation/screens/class_leave_screen.dart';
+import 'package:carenest_app/features/teacher/class_roster/presentation/screens/class_roster_screen.dart';
+import 'package:carenest_app/features/kitchen/cooking_status/presentation/screens/cooking_status_screen.dart';
+import 'package:carenest_app/features/teacher/daily_review/presentation/screens/daily_review_detail_screen.dart';
+import 'package:carenest_app/features/teacher/daily_review/presentation/screens/daily_review_list_screen.dart';
+import 'package:carenest_app/features/shared/dev_preview/presentation/screens/role_preview_screen.dart';
+import 'package:carenest_app/features/kitchen/food_quantities/presentation/screens/food_quantities_screen.dart';
+import 'package:carenest_app/features/teacher/health_measure/presentation/screens/health_measure_detail_screen.dart';
+import 'package:carenest_app/features/teacher/health_measure/presentation/screens/health_measure_list_screen.dart';
+import 'package:carenest_app/features/kitchen/ingredient_receipt/presentation/screens/ingredient_receipt_screen.dart';
+import 'package:carenest_app/features/kitchen/ingredient_receipt/presentation/screens/shortage_report_screen.dart';
+import 'package:carenest_app/features/kitchen/kitchen_home/presentation/screens/kitchen_home_screen.dart';
+import 'package:carenest_app/features/kitchen/kitchen_meals/presentation/screens/kitchen_meals_screen.dart';
+import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_form_screen.dart';
+import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_list_screen.dart';
+import 'package:carenest_app/features/management/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
+import 'package:carenest_app/features/parent/my_child/presentation/screens/child_activities_screen.dart';
+import 'package:carenest_app/features/parent/my_child/presentation/screens/child_attendance_screen.dart';
+import 'package:carenest_app/features/parent/my_child/presentation/screens/child_profile_screen.dart';
+import 'package:carenest_app/features/parent/my_child/presentation/screens/my_child_screen.dart';
+import 'package:carenest_app/features/shared/notifications/presentation/screens/notification_detail_screen.dart';
+import 'package:carenest_app/features/shared/notifications/presentation/screens/notifications_screen.dart';
+import 'package:carenest_app/features/management/nutrition_balance/presentation/screens/nutrition_balance_screen.dart';
+import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
+import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
+import 'package:carenest_app/features/parent/parent_home/presentation/screens/parent_home_screen.dart';
+import 'package:carenest_app/features/parent/parent_home/presentation/selected_child.dart';
+import 'package:carenest_app/features/parent/parent_menu/presentation/screens/weekly_menu_screen.dart';
+import 'package:carenest_app/features/teacher/pickup/presentation/screens/pickup_list_screen.dart';
+import 'package:carenest_app/features/teacher/pickup/presentation/screens/pickup_verify_screen.dart';
+import 'package:carenest_app/features/management/principal_overview/presentation/screens/principal_overview_screen.dart';
+import 'package:carenest_app/features/management/reward_proposals/presentation/screens/reward_batch_screen.dart';
+import 'package:carenest_app/features/management/reward_proposals/presentation/screens/reward_proposals_screen.dart';
+import 'package:carenest_app/features/management/school_children/presentation/screens/school_children_screen.dart';
+import 'package:carenest_app/features/shared/school_menu/presentation/screens/school_menu_overview_screen.dart';
+import 'package:carenest_app/features/shared/school_menu/presentation/screens/school_menu_screen.dart';
+import 'package:carenest_app/features/teacher/teacher_home/presentation/screens/teacher_home_screen.dart';
+import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/campus_kitchen_screen.dart';
+import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/campus_menu_screen.dart';
+import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/vice_principal_home_screen.dart';
 import 'package:carenest_app/routing/navigation_destinations.dart';
 import 'package:carenest_app/routing/route_access_policy.dart';
 import 'package:carenest_app/routing/route_paths.dart';
@@ -258,8 +256,16 @@ List<RouteBase> _staffAndParentRoutes(
   GoRoute(
     path: RoutePaths.teacherAttendance,
     // Lớp đang chọn là state; bản dữ liệu giả chỉ có một lớp
+    builder: (context, state) => AttendanceScreen(
+      classId: FakeAttendanceSource.classId,
+      // Lưu điểm danh xong đi thẳng sang Sức khỏe đầu ngày (HLT-07)
+      onSaved: () => context.pushReplacement(RoutePaths.teacherDailyHealth),
+    ),
+  ),
+  GoRoute(
+    path: RoutePaths.teacherDailyHealth,
     builder: (context, state) =>
-        const AttendanceScreen(classId: FakeAttendanceSource.classId),
+        const DailyHealthScreen(classId: FakeAttendanceSource.classId),
   ),
   _roleShell(rootKey, AppRole.kitchen, NavDestinations.kitchen, {
     RoutePaths.kitchenHome: (context, state) => const KitchenHomeScreen(),
@@ -376,8 +382,7 @@ List<GoRoute> _teacherRoutes() {
     listWithDetail(
       RoutePaths.teacherReviews,
       (context, open) => DailyReviewListScreen(onOpenKid: open),
-      (context, id) =>
-          DailyReviewDetailScreen(childId: id, onSaved: () => context.pop()),
+      (context, id) => DailyReviewDetailScreen(childId: id),
     ),
     listWithDetail(
       RoutePaths.teacherPickup,
@@ -388,40 +393,12 @@ List<GoRoute> _teacherRoutes() {
     listWithDetail(
       RoutePaths.teacherHealth,
       (context, open) => HealthMeasureListScreen(onOpenKid: open),
-      (context, id) =>
-          HealthMeasureDetailScreen(childId: id, onSaved: () => context.pop()),
+      (context, id) => HealthMeasureDetailScreen(childId: id),
     ),
     GoRoute(
       path: RoutePaths.teacherSchedule,
-      builder: (context, state) => ActivityScheduleScreen(
-        initialDay: FakeParentHomeSource.today,
-        onReviewToday: () => context.pushReplacement(RoutePaths.teacherReviews),
-      ),
-    ),
-    GoRoute(
-      path: RoutePaths.teacherMealPhotos,
-      builder: (context, state) => MealPhotoCaptureScreen(
-        onNext: (slot) => context.push(
-          Uri(
-            path: RoutePaths.teacherMealPhotosSend,
-            queryParameters: {'slot': slot.name},
-          ).toString(),
-        ),
-      ),
-    ),
-    GoRoute(
-      path: RoutePaths.teacherMealPhotosSend,
-      builder: (context, state) {
-        final slot = MealSlot.values
-            .where((item) => item.name == state.uri.queryParameters['slot'])
-            .firstOrNull;
-        if (slot == null) return const NotFoundScreen();
-        // Gửi xong ⇒ về Trang chủ, bỏ hai màn chụp/gửi khỏi back stack
-        return MealPhotoSendScreen(
-          slot: slot,
-          onSent: () => context.go(RoutePaths.teacherToday),
-        );
-      },
+      builder: (context, state) =>
+          ActivityScheduleScreen(initialDay: FakeParentHomeSource.today),
     ),
   ];
 }

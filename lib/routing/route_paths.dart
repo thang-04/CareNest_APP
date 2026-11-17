@@ -38,13 +38,12 @@ abstract final class RoutePaths {
   static const teacherNotifications = '/teacher/notifications';
   static const teacherAccount = '/teacher/account';
   static const teacherAttendance = '/teacher/attendance';
+  static const teacherDailyHealth = '/teacher/daily-health';
   static const teacherLeaveNotices = '/teacher/leave-notices';
   static const teacherReviews = '/teacher/reviews';
   static const teacherPickup = '/teacher/pickup';
   static const teacherHealth = '/teacher/health';
   static const teacherSchedule = '/teacher/schedule';
-  static const teacherMealPhotos = '/teacher/meal-photos';
-  static const teacherMealPhotosSend = '/teacher/meal-photos/send';
 
   /// Màn chi tiết theo trẻ của Giáo viên: `<danh sách>/<childId>`.
   static String kidDetail(String listPath, String childId) =>

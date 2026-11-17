@@ -8,7 +8,7 @@ import 'package:carenest_app/features/auth/presentation/controllers/auth_state.d
 import 'package:carenest_app/features/auth/presentation/providers/auth_providers.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/sign_in_screen.dart';
-import 'package:carenest_app/features/parent_home/presentation/selected_child.dart';
+import 'package:carenest_app/features/parent/parent_home/presentation/selected_child.dart';
 
 import 'helpers/fake_auth_controller.dart';
 import 'helpers/pump_app.dart';

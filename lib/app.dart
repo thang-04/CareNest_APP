@@ -7,7 +7,7 @@ import 'package:carenest_app/core/config/env.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/features/auth/presentation/controllers/auth_state.dart';
 import 'package:carenest_app/features/auth/presentation/providers/auth_providers.dart';
-import 'package:carenest_app/features/parent_home/presentation/selected_child.dart';
+import 'package:carenest_app/features/parent/parent_home/presentation/selected_child.dart';
 import 'package:carenest_app/routing/app_router.dart';
 
 /// `useMock` (mặc định theo `USE_MOCK`): `true` ⇒ dữ liệu giả + Xem thử như trước;

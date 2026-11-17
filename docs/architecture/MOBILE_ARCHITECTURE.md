@@ -8,9 +8,12 @@
 | --- | --- | --- | --- |
 | Framework | Flutter (Dart), package `carenest_app` | CONFIRMED | user, 2026-10-08 |
 | Kiến trúc | Feature-based + Clean Architecture: `lib/core/`, `lib/features/<feature>/{data,domain,presentation}`, `lib/routing/` | CONFIRMED | `CODING_GUIDE.md` §2, §3 |
+| Thư mục feature theo vai trò | `lib/features/<vai trò>/<feature>/{data,domain,presentation}` với vai trò `auth`, `shared` (dùng chung nhiều vai trò), `teacher`, `parent`, `kitchen`, `management` (màn BGH cũ, giữ tham khảo); `test/features/` cùng cấu trúc | CONFIRMED | user, 2026-11-15 |
 | Navigation | `go_router`; cấu hình ở `lib/routing/` | CONFIRMED | user, 2026-10-08 |
 | Theme | Light theme duy nhất, token ở `lib/core/constants/`, theme ở `lib/core/theme/` | CONFIRMED | `DESIGN.md` §3, §B2 |
 | Font | BeVietnamPro đóng gói trong `assets/fonts/` (OFL) | CONFIRMED | user, 2026-10-08 |
+| Nền tảng build | Android, iOS; `web/` giữ để xem nhanh khi phát triển. Đã bỏ `linux/`, `macos/`, `windows/` (khôi phục: `flutter create --platforms=windows,macos,linux .`) | CONFIRMED | user, 2026-11-15 |
+| Mở trình gọi điện | `url_launcher` (^6.3.2), chỉ dùng scheme `tel` cho nút Gọi phụ huynh ở màn Trả trẻ | CONFIRMED | user, 2026-11-15 |
 | Verify | `node scripts/verify.mjs` ⇒ `dart format` check + `flutter analyze` + `flutter test` | CONFIRMED | user, 2026-10-08 |
 | State/DI | `flutter_riverpod` 3.x (`Provider`, `Notifier`); ghép ở `lib/bootstrap.dart` + `authOverrides` | CONFIRMED | user, 2026-11-13; plan `docs/plans/active/2026-11-16-app-be-integration.md` |
 | HTTP | `dio` qua `ApiClient` (`lib/core/network/`) | CONFIRMED | user, 2026-11-13 |
