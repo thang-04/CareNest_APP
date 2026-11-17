@@ -228,9 +228,20 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
                 AppAvatar(name: widget.child.fullName),
                 const SizedBox(width: AppSpacing.space3),
                 Expanded(
-                  child: Text(
-                    '${widget.child.shortName} · ${widget.child.className}',
-                    style: textTheme.titleSmall,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bé ${widget.child.fullName}',
+                        style: textTheme.titleSmall,
+                      ),
+                      Text(
+                        'Lớp ${widget.child.className}',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

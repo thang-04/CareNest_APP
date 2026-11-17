@@ -93,6 +93,14 @@ void main() {
     expect(button.onPressed, isNull);
   });
 
+  testWidgets('Figma PH03: thẻ bé ghi họ tên và lớp trên hai dòng', (
+    tester,
+  ) async {
+    await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
+    expect(find.text('Bé Nguyễn Minh Anh'), findsOneWidget);
+    expect(find.text('Lớp Mầm 3A'), findsOneWidget);
+  });
+
   testWidgets('P03: thiếu lý do ⇒ báo lỗi, không gửi', (tester) async {
     final source = FakeLeaveNoticeSource(delay: Duration.zero);
     var submitted = false;
