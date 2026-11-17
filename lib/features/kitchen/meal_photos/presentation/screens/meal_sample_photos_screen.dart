@@ -61,21 +61,24 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
   /// Bữa đang đăng ảnh theo "nhóm|bữa": khoá nút để không đăng trùng.
   final Set<String> _posting = {};
 
-  /// Lỗi vừa gặp theo "nhóm|bữa": báo ngay dưới nút, lần bấm sau thì xoá.
+  /// Lỗi vừa gặp theo "nhóm|bữa": báo ngay dưới nút.
   final Map<String, String> _errors = {};
+
+  /// Ảnh vừa chụp mà đăng lỗi: giữ lại để đăng lại, không bắt chụp lại (CODING_GUIDE §7.1).
+  final Map<String, Uint8List> _unsent = {};
 
   static const _cameraError =
       'Không mở được camera. Kiểm tra quyền camera rồi thử lại.';
-  static const _uploadError = 'Chưa đăng được ảnh. Thử lại.';
+  static const _uploadError =
+      'Chưa đăng được ảnh vừa chụp. Kiểm tra mạng rồi đăng lại.';
 
   static String _postingKey(AgeGroupMeals group, SampleMeal meal) =>
       '${group.id}|${meal.id}';
 
-  Future<void> _addPhoto(AgeGroupMeals group, SampleMeal meal) async {
+  Future<void> _takePhoto(AgeGroupMeals group, SampleMeal meal) async {
     final key = _postingKey(group, meal);
     setState(() {
       _posting.add(key);
-      _errors.remove(key);
     });
     final Uint8List? bytes;
     try {
@@ -91,12 +94,26 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
     }
     if (!mounted) return;
     if (bytes == null) {
-      // Bếp huỷ chụp: không đăng, không báo lỗi
+      // Bếp huỷ chụp: không đăng, giữ nguyên báo lỗi cũ (nếu có)
       setState(() {
         _posting.remove(key);
       });
       return;
     }
+    await _post(group, meal, bytes);
+  }
+
+  Future<void> _post(
+    AgeGroupMeals group,
+    SampleMeal meal,
+    Uint8List bytes,
+  ) async {
+    final key = _postingKey(group, meal);
+    setState(() {
+      _posting.add(key);
+      _errors.remove(key);
+      _unsent.remove(key);
+    });
     try {
       final day = await _source.addPhoto(
         groupId: group.id,
@@ -113,6 +130,7 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
       setState(() {
         _posting.remove(key);
         _errors[key] = _uploadError;
+        _unsent[key] = bytes;
       });
     }
   }
@@ -243,7 +261,7 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
               expand: true,
               isLoading: _posting.contains(_postingKey(group, meal)),
               loadingLabel: 'Đang đăng ảnh…',
-              onPressed: () => _addPhoto(group, meal),
+              onPressed: () => _takePhoto(group, meal),
             ),
             if (_errors[_postingKey(group, meal)] case final error?) ...[
               const SizedBox(height: AppSpacing.space2),
@@ -255,6 +273,16 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
                     color: AppColors.dangerText,
                   ),
                 ),
+              ),
+            ],
+            if (_unsent[_postingKey(group, meal)] case final bytes?) ...[
+              const SizedBox(height: AppSpacing.space2),
+              AppButton(
+                label: 'Đăng lại ảnh',
+                icon: AppIcons.refresh,
+                variant: AppButtonVariant.text,
+                small: true,
+                onPressed: () => _post(group, meal, bytes),
               ),
             ],
           ],

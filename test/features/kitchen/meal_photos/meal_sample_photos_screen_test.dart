@@ -36,10 +36,11 @@ class _FakeCamera implements SamplePhotoCamera {
   }
 }
 
-/// Ghi lại ảnh được đăng.
+/// Ghi lại mọi lần đăng; [failures] lần đầu lỗi mạng.
 class _RecordingSource extends FakeKitchenPhotoSource {
-  _RecordingSource() : super(delay: Duration.zero);
+  _RecordingSource({this.failures = 0}) : super(delay: Duration.zero);
 
+  int failures;
   final posted = <Uint8List>[];
 
   @override
@@ -47,8 +48,12 @@ class _RecordingSource extends FakeKitchenPhotoSource {
     required String groupId,
     required String mealId,
     required Uint8List bytes,
-  }) {
+  }) async {
     posted.add(bytes);
+    if (failures > 0) {
+      failures--;
+      throw StateError('mất mạng');
+    }
     return super.addPhoto(groupId: groupId, mealId: mealId, bytes: bytes);
   }
 }
@@ -103,18 +108,6 @@ class _FailOnceSource extends FakeKitchenPhotoSource {
     }
     return super.loadToday();
   }
-}
-
-/// Tải được nhưng đăng ảnh lỗi.
-class _UploadFailsSource extends FakeKitchenPhotoSource {
-  _UploadFailsSource() : super(delay: Duration.zero);
-
-  @override
-  Future<KitchenPhotoDay> addPhoto({
-    required String groupId,
-    required String mealId,
-    required Uint8List bytes,
-  }) async => throw StateError('mất mạng');
 }
 
 void main() {
@@ -225,17 +218,32 @@ void main() {
     expect(inCard('Bữa trưa · 10:45', 'Đã có 1 ảnh'), findsOneWidget);
   });
 
-  testWidgets('Ảnh mẫu: đăng lỗi ⇒ báo, bữa vẫn cần chụp', (tester) async {
-    await pumpPhotos(tester, source: _UploadFailsSource());
-    await tapLunchCamera(tester);
-    await tester.pumpAndSettle();
-    expect(
-      inCard('Bữa trưa · 10:45', 'Chưa đăng được ảnh. Thử lại.'),
-      findsOneWidget,
-    );
-    expect(inCard('Bữa trưa · 10:45', 'Cần chụp'), findsOneWidget);
-    expect(inCard('Bữa trưa · 10:45', 'Chụp ảnh'), findsOneWidget);
-  });
+  testWidgets(
+    'Ảnh mẫu: đăng lỗi ⇒ giữ ảnh vừa chụp, Đăng lại gửi đúng ảnh đó',
+    (tester) async {
+      final camera = _FakeCamera();
+      final source = _RecordingSource(failures: 1);
+      await pumpPhotos(tester, source: source, camera: camera);
+      await tapLunchCamera(tester);
+      await tester.pumpAndSettle();
+      expect(
+        inCard(
+          'Bữa trưa · 10:45',
+          'Chưa đăng được ảnh vừa chụp. Kiểm tra mạng rồi đăng lại.',
+        ),
+        findsOneWidget,
+      );
+      expect(inCard('Bữa trưa · 10:45', 'Cần chụp'), findsOneWidget);
+
+      await tester.ensureVisible(inCard('Bữa trưa · 10:45', 'Đăng lại ảnh'));
+      await tester.tap(inCard('Bữa trưa · 10:45', 'Đăng lại ảnh'));
+      await tester.pumpAndSettle();
+      expect(camera.calls, 1);
+      expect(source.posted, [_png, _png]);
+      expect(inCard('Bữa trưa · 10:45', 'Đã có 1 ảnh'), findsOneWidget);
+      expect(inCard('Bữa trưa · 10:45', 'Đăng lại ảnh'), findsNothing);
+    },
+  );
 
   testWidgets('Ảnh mẫu: tải lỗi rồi Thử lại ⇒ hiện các nhóm tuổi', (
     tester,
