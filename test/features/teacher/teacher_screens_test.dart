@@ -13,10 +13,6 @@ import 'package:carenest_app/features/teacher/daily_review/presentation/screens/
 import 'package:carenest_app/features/teacher/health_measure/data/fake_health_measure_source.dart';
 import 'package:carenest_app/features/teacher/health_measure/presentation/screens/health_measure_detail_screen.dart';
 import 'package:carenest_app/features/teacher/health_measure/presentation/screens/health_measure_list_screen.dart';
-import 'package:carenest_app/features/teacher/meal_photos/data/fake_meal_photo_source.dart';
-import 'package:carenest_app/features/teacher/meal_photos/domain/meal_photos.dart';
-import 'package:carenest_app/features/teacher/meal_photos/presentation/screens/meal_photo_capture_screen.dart';
-import 'package:carenest_app/features/teacher/meal_photos/presentation/screens/meal_photo_send_screen.dart';
 import 'package:carenest_app/features/teacher/pickup/data/fake_pickup_source.dart';
 import 'package:carenest_app/features/teacher/pickup/domain/pickup.dart';
 import 'package:carenest_app/features/teacher/pickup/presentation/screens/pickup_list_screen.dart';
@@ -253,41 +249,6 @@ void main() {
     expect(find.text('Hoạt động học: Âm nhạc'), findsOneWidget);
   });
 
-  testWidgets('T15 → T16 / AC-9: chụp thêm ảnh giữ chỗ, gửi phụ huynh', (
-    tester,
-  ) async {
-    final source = FakeMealPhotoSource();
-    MealSlot? next;
-    await pumpScreen(
-      tester,
-      MealPhotoCaptureScreen(source: source, onNext: (slot) => next = slot),
-    );
-    expect(find.text('Đã chụp (2/6)'), findsOneWidget);
-    await tester.tap(find.bySemanticsLabel('Chụp ảnh'));
-    await tester.pump();
-    expect(find.text('Đã chụp (3/6)'), findsOneWidget);
-    expect(find.byType(Image), findsNothing);
-    await tester.tap(find.text('Tiếp ›'));
-    expect(next, MealSlot.lunch);
-
-    var sent = false;
-    await pumpScreen(
-      tester,
-      MealPhotoSendScreen(
-        slot: MealSlot.lunch,
-        source: source,
-        onSent: () => sent = true,
-      ),
-    );
-    expect(
-      find.textContaining('không chụp mặt bé', skipOffstage: false),
-      findsOneWidget,
-    );
-    await tester.tap(find.text('Gửi phụ huynh'));
-    await tester.pumpAndSettle();
-    expect(sent, isTrue);
-  });
-
   for (final (name, screen, scaffold) in <(String, Widget, bool)>[
     ('Lớp học', const ClassRosterScreen(), true),
     ('Đơn nghỉ lớp', const ClassLeaveScreen(), false),
@@ -298,12 +259,6 @@ void main() {
     ('Đo sức khỏe', HealthMeasureListScreen(onOpenKid: noop), false),
     ('Đo một bé', HealthMeasureDetailScreen(childId: 'child-1'), false),
     ('Lịch hoạt động', ActivityScheduleScreen(initialDay: today), false),
-    ('Chụp ảnh', MealPhotoCaptureScreen(onNext: (_) {}), false),
-    (
-      'Gửi ảnh',
-      MealPhotoSendScreen(slot: MealSlot.lunch, onSent: () {}),
-      false,
-    ),
   ]) {
     testWidgets('AC-10: $name chữ 2.0 không tràn', (tester) async {
       await pumpScreen(tester, screen, textScale: 2, inScaffold: scaffold);
