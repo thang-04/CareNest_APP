@@ -63,4 +63,7 @@ abstract final class AppSizes {
   static const double avatar = 40;
   static const double avatarSmall = 32;
   static const double logoFull = 168;
+
+  /// Vùng vẽ của biểu đồ đường (Sổ sức khỏe › Xu hướng), gồm cả nhãn trục
+  static const double chartHeight = 176;
 }
