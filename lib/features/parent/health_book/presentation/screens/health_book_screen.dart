@@ -15,6 +15,8 @@ import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/parent/health_book/data/fake_health_book_source.dart';
 import 'package:carenest_app/features/parent/health_book/domain/health_book.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/health_labels.dart';
+import 'package:carenest_app/features/parent/health_book/presentation/widgets/health_exams_tab.dart';
+import 'package:carenest_app/features/parent/health_book/presentation/widgets/health_widgets.dart';
 import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
 
 enum HealthBookTab { rounds, exams, trend }
@@ -100,7 +102,10 @@ class _HealthBookScreenState extends State<HealthBookScreen> {
                   rounds: book.rounds,
                   onOpenExams: () => _showTab(HealthBookTab.exams),
                 ),
-                HealthBookTab.exams => const SizedBox.shrink(),
+                HealthBookTab.exams => HealthExamsTab(
+                  exams: book.exams,
+                  onOpenExam: widget.onOpenExam,
+                ),
                 HealthBookTab.trend => const SizedBox.shrink(),
               },
             ],
@@ -139,37 +144,6 @@ class _ChildLine extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Tiêu đề một phần của sổ kèm một câu giải thích.
-class HealthSectionHeader extends StatelessWidget {
-  const HealthSectionHeader({
-    super.key,
-    required this.title,
-    required this.caption,
-  });
-
-  final String title;
-  final String caption;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Semantics(
-      header: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: textTheme.titleMedium),
-          const SizedBox(height: AppSpacing.space1),
-          Text(
-            caption,
-            style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -325,9 +299,9 @@ class _RoundDetail extends StatelessWidget {
       children: [
         HealthMetricRow(
           metrics: [
-            ('Chiều cao', '$height cm'),
-            ('Cân nặng', '$weight kg'),
-            ('BMI', HealthLabels.number(round.bmi)),
+            HealthMetric('Chiều cao', '$height cm'),
+            HealthMetric('Cân nặng', '$weight kg'),
+            HealthMetric('BMI', HealthLabels.number(round.bmi)),
           ],
         ),
         const SizedBox(height: AppSpacing.space3),
@@ -366,87 +340,6 @@ class _RoundDetail extends StatelessWidget {
           style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
         ),
       ],
-    );
-  }
-}
-
-/// Hàng ô số đo (chiều cao, cân nặng, BMI); chữ lớn thì xếp dọc.
-class HealthMetricRow extends StatelessWidget {
-  const HealthMetricRow({super.key, required this.metrics});
-
-  /// (nhãn, giá trị kèm đơn vị)
-  final List<(String, String)> metrics;
-
-  @override
-  Widget build(BuildContext context) {
-    final tiles = [
-      for (final (label, value) in metrics)
-        _MetricTile(label: label, value: value),
-    ];
-    if (MediaQuery.textScalerOf(context).scale(1) > 1.3) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (var i = 0; i < tiles.length; i++) ...[
-            if (i > 0) const SizedBox(height: AppSpacing.space2),
-            tiles[i],
-          ],
-        ],
-      );
-    }
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (var i = 0; i < tiles.length; i++) ...[
-            if (i > 0) const SizedBox(width: AppSpacing.space2),
-            Expanded(child: tiles[i]),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _MetricTile extends StatelessWidget {
-  const _MetricTile({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Semantics(
-      container: true,
-      label: '$label: $value',
-      excludeSemantics: true,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppColors.primarySoft,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.cardGap),
-          child: Column(
-            children: [
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: textTheme.bodyMedium?.copyWith(color: AppColors.primary),
-              ),
-              const SizedBox(height: AppSpacing.space1),
-              Text(
-                value,
-                textAlign: TextAlign.center,
-                style: textTheme.headlineSmall?.copyWith(
-                  color: AppColors.onBrand,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

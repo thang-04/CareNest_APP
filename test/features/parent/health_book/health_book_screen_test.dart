@@ -68,8 +68,38 @@ void main() {
     expect(note('Bé vừa khỏi ốm'), findsNothing);
   });
 
-  testWidgets('AC-10: Sổ sức khỏe chữ 2.0 không tràn', (tester) async {
-    await pumpBook(tester, textScale: 2);
-    expect(tester.takeException(), isNull);
+  testWidgets('Đợt khám: danh sách đợt, chạm một đợt để mở chi tiết', (
+    tester,
+  ) async {
+    final opened = await pumpBook(tester, tab: HealthBookTab.exams);
+    expect(find.text('Đợt khám sức khỏe'), findsOneWidget);
+    expect(find.text('18/09/2026 · BS. Nguyễn Thị Hằng'), findsOneWidget);
+    expect(find.text('Cần theo dõi'), findsOneWidget);
+    expect(find.text('Kết luận: Sâu răng'), findsOneWidget);
+    expect(find.text('Không ghi nhận bất thường'), findsOneWidget);
+
+    await tester.tap(find.text('Khám sức khỏe đầu năm học 2026-2027'));
+    expect(opened, ['exam-2026']);
   });
+
+  testWidgets('Kỳ cân đo: lối "Số đo khi khám" chuyển sang tab Đợt khám', (
+    tester,
+  ) async {
+    await pumpBook(tester);
+    final link = find.text('Số đo khi khám sức khỏe xem ở tab Đợt khám ›');
+    await tester.scrollUntilVisible(link, 200);
+    await tester.pumpAndSettle();
+    await tester.tap(link);
+    await tester.pumpAndSettle();
+    expect(find.text('Khám sức khỏe đầu năm học 2026-2027'), findsOneWidget);
+  });
+
+  for (final tab in HealthBookTab.values) {
+    testWidgets('AC-10: Sổ sức khỏe tab ${tab.name} chữ 2.0 không tràn', (
+      tester,
+    ) async {
+      await pumpBook(tester, textScale: 2, tab: tab);
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
