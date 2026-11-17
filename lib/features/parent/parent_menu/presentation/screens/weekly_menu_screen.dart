@@ -11,6 +11,7 @@ import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/features/parent/parent_menu/data/fake_weekly_menu_source.dart';
 import 'package:carenest_app/features/parent/parent_menu/domain/weekly_menu.dart';
+import 'package:carenest_app/features/parent/parent_menu/presentation/screens/meal_photo_viewer_screen.dart';
 import 'package:carenest_app/features/parent/parent_menu/presentation/widgets/meal_photo_grid.dart';
 
 /// Thực đơn tuần của bé — mockup P05. Chỉ thực đơn đã công bố (NUT-08).
@@ -108,7 +109,21 @@ class _WeeklyMenuScreenState extends State<WeeklyMenuScreen> {
         : meal.name[0].toLowerCase() + meal.name.substring(1);
     return switch (photos) {
       PostedMealPhotos() => [
-        MealPhotoGrid(mealName: meal.name, count: photos.photoIds.length),
+        MealPhotoGrid(
+          mealName: meal.name,
+          count: photos.photoIds.length,
+          onOpen: (index) => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              fullscreenDialog: true,
+              builder: (_) => MealPhotoViewerScreen(
+                date: _selected,
+                meal: meal,
+                photos: photos,
+                initialIndex: index,
+              ),
+            ),
+          ),
+        ),
         const SizedBox(height: AppSpacing.space2),
         Text(
           'Ảnh mẫu nhóm ${photos.ageGroup} · Bếp đăng ${DateLabels.time24(photos.postedAt)}',
