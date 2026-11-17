@@ -34,7 +34,7 @@ class FakeWeeklyMenuSource implements WeeklyMenuSource {
     final hasAllergy = childId == 'child-2';
     // child-2 học lớp Lá (FakeParentHomeSource) ⇒ thấy ảnh mẫu nhóm Lá
     final ageGroup = hasAllergy ? 'Lá' : 'Mầm';
-    // Số bữa theo nhóm tuổi do nhà trường cấu hình (user 17/11): nhóm Lá ăn trưa và chiều
+    // Số bữa theo nhóm tuổi do Phó HT dinh dưỡng cấu hình (NUT-17): nhóm Lá ăn trưa và chiều
     final eatsBreakfast = ageGroup == 'Mầm';
     // Chỉ hôm nay (12/10) có phần ảnh, khớp màn Ảnh mẫu bữa ăn của bếp:
     // nhóm Mầm đã có 3 ảnh sáng và 2 ảnh trưa, nhóm Lá chưa có ảnh trưa

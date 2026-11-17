@@ -32,8 +32,8 @@ class SampleMeal {
   final List<String> photoIds;
 }
 
-/// Các bữa một nhóm tuổi ăn trong ngày: số bữa theo nhóm tuổi do nhà trường cấu hình
-/// (user 17/11: "hiệu trưởng cấu hình"; BE NUT-17 ghi PHT phụ trách dinh dưỡng).
+/// Các bữa một nhóm tuổi ăn trong ngày: số bữa theo nhóm tuổi do Phó HT phụ trách dinh dưỡng
+/// cấu hình (NUT-17, user chốt 17/11).
 @immutable
 class AgeGroupMeals {
   const AgeGroupMeals({
