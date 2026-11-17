@@ -16,6 +16,7 @@ import 'package:carenest_app/features/parent/health_book/data/fake_health_book_s
 import 'package:carenest_app/features/parent/health_book/domain/health_book.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/health_labels.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/widgets/health_exams_tab.dart';
+import 'package:carenest_app/features/parent/health_book/presentation/widgets/health_trend_tab.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/widgets/health_widgets.dart';
 import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
 
@@ -106,7 +107,10 @@ class _HealthBookScreenState extends State<HealthBookScreen> {
                   exams: book.exams,
                   onOpenExam: widget.onOpenExam,
                 ),
-                HealthBookTab.trend => const SizedBox.shrink(),
+                HealthBookTab.trend => HealthTrendTab(
+                  growth: book.growth,
+                  interpretation: book.interpretation,
+                ),
               },
             ],
           );
