@@ -103,6 +103,9 @@ void main() {
     ]) {
       expect(find.text(label), findsOneWidget);
     }
+    // Hàng cuối (user 17/11): đánh giá và khen thưởng mở tab Phát triển
+    await tester.scrollUntilVisible(find.text('Khen thưởng'), 200);
+    expect(find.text('Đánh giá'), findsOneWidget);
   });
 
   testWidgets('Hai bé (AUTH-04): chạm phần ló để đổi sang bé kia', (

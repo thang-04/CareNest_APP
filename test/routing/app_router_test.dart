@@ -109,6 +109,32 @@ void main() {
     },
   );
 
+  testWidgets(
+    'Phụ huynh: Việc nhanh › Khen thưởng / Đánh giá mở đúng phần tab Phát triển',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      tester.platformDispatcher.textScaleFactorTestValue = 1.5;
+      Future<void> tapQuickAction(String label) async {
+        router.go(RoutePaths.parentToday);
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(find.text(label), 200);
+        // Vẽ lại sau lần cuộn cuối, không thì tap đọc vị trí cũ (ngoài màn)
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+      }
+
+      await tapQuickAction('Khen thưởng');
+      expect(find.text('Khen thưởng cuối năm').hitTestable(), findsOneWidget);
+
+      await tapQuickAction('Đánh giá');
+      expect(
+        find.textContaining('Nhận xét tuần').hitTestable(),
+        findsOneWidget,
+      );
+    },
+  );
+
   testWidgets('Bếp: Trang chủ mở Ảnh mẫu bữa ăn, màn con ẩn thanh đáy', (
     tester,
   ) async {
