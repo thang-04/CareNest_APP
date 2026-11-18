@@ -62,8 +62,7 @@ class _MealParticipationScreenState extends State<MealParticipationScreen> {
               child: SingleChildScrollView(
                 child: AppEmptyState(
                   title: 'Chưa có trẻ có mặt',
-                  message:
-                      'Điểm danh trẻ Có mặt trước, sau đó quay lại chọn trẻ ăn.',
+                  message: 'Điểm danh trẻ Có mặt trước.',
                   icon: AppIcons.meal,
                 ),
               ),

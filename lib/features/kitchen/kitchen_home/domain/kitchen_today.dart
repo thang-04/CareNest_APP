@@ -1,13 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-enum KitchenTaskKind {
-  menu,
-  mealCounts,
-  quantities,
-  receipt,
-  cooking,
-  mealPhotos,
-}
+/// Việc bếp làm trên App (AUTH-21): xem thực đơn, suất, thực phẩm cần; ghi ảnh mẫu, sổ lưu mẫu.
+enum KitchenTaskKind { menu, mealCounts, foodNeeds, mealPhotos, foodSamples }
 
 /// Mức nhấn badge: cần làm / có thay đổi / đã xong / thông tin.
 enum KitchenBadgeLevel { todo, changed, done, info }
@@ -49,7 +43,7 @@ class KitchenToday {
   /// "Nguyễn Thị Mai"
   final String staffName;
 
-  /// "Bếp cơ sở chính" — bếp theo campus hay trung tâm còn PENDING (P-06).
+  /// "Bếp cơ sở chính" — mỗi cơ sở một bếp, một tài khoản (AUTH-05, AUTH-22).
   final String kitchenLabel;
   final DateTime date;
   final String? mealLabel;

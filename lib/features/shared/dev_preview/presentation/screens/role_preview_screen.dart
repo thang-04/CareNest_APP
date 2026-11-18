@@ -28,7 +28,7 @@ class RolePreviewScreen extends StatelessWidget {
     ),
     (
       'Nhân viên bếp',
-      'Suất ăn hôm nay, dị ứng',
+      'Suất ăn, ảnh mẫu, sổ lưu mẫu',
       AppIcons.kitchen,
       RoutePaths.kitchenHome,
     ),

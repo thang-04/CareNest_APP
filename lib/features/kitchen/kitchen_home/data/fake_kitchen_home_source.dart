@@ -1,9 +1,8 @@
-import 'package:carenest_app/features/kitchen/food_quantities/data/fake_food_quantity_source.dart';
 import 'package:carenest_app/features/kitchen/kitchen_home/domain/kitchen_today.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 
-/// Dữ liệu giả mockup K01, khớp K03 (182 suất, 6 lớp, Mầm 3A xin +1 chờ duyệt), K04 (phiếu đã duyệt),
-/// K05 (2 lô).
+/// Dữ liệu giả Trang chủ bếp, khớp `FakeKitchenDaySource` (bữa trưa 200 suất, 7 lớp),
+/// ảnh mẫu giả và sổ lưu mẫu giả (bữa trưa chưa lưu, 1 mẫu hôm qua cần hủy).
 class FakeKitchenHomeSource implements KitchenHomeSource {
   FakeKitchenHomeSource({
     this.mode = FakeMode.data,
@@ -32,52 +31,45 @@ class FakeKitchenHomeSource implements KitchenHomeSource {
       date: today,
       mealLabel: 'Bữa trưa',
       confirmedAt: DateTime(today.year, today.month, today.day, 8, 30),
-      total: 182,
-      regular: 175,
+      total: 200,
+      regular: 193,
       alternative: 7,
       tasks: const [
         KitchenTask(
           kind: KitchenTaskKind.menu,
           title: 'Thực đơn hôm nay',
-          subtitle: 'Đã công bố · có thực đơn thay thế',
+          subtitle: 'Đã công bố',
           badge: 'Xem',
           level: KitchenBadgeLevel.info,
         ),
         KitchenTask(
           kind: KitchenTaskKind.mealCounts,
           title: 'Suất ăn theo lớp',
-          subtitle: '6 lớp · Mầm 3A xin +1 suất lúc 09:05',
-          badge: 'Chờ duyệt +1',
-          level: KitchenBadgeLevel.changed,
-        ),
-        KitchenTask(
-          kind: KitchenTaskKind.quantities,
-          title: 'Định lượng & phiếu xuất kho',
-          subtitle: '${FakeFoodQuantitySource.slipCode} · Phó HT đã duyệt',
-          badge: 'Đã duyệt',
+          subtitle: '4 nhóm tuổi · 7 lớp',
+          badge: 'Đã xác nhận',
           level: KitchenBadgeLevel.done,
         ),
         KitchenTask(
-          kind: KitchenTaskKind.receipt,
-          title: 'Nhận nguyên liệu',
-          subtitle: '2 lô chờ xác nhận',
-          badge: 'Cần làm',
+          kind: KitchenTaskKind.foodNeeds,
+          title: 'Thực phẩm cần',
+          subtitle: 'Hàng tươi · Hàng khô',
+          badge: 'Xem',
+          level: KitchenBadgeLevel.info,
+        ),
+        // Khớp ảnh mẫu giả: bữa trưa đang mở giờ đăng, chưa có ảnh
+        KitchenTask(
+          kind: KitchenTaskKind.mealPhotos,
+          title: 'Ảnh mẫu bữa ăn',
+          subtitle: 'Bữa trưa chưa có ảnh',
+          badge: 'Cần chụp',
           level: KitchenBadgeLevel.todo,
           highlighted: true,
         ),
         KitchenTask(
-          kind: KitchenTaskKind.cooking,
-          title: 'Cập nhật trạng thái nấu',
-          subtitle: 'Bữa trưa',
-          badge: 'Cập nhật',
-          level: KitchenBadgeLevel.info,
-        ),
-        // Khớp ảnh mẫu giả: bữa trưa đang mở giờ đăng, Chồi và Lá chưa có ảnh
-        KitchenTask(
-          kind: KitchenTaskKind.mealPhotos,
-          title: 'Ảnh mẫu bữa ăn',
-          subtitle: 'Bữa trưa · 2 nhóm tuổi chưa có ảnh',
-          badge: 'Cần chụp',
+          kind: KitchenTaskKind.foodSamples,
+          title: 'Sổ lưu mẫu',
+          subtitle: 'Bữa trưa chưa lưu · 1 mẫu cần hủy',
+          badge: 'Cần ghi',
           level: KitchenBadgeLevel.todo,
         ),
       ],

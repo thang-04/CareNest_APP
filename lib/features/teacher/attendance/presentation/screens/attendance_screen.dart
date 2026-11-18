@@ -304,7 +304,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               ),
               const SizedBox(height: AppSpacing.space2),
               AppButton(
-                label: 'Chọn trẻ ăn ($_mealCount/$_presentCount)',
+                label: 'Tham gia ăn ($_mealCount/$_presentCount)',
                 icon: AppIcons.meal,
                 variant: AppButtonVariant.secondary,
                 expand: true,

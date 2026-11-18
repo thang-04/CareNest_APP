@@ -64,9 +64,7 @@ abstract final class RoutePaths {
   static const kitchenAccount = '/kitchen/account';
   static const kitchenMeals = '/kitchen/meals';
   static const kitchenQuantities = '/kitchen/quantities';
-  static const kitchenReceipts = '/kitchen/receipts';
-  static const kitchenShortage = '/kitchen/receipts/shortage';
-  static const kitchenCooking = '/kitchen/cooking';
+  static const kitchenSamples = '/kitchen/samples';
   static const kitchenPhotos = '/kitchen/photos';
 
   static const vicePrincipalHome = '/vice-principal';

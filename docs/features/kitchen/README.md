@@ -2,6 +2,8 @@
 
 Nhân viên bếp chỉ xem **dữ liệu bếp của cơ sở mình** (thực đơn đã công bố, số suất đã xác nhận theo lớp từng bữa, định lượng) và **số suất dị ứng/thay thế theo món và lớp, không tên trẻ**; không xem hồ sơ trẻ, không sửa điểm danh (`BE:` AUTH-05, NUT-17, NUT-23). Bếp chỉ dùng App (AUTH-21); mỗi cơ sở bếp riêng, cả tổ bếp dùng chung một tài khoản, lịch sử ghi theo tài khoản (AUTH-22). Việc bếp ghi trên App: ảnh mẫu bữa (NUT-16), sổ lưu mẫu (NUT-21). Mọi số liệu do BE tính — APP chỉ hiển thị. Từ 29/10 bếp giữ màn tối thiểu (AUTH-21, user chốt): số suất theo lớp, thực đơn, ảnh mẫu, sổ lưu mẫu. Màn Định lượng và Dị ứng giữ vì BE USER_ROLES vẫn cho bếp xem; hỏi trước khi thêm màn khác.
 
+**Cập nhật 18/11/2026** (`docs/plans/kitchen-app-review.md`): App bếp còn Trang chủ, Thực đơn, Suất ăn theo lớp, Thực phẩm cần (dữ liệu theo `GET /nutrition/kitchen/day`), Ảnh mẫu bữa ăn, Sổ lưu mẫu (`/nutrition/food-samples`, màn `/kitchen/samples`). Đã bỏ màn Trạng thái nấu, Nhận nguyên liệu, Báo thiếu thực phẩm (NUT-11, NUT-12, NUT-14, NUT-22). Các mục "Lệch BE" bên dưới về các màn này là lịch sử. Ngày 18/11 user chốt ảnh mẫu **theo bữa như BE** (1 ảnh mỗi cơ sở + ngày + bữa, đăng lại thay ảnh) — mục ảnh theo nhóm tuổi bên dưới là lịch sử; tab Thực đơn bếp chọn nhóm tuổi + bữa, xem món và nguyên liệu gam/trẻ (cần BE cho bếp đọc nguyên liệu — xem review).
+
 Nguồn chung: card `BE:docs/modules/nutrition.md` · flow `BE:docs/business/flows/meal-management.md` · rủi ro `BE:docs/knowledge/CROSS_MODULE_ISSUES.md` CMR-01, CMR-02.
 
 ### Suất ăn hôm nay (đã xác nhận) theo lớp / bữa

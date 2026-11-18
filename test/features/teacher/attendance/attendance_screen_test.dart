@@ -115,7 +115,7 @@ void main() {
     await tester.tap(find.text('Có mặt tất cả'));
     await tester.pump();
     expect(find.text('Suất ăn: 26/26 trẻ có mặt'), findsOneWidget);
-    await tester.tap(find.text('Chọn trẻ ăn (26/26)'));
+    await tester.tap(find.text('Tham gia ăn (26/26)'));
     await tester.pumpAndSettle();
     expect(find.text('Trẻ tham gia ăn'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('meal-child-1')));

@@ -9,7 +9,7 @@ Kết quả: **OK** · **LỆCH** (khác BE/FE) · **THIẾU** (chưa làm) · *
 | --- | --- | --- | --- | --- |
 | ATT-04/09 — lưu | BE từ chối khi gửi trẻ có đơn nghỉ hoặc EXCUSED do GV gửi (`AttendanceServiceImpl.java:261-272`); FE chỉ gửi dòng đã đổi, bỏ trẻ có đơn (`AttendancePage.jsx:160,280`) | Gửi cả lớp, gồm trẻ có đơn (EXCUSED) và trẻ chưa điểm danh | LỆCH (cao) | Chỉ gửi trẻ không có đơn, đã có Có mặt/Vắng |
 | ATT-06/07/08 — khóa | BE trả `canRecord`, `day.locked/schoolDay/unlock`; FE: sửa được khi `canRecord && schoolDay && !locked` | Chỉ hiện nhãn "Khóa lúc"; vẫn sửa sau giờ khóa | THIẾU (cao) | Thêm `locked`, `schoolDay`, `canRecord`; khóa ⇒ chỉ xem + dải "Đã khóa" |
-| ATT-02 — suất ăn | Có mặt = ăn mọi bữa; BE bỏ qua `meals` | Có nút "Chọn trẻ ăn" (thêm 16/11 theo yêu cầu mới) | CHỜ | User chốt: giữ (cần BE đổi ATT-02) hay bỏ |
+| ATT-02a — tham gia ăn | BE dev 696051b0 (18/11): có mặt mặc định ăn đủ bữa nhóm tuổi; GV gạt tắt "Tham gia ăn" cho cả ngày; `meals` được lưu. Web cột "Tham gia ăn" | Nút "Tham gia ăn (N/M)" mở danh sách công tắc từng trẻ, mặc định bật | OK | Đổi nhãn "Chọn trẻ ăn" ⇒ "Tham gia ăn" như Web |
 | ATT-09 — nhãn | FE: Có mặt / Có phép / Không phép / Chưa điểm danh | Có mặt / Có phép / Vắng / Chưa ĐD | LỆCH (thấp) | Đổi "Vắng" ⇒ "Không phép" |
 | ATT-04 — trẻ có đơn | FE: tag "Phụ huynh báo nghỉ", không sửa | Đúng | OK | — |
 | Dễ dùng | — | 1 nút chính, "Có mặt tất cả", vùng chạm lớn | OK | — |
@@ -73,3 +73,7 @@ Kết quả: **OK** · **LỆCH** (khác BE/FE) · **THIẾU** (chưa làm) · *
 - Verify: `VERIFY PASS full | format ok | design ok | analyze ok | tests 198 fail 0 skip 0`.
 
 - 17/11 (user chốt): mỗi GV chỉ một lớp ⇒ bỏ "Đổi lớp" và `SelectedClass`; lớp lấy từ lớp được phân công.
+
+## Cập nhật theo BE/FE dev mới (18/11, pull BE 696051b0, FE b76c575b)
+- ATT-02a CONFIRMED (BE `a19fa882`, FE `727f10d8`): GV tắt tham gia ăn cho trẻ có mặt, cả ngày một nút ⇒ màn "Tham gia ăn" của App khớp; hết mục chờ "Chọn trẻ ăn". Đổi nhãn nút theo Web.
+- Thông báo: `NotificationResponse` thêm `announcementId`, `typeLabel`; thông báo của trường mở `GET /me/announcements/{id}` (`MyAnnouncementResponse`: title, body, sentAt, senderName, attachments) — PAR-07..13. App thông báo dùng chung GV/phụ huynh/bếp: khi nối API hiện `typeLabel` của BE, mở chi tiết theo `announcementId`.
