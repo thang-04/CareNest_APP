@@ -3,9 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/domain/kitchen_meal_photos.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 
-/// Ảnh mẫu giả của bếp cơ sở chính lúc khoảng 11:00 ngày 12/10: bữa sáng đã hết giờ đăng,
-/// bữa trưa đang mở, bữa chiều chưa tới giờ. Nhóm Lá ăn 2 bữa (ví dụ của user 17/11).
-/// Nhóm Mầm khớp ảnh phụ huynh thấy trong Thực đơn tuần. Ảnh đăng thêm chỉ giữ trong bộ nhớ.
+/// Ảnh mẫu giả của bếp cơ sở chính lúc 10:50 ngày 12/10 (canvas "Màn bếp theo nhóm tuổi (B)"):
+/// bữa phụ sáng đã hết giờ đăng, bữa trưa đang mở, bữa chiều chưa tới giờ. Bữa của từng nhóm
+/// theo seed BE `age_groups.meal_sessions`: Nhà trẻ 3 bữa, Mẫu giáo bé/nhỡ/lớn bữa trưa và
+/// bữa chiều. Ảnh đăng thêm chỉ giữ trong bộ nhớ.
 class FakeKitchenPhotoSource implements KitchenPhotoSource {
   FakeKitchenPhotoSource({
     this.mode = FakeMode.data,
@@ -15,56 +16,88 @@ class FakeKitchenPhotoSource implements KitchenPhotoSource {
   final FakeMode mode;
   final Duration delay;
 
+  /// Giờ giả "bây giờ", gắn cho ảnh vừa đăng
+  static const _now = '10:50';
+
   /// Ảnh đăng thêm theo "nhóm|bữa".
   final Map<String, List<Uint8List>> _added = {};
 
   static const _windows = {
-    'MORNING': ('Bữa sáng', '07:45', '07:30–08:30', PhotoWindow.closed),
-    'LUNCH': ('Bữa trưa', '10:45', '10:30–11:30', PhotoWindow.open),
-    'AFTERNOON': ('Bữa chiều', '14:30', '14:30–15:30', PhotoWindow.upcoming),
+    'MORNING': ('Bữa phụ sáng', '07:30', '08:30', PhotoWindow.closed, null),
+    'LUNCH': ('Bữa trưa', '10:30', '11:30', PhotoWindow.open, 40),
+    'AFTERNOON': ('Bữa chiều', '14:30', '15:30', PhotoWindow.upcoming, null),
   };
 
+  /// Giờ đăng các ảnh có sẵn theo bữa
   static const _groups = [
     (
       'nha-tre',
       'Nhà trẻ',
-      '2–3 tuổi',
-      {'MORNING': 2, 'LUNCH': 1, 'AFTERNOON': 0},
+      '24–36 tháng',
+      {
+        'MORNING': ['07:52', '07:55'],
+        'LUNCH': ['10:41'],
+        'AFTERNOON': <String>[],
+      },
     ),
-    ('mam', 'Mầm', '3–4 tuổi', {'MORNING': 3, 'LUNCH': 2, 'AFTERNOON': 0}),
-    ('choi', 'Chồi', '4–5 tuổi', {'MORNING': 0, 'LUNCH': 0, 'AFTERNOON': 0}),
-    ('la', 'Lá', '5–6 tuổi', {'LUNCH': 0, 'AFTERNOON': 0}),
+    (
+      'mg-be',
+      'Mẫu giáo bé',
+      '3–4 tuổi',
+      {
+        'LUNCH': ['10:44'],
+        'AFTERNOON': <String>[],
+      },
+    ),
+    (
+      'mg-nho',
+      'Mẫu giáo nhỡ',
+      '4–5 tuổi',
+      {'LUNCH': <String>[], 'AFTERNOON': <String>[]},
+    ),
+    (
+      'mg-lon',
+      'Mẫu giáo lớn',
+      '5–6 tuổi',
+      {'LUNCH': <String>[], 'AFTERNOON': <String>[]},
+    ),
   ];
 
-  SampleMeal _meal(String groupId, String mealId, int posted) {
-    final (name, time, windowLabel, window) = _windows[mealId]!;
+  SampleMeal _meal(String groupId, String mealId, List<String> posted) {
+    final (name, opensAt, closesAt, window, minutesLeft) = _windows[mealId]!;
     final added = _added['$groupId|$mealId'] ?? const [];
     return SampleMeal(
       id: mealId,
       name: name,
-      time: time,
-      windowLabel: windowLabel,
       window: window,
+      opensAt: opensAt,
+      closesAt: closesAt,
+      minutesLeft: minutesLeft,
       photos: [
         // Ảnh giả có sẵn: chưa có tệp, hiện ô giữ chỗ
-        for (var i = 1; i <= posted; i++)
-          SamplePhoto(id: '$groupId-$mealId-$i'),
+        for (final (i, time) in posted.indexed)
+          SamplePhoto(id: '$groupId-$mealId-${i + 1}', postedAt: time),
         for (final (i, bytes) in added.indexed)
-          SamplePhoto(id: '$groupId-$mealId-new-${i + 1}', bytes: bytes),
+          SamplePhoto(
+            id: '$groupId-$mealId-new-${i + 1}',
+            postedAt: _now,
+            bytes: bytes,
+          ),
       ],
     );
   }
 
   KitchenPhotoDay _day() => KitchenPhotoDay(
     date: FakeParentHomeSource.today,
-    kitchenLabel: 'Bếp cơ sở chính',
+    campusLabel: 'Cơ sở chính',
+    isDayOff: mode == FakeMode.empty,
     groups: mode == FakeMode.empty
         ? const []
         : [
-            for (final (id, label, ageRange, meals) in _groups)
+            for (final (id, name, ageRange, meals) in _groups)
               AgeGroupMeals(
                 id: id,
-                label: label,
+                name: name,
                 ageRange: ageRange,
                 meals: [
                   for (final MapEntry(key: mealId, value: posted)
