@@ -213,13 +213,14 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                 () => _push(RoutePaths.parentHealthBook),
                 tone: AppStatusTone.red,
               ),
-              // User 17/11: nhận xét tuần/tháng và phiếu bé ngoan + khen thưởng ở tab Phát triển
+              // User 18/11: trang Đánh giá riêng (Ngày | Tuần | Chủ đề | Học kỳ | Cuối năm)
               UtilityItem(
                 AppIcons.clipboardCheck,
                 'Đánh giá',
-                () => context.go(RoutePaths.parentChildAt('development')),
+                () => _push(RoutePaths.parentEvaluation),
                 tone: AppStatusTone.teal,
               ),
+              // User 17/11: phiếu bé ngoan + khen thưởng ở tab Phát triển của Bé của tôi
               UtilityItem(
                 AppIcons.trophy,
                 'Khen thưởng',

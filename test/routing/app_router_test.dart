@@ -8,6 +8,8 @@ import 'package:carenest_app/features/auth/presentation/screens/forgot_password_
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/otp_verify_screen.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
+import 'package:carenest_app/features/parent/evaluation/presentation/screens/evaluation_screen.dart';
+import 'package:carenest_app/features/parent/evaluation/presentation/screens/theme_result_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/exam_detail_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
 import 'package:carenest_app/routing/app_router.dart';
@@ -114,28 +116,83 @@ void main() {
   );
 
   testWidgets(
-    'Phụ huynh: Việc nhanh › Khen thưởng / Đánh giá mở đúng phần tab Phát triển',
+    'Phụ huynh: Việc nhanh › Khen thưởng mở tab Phát triển tới khen thưởng',
     (tester) async {
       final router = await pumpRouter(tester, enablePreview: true);
       tester.platformDispatcher.textScaleFactorTestValue = 1.5;
-      Future<void> tapQuickAction(String label) async {
-        router.go(RoutePaths.parentToday);
+      router.go(RoutePaths.parentToday);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Khen thưởng'), 200);
+      // Vẽ lại sau lần cuộn cuối, không thì tap đọc vị trí cũ (ngoài màn)
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Khen thưởng'));
+      await tester.pumpAndSettle();
+      expect(find.text('Khen thưởng cuối năm').hitTestable(), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Phụ huynh: Việc nhanh › Đánh giá mở trang Đánh giá, chạm chủ đề mở kết quả',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      Future<void> tapVisible(Finder finder) async {
+        await tester.ensureVisible(finder);
         await tester.pumpAndSettle();
-        await tester.scrollUntilVisible(find.text(label), 200);
-        // Vẽ lại sau lần cuộn cuối, không thì tap đọc vị trí cũ (ngoài màn)
-        await tester.pumpAndSettle();
-        await tester.tap(find.text(label));
+        await tester.tap(finder);
         await tester.pumpAndSettle();
       }
 
-      await tapQuickAction('Khen thưởng');
-      expect(find.text('Khen thưởng cuối năm').hitTestable(), findsOneWidget);
+      router.go(RoutePaths.parentToday);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Đánh giá'), 200);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Đánh giá'));
+      await tester.pumpAndSettle();
+      expect(find.byType(EvaluationScreen), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.text('Tuần 35'), findsOneWidget);
 
-      await tapQuickAction('Đánh giá');
-      expect(
-        find.textContaining('Nhận xét tuần').hitTestable(),
-        findsOneWidget,
+      await tapVisible(find.text('Chủ đề'));
+      await tapVisible(find.text('Bé vui hè'));
+      expect(find.byType(ThemeResultScreen), findsOneWidget);
+      expect(find.bySemanticsLabel('4 trên 5 mục tiêu đạt'), findsOneWidget);
+
+      // Quay lại trang Đánh giá, vẫn ở mục Chủ đề
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(find.text('Học kỳ I'), findsOneWidget);
+
+      // Danh sách còn cuộn ở chỗ chủ đề vừa chạm ⇒ cuộn lên tới thanh mục
+      await tester.scrollUntilVisible(find.text('Cuối năm'), -200);
+      await tapVisible(find.text('Cuối năm'));
+      await tester.scrollUntilVisible(find.text('Sổ sức khỏe'), 200);
+      await tapVisible(find.text('Sổ sức khỏe'));
+      expect(find.byType(HealthBookScreen), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Phụ huynh: trang Đánh giá mở theo bé trên đường dẫn, bé lạ ⇒ 404',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      router.go(RoutePaths.withChild(RoutePaths.parentEvaluation, 'child-2'));
+      await tester.pumpAndSettle();
+      expect(find.text('Nguyễn Hoàng Bảo Ngọc'), findsOneWidget);
+
+      router.go(
+        RoutePaths.parentEvaluationTheme('theme-la-5', childId: 'child-2'),
       );
+      await tester.pumpAndSettle();
+      expect(find.text('Trường tiểu học'), findsOneWidget);
+
+      for (final path in [
+        RoutePaths.withChild(RoutePaths.parentEvaluation, 'khong-co'),
+        RoutePaths.parentEvaluationTheme('theme-la-5', childId: 'khong-co'),
+      ]) {
+        router.go(path);
+        await tester.pumpAndSettle();
+        expect(find.text('Không tìm thấy trang'), findsOneWidget, reason: path);
+      }
     },
   );
 
