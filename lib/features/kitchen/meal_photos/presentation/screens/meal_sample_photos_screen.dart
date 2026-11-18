@@ -32,7 +32,7 @@ class MealSamplePhotosScreen extends StatefulWidget {
 
 class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
   late final KitchenPhotoSource _source =
-      widget.source ?? FakeKitchenPhotoSource();
+      widget.source ?? FakeKitchenPhotoSource.shared;
   late final SamplePhotoCamera _camera =
       widget.camera ?? ImagePickerSamplePhotoCamera();
   late Future<KitchenPhotoDay> _day = _source.loadToday();

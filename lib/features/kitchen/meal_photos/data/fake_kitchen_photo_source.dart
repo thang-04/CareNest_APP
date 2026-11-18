@@ -13,6 +13,9 @@ class FakeKitchenPhotoSource implements KitchenPhotoSource {
     this.delay = const Duration(milliseconds: 300),
   });
 
+  /// Một nguồn cho Trang chủ bếp và màn Ảnh mẫu khi chạy bản giả: chụp ở màn ảnh thì việc ở Trang chủ đổi theo.
+  static final shared = FakeKitchenPhotoSource();
+
   final FakeMode mode;
   final Duration delay;
 

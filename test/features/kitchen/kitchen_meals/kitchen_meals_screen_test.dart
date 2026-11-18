@@ -5,14 +5,17 @@ import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/features/kitchen/cooking_status/data/fake_cooking_status_source.dart';
 import 'package:carenest_app/features/kitchen/cooking_status/presentation/screens/cooking_status_screen.dart';
 import 'package:carenest_app/features/kitchen/food_quantities/presentation/screens/food_quantities_screen.dart';
+import 'package:carenest_app/features/kitchen/food_samples/data/fake_food_sample_source.dart';
 import 'package:carenest_app/features/kitchen/ingredient_receipt/data/fake_ingredient_receipt_source.dart';
 import 'package:carenest_app/features/kitchen/ingredient_receipt/presentation/screens/ingredient_receipt_screen.dart';
 import 'package:carenest_app/features/kitchen/ingredient_receipt/presentation/screens/shortage_report_screen.dart';
 import 'package:carenest_app/features/kitchen/kitchen_home/data/fake_kitchen_home_source.dart';
+import 'package:carenest_app/features/kitchen/kitchen_home/domain/kitchen_today.dart';
 import 'package:carenest_app/features/kitchen/kitchen_home/presentation/screens/kitchen_home_screen.dart';
 import 'package:carenest_app/features/kitchen/kitchen_meals/data/fake_kitchen_meals_source.dart';
 import 'package:carenest_app/features/kitchen/kitchen_meals/domain/kitchen_meals.dart';
 import 'package:carenest_app/features/kitchen/kitchen_meals/presentation/screens/kitchen_meals_screen.dart';
+import 'package:carenest_app/features/kitchen/meal_photos/data/fake_kitchen_photo_source.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 import 'package:carenest_app/features/shared/school_menu/presentation/screens/school_menu_screen.dart';
 
@@ -34,6 +37,26 @@ class _RetrySource implements KitchenMealsSource {
     return _data.loadSheet();
   }
 }
+
+/// Trả đúng một Trang chủ dựng sẵn (trạng thái khó có trong dữ liệu giả).
+class _TodaySource implements KitchenHomeSource {
+  _TodaySource(this.today);
+
+  final KitchenToday today;
+
+  @override
+  Future<KitchenToday> loadToday() async => today;
+}
+
+FakeKitchenHomeSource homeSource({
+  FakeMode mode = FakeMode.data,
+  FakeFoodSampleSource? samples,
+}) => FakeKitchenHomeSource(
+  mode: mode,
+  delay: Duration.zero,
+  photos: FakeKitchenPhotoSource(delay: Duration.zero),
+  samples: samples ?? FakeFoodSampleSource(delay: Duration.zero),
+);
 
 Future<void> pumpScreen(
   WidgetTester tester,
@@ -60,27 +83,104 @@ String? labelOf(String prefix) => find
     ?.label;
 
 void main() {
-  testWidgets('K01 bố cục D: số suất chữ lớn, tiến độ nấu, việc của bếp', (
+  testWidgets('K01 (NUT-02): số suất đã chốt từng bữa, giờ PHT xác nhận', (
+    tester,
+  ) async {
+    await pumpScreen(
+      tester,
+      KitchenHomeScreen(source: homeSource()),
+      inScaffold: true,
+    );
+    expect(find.text('Bếp hôm nay'), findsOneWidget);
+    expect(find.text('Thứ Hai, 12/10 · Cơ sở chính'), findsOneWidget);
+    expect(find.text('PHT xác nhận 08:30'), findsOneWidget);
+    expect(
+      labelOf('Bữa phụ sáng'),
+      'Bữa phụ sáng, Nhà trẻ, 46 suất, 1 thay thế',
+    );
+    expect(labelOf('Bữa trưa'), 'Bữa trưa, 182 suất, 7 thay thế');
+    expect(labelOf('Bữa chiều'), 'Bữa chiều, 182 suất, 7 thay thế');
+    expect(find.text('Xem theo lớp'), findsOneWidget);
+  });
+
+  testWidgets('K01 (NUT-16, NUT-21): việc hôm nay từ ảnh mẫu và sổ lưu mẫu', (
+    tester,
+  ) async {
+    await pumpScreen(
+      tester,
+      KitchenHomeScreen(source: homeSource()),
+      inScaffold: true,
+    );
+    await tester.scrollUntilVisible(find.text('Hủy mẫu'), 200);
+    expect(find.text('3/9 phần có ảnh · bữa trưa còn 2 nhóm'), findsOneWidget);
+    expect(find.text('Cần chụp'), findsOneWidget);
+    expect(
+      find.text('Bữa trưa chưa ghi · bữa phụ sáng chờ PHT duyệt'),
+      findsOneWidget,
+    );
+    expect(find.text('Cần ghi'), findsOneWidget);
+    expect(find.text('Mẫu bữa trưa 11/10 hủy được từ 10:40'), findsOneWidget);
+    expect(find.text('Đến hạn'), findsOneWidget);
+    // Màn BE đã bỏ không còn lối vào (NUT-11, NUT-12, NUT-14, NUT-22)
+    expect(find.text('Nhận nguyên liệu'), findsNothing);
+    expect(find.text('Cập nhật trạng thái nấu'), findsNothing);
+    await tester.scrollUntilVisible(find.text('Thực đơn tuần'), 200);
+    expect(find.text('Suất ăn theo lớp'), findsOneWidget);
+    expect(find.text('Lượng thực phẩm'), findsOneWidget);
+  });
+
+  testWidgets('K01: ghi lưu mẫu bữa trưa ⇒ việc Sổ lưu mẫu chuyển chờ duyệt', (
+    tester,
+  ) async {
+    final samples = FakeFoodSampleSource(delay: Duration.zero);
+    await tester.runAsync(
+      () => samples.saveSample(session: 'LUNCH', dishes: const []),
+    );
+    await pumpScreen(
+      tester,
+      KitchenHomeScreen(source: homeSource(samples: samples)),
+      inScaffold: true,
+    );
+    await tester.scrollUntilVisible(find.text('Sổ lưu mẫu'), 200);
+    expect(find.text('Bữa phụ sáng và bữa trưa chờ PHT duyệt'), findsOneWidget);
+    expect(find.text('Chờ duyệt'), findsOneWidget);
+    expect(find.text('Cần ghi'), findsNothing);
+  });
+
+  testWidgets('K01 (NUT-02): chưa xác nhận ⇒ chưa có số để nấu', (
     tester,
   ) async {
     await pumpScreen(
       tester,
       KitchenHomeScreen(
-        source: FakeKitchenHomeSource(delay: Duration.zero),
-        cookingSource: FakeCookingStatusSource(),
+        source: _TodaySource(
+          KitchenToday(
+            date: today,
+            campusLabel: 'Cơ sở chính',
+            countStatus: KitchenCountStatus.none,
+            servings: const [],
+            tasks: const [],
+          ),
+        ),
       ),
       inScaffold: true,
     );
-    expect(find.text('Bếp cơ sở chính'), findsOneWidget);
-    expect(labelOf('Bữa trưa đã chốt lúc 08:30'), contains('182 suất'));
-    expect(labelOf('Bữa trưa đã chốt lúc 08:30'), contains('7 thay thế'));
-    expect(find.bySemanticsLabel('Đang nấu, đang ở bước này'), findsOneWidget);
-    expect(find.bySemanticsLabel('Chờ nấu, đã xong'), findsOneWidget);
-    // Tiến độ nấu đã có thẻ riêng ⇒ không lặp việc cập nhật trạng thái nấu
-    expect(find.text('Cập nhật trạng thái'), findsOneWidget);
-    expect(find.text('Cập nhật trạng thái nấu'), findsNothing);
-    await tester.scrollUntilVisible(find.text('Nhận nguyên liệu'), 200);
-    expect(find.text('Cần làm'), findsOneWidget);
+    expect(
+      find.textContaining('Chưa có số suất đã chốt hôm nay'),
+      findsOneWidget,
+    );
+    expect(find.text('Xem theo lớp'), findsNothing);
+    expect(find.text('PHT xác nhận 08:30'), findsNothing);
+  });
+
+  testWidgets('K01: ngày nghỉ ⇒ không có việc bếp', (tester) async {
+    await pumpScreen(
+      tester,
+      KitchenHomeScreen(source: homeSource(mode: FakeMode.empty)),
+      inScaffold: true,
+    );
+    expect(find.text('Hôm nay trường nghỉ'), findsOneWidget);
+    expect(find.text('Số suất đã chốt'), findsNothing);
   });
 
   testWidgets('K01: lỗi tải ⇒ Thử lại, không để khung chờ chạy mãi', (
@@ -88,13 +188,7 @@ void main() {
   ) async {
     await pumpScreen(
       tester,
-      KitchenHomeScreen(
-        source: FakeKitchenHomeSource(
-          mode: FakeMode.error,
-          delay: Duration.zero,
-        ),
-        cookingSource: FakeCookingStatusSource(),
-      ),
+      KitchenHomeScreen(source: homeSource(mode: FakeMode.error)),
       inScaffold: true,
     );
     await tester.scrollUntilVisible(find.text('Thử lại'), 200);
@@ -226,11 +320,7 @@ void main() {
   });
 
   for (final (name, screen, scaffold) in <(String, Widget, bool)>[
-    (
-      'Trang chủ bếp',
-      KitchenHomeScreen(source: FakeKitchenHomeSource(delay: Duration.zero)),
-      true,
-    ),
+    ('Trang chủ bếp', KitchenHomeScreen(source: homeSource()), true),
     (
       'Thực đơn',
       SchoolMenuScreen(asTab: true, initialDay: today, footerNote: 'Chỉ xem.'),
