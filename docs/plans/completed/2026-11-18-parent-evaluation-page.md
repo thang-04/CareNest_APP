@@ -113,3 +113,9 @@ Còn `- [ ]` ⇒ không được `approved` (check-ai-layer E5).
 
 ### 2026-11-18 — Phase 3 (done)
 - `docs/features/parent/README.md` (mục Trang Đánh giá, chốt 18/11, lệch BE), `docs/architecture/NAVIGATION.md`, `docs/context/CURRENT_STATE.md`; thêm Attempts 9–11 vào `APP-ENV-261008-flutter-sdk-mismatch`.
+
+### 2026-11-18 — Sửa theo user sau khi xem App
+- Bỏ nút "Xem N mục tiêu đạt" (lĩnh vực ở Học kỳ, Cuối năm) và "Xem thêm N mục tiêu" (kết quả chủ đề): `GoalGroup` thành widget không thu gọn, `DomainTile` hiện đủ MT khi mở.
+- Bỏ thẻ "Cân đo cuối năm" cùng link Sổ sức khỏe ở mục Cuối năm: xoá `Measurement`, `YearEndResult.measurement`, tham số `onOpenHealthBook` (màn, router).
+- Test: `evaluation_screen_test.dart`, `theme_result_screen_test.dart`, `app_router_test.dart` sửa theo.
+- `node scripts/verify.mjs` (Flutter 3.47.6, cùng lượt với Bé của tôi) → `VERIFY PASS full | format ok | design ok | analyze ok | tests 443 fail 0 skip 0`.
