@@ -28,7 +28,7 @@ Nhánh `feature/teacher-app-screens` (từ `dev`). Vẫn dữ liệu giả sau i
 
 ## Màn ẩn
 
-- Ảnh bữa ăn của GV (T15/T16): bỏ route và việc trên Trang chủ (NUT-16: chỉ bếp chụp). Code feature `meal_photos` giữ lại, không còn đường vào.
+- Ảnh bữa ăn của GV (T15/T16): bỏ route và việc trên Trang chủ (NUT-16: chỉ bếp chụp). Ngày 17/11 user chốt bỏ hẳn màn này: đã xoá code feature `teacher/meal_photos` và test.
 
 ## Còn mở
 

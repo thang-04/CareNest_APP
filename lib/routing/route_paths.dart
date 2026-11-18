@@ -1,6 +1,12 @@
 abstract final class RoutePaths {
   static const login = '/login';
 
+  /// Chỉ có khi chạy với BE thật (`USE_MOCK=false`): chờ khôi phục phiên, kích hoạt tài khoản,
+  /// tài khoản không dùng được trên App.
+  static const splash = '/splash';
+  static const activate = '/activate';
+  static const blocked = '/blocked';
+
   /// Luồng quên mật khẩu có ở cả bản release; chưa nối máy chủ thì màn tự báo.
   static const forgotPassword =
       '/forgot-password'; // carenest:allow-secret — đường dẫn route, không phải mật khẩu
@@ -18,6 +24,13 @@ abstract final class RoutePaths {
 
   static const parentToday = '/parent';
   static const parentChild = '/parent/child';
+
+  /// Bé của tôi mở sẵn tab [tab] (`health` | `development`); [section] `rewards` ⇒ cuộn tới
+  /// phiếu bé ngoan + khen thưởng cuối năm.
+  static String parentChildAt(String tab, {String? section}) => Uri(
+    path: parentChild,
+    queryParameters: {'tab': tab, 'section': ?section},
+  ).toString();
   static const parentNotifications = '/parent/notifications';
   static const parentAccount = '/parent/account';
   static const parentLeaveNotices = '/parent/leave-notices';
@@ -54,6 +67,7 @@ abstract final class RoutePaths {
   static const kitchenReceipts = '/kitchen/receipts';
   static const kitchenShortage = '/kitchen/receipts/shortage';
   static const kitchenCooking = '/kitchen/cooking';
+  static const kitchenPhotos = '/kitchen/photos';
 
   static const vicePrincipalHome = '/vice-principal';
   static const vicePrincipalApprovals = '/vice-principal/approvals';

@@ -209,13 +209,23 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
               UtilityItem(
                 AppIcons.heart,
                 'Sức khỏe',
-                () => context.go(
-                  Uri(
-                    path: RoutePaths.parentChild,
-                    queryParameters: {'tab': 'health'},
-                  ).toString(),
-                ),
+                () => context.go(RoutePaths.parentChildAt('health')),
                 tone: AppStatusTone.red,
+              ),
+              // User 17/11: nhận xét tuần/tháng và phiếu bé ngoan + khen thưởng ở tab Phát triển
+              UtilityItem(
+                AppIcons.clipboardCheck,
+                'Đánh giá',
+                () => context.go(RoutePaths.parentChildAt('development')),
+                tone: AppStatusTone.teal,
+              ),
+              UtilityItem(
+                AppIcons.trophy,
+                'Khen thưởng',
+                () => context.go(
+                  RoutePaths.parentChildAt('development', section: 'rewards'),
+                ),
+                tone: AppStatusTone.approval,
               ),
             ],
           ),

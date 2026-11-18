@@ -1,7 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- allowBackup=false: khóa Keystore của secure storage không đi theo backup, khôi phục sang máy mới sẽ hỏng -->
     <application
+        android:allowBackup="false"
         android:label="carenest_app"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

@@ -28,10 +28,14 @@ class MyChildScreen extends StatefulWidget {
   const MyChildScreen({
     super.key,
     this.initialTab = MyChildTab.today,
+    this.focusRewards = false,
     this.source = const FakeMyChildSource(),
   });
 
   final MyChildTab initialTab;
+
+  /// Lối tắt "Khen thưởng" ở Trang chủ: tab Phát triển cuộn tới phiếu bé ngoan + khen thưởng.
+  final bool focusRewards;
   final MyChildSource source;
 
   @override
@@ -40,12 +44,31 @@ class MyChildScreen extends StatefulWidget {
 
 class _MyChildScreenState extends State<MyChildScreen> {
   late MyChildTab _tab = widget.initialTab;
+  late bool _focusRewards = widget.focusRewards;
+  final _scroll = ScrollController();
 
   @override
   void didUpdateWidget(MyChildScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Mở tab từ lối tắt khác (vd. "Sức khỏe" ở Trang chủ) khi màn đã nằm trong nhánh tab
-    if (oldWidget.initialTab != widget.initialTab) _tab = widget.initialTab;
+    if (oldWidget.initialTab == widget.initialTab &&
+        oldWidget.focusRewards == widget.focusRewards) {
+      return;
+    }
+    _tab = widget.initialTab;
+    _focusRewards = widget.focusRewards;
+    // Lối tắt không nhắm khen thưởng ⇒ mở từ đầu tab, không giữ chỗ đã cuộn
+    if (!_focusRewards) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scroll.hasClients) _scroll.jumpTo(0);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
   }
 
   @override
@@ -58,6 +81,7 @@ class _MyChildScreenState extends State<MyChildScreen> {
         return SafeArea(
           bottom: false,
           child: ListView(
+            controller: _scroll,
             padding: const EdgeInsets.all(AppSpacing.pagePadding),
             children: [
               Semantics(
@@ -85,7 +109,11 @@ class _MyChildScreenState extends State<MyChildScreen> {
                   (MyChildTab.development, 'Phát triển'),
                 ],
                 selected: _tab,
-                onChanged: (value) => setState(() => _tab = value),
+                // Tự đổi tab ⇒ không còn nhắm phần khen thưởng
+                onChanged: (value) => setState(() {
+                  _tab = value;
+                  _focusRewards = false;
+                }),
               ),
               const SizedBox(height: AppSpacing.space4),
               switch (_tab) {
@@ -103,6 +131,7 @@ class _MyChildScreenState extends State<MyChildScreen> {
                   key: ValueKey('development-$childId'),
                   childId: childId,
                   source: widget.source,
+                  focusRewards: _focusRewards,
                 ),
               },
             ],
@@ -399,10 +428,12 @@ class _DevelopmentTab extends StatelessWidget {
     super.key,
     required this.childId,
     required this.source,
+    this.focusRewards = false,
   });
 
   final String childId;
   final MyChildSource source;
+  final bool focusRewards;
 
   @override
   Widget build(BuildContext context) {
@@ -457,68 +488,83 @@ class _DevelopmentTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.space3),
-          AppCard(
-            dense: true,
+          _RewardsSection(
+            focus: focusRewards,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Cờ · ${dev.flagMonth}', style: textTheme.titleSmall),
-                const SizedBox(height: AppSpacing.space1),
-                Text(
-                  'Đã có ${dev.flagsEarned} phiếu tuần · cần ${dev.flagsNeeded} phiếu để nhận bé ngoan',
-                  style: muted,
-                ),
-                const SizedBox(height: AppSpacing.space3),
-                Semantics(
-                  container: true,
-                  label: '${dev.flagsEarned} trên ${dev.flagSlots} phiếu tuần',
-                  excludeSemantics: true,
-                  child: Row(
-                    children: [
-                      for (var i = 0; i < dev.flagSlots; i++)
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            right: AppSpacing.space3,
-                          ),
-                          child: Icon(
-                            i < dev.flagsEarned
-                                ? AppIcons.flag
-                                : AppIcons.flagOutline,
-                            size: 28,
-                            color: i < dev.flagsEarned
-                                ? AppColors.accentText
-                                : AppColors.textDisabled,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.space3),
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.space4),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceMuted,
-              borderRadius: BorderRadius.circular(AppRadius.xxl),
-              border: Border.all(color: AppColors.borderStrong),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  AppIcons.trophy,
-                  size: AppSizes.iconTile,
-                  color: AppColors.textMuted,
-                ),
-                const SizedBox(width: AppSpacing.space3),
-                Expanded(
+                AppCard(
+                  dense: true,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Khen thưởng cuối năm', style: textTheme.titleSmall),
-                      Text(dev.yearEndNote, style: muted),
+                      Text(
+                        'Cờ · ${dev.flagMonth}',
+                        style: textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: AppSpacing.space1),
+                      Text(
+                        'Đã có ${dev.flagsEarned} phiếu tuần · cần ${dev.flagsNeeded} phiếu để nhận bé ngoan',
+                        style: muted,
+                      ),
+                      const SizedBox(height: AppSpacing.space3),
+                      Semantics(
+                        container: true,
+                        label:
+                            '${dev.flagsEarned} trên ${dev.flagSlots} phiếu tuần',
+                        excludeSemantics: true,
+                        child: Row(
+                          children: [
+                            for (var i = 0; i < dev.flagSlots; i++)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  right: AppSpacing.space3,
+                                ),
+                                child: Icon(
+                                  i < dev.flagsEarned
+                                      ? AppIcons.flag
+                                      : AppIcons.flagOutline,
+                                  size: 28,
+                                  color: i < dev.flagsEarned
+                                      ? AppColors.accentText
+                                      : AppColors.textDisabled,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.space3),
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.space4),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceMuted,
+                    borderRadius: BorderRadius.circular(AppRadius.xxl),
+                    border: Border.all(color: AppColors.borderStrong),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        AppIcons.trophy,
+                        size: AppSizes.iconTile,
+                        color: AppColors.textMuted,
+                      ),
+                      const SizedBox(width: AppSpacing.space3),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Khen thưởng cuối năm',
+                              style: textTheme.titleSmall,
+                            ),
+                            Text(dev.yearEndNote, style: muted),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -529,4 +575,39 @@ class _DevelopmentTab extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Phiếu bé ngoan + khen thưởng cuối năm. [focus] (lối tắt "Khen thưởng") ⇒ sau khi dữ liệu
+/// hiện ra thì tự cuộn khối này lên đầu màn.
+class _RewardsSection extends StatefulWidget {
+  const _RewardsSection({required this.focus, required this.child});
+
+  final bool focus;
+  final Widget child;
+
+  @override
+  State<_RewardsSection> createState() => _RewardsSectionState();
+}
+
+class _RewardsSectionState extends State<_RewardsSection> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.focus) _reveal();
+  }
+
+  @override
+  void didUpdateWidget(_RewardsSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.focus && !oldWidget.focus) _reveal();
+  }
+
+  void _reveal() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Scrollable.ensureVisible(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

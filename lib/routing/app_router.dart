@@ -74,6 +74,7 @@ import 'package:carenest_app/features/management/vice_principal_home/presentatio
 import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/campus_menu_screen.dart';
 import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/vice_principal_home_screen.dart';
 import 'package:carenest_app/routing/navigation_destinations.dart';
+import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
 /// `enablePreview` mặc định theo debug: màn theo vai trò còn phụ thuộc PENDING và chưa có auth
@@ -118,9 +119,12 @@ GoRouter buildAppRouter({
         _roleShell(rootKey, AppRole.parent, NavDestinations.parent, {
           RoutePaths.parentToday: (context, state) => const ParentHomeScreen(),
           RoutePaths.parentChild: (context, state) => MyChildScreen(
-            initialTab: state.uri.queryParameters['tab'] == 'health'
-                ? MyChildTab.health
-                : MyChildTab.today,
+            initialTab: switch (state.uri.queryParameters['tab']) {
+              'health' => MyChildTab.health,
+              'development' => MyChildTab.development,
+              _ => MyChildTab.today,
+            },
+            focusRewards: state.uri.queryParameters['section'] == 'rewards',
           ),
         }),
         ..._parentChildRoutes(),
@@ -336,6 +340,10 @@ List<GoRoute> _teacherRoutes() {
 
 /// Màn con của Bếp.
 List<GoRoute> _kitchenRoutes() => [
+  GoRoute(
+    path: RoutePaths.kitchenPhotos,
+    builder: (context, state) => const MealSamplePhotosScreen(),
+  ),
   GoRoute(
     path: RoutePaths.kitchenMeals,
     builder: (context, state) => const KitchenMealsScreen(),

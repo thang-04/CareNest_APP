@@ -5,6 +5,7 @@ import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/widgets/app_avatar.dart';
+import 'package:carenest_app/core/widgets/app_bottom_sheet.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_coming_soon.dart';
@@ -13,6 +14,14 @@ import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/features/shared/account/data/fake_account_source.dart';
 import 'package:carenest_app/features/shared/account/domain/account_profile.dart';
+
+/// Một lối chuyển chế độ (GV ↔ phụ huynh) ở màn Tài khoản (user 14/11, BE ADR-0022).
+class AccountModeSwitch {
+  const AccountModeSwitch({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+}
 
 /// Tài khoản — mockup P14, dùng chung 5 vai trò (DESIGN.md §B6.2 Tài khoản).
 class AccountScreen extends StatefulWidget {
@@ -23,16 +32,22 @@ class AccountScreen extends StatefulWidget {
     required this.onChangePassword,
     required this.onLogout,
     this.onOpenCampuses,
+    this.modeSwitches = const [],
     this.source = const FakeAccountSource(),
   });
 
   final AppRole role;
   final VoidCallback onOpenProfile;
   final VoidCallback onChangePassword;
+
+  /// Gọi sau khi người dùng xác nhận đăng xuất.
   final VoidCallback onLogout;
 
   /// Hiệu trưởng: mở "Cơ sở của trường" (mockup H08); vai trò khác để null.
   final VoidCallback? onOpenCampuses;
+
+  /// Rỗng khi tài khoản chỉ có một chế độ.
+  final List<AccountModeSwitch> modeSwitches;
   final AccountSource source;
 
   @override
@@ -49,6 +64,39 @@ class _AccountScreenState extends State<AccountScreen> {
     if (oldWidget.role != widget.role || oldWidget.source != widget.source) {
       _profile = widget.source.loadProfile(widget.role);
     }
+  }
+
+  Future<void> _confirmLogout() async {
+    final confirmed = await showAppBottomSheet<bool>(
+      context: context,
+      title: 'Đăng xuất khỏi CareNest?',
+      builder: (sheetContext) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Lần sau mở App cần đăng nhập lại.',
+            style: Theme.of(
+              sheetContext,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: AppSpacing.space4),
+          AppButton(
+            label: 'Đăng xuất',
+            variant: AppButtonVariant.danger,
+            expand: true,
+            onPressed: () => Navigator.of(sheetContext).pop(true),
+          ),
+          const SizedBox(height: AppSpacing.space2),
+          AppButton(
+            label: 'Ở lại',
+            variant: AppButtonVariant.text,
+            expand: true,
+            onPressed: () => Navigator.of(sheetContext).pop(false),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) widget.onLogout();
   }
 
   @override
@@ -118,6 +166,13 @@ class _AccountScreenState extends State<AccountScreen> {
                 flush: true,
                 child: AppDividedColumn(
                   children: [
+                    for (final modeSwitch in widget.modeSwitches)
+                      AppListRow(
+                        title: modeSwitch.label,
+                        leading: const Icon(AppIcons.account),
+                        showChevron: true,
+                        onTap: modeSwitch.onTap,
+                      ),
                     AppListRow(
                       title: 'Thông tin cá nhân',
                       leading: const Icon(AppIcons.person),
@@ -158,7 +213,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 label: 'Đăng xuất',
                 variant: AppButtonVariant.danger,
                 expand: true,
-                onPressed: widget.onLogout,
+                onPressed: _confirmLogout,
               ),
               const SizedBox(height: AppSpacing.space3),
               Text(

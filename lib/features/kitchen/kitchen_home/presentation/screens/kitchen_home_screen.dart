@@ -73,6 +73,7 @@ class _KitchenHomeScreenState extends State<KitchenHomeScreen> {
     KitchenTaskKind.quantities => AppIcons.review,
     KitchenTaskKind.receipt => AppIcons.truck,
     KitchenTaskKind.cooking => AppIcons.meal,
+    KitchenTaskKind.mealPhotos => AppIcons.camera,
   };
 
   static AppStatusTone _tone(KitchenBadgeLevel level) => switch (level) {
@@ -89,6 +90,7 @@ class _KitchenHomeScreenState extends State<KitchenHomeScreen> {
     KitchenTaskKind.quantities => _open(RoutePaths.kitchenQuantities),
     KitchenTaskKind.receipt => _open(RoutePaths.kitchenReceipts),
     KitchenTaskKind.cooking => _open(RoutePaths.kitchenCooking),
+    KitchenTaskKind.mealPhotos => _open(RoutePaths.kitchenPhotos),
   };
 
   @override

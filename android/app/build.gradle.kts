@@ -29,6 +29,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Scheme của redirect PKCE carenest://oauth/callback (client carenest-mobile, BE AUTH_CONTRACT)
+        manifestPlaceholders["appAuthRedirectScheme"] = "carenest"
     }
 
     buildTypes {

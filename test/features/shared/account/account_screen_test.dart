@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
+import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/features/shared/account/domain/account_profile.dart';
 import 'package:carenest_app/features/shared/account/presentation/screens/account_screen.dart';
 import 'package:carenest_app/features/shared/account/presentation/screens/personal_info_screen.dart';
@@ -49,6 +50,10 @@ void main() {
     }
     await tester.ensureVisible(find.text('Đăng xuất'));
     await tester.tap(find.text('Đăng xuất'));
+    await tester.pumpAndSettle();
+    // Đăng xuất có hộp xác nhận (plan 2026-11-16 AC-7)
+    await tester.tap(find.widgetWithText(AppButton, 'Đăng xuất').last);
+    await tester.pumpAndSettle();
     expect(loggedOut, isTrue);
   });
 

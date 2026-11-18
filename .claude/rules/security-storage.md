@@ -10,10 +10,10 @@ paths:
 
 # Security & on-device storage rules
 
-> Cơ chế auth (BE) và push provider chưa chốt; thư viện secure storage chưa chọn — hỏi trước khi chọn. Xem `docs/integration/AUTH_FLOW.md`, `PUSH_NOTIFICATION.md`.
+> Auth: PKCE qua Keycloak (`flutter_appauth`); token: access trong bộ nhớ, refresh/id trong `flutter_secure_storage` (CONFIRMED — user 2026-11-13). Push: FCM, làm ở Phase 7. Xem `docs/integration/AUTH_FLOW.md`, `PUSH_NOTIFICATION.md`.
 
 ## Token
-- Policy PROPOSED: token chỉ trong OS secure storage (Keychain/Keystore), không SharedPreferences, file thường hay state persist; thư viện chưa chọn.
+- Token chỉ trong OS secure storage (Keychain/Keystore) qua `TokenStorage` (`lib/core/storage/`), không SharedPreferences, file thường hay state persist; access token chỉ trong bộ nhớ.
 - Không log, không gửi token vào crash report/analytics; không đưa vào URL/query string.
 - Logout ⇒ xóa token, cache, offline queue, device push token đăng ký với BE (khi có endpoint).
 

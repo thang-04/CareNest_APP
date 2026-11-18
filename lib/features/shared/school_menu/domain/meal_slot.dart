@@ -1,4 +1,4 @@
-/// Bữa trong ngày, dùng chung thực đơn, ảnh bữa ăn, trạng thái nấu.
+/// Bữa trong ngày, dùng chung thực đơn và trạng thái nấu.
 enum MealSlot {
   breakfast('Bữa sáng'),
   lunch('Bữa trưa'),

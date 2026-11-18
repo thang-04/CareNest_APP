@@ -3,9 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
+import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/otp_verify_screen.dart';
+import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
 import 'package:carenest_app/routing/app_router.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
@@ -80,6 +82,70 @@ void main() {
     await tester.pumpAndSettle();
     final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(bar.selectedIndex, 1);
+  });
+
+  testWidgets(
+    'Phụ huynh: tab=development mở Phát triển, section=rewards cuộn tới khen thưởng',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      // Chữ lớn để phần khen thưởng nằm dưới mép màn khi chưa cuộn
+      tester.platformDispatcher.textScaleFactorTestValue = 1.5;
+      final reviews = find.textContaining('Nhận xét tuần').hitTestable();
+      final rewards = find.text('Khen thưởng cuối năm').hitTestable();
+
+      router.go('/parent/child?tab=development');
+      await tester.pumpAndSettle();
+      expect(reviews, findsOneWidget);
+      expect(rewards, findsNothing);
+
+      router.go('/parent/child?tab=development&section=rewards');
+      await tester.pumpAndSettle();
+      expect(rewards, findsOneWidget);
+
+      // Bỏ section (vd. bấm "Đánh giá" sau "Khen thưởng") ⇒ về đầu tab
+      router.go('/parent/child?tab=development');
+      await tester.pumpAndSettle();
+      expect(reviews, findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Phụ huynh: Việc nhanh › Khen thưởng / Đánh giá mở đúng phần tab Phát triển',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      tester.platformDispatcher.textScaleFactorTestValue = 1.5;
+      Future<void> tapQuickAction(String label) async {
+        router.go(RoutePaths.parentToday);
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(find.text(label), 200);
+        // Vẽ lại sau lần cuộn cuối, không thì tap đọc vị trí cũ (ngoài màn)
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+      }
+
+      await tapQuickAction('Khen thưởng');
+      expect(find.text('Khen thưởng cuối năm').hitTestable(), findsOneWidget);
+
+      await tapQuickAction('Đánh giá');
+      expect(
+        find.textContaining('Nhận xét tuần').hitTestable(),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('Bếp: Trang chủ mở Ảnh mẫu bữa ăn, màn con ẩn thanh đáy', (
+    tester,
+  ) async {
+    final router = await pumpRouter(tester, enablePreview: true);
+    router.go(RoutePaths.kitchenHome);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Ảnh mẫu bữa ăn'), 200);
+    await tester.tap(find.text('Ảnh mẫu bữa ăn'));
+    await tester.pumpAndSettle();
+    expect(find.byType(MealSamplePhotosScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
   });
 
   testWidgets('Phó HT: màn con ẩn thanh đáy, ngữ cảnh lấy từ query', (
@@ -265,6 +331,8 @@ void main() {
 
       await tester.ensureVisible(find.text('Đăng xuất'));
       await tester.tap(find.text('Đăng xuất'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(AppButton, 'Đăng xuất').last);
       await tester.pumpAndSettle();
       expect(find.byType(LoginScreen), findsOneWidget);
     },

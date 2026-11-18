@@ -120,23 +120,28 @@ void main() {
     expect(find.byType(TextField), findsNothing);
   });
 
-  testWidgets('P05: đổi ngày trong tuần, hôm nay có ảnh bữa ăn GV đăng', (
-    tester,
-  ) async {
-    await pumpScreen(
-      tester,
-      WeeklyMenuScreen(childId: 'child-1', initialDay: today),
-    );
-    expect(find.textContaining('Cháo thịt bằm'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Cô Hà đăng 11:05'), 200);
-    expect(find.byType(Image), findsNothing);
+  testWidgets(
+    'P05: đổi ngày trong tuần, hôm nay có ảnh mẫu bếp đăng theo bữa',
+    (tester) async {
+      await pumpScreen(
+        tester,
+        WeeklyMenuScreen(childId: 'child-1', initialDay: today),
+      );
+      expect(find.textContaining('Cháo thịt bằm'), findsOneWidget);
+      expect(find.text('Ảnh mẫu nhóm Mầm · Bếp đăng 07:50'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Ảnh mẫu nhóm Mầm · Bếp đăng 10:52'),
+        200,
+      );
+      expect(find.byType(Image), findsNothing);
 
-    await tester.scrollUntilVisible(find.text('T3'), -200);
-    await tester.tap(find.text('T3'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('Bún bò'), findsOneWidget);
-    expect(find.text('Cô Hà đăng 11:05'), findsNothing);
-  });
+      await tester.scrollUntilVisible(find.text('T3'), -200);
+      await tester.tap(find.text('T3'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Bún bò'), findsOneWidget);
+      expect(find.textContaining('Ảnh mẫu nhóm'), findsNothing);
+    },
+  );
 
   testWidgets('P05: bé có dị ứng ⇒ cảnh báo suất thay thế', (tester) async {
     await pumpScreen(

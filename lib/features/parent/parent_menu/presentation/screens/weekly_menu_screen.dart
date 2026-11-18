@@ -7,11 +7,12 @@ import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_day_strip.dart';
-import 'package:carenest_app/core/widgets/app_photo_placeholder.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/features/parent/parent_menu/data/fake_weekly_menu_source.dart';
 import 'package:carenest_app/features/parent/parent_menu/domain/weekly_menu.dart';
+import 'package:carenest_app/features/parent/parent_menu/presentation/screens/meal_photo_viewer_screen.dart';
+import 'package:carenest_app/features/parent/parent_menu/presentation/widgets/meal_photo_grid.dart';
 
 /// Thực đơn tuần của bé — mockup P05. Chỉ thực đơn đã công bố (NUT-08).
 class WeeklyMenuScreen extends StatefulWidget {
@@ -96,39 +97,126 @@ class _WeeklyMenuScreenState extends State<WeeklyMenuScreen> {
     );
   }
 
+  List<Widget> _mealPhotos(
+    BuildContext context,
+    MenuMeal meal,
+    MealPhotos photos,
+  ) {
+    final textTheme = Theme.of(context).textTheme;
+    final muted = textTheme.bodyMedium?.copyWith(color: AppColors.textMuted);
+    final mealLower = meal.name.isEmpty
+        ? meal.name
+        : meal.name[0].toLowerCase() + meal.name.substring(1);
+    return switch (photos) {
+      PostedMealPhotos() => [
+        MealPhotoGrid(
+          mealName: meal.name,
+          count: photos.photoIds.length,
+          onOpen: (index) => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              fullscreenDialog: true,
+              builder: (_) => MealPhotoViewerScreen(
+                date: _selected,
+                meal: meal,
+                photos: photos,
+                initialIndex: index,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.space2),
+        Text(
+          'Ảnh mẫu nhóm ${photos.ageGroup} · Bếp đăng ${DateLabels.time24(photos.postedAt)}',
+          style: muted,
+        ),
+      ],
+      MissingMealPhotos() => [
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.cardPaddingDense),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceMuted,
+            border: Border.all(color: AppColors.borderStrong),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                AppIcons.clock,
+                size: AppSizes.iconInline,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(width: AppSpacing.space2),
+              Flexible(
+                child: Text(
+                  'Bếp chưa đăng ảnh $mealLower',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      UpcomingMealPhotos() => [
+        Row(
+          children: [
+            const Icon(
+              AppIcons.image,
+              size: AppSizes.iconInline,
+              color: AppColors.textMuted,
+            ),
+            const SizedBox(width: AppSpacing.space2),
+            Expanded(child: Text('Có ảnh sau ${meal.time}', style: muted)),
+          ],
+        ),
+      ],
+    };
+  }
+
   List<Widget> _dayContent(BuildContext context, MenuDay day) {
     final textTheme = Theme.of(context).textTheme;
     return [
       for (final meal in day.meals) ...[
         AppCard(
           dense: true,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Icon(
-                AppIcons.meal,
-                size: AppSizes.iconTile,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: AppSpacing.space3),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${meal.name} · ${meal.time}',
-                      style: textTheme.titleSmall,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    AppIcons.meal,
+                    size: AppSizes.iconTile,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: AppSpacing.space3),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${meal.name} · ${meal.time}',
+                          style: textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: AppSpacing.space1),
+                        Text(
+                          meal.dishes,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: AppSpacing.space1),
-                    Text(
-                      meal.dishes,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+              if (meal.photos case final photos?) ...[
+                const SizedBox(height: AppSpacing.space3),
+                ..._mealPhotos(context, meal, photos),
+              ],
             ],
           ),
         ),
@@ -147,42 +235,6 @@ class _WeeklyMenuScreenState extends State<WeeklyMenuScreen> {
         ),
         const SizedBox(height: AppSpacing.space3),
       ],
-      if (day.photos case final photos?)
-        AppCard(
-          dense: true,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Ảnh bữa ăn · ${DateLabels.weekdayDayMonth(day.date)}',
-                    style: textTheme.titleSmall,
-                  ),
-                  Text(
-                    '${photos.postedBy} đăng ${DateLabels.time24(photos.postedAt)}',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.space3),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (var i = 0; i < photos.slots.length; i++) ...[
-                    if (i > 0) const SizedBox(width: AppSpacing.space2),
-                    Expanded(
-                      child: AppPhotoPlaceholder(caption: photos.slots[i]),
-                    ),
-                  ],
-                ],
-              ),
-            ],
-          ),
-        ),
     ];
   }
 }

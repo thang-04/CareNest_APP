@@ -58,12 +58,8 @@ Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scop
 - App T07 / T07.1 (user 16/11/2026): danh sách đã/chưa đo; GV nhập chiều cao **40,0–150,0 cm** và cân nặng **3,0–60,0 kg** theo `HealthMeasurementRequest`; ghi chú tối đa 500 ký tự. Sửa số đo bắt buộc lý do tối đa 300 ký tự (HLT-13). Lưu là công bố ngay (HLT-11), không có công tắc công bố. "Kết quả" do BE trả; APP không tự phân loại/chẩn đoán.
 - Màn Sức khỏe là điểm vào chung: kiểm tra đầu ngày + lối `Cân nặng & chiều cao`; dữ liệu giả hiện sau interface nguồn dữ liệu cho tới phase nối API thật.
 
-### Chụp và gửi ảnh bữa ăn — **PROPOSED**
-- Ảnh bữa ăn — **PROPOSED** (user 2026-10-13): (1) bếp chụp ảnh món khi nấu xong; (2) giáo viên chụp khay khi bếp giao tới lớp rồi đăng; phụ huynh xem ảnh món ăn trong thực đơn/lịch của con. BE NUT-16 hiện chỉ ghi bếp chụp ⇒ đề xuất cập nhật BE.
-- Mockup: `docs/design/figma/teacher-15-16-meal-photo-capture-send.png` (chọn bữa, chụp suất thường / suất thay thế, gửi phụ huynh cả lớp hoặc riêng phụ huynh có suất thay thế).
-- BE: rule NUT-16 · Endpoint: chưa có · upload theo `docs/architecture/CODING_GUIDE.md` §7.1 (PROPOSED).
-- Chưa chọn thư viện camera (hỏi trước khi thêm): khung ngắm là khối tĩnh, nút chụp chỉ thêm ảnh giữ chỗ.
-- Lệch BE (28/10): NUT-16 CONFIRMED chỉ **bếp** chụp ảnh mẫu mỗi bữa, dùng chung toàn trường; phụ huynh xem trong thực đơn ngày (PAR-01). Màn T15/T16 của GV cần bỏ hoặc đề xuất BE khi tích hợp.
+### Chụp và gửi ảnh bữa ăn — **đã bỏ (user 2026-11-17)**
+- User 17/11: chỉ **bếp** đăng ảnh bữa ăn, theo nhóm tuổi (NUT-16; `docs/features/kitchen/README.md`). Màn T15/T16 của GV (mockup `docs/design/figma/teacher-15-16-meal-photo-capture-send.png`) đã xoá cả code lẫn test; GV không chụp, không gửi ảnh bữa.
 
 ### Đón trẻ + xác minh người đón
 - BE: card `BE:docs/modules/attendance.md` · flow pickup của BE (chưa merge nhánh chính BE) · rule PCK-01..04, ATT-10: màn đón hiện danh sách phụ huynh/người giám hộ; người lạ ⇒ gọi phụ huynh, ghi lý do; lưu người đón, giờ đón (cả đón muộn, về sớm); báo phụ huynh. Ảnh đối chiếu: P-33.
