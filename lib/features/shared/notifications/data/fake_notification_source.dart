@@ -155,4 +155,15 @@ class FakeNotificationSource implements NotificationSource {
 
   @override
   Future<List<AppNotification>> load(AppRole role) async => byRole[role]!;
+
+  @override
+  Future<AppNotification?> loadDetail(AppRole role, String id) async =>
+      byRole[role]!.where((item) => item.id == id).firstOrNull;
+
+  // Bản dữ liệu giả không có BE: đánh dấu đã đọc chỉ đổi trên màn
+  @override
+  Future<void> markAllRead() async {}
+
+  @override
+  Future<void> saveAttachment(NotificationAttachment file) async {}
 }
