@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/features/kitchen/cooking_status/data/fake_cooking_status_source.dart';
 import 'package:carenest_app/features/kitchen/cooking_status/presentation/screens/cooking_status_screen.dart';
+import 'package:carenest_app/features/kitchen/food_quantities/data/fake_food_quantity_source.dart';
 import 'package:carenest_app/features/kitchen/food_quantities/presentation/screens/food_quantities_screen.dart';
 import 'package:carenest_app/features/kitchen/food_samples/data/fake_food_sample_source.dart';
 import 'package:carenest_app/features/kitchen/kitchen_home/data/fake_kitchen_home_source.dart';
@@ -253,13 +254,34 @@ void main() {
     expect(find.bySemanticsLabel('Tổng suất: 46'), findsOneWidget);
   });
 
-  testWidgets('K04 (NUT-07): định lượng 182 suất, phiếu xuất kho đã duyệt', (
+  testWidgets('K04 (NUT-07, NUT-10): lượng cả ngày theo hàng tươi, hàng khô', (
     tester,
   ) async {
-    await pumpScreen(tester, const FoodQuantitiesScreen());
-    expect(find.text('Phiếu xuất kho PXK-1012 · Đã duyệt'), findsOneWidget);
-    expect(find.textContaining('(182 SUẤT)'), findsOneWidget);
-    expect(find.text('10,5 kg'), findsOneWidget);
+    await pumpScreen(
+      tester,
+      FoodQuantitiesScreen(
+        source: FakeFoodQuantitySource(delay: Duration.zero),
+      ),
+    );
+    expect(find.text('Hàng tươi · 8 thực phẩm'), findsOneWidget);
+    expect(labelOf('Cá basa phi lê'), 'Cá basa phi lê: 10,5 kg');
+    await tester.scrollUntilVisible(find.text('Hàng khô · 3 thực phẩm'), 200);
+    expect(labelOf('Gạo tẻ'), 'Gạo tẻ: 19,6 kg');
+    // Không còn phiếu xuất kho (NUT-11)
+    expect(find.textContaining('Phiếu xuất kho'), findsNothing);
+  });
+
+  testWidgets('K04: chưa có lượng ⇒ báo rõ khi nào có', (tester) async {
+    await pumpScreen(
+      tester,
+      FoodQuantitiesScreen(
+        source: FakeFoodQuantitySource(
+          mode: FakeMode.empty,
+          delay: Duration.zero,
+        ),
+      ),
+    );
+    expect(find.text('Chưa có lượng thực phẩm'), findsOneWidget);
   });
 
   // Trạng thái nấu đã bỏ khỏi App bếp (NUT-14 REMOVED); màn còn ở bản debug của Phó HT (V05)
@@ -296,7 +318,13 @@ void main() {
       KitchenMealsScreen(source: FakeKitchenMealsSource(delay: Duration.zero)),
       false,
     ),
-    ('Định lượng', const FoodQuantitiesScreen(), false),
+    (
+      'Lượng thực phẩm',
+      FoodQuantitiesScreen(
+        source: FakeFoodQuantitySource(delay: Duration.zero),
+      ),
+      false,
+    ),
   ]) {
     testWidgets('AC-10: $name chữ 2.0 không tràn', (tester) async {
       await pumpScreen(tester, screen, textScale: 2, inScaffold: scaffold);

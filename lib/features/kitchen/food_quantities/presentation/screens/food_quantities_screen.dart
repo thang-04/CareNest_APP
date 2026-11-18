@@ -1,147 +1,154 @@
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
-import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
-import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/theme/app_text_styles.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
-import 'package:carenest_app/core/widgets/app_banner.dart';
-import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
-import 'package:carenest_app/core/widgets/app_coming_soon.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
+import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/features/kitchen/food_quantities/data/fake_food_quantity_source.dart';
 import 'package:carenest_app/features/kitchen/food_quantities/domain/food_quantities.dart';
 
-/// Định lượng thực phẩm — mockup K04. Chỉ hiển thị số BE tính (NUT-06, NUT-07), không tính lại.
-class FoodQuantitiesScreen extends StatelessWidget {
-  const FoodQuantitiesScreen({
-    super.key,
-    this.source = const FakeFoodQuantitySource(),
-  });
+/// Lượng thực phẩm cần trong ngày (BE `KitchenDayResponse.foods`), chia hàng tươi / hàng khô.
+/// Chỉ hiển thị số BE tính (NUT-06, NUT-07), không tính lại. Kho, kiểm nhận hàng do PHT ghi trên
+/// Web (NUT-11, NUT-12) nên không có phiếu xuất kho ở đây.
+class FoodQuantitiesScreen extends StatefulWidget {
+  const FoodQuantitiesScreen({super.key, this.source});
 
-  final FoodQuantitySource source;
+  final FoodQuantitySource? source;
+
+  @override
+  State<FoodQuantitiesScreen> createState() => _FoodQuantitiesScreenState();
+}
+
+class _FoodQuantitiesScreenState extends State<FoodQuantitiesScreen> {
+  late final FoodQuantitySource _source =
+      widget.source ?? FakeFoodQuantitySource();
+  late Future<FoodNeedDay?> _day = _source.loadDay();
+
+  // Nhãn như web (CareNest_FE kitchenRecordConstants FOOD_STORAGE_LABELS)
+  static String _storageLabel(FoodStorage storage) => switch (storage) {
+    FoodStorage.fresh => 'Hàng tươi',
+    FoodStorage.dry => 'Hàng khô',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Lượng thực phẩm')),
+      body: FutureBuilder<FoodNeedDay?>(
+        future: _day,
+        builder: (context, snapshot) {
+          final day = snapshot.data;
+          return switch (snapshot) {
+            AsyncSnapshot(hasError: true) => Center(
+              child: AppErrorState(
+                title: 'Chưa tải được lượng thực phẩm',
+                message: 'Kiểm tra kết nối mạng rồi thử lại.',
+                onRetry: () => setState(() {
+                  _day = _source.loadDay();
+                }),
+              ),
+            ),
+            AsyncSnapshot(connectionState: ConnectionState.waiting) =>
+              const Padding(
+                padding: EdgeInsets.all(AppSpacing.pagePadding),
+                child: AppSkeletonList(rows: 6),
+              ),
+            _ when day == null || day.needs.isEmpty => const Center(
+              child: AppEmptyState(
+                icon: AppIcons.meal,
+                title: 'Chưa có lượng thực phẩm',
+                message:
+                    'Lượng hiện khi thực đơn đã công bố và PHT đã xác nhận số suất.',
+              ),
+            ),
+            _ => _content(context, day),
+          };
+        },
+      ),
+    );
+  }
+
+  Widget _content(BuildContext context, FoodNeedDay day) {
+    final textTheme = Theme.of(context).textTheme;
+    final muted = textTheme.bodyMedium?.copyWith(color: AppColors.textMuted);
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.pagePadding),
+      children: [
+        Text('Hôm nay · ${DateLabels.weekdayDayMonth(day.date)}', style: muted),
+        const SizedBox(height: AppSpacing.space2),
+        Text(
+          'Cần cho cả ngày theo số suất đã chốt các bữa, đã cộng phần thải bỏ.',
+          style: textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+        ),
+        for (final storage in FoodStorage.values)
+          if (day.needs.where((need) => need.storage == storage).toList()
+              case final needs when needs.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.space4),
+            _StorageCard(label: _storageLabel(storage), needs: needs),
+          ],
+        const SizedBox(height: AppSpacing.space4),
+        Text(
+          'Kho khô và kiểm nhận hàng tươi do PHT ghi trên Web.',
+          style: muted,
+        ),
+      ],
+    );
+  }
+}
+
+class _StorageCard extends StatelessWidget {
+  const _StorageCard({required this.label, required this.needs});
+
+  final String label;
+  final List<FoodNeed> needs;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Định lượng thực phẩm')),
-      body: FutureBuilder<QuantityPlan>(
-        future: source.loadPlan(),
-        builder: (context, snapshot) {
-          final plan = snapshot.data;
-          if (plan == null) {
-            return const Padding(
-              padding: EdgeInsets.all(AppSpacing.pagePadding),
-              child: AppSkeletonList(rows: 6),
-            );
-          }
-          final teal = AppStatusColors.of(context).tone(AppStatusTone.teal);
-          final header = textTheme.labelSmall?.copyWith(
-            color: AppColors.textMuted,
-          );
-          return ListView(
-            padding: const EdgeInsets.all(AppSpacing.pagePadding),
-            children: [
-              if (plan.slip case final slip?) ...[
-                AppBanner(
-                  kind: AppBannerKind.success,
-                  title: 'Phiếu xuất kho ${slip.code} · Đã duyệt',
-                  message:
-                      '${slip.approvedBy} duyệt lúc ${DateLabels.time24(slip.approvedAt)}',
+    return AppCard(
+      dense: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            header: true,
+            child: Text(
+              '$label · ${needs.length} thực phẩm',
+              style: textTheme.titleMedium,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.space2),
+          for (final (i, need) in needs.indexed) ...[
+            if (i > 0) const Divider(height: 1, color: AppColors.border),
+            Semantics(
+              container: true,
+              label: '${need.food}: ${need.amount}',
+              excludeSemantics: true,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: AppSizes.minimumTapTarget,
                 ),
-                const SizedBox(height: AppSpacing.space3),
-              ],
-              AppCard(
-                flush: true,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                child: Row(
                   children: [
-                    ExcludeSemantics(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppSpacing.space4,
-                          AppSpacing.space4,
-                          AppSpacing.space4,
-                          AppSpacing.space2,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'THỰC PHẨM · ${plan.mealLabel.toUpperCase()} (${plan.servings} SUẤT)',
-                                style: header,
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.space3),
-                            Text('CẦN DÙNG', style: header),
-                          ],
-                        ),
+                    Expanded(
+                      child: Text(need.food, style: textTheme.bodyLarge),
+                    ),
+                    const SizedBox(width: AppSpacing.space3),
+                    Text(
+                      need.amount,
+                      style: textTheme.titleSmall?.copyWith(
+                        fontFeatures: AppTextStyles.tabularFigures,
                       ),
                     ),
-                    for (final (i, line) in plan.lines.indexed) ...[
-                      if (i > 0) const Divider(),
-                      Semantics(
-                        container: true,
-                        label: '${line.food}, ${line.usage}: ${line.amount}',
-                        excludeSemantics: true,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.space4,
-                            vertical: AppSpacing.space3,
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      line.food,
-                                      style: textTheme.titleSmall,
-                                    ),
-                                    Text(
-                                      line.usage,
-                                      style: textTheme.bodyMedium?.copyWith(
-                                        color: AppColors.textMuted,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Text(
-                                line.amount,
-                                style: textTheme.titleSmall?.copyWith(
-                                  fontFeatures: AppTextStyles.tabularFigures,
-                                  color: line.forAlternative
-                                      ? teal.foreground
-                                      : null,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: AppSpacing.space2),
                   ],
                 ),
               ),
-            ],
-          );
-        },
-      ),
-      bottomNavigationBar: AppBottomDock(
-        children: [
-          AppButton(
-            label: 'Xem phiếu xuất kho & cách chế biến',
-            variant: AppButtonVariant.secondary,
-            expand: true,
-            onPressed: () =>
-                openComingSoon(context, 'Phiếu xuất kho & cách chế biến'),
-          ),
+            ),
+          ],
         ],
       ),
     );

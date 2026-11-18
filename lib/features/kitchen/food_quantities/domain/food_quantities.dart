@@ -1,54 +1,37 @@
 import 'package:flutter/foundation.dart';
 
-/// Một thực phẩm cần dùng; số do BE tính = suất đã chốt × định lượng thực đơn đã duyệt (NUT-07).
+/// Nơi lấy thực phẩm theo BE `FoodStorage` (NUT-10): hàng tươi NCC giao hằng ngày, hàng khô
+/// lấy từ kho.
+enum FoodStorage { fresh, dry }
+
+/// Một thực phẩm cần cho cả ngày. Số do BE tính từ suất đã xác nhận và định lượng thực đơn đã
+/// công bố, đã cộng thải bỏ (NUT-07); [amount] là chuỗi lớp dữ liệu định dạng từ số + đơn vị BE.
 @immutable
-class QuantityLine {
-  const QuantityLine({
+class FoodNeed {
+  const FoodNeed({
     required this.food,
-    required this.usage,
     required this.amount,
-    this.forAlternative = false,
+    required this.storage,
   });
 
+  /// "Cá basa phi lê"
   final String food;
 
-  /// "Canh bí đỏ"
-  final String usage;
-
-  /// "9,1 kg" — chuỗi BE định dạng sẵn.
+  /// "10,5 kg"
   final String amount;
-  final bool forAlternative;
+  final FoodStorage storage;
 }
 
-/// Phiếu xuất kho đã duyệt — nghiệp vụ nhận nguyên liệu mới (quyết định 7, PROPOSED).
+/// Lượng thực phẩm cần trong ngày (BE `KitchenDayResponse.foods`).
 @immutable
-class IssueSlip {
-  const IssueSlip({
-    required this.code,
-    required this.approvedBy,
-    required this.approvedAt,
-  });
+class FoodNeedDay {
+  const FoodNeedDay({required this.date, required this.needs});
 
-  final String code;
-  final String approvedBy;
-  final DateTime approvedAt;
-}
-
-@immutable
-class QuantityPlan {
-  const QuantityPlan({
-    required this.mealLabel,
-    required this.servings,
-    required this.lines,
-    this.slip,
-  });
-
-  final String mealLabel;
-  final int servings;
-  final List<QuantityLine> lines;
-  final IssueSlip? slip;
+  final DateTime date;
+  final List<FoodNeed> needs;
 }
 
 abstract interface class FoodQuantitySource {
-  Future<QuantityPlan> loadPlan();
+  /// Null khi chưa có lượng: ngày nghỉ, thực đơn chưa công bố hoặc chưa có suất đã xác nhận.
+  Future<FoodNeedDay?> loadDay();
 }
