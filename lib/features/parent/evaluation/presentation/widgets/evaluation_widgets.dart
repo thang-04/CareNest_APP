@@ -6,7 +6,6 @@ import 'package:carenest_app/core/constants/motion.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
-import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/features/parent/evaluation/domain/evaluation.dart';
 
 /// Tiêu đề một phần của trang Đánh giá.
@@ -204,14 +203,13 @@ class ResultMark extends StatelessWidget {
   }
 }
 
-/// Nhóm MT cùng kết quả: trạng thái ghi một lần ở đầu nhóm; [collapsedCount] ⇒ thu gọn phần còn lại.
-class GoalGroup extends StatefulWidget {
+/// Nhóm MT cùng kết quả: trạng thái ghi một lần ở đầu nhóm, hiện đủ MT (user 18/11: không thu gọn).
+class GoalGroup extends StatelessWidget {
   const GoalGroup({
     super.key,
     required this.met,
     required this.goals,
     this.describe,
-    this.collapsedCount,
     this.compact = false,
   });
 
@@ -220,42 +218,29 @@ class GoalGroup extends StatefulWidget {
 
   /// Dòng phụ dưới MT (hoạt động trong ngày, số chủ đề đạt).
   final String? Function(GoalResult goal)? describe;
-  final int? collapsedCount;
 
   /// Trong khối lĩnh vực: tiêu đề nhóm nhỏ hơn.
   final bool compact;
-
-  @override
-  State<GoalGroup> createState() => _GoalGroupState();
-}
-
-class _GoalGroupState extends State<GoalGroup> {
-  var _expanded = false;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final tone = AppStatusColors.of(
       context,
-    ).tone(widget.met ? AppStatusTone.green : AppStatusTone.red);
-    final limit = widget.collapsedCount;
-    final hidden = limit != null && !_expanded && widget.goals.length > limit
-        ? widget.goals.length - limit
-        : 0;
-    final visible = hidden > 0 ? widget.goals.take(limit!) : widget.goals;
-    final label = widget.met ? 'Đạt' : 'Chưa đạt';
+    ).tone(met ? AppStatusTone.green : AppStatusTone.red);
+    final label = met ? 'Đạt' : 'Chưa đạt';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Semantics(
           container: true,
           header: true,
-          label: '$label, ${widget.goals.length} mục tiêu',
+          label: '$label, ${goals.length} mục tiêu',
           excludeSemantics: true,
           child: Row(
             children: [
               Icon(
-                widget.met ? AppIcons.check : AppIcons.minus,
+                met ? AppIcons.check : AppIcons.minus,
                 size: AppSizes.iconInline,
                 color: tone.foreground,
               ),
@@ -264,12 +249,12 @@ class _GoalGroupState extends State<GoalGroup> {
                 child: Text.rich(
                   TextSpan(
                     text: label,
-                    style: widget.compact
+                    style: compact
                         ? textTheme.labelMedium
                         : textTheme.titleSmall,
                     children: [
                       TextSpan(
-                        text: ' (${widget.goals.length})',
+                        text: ' (${goals.length})',
                         style: textTheme.bodyMedium?.copyWith(
                           color: AppColors.textMuted,
                         ),
@@ -281,26 +266,16 @@ class _GoalGroupState extends State<GoalGroup> {
             ],
           ),
         ),
-        for (final goal in visible) ...[
+        for (final goal in goals) ...[
           const SizedBox(height: AppSpacing.space2),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(width: AppSizes.iconInline + AppSpacing.space2),
               Expanded(
-                child: _GoalText(goal: goal, describe: widget.describe),
+                child: _GoalText(goal: goal, describe: describe),
               ),
             ],
-          ),
-        ],
-        if (hidden > 0) ...[
-          const SizedBox(height: AppSpacing.space1),
-          AppButton(
-            label: 'Xem thêm $hidden mục tiêu',
-            variant: AppButtonVariant.text,
-            small: true,
-            trailingIcon: AppIcons.chevronDown,
-            onPressed: () => setState(() => _expanded = true),
           ),
         ],
       ],
@@ -332,7 +307,8 @@ class _GoalText extends StatelessWidget {
   }
 }
 
-/// Một lĩnh vực (học kỳ, cuối năm) dạng mở/đóng: MT chưa đạt hiện sẵn, MT đạt mở bằng nút.
+/// Một lĩnh vực (học kỳ, cuối năm) dạng mở/đóng; mở ra thấy hết MT: chưa đạt trước, đạt sau
+/// (user 18/11: không cần nút "Xem").
 class DomainTile extends StatefulWidget {
   const DomainTile({
     super.key,
@@ -351,7 +327,6 @@ class DomainTile extends StatefulWidget {
 
 class _DomainTileState extends State<DomainTile> {
   late var _expanded = widget.initiallyExpanded;
-  var _showMet = false;
 
   @override
   Widget build(BuildContext context) {
@@ -447,7 +422,7 @@ class _DomainTileState extends State<DomainTile> {
                       describe: widget.describe,
                       compact: true,
                     ),
-                  if (met.isNotEmpty && _showMet) ...[
+                  if (met.isNotEmpty) ...[
                     if (notMet.isNotEmpty)
                       const SizedBox(height: AppSpacing.space4),
                     GoalGroup(
@@ -455,17 +430,6 @@ class _DomainTileState extends State<DomainTile> {
                       goals: met,
                       describe: widget.describe,
                       compact: true,
-                    ),
-                  ],
-                  if (met.isNotEmpty && !_showMet) ...[
-                    if (notMet.isNotEmpty)
-                      const SizedBox(height: AppSpacing.space2),
-                    AppButton(
-                      label: 'Xem ${met.length} mục tiêu đạt',
-                      variant: AppButtonVariant.text,
-                      small: true,
-                      trailingIcon: AppIcons.chevronDown,
-                      onPressed: () => setState(() => _showMet = true),
                     ),
                   ],
                 ],

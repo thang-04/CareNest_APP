@@ -147,31 +147,34 @@ void main() {
     expect(opened.themes, isEmpty);
   });
 
-  testWidgets('Mục Học kỳ: lĩnh vực chưa đạt mở sẵn, xem MT đạt, đổi học kỳ', (
-    tester,
-  ) async {
-    await _pumpEvaluation(tester, tab: EvaluationTab.semester);
-    expect(find.text('Học kỳ II'), findsOneWidget);
-    expect(find.bySemanticsLabel('4 trên 5 lĩnh vực đạt'), findsOneWidget);
-    expect(find.text('Kể chuyện theo tranh Đôi bạn tốt'), findsOneWidget);
-    expect(find.text('Đạt ở 0/2 chủ đề'), findsOneWidget);
-    // Lĩnh vực đạt đóng sẵn
-    expect(find.text('Biết uống đủ nước khi trời nóng'), findsNothing);
+  testWidgets(
+    'Mục Học kỳ: lĩnh vực chưa đạt mở sẵn, mở ra thấy đủ MT, đổi học kỳ',
+    (tester) async {
+      await _pumpEvaluation(tester, tab: EvaluationTab.semester);
+      expect(find.text('Học kỳ II'), findsOneWidget);
+      expect(find.bySemanticsLabel('4 trên 5 lĩnh vực đạt'), findsOneWidget);
+      expect(find.text('Kể chuyện theo tranh Đôi bạn tốt'), findsOneWidget);
+      expect(find.text('Đạt ở 0/2 chủ đề'), findsOneWidget);
+      // User 18/11: MT đạt hiện luôn, không có nút "Xem N mục tiêu đạt"
+      expect(find.text('Bắt chước tiếng kêu của con vật'), findsOneWidget);
+      expect(find.textContaining(RegExp('^Xem ')), findsNothing);
+      // Lĩnh vực đạt đóng sẵn, chạm tên lĩnh vực để mở
+      expect(find.text('Biết uống đủ nước khi trời nóng'), findsNothing);
+      await _tapVisible(tester, find.text('Phát triển thể chất'));
+      expect(find.text('Biết uống đủ nước khi trời nóng'), findsOneWidget);
 
-    await _tapVisible(tester, find.text('Xem 1 mục tiêu đạt'));
-    expect(find.text('Bắt chước tiếng kêu của con vật'), findsOneWidget);
-
-    await _tapVisible(tester, find.text('Phát triển thể chất'));
-    expect(find.text('Xem 2 mục tiêu đạt'), findsOneWidget);
-
-    await _tapVisible(tester, find.byTooltip('Học kỳ trước'));
-    expect(find.text('Học kỳ I'), findsOneWidget);
-    expect(find.text('Hát đúng giai điệu bài Vui đến trường'), findsOneWidget);
-    expect(
-      find.text('Cô Trần Thu Hà xác nhận ngày 20/01/2027'),
-      findsOneWidget,
-    );
-  });
+      await _tapVisible(tester, find.byTooltip('Học kỳ trước'));
+      expect(find.text('Học kỳ I'), findsOneWidget);
+      expect(
+        find.text('Hát đúng giai điệu bài Vui đến trường'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Cô Trần Thu Hà xác nhận ngày 20/01/2027'),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('Mục Cuối năm: phiếu, lưu ý cho gia đình, lĩnh vực, cân đo', (
     tester,

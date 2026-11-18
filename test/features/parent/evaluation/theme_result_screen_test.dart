@@ -46,29 +46,25 @@ void main() {
     expect(find.bySemanticsLabel('Chưa đạt, 2 mục tiêu'), findsOneWidget);
     expect(find.text('Phân biệt to – nhỏ'), findsOneWidget);
     expect(find.bySemanticsLabel('Đạt, 3 mục tiêu'), findsOneWidget);
-    // 3 MT đạt ≤ 4 dòng ⇒ không thu gọn
     expect(find.textContaining('Xem thêm'), findsNothing);
     final confirmed = find.text('Cô Trần Thu Hà xác nhận ngày 07/04/2027');
     await tester.scrollUntilVisible(confirmed, 200);
     expect(confirmed, findsOneWidget);
   });
 
-  testWidgets('Chủ đề đạt hết: không có nhóm Chưa đạt; MT đạt thu gọn sau 4', (
-    tester,
-  ) async {
-    await _pumpTheme(tester, 'theme-la-4', childId: 'child-2');
-    expect(find.text('Đạt chủ đề'), findsOneWidget);
-    expect(find.bySemanticsLabel('Chưa đạt, 0 mục tiêu'), findsNothing);
-    expect(find.text('Vẽ lá cờ Tổ quốc'), findsNothing);
-
-    final more = find.text('Xem thêm 1 mục tiêu');
-    await tester.ensureVisible(more);
-    await tester.pumpAndSettle();
-    await tester.tap(more);
-    await tester.pumpAndSettle();
-    expect(find.text('Vẽ lá cờ Tổ quốc'), findsOneWidget);
-    expect(more, findsNothing);
-  });
+  testWidgets(
+    'Chủ đề đạt hết: không có nhóm Chưa đạt; hiện đủ MT đạt, không nút Xem thêm',
+    (tester) async {
+      await _pumpTheme(tester, 'theme-la-4', childId: 'child-2');
+      expect(find.text('Đạt chủ đề'), findsOneWidget);
+      expect(find.bySemanticsLabel('Chưa đạt, 0 mục tiêu'), findsNothing);
+      // User 18/11: không thu gọn MT đạt, MT thứ 5 hiện luôn
+      final fifth = find.text('Vẽ lá cờ Tổ quốc');
+      await tester.scrollUntilVisible(fifth, 200);
+      expect(fifth, findsOneWidget);
+      expect(find.textContaining('Xem thêm'), findsNothing);
+    },
+  );
 
   testWidgets('Chủ đề lạ hoặc đang học ⇒ "Không tìm thấy kết quả chủ đề"', (
     tester,

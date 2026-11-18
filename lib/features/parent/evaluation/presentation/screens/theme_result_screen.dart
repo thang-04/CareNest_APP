@@ -13,7 +13,7 @@ import 'package:carenest_app/features/parent/evaluation/domain/evaluation.dart';
 import 'package:carenest_app/features/parent/evaluation/presentation/widgets/evaluation_widgets.dart';
 import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
 
-/// Kết quả cuối chủ đề của bé (OBS-27): MT chưa đạt trước, MT đạt thu gọn sau 4 dòng.
+/// Kết quả cuối chủ đề của bé (OBS-27): MT chưa đạt trước, MT đạt sau, hiện đủ (user 18/11).
 class ThemeResultScreen extends StatefulWidget {
   const ThemeResultScreen({
     super.key,
@@ -31,8 +31,6 @@ class ThemeResultScreen extends StatefulWidget {
 }
 
 class _ThemeResultScreenState extends State<ThemeResultScreen> {
-  static const _visibleMetGoals = 4;
-
   late Future<EvaluationBook> _book = widget.source.load(widget.child.id);
 
   void _retry() {
@@ -125,13 +123,7 @@ class _ThemeResultView extends StatelessWidget {
         ],
         if (met.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.cardGap),
-          AppCard(
-            child: GoalGroup(
-              met: true,
-              goals: met,
-              collapsedCount: _ThemeResultScreenState._visibleMetGoals,
-            ),
-          ),
+          AppCard(child: GoalGroup(met: true, goals: met)),
         ],
         if (confirmedBy != null && confirmedAt != null) ...[
           const SizedBox(height: AppSpacing.space4),
