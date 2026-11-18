@@ -103,7 +103,7 @@ void main() {
     ]) {
       expect(find.text(label), findsOneWidget);
     }
-    // Hàng cuối (user 17/11): đánh giá và khen thưởng mở tab Phát triển
+    // Hàng cuối: Đánh giá và Khen thưởng mở trang riêng (user 18/11)
     await tester.scrollUntilVisible(find.text('Khen thưởng'), 200);
     expect(find.text('Đánh giá'), findsOneWidget);
   });

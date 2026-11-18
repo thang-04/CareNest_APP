@@ -12,6 +12,7 @@ import 'package:carenest_app/features/parent/evaluation/presentation/screens/eva
 import 'package:carenest_app/features/parent/evaluation/presentation/screens/theme_result_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/exam_detail_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
+import 'package:carenest_app/features/parent/rewards/presentation/screens/rewards_screen.dart';
 import 'package:carenest_app/routing/app_router.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
@@ -115,19 +116,39 @@ void main() {
     },
   );
 
+  testWidgets('Phụ huynh: Việc nhanh › Khen thưởng mở trang Khen thưởng, '
+      '"Xem đánh giá từng ngày" mở Đánh giá', (tester) async {
+    final router = await pumpRouter(tester, enablePreview: true);
+    router.go(RoutePaths.parentToday);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Khen thưởng'), 200);
+    // Vẽ lại sau lần cuộn cuối, không thì tap đọc vị trí cũ (ngoài màn)
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Khen thưởng'));
+    await tester.pumpAndSettle();
+    expect(find.byType(RewardsScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.text('TUẦN NÀY'), findsOneWidget);
+
+    final daily = find.text('Xem đánh giá từng ngày');
+    await tester.ensureVisible(daily);
+    await tester.pumpAndSettle();
+    await tester.tap(daily);
+    await tester.pumpAndSettle();
+    expect(find.byType(EvaluationScreen), findsOneWidget);
+  });
+
   testWidgets(
-    'Phụ huynh: Việc nhanh › Khen thưởng mở tab Phát triển tới khen thưởng',
+    'Phụ huynh: trang Khen thưởng mở theo bé trên đường dẫn, bé lạ ⇒ 404',
     (tester) async {
       final router = await pumpRouter(tester, enablePreview: true);
-      tester.platformDispatcher.textScaleFactorTestValue = 1.5;
-      router.go(RoutePaths.parentToday);
+      router.go(RoutePaths.withChild(RoutePaths.parentRewards, 'child-2'));
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('Khen thưởng'), 200);
-      // Vẽ lại sau lần cuộn cuối, không thì tap đọc vị trí cũ (ngoài màn)
+      expect(find.text('Nguyễn Hoàng Bảo Ngọc'), findsOneWidget);
+
+      router.go(RoutePaths.withChild(RoutePaths.parentRewards, 'khong-co'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Khen thưởng'));
-      await tester.pumpAndSettle();
-      expect(find.text('Khen thưởng cuối năm').hitTestable(), findsOneWidget);
+      expect(find.text('Không tìm thấy trang'), findsOneWidget);
     },
   );
 

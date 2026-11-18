@@ -58,6 +58,9 @@ abstract final class RoutePaths {
     required String childId,
   }) => withChild('$parentEvaluationThemes/$themeId', childId);
 
+  /// Trang Khen thưởng (Tuần | Tháng | Cuối năm); ID con ở query.
+  static const parentRewards = '/parent/rewards';
+
   static const teacherToday = '/teacher';
   static const teacherClass = '/teacher/class';
   static const teacherNotifications = '/teacher/notifications';

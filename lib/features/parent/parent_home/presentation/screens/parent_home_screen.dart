@@ -220,13 +220,11 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                 () => _push(RoutePaths.parentEvaluation),
                 tone: AppStatusTone.teal,
               ),
-              // User 17/11: phiếu bé ngoan + khen thưởng ở tab Phát triển của Bé của tôi
+              // User 18/11: trang Khen thưởng riêng (Tuần | Tháng | Cuối năm)
               UtilityItem(
                 AppIcons.trophy,
                 'Khen thưởng',
-                () => context.go(
-                  RoutePaths.parentChildAt('development', section: 'rewards'),
-                ),
+                () => _push(RoutePaths.parentRewards),
                 tone: AppStatusTone.approval,
               ),
             ],

@@ -46,6 +46,7 @@ import 'package:carenest_app/features/kitchen/kitchen_meals/presentation/screens
 import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
 import 'package:carenest_app/features/parent/evaluation/presentation/screens/evaluation_screen.dart';
 import 'package:carenest_app/features/parent/evaluation/presentation/screens/theme_result_screen.dart';
+import 'package:carenest_app/features/parent/rewards/presentation/screens/rewards_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/exam_detail_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_form_screen.dart';
@@ -387,6 +388,15 @@ List<GoRoute> _parentChildRoutes() {
       (context, state, child) => ThemeResultScreen(
         child: child,
         themeId: state.pathParameters['themeId']!,
+      ),
+    ),
+    route(
+      RoutePaths.parentRewards,
+      (context, state, child) => RewardsScreen(
+        child: child,
+        onOpenDailyEvaluation: () => context.push<void>(
+          RoutePaths.withChild(RoutePaths.parentEvaluation, child.id),
+        ),
       ),
     ),
   ];
