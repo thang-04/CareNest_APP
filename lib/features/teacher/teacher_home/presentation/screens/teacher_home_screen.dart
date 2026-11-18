@@ -51,6 +51,8 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
     TeacherTaskKind.leave => AppIcons.calendarOff,
     TeacherTaskKind.review => AppIcons.review,
     TeacherTaskKind.pickup => AppIcons.walk,
+    TeacherTaskKind.menu => AppIcons.menuBook,
+    TeacherTaskKind.rewards => AppIcons.trophy,
     TeacherTaskKind.health => AppIcons.heart,
     TeacherTaskKind.dailyHealth => AppIcons.sick,
   };
@@ -60,6 +62,8 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
     TeacherTaskKind.leave => RoutePaths.teacherLeaveNotices,
     TeacherTaskKind.review => RoutePaths.teacherReviews,
     TeacherTaskKind.pickup => RoutePaths.teacherPickup,
+    TeacherTaskKind.menu => RoutePaths.teacherMenu,
+    TeacherTaskKind.rewards => RoutePaths.teacherRewards,
     TeacherTaskKind.health => RoutePaths.teacherHealth,
     TeacherTaskKind.dailyHealth => RoutePaths.teacherDailyHealth,
   };
@@ -173,17 +177,16 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
     );
     final actionTasks = today.tasks
         .where(
-          (task) =>
-              task.kind != TeacherTaskKind.leave &&
-              task.kind != TeacherTaskKind.review,
+          (task) => switch (task.kind) {
+            TeacherTaskKind.attendance ||
+            TeacherTaskKind.dailyHealth ||
+            TeacherTaskKind.pickup => true,
+            _ => false,
+          },
         )
         .toList();
     final viewTasks = today.tasks
-        .where(
-          (task) =>
-              task.kind == TeacherTaskKind.leave ||
-              task.kind == TeacherTaskKind.review,
-        )
+        .where((task) => !actionTasks.contains(task))
         .toList();
     return [
       if (today.deadlineNote != null && attendanceOpen) ...[

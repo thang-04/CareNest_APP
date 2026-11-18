@@ -28,6 +28,7 @@ import 'package:carenest_app/features/teacher/class_roster/presentation/screens/
 import 'package:carenest_app/features/kitchen/cooking_status/presentation/screens/cooking_status_screen.dart';
 import 'package:carenest_app/features/teacher/daily_review/presentation/screens/daily_review_detail_screen.dart';
 import 'package:carenest_app/features/teacher/daily_review/presentation/screens/daily_review_list_screen.dart';
+import 'package:carenest_app/features/teacher/daily_review/domain/daily_review.dart';
 import 'package:carenest_app/features/shared/dev_preview/presentation/screens/role_preview_screen.dart';
 import 'package:carenest_app/features/kitchen/food_quantities/presentation/screens/food_quantities_screen.dart';
 import 'package:carenest_app/features/teacher/health_measure/presentation/screens/health_measure_detail_screen.dart';
@@ -53,6 +54,7 @@ import 'package:carenest_app/features/parent/parent_home/presentation/selected_c
 import 'package:carenest_app/features/parent/parent_menu/presentation/screens/weekly_menu_screen.dart';
 import 'package:carenest_app/features/teacher/pickup/presentation/screens/pickup_list_screen.dart';
 import 'package:carenest_app/features/teacher/pickup/presentation/screens/pickup_verify_screen.dart';
+import 'package:carenest_app/features/teacher/rewards/presentation/screens/teacher_rewards_screen.dart';
 import 'package:carenest_app/features/management/principal_overview/presentation/screens/principal_overview_screen.dart';
 import 'package:carenest_app/features/management/reward_proposals/presentation/screens/reward_batch_screen.dart';
 import 'package:carenest_app/features/management/reward_proposals/presentation/screens/reward_proposals_screen.dart';
@@ -256,10 +258,39 @@ List<GoRoute> _teacherRoutes() {
       path: RoutePaths.teacherLeaveNotices,
       builder: (context, state) => const ClassLeaveScreen(),
     ),
-    listWithDetail(
-      RoutePaths.teacherReviews,
-      (context, open) => DailyReviewListScreen(onOpenKid: open),
-      (context, id) => DailyReviewDetailScreen(childId: id),
+    GoRoute(
+      path: RoutePaths.teacherReviews,
+      builder: (context, state) => DailyReviewListScreen(
+        onOpenKid: (id, view) => context.push<void>(
+          '${RoutePaths.kidDetail(RoutePaths.teacherReviews, id)}?view=${view.name}',
+        ),
+      ),
+      routes: [
+        GoRoute(
+          path: ':childId',
+          builder: (context, state) {
+            final viewName = state.uri.queryParameters['view'];
+            final view = ReviewDetailView.values
+                .where((item) => item.name == viewName)
+                .firstOrNull;
+            return DailyReviewDetailScreen(
+              childId: state.pathParameters['childId']!,
+              view: view ?? ReviewDetailView.day,
+            );
+          },
+        ),
+      ],
+    ),
+    GoRoute(
+      path: RoutePaths.teacherMenu,
+      builder: (context, state) => SchoolMenuScreen(
+        initialDay: FakeParentHomeSource.today,
+        footerNote: 'Chỉ xem thực đơn đã công bố.',
+      ),
+    ),
+    GoRoute(
+      path: RoutePaths.teacherRewards,
+      builder: (context, state) => const TeacherRewardsScreen(),
     ),
     listWithDetail(
       RoutePaths.teacherPickup,

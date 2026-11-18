@@ -60,7 +60,7 @@ class FakeHealthMeasureSource implements HealthMeasureSource {
 
   @override
   Future<MeasureMonth> loadMonth(String classId) async => MeasureMonth(
-    title: 'Đo sức khỏe tháng 10',
+    title: 'Kỳ cân đo quý IV',
     kids: [for (final kid in FakeClassRosterSource.kids) _kids[kid.id]!],
   );
 

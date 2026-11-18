@@ -96,21 +96,25 @@ class _PickupListScreenState extends State<PickupListScreen> {
                 child: AppListRow(
                   leading: AppAvatar(name: kid.fullName),
                   title: kid.fullName,
-                  subtitle: Text(
-                    kid.status == PickupStatus.pickedUp
-                        ? _pickedLine(kid.pickup!)
-                        : 'Chờ đón',
-                  ),
-                  trailing: kid.status == PickupStatus.pickedUp
-                      ? const AppStatusBadge(
-                          label: 'Đã đón',
-                          tone: AppStatusTone.green,
-                        )
-                      : AppButton(
-                          label: 'Trả trẻ',
-                          small: true,
-                          onPressed: () => _verify(kid),
-                        ),
+                  subtitle: Text(switch (kid.status) {
+                    PickupStatus.pickedUp => _pickedLine(kid.pickup!),
+                    PickupStatus.waiting => 'Chờ đón',
+                    PickupStatus.absent => 'Vắng hôm nay',
+                    PickupStatus.unmarked => 'Chưa điểm danh',
+                  }),
+                  // PCK-01: chỉ trẻ có mặt (WAITING) mới trả được
+                  trailing: switch (kid.status) {
+                    PickupStatus.pickedUp => const AppStatusBadge(
+                      label: 'Đã đón',
+                      tone: AppStatusTone.green,
+                    ),
+                    PickupStatus.waiting => AppButton(
+                      label: 'Trả trẻ',
+                      small: true,
+                      onPressed: () => _verify(kid),
+                    ),
+                    _ => null,
+                  },
                 ),
               ),
               const SizedBox(height: AppSpacing.space2),

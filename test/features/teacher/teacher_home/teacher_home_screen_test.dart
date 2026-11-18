@@ -53,7 +53,9 @@ void main() {
         'Sức khỏe',
         'Trả trẻ',
         'Đơn xin nghỉ của lớp',
-        'Đánh giá hằng ngày',
+        'Đánh giá trẻ',
+        'Thực đơn',
+        'Khen thưởng',
       ];
       for (final title in titles) {
         expect(

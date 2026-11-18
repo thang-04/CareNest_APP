@@ -93,6 +93,7 @@ class DailyHealthKid {
     required this.fullName,
     this.latest,
     this.entryCount = 0,
+    this.handedOverAt,
   });
 
   final String childId;
@@ -100,7 +101,11 @@ class DailyHealthKid {
   final DailyHealthEntry? latest;
   final int entryCount;
 
+  /// BE `DailyHealthResponse.ChildDay.handedOverAt` — đã trả trẻ thì không ghi thêm (HEALTH_CHILD_PICKED_UP).
+  final DateTime? handedOverAt;
+
   bool get checked => latest != null;
+  bool get pickedUp => handedOverAt != null;
 }
 
 @immutable

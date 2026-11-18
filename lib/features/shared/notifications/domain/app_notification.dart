@@ -26,6 +26,7 @@ class AppNotification {
     this.hasPhoto = false,
     this.actionLabel,
     this.unread = false,
+    this.type,
   });
 
   final String id;
@@ -45,6 +46,9 @@ class AppNotification {
   final String? actionLabel;
   final bool unread;
 
+  /// Mã BE `NotificationType` (vd. `LEAVE_REQUEST_CHANGED`) để mở đúng màn; null với dữ liệu giả cũ.
+  final String? type;
+
   AppNotification markRead() => AppNotification(
     id: id,
     kind: kind,
@@ -55,6 +59,7 @@ class AppNotification {
     tag: tag,
     hasPhoto: hasPhoto,
     actionLabel: actionLabel,
+    type: type,
   );
 }
 

@@ -146,7 +146,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     if (sheet == null) return;
     setState(() => _saveState = _SaveState.saving);
     try {
-      await _source.save(widget.classId, sheet.date, _kids);
+      await _source.save(widget.classId, sheet.date, _entriesToSave());
       if (!mounted) return;
       setState(() => _saveState = _SaveState.saved);
       widget.onSaved?.call();
@@ -156,6 +156,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       setState(() => _saveState = _SaveState.failed);
     }
   }
+
+  /// Như Web và BE (ATT-04, ATT-09): không gửi trẻ có đơn nghỉ (BE từ chối) và trẻ chưa điểm danh.
+  List<KidAttendance> _entriesToSave() => [
+    for (final kid in _kids)
+      if (!kid.hasLeaveNotice && kid.status != AttendanceStatus.notRecorded)
+        kid,
+  ];
+
+  bool get _editable => _sheet?.editable ?? false;
 
   int _count(AttendanceStatus status) =>
       _kids.where((kid) => kid.status == status).length;
@@ -183,7 +192,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Điểm danh')),
       body: _buildBody(),
-      bottomNavigationBar: _loading || _loadError != null || _kids.isEmpty
+      bottomNavigationBar:
+          _loading || _loadError != null || _kids.isEmpty || !_editable
           ? null
           : _buildDock(),
     );
@@ -240,7 +250,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     '${sheet.classSummary.name} · ${DateLabels.weekdayDayMonth(sheet.date)}',
                     style: textTheme.titleSmall,
                   ),
-                  if (sheet.lockAt != null)
+                  if (!sheet.editable)
+                    const AppStatusBadge(
+                      label: 'Đã khóa',
+                      tone: AppStatusTone.red,
+                      icon: AppIcons.lock,
+                    )
+                  else if (sheet.lockAt != null)
                     AppStatusBadge(
                       label: 'Khóa lúc ${sheet.lockAt}',
                       tone: AppStatusTone.orange,
@@ -263,7 +279,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ),
                   AppStatTile(
                     value: '${_count(AttendanceStatus.unexcused)}',
-                    label: 'Vắng',
+                    label: 'Không phép',
                     tone: AppStatusTone.red,
                   ),
                   AppStatTile(
@@ -279,7 +295,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 icon: AppIcons.checks,
                 variant: AppButtonVariant.secondary,
                 expand: true,
-                onPressed: saving || _count(AttendanceStatus.notRecorded) == 0
+                onPressed:
+                    saving ||
+                        !_editable ||
+                        _count(AttendanceStatus.notRecorded) == 0
                     ? null
                     : _markAllPresent,
               ),
@@ -289,7 +308,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 icon: AppIcons.meal,
                 variant: AppButtonVariant.secondary,
                 expand: true,
-                onPressed: saving || _presentCount == 0
+                onPressed: saving || !_editable || _presentCount == 0
                     ? null
                     : _chooseMealParticipation,
               ),
@@ -339,7 +358,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           padding: const EdgeInsets.only(bottom: AppSpacing.space2),
           child: AttendanceKidRow(
             kid: kid,
-            enabled: !saving,
+            enabled: !saving && _editable,
             onPresent: () => _setPresent(kid),
             onAbsent: () => _setAbsent(kid),
           ),

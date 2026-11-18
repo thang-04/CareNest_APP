@@ -4,25 +4,30 @@ import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
-import 'package:carenest_app/core/widgets/app_banner.dart';
+import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_filter_chip.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/teacher/class_leave_notices/data/fake_class_leave_source.dart';
 import 'package:carenest_app/features/teacher/class_leave_notices/domain/class_leave_notice.dart';
+import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 import 'package:carenest_app/features/teacher/class_roster/data/fake_class_roster_source.dart';
 
-/// Đơn xin nghỉ của lớp — mockup T03. GV chỉ xem/ghi nhận, không có duyệt (ATT-05).
+/// Đơn xin nghỉ của lớp — mockup T03, dạng BE `LeaveRequestResponse`. GV chỉ xem, không duyệt (ATT-05).
 class ClassLeaveScreen extends StatefulWidget {
   const ClassLeaveScreen({
     super.key,
     this.classId = FakeClassRosterSource.classId,
     this.source = const FakeClassLeaveSource(),
+    this.today,
   });
 
   final String classId;
   final ClassLeaveSource source;
+
+  /// Mốc lọc "Hôm nay & sắp tới"; mặc định ngày giả của bản debug.
+  final DateTime? today;
 
   @override
   State<ClassLeaveScreen> createState() => _ClassLeaveScreenState();
@@ -49,11 +54,11 @@ class _ClassLeaveScreenState extends State<ClassLeaveScreen> {
     }
   }
 
-  static (String, AppStatusTone) _badge(ClassLeaveState state) =>
-      switch (state) {
-        ClassLeaveState.fresh => ('Mới', AppStatusTone.blue),
-        ClassLeaveState.seen => ('Đã xem', AppStatusTone.green),
-        ClassLeaveState.absentNoNotice => ('Vắng', AppStatusTone.red),
+  /// Nhãn, tông như Web `LeaveStatusBadge`.
+  static (String, AppStatusTone) _badge(LeaveRequestStatus status) =>
+      switch (status) {
+        LeaveRequestStatus.active => (status.label, AppStatusTone.green),
+        LeaveRequestStatus.cancelled => (status.label, AppStatusTone.gray),
       };
 
   @override
@@ -62,7 +67,13 @@ class _ClassLeaveScreenState extends State<ClassLeaveScreen> {
     final visible = entries == null
         ? const <ClassLeaveEntry>[]
         : _upcomingOnly
-        ? entries.where((entry) => entry.upcoming).toList()
+        ? entries
+              .where(
+                (entry) => !entry.toDate.isBefore(
+                  widget.today ?? FakeParentHomeSource.today,
+                ),
+              )
+              .toList()
         : entries;
     return Scaffold(
       appBar: AppBar(title: const Text('Đơn xin nghỉ của lớp')),
@@ -101,13 +112,9 @@ class _ClassLeaveScreenState extends State<ClassLeaveScreen> {
             )
           else ...[
             for (final entry in visible) ...[
-              _EntryCard(entry: entry, badge: _badge(entry.state)),
+              _EntryCard(entry: entry, badge: _badge(entry.status)),
               const SizedBox(height: AppSpacing.space3),
             ],
-            const AppBanner(
-              message:
-                  'Hệ thống đã tự huỷ suất ăn các ngày nghỉ và báo cho bếp.',
-            ),
           ],
         ],
       ),
@@ -121,22 +128,19 @@ class _EntryCard extends StatelessWidget {
   final ClassLeaveEntry entry;
   final (String, AppStatusTone) badge;
 
+  static String _dates(List<DateTime> days) =>
+      days.map(DateLabels.dayMonth).join(', ');
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final fresh = entry.state == ClassLeaveState.fresh;
     final muted = textTheme.bodyMedium?.copyWith(color: AppColors.textMuted);
+    final cancelled = entry.status == LeaveRequestStatus.cancelled;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space4),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(
-          color: fresh
-              ? AppColors.primary
-              : AppColors.surface.withValues(alpha: 0.85),
-          width: fresh ? 1.5 : 1,
-        ),
         boxShadow: AppShadows.card,
       ),
       child: Column(
@@ -153,15 +157,20 @@ class _EntryCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.space1),
-          Text(entry.period, style: textTheme.bodyMedium),
-          Text('Lý do: ${entry.reason}', style: muted),
+          Text(
+            DateLabels.range(entry.fromDate, entry.toDate),
+            style: textTheme.bodyMedium?.copyWith(
+              decoration: cancelled ? TextDecoration.lineThrough : null,
+            ),
+          ),
+          Text(entry.reason, style: muted),
+          // Ngày bị bỏ qua vì đã qua giờ khóa (ATT-05b) — BE trả, APP chỉ hiển thị
+          if (entry.skippedDates.isNotEmpty)
+            Text('Không áp dụng: ${_dates(entry.skippedDates)}', style: muted),
           const SizedBox(height: AppSpacing.space1),
           Text(
-            entry.meta,
-            style: textTheme.labelMedium?.copyWith(
-              color: AppColors.textMuted,
-              fontWeight: FontWeight.w500,
-            ),
+            '${entry.createdByName} · ${DateLabels.time24(entry.createdAt)} ${DateLabels.dayMonth(entry.createdAt)}',
+            style: textTheme.labelMedium?.copyWith(color: AppColors.textMuted),
           ),
         ],
       ),

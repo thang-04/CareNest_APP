@@ -8,7 +8,7 @@ modules: [attendance, health, observation, identity-access]
 rules: [AUTH-03, AUTH-21, ATT-02, ATT-04, ATT-09, HLT-07, HLT-14, PCK-02, PCK-03, PCK-04]
 risk: high           # thêm thư viện nền, auth, API client dùng chung
 created: 2026-11-15
-updated: 2026-11-16
+updated: 2026-11-17
 ---
 # Thiết kế tối giản và nối API thật cho App giáo viên
 
@@ -104,3 +104,7 @@ Mỗi màn: thêm `Api<Xxx>Source` cạnh `Fake<Xxx>Source`; chọn theo `USE_MO
 - 2026-11-16: Đã rà Figma, `DESIGN.md`, code APP và controller/DTO BE. Chưa sửa code vì plan còn câu hỏi nghiệp vụ PCK và quyết định dependency.
 - 2026-11-16: User chốt giữ Trả trẻ trên App và yêu cầu tối ưu theo `DESIGN.md` để đồng bộ FE. Plan được duyệt; bắt đầu phase UI trước, chưa commit/push.
 - 2026-11-16: Phase UI hoàn tất: Trang Hôm nay tách `Cần làm`/`Xem nhanh`; Sức khỏe gom lối cân đo; cân đo nhập/sửa đúng `HealthMeasurementRequest`; giữ Trả trẻ. `dart format` sạch, `flutter analyze` sạch, toàn bộ 191 test pass. `node scripts/verify.mjs` chưa chạy được do sandbox chặn Node `lstat C:\Users\ASUS`; các bước Flutter của verify đã chạy trực tiếp và pass.
+- 2026-11-17: Bổ sung lối xem thực đơn đã công bố; màn đánh giá chỉ xem theo `Ngày / Tuần / Định kỳ`; màn xác minh người đón chọn một người và dùng duy nhất một nút `Trả trẻ` cố định phía dưới.
+- 2026-11-17: Đối chiếu BE/FE module assessment; bổ sung nhận xét chung của lớp, nhận xét/lưu ý riêng và hồ sơ từng trẻ từ ngày tới tuần/định kỳ trong luồng chỉ xem của App.
+- 2026-11-17: Tách chi tiết theo đúng tab đang chọn; bổ sung dữ liệu demo cuối chủ đề/cuối năm và menu Khen thưởng chỉ xem gồm phiếu bé ngoan, đề xuất.
+- 2026-11-17: Loại bỏ đánh giá tháng theo xác nhận mới nhất của user; định kỳ chỉ còn cuối chủ đề, học kỳ và cuối năm.
