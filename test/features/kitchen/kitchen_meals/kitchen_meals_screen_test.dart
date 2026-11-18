@@ -207,21 +207,26 @@ void main() {
     expect(find.textContaining('Nguyễn'), findsNothing);
   });
 
-  testWidgets('K03 / AC-6 (AUTH-05, NUT-02): suất theo lớp, không tên trẻ', (
+  testWidgets('K03 / AC-6 (AUTH-05, NUT-02): suất theo lớp từng bữa', (
     tester,
   ) async {
     await pumpScreen(
       tester,
       KitchenMealsScreen(source: FakeKitchenMealsSource(delay: Duration.zero)),
     );
+    expect(find.text('PHT xác nhận 08:30 · chỉ xem'), findsOneWidget);
+    expect(find.text('Bữa phụ sáng · Nhà trẻ'), findsOneWidget);
+    expect(find.bySemanticsLabel('Tổng suất: 46'), findsOneWidget);
+    expect(labelOf('Nhà trẻ 1'), 'Nhà trẻ 1, 23 suất thường, 1 suất thay thế');
+    expect(find.text('Mầm 3A'), findsNothing);
+
+    await tester.tap(find.text('Trưa'));
+    await tester.pumpAndSettle();
     expect(find.bySemanticsLabel('Tổng suất: 182'), findsOneWidget);
-    expect(find.textContaining('chờ Phó HT duyệt'), findsOneWidget);
-    expect(
-      labelOf('Mầm 3A'),
-      'Mầm 3A, 24 suất thường, 1 suất thay thế, dị ứng hải sản, có điều chỉnh chờ duyệt',
-    );
+    expect(labelOf('Mầm 3A'), 'Mầm 3A, 24 suất thường, 1 suất thay thế');
+    // Không còn banner điều chỉnh chờ duyệt (NUT-03, NUT-04), không tên trẻ (AUTH-05)
+    expect(find.textContaining('chờ'), findsNothing);
     expect(find.textContaining('Nguyễn'), findsNothing);
-    expect(find.textContaining('Hoàng Nam'), findsNothing);
   });
 
   testWidgets('K03 (NUT-02): chưa xác nhận ⇒ không có số để nấu', (
@@ -245,7 +250,7 @@ void main() {
     expect(find.text('Thử lại'), findsOneWidget);
     await tester.tap(find.text('Thử lại'));
     await tester.pumpAndSettle();
-    expect(find.bySemanticsLabel('Tổng suất: 182'), findsOneWidget);
+    expect(find.bySemanticsLabel('Tổng suất: 46'), findsOneWidget);
   });
 
   testWidgets('K04 (NUT-07): định lượng 182 suất, phiếu xuất kho đã duyệt', (
