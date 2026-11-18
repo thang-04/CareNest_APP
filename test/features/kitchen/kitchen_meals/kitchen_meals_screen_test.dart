@@ -6,9 +6,6 @@ import 'package:carenest_app/features/kitchen/cooking_status/data/fake_cooking_s
 import 'package:carenest_app/features/kitchen/cooking_status/presentation/screens/cooking_status_screen.dart';
 import 'package:carenest_app/features/kitchen/food_quantities/presentation/screens/food_quantities_screen.dart';
 import 'package:carenest_app/features/kitchen/food_samples/data/fake_food_sample_source.dart';
-import 'package:carenest_app/features/kitchen/ingredient_receipt/data/fake_ingredient_receipt_source.dart';
-import 'package:carenest_app/features/kitchen/ingredient_receipt/presentation/screens/ingredient_receipt_screen.dart';
-import 'package:carenest_app/features/kitchen/ingredient_receipt/presentation/screens/shortage_report_screen.dart';
 import 'package:carenest_app/features/kitchen/kitchen_home/data/fake_kitchen_home_source.dart';
 import 'package:carenest_app/features/kitchen/kitchen_home/domain/kitchen_today.dart';
 import 'package:carenest_app/features/kitchen/kitchen_home/presentation/screens/kitchen_home_screen.dart';
@@ -260,64 +257,27 @@ void main() {
     expect(find.text('10,5 kg'), findsOneWidget);
   });
 
-  testWidgets('K05: số nhận thiếu báo chênh lệch, sửa đủ thì hết', (
-    tester,
-  ) async {
-    await pumpScreen(
-      tester,
-      IngredientReceiptScreen(
-        source: FakeIngredientReceiptSource(),
-        onReportShortage: () {},
-        onConfirmed: () {},
-      ),
-    );
-    expect(find.text('Theo phiếu: 10,5 kg · Thiếu 0,7 kg'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.textContaining('Có 1 chênh lệch'),
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.scrollUntilVisible(
-      find.text('Cá basa phi lê'),
-      -200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.enterText(find.byType(TextField).at(1), '10,5');
-    await tester.pump();
-    expect(find.textContaining('chênh lệch'), findsNothing);
-  });
+  // Trạng thái nấu đã bỏ khỏi App bếp (NUT-14 REMOVED); màn còn ở bản debug của Phó HT (V05)
+  testWidgets(
+    'V05 (debug): trạng thái nấu chuyển bước; chỉ xem thì không có nút',
+    (tester) async {
+      final source = FakeCookingStatusSource();
+      await pumpScreen(tester, CookingStatusScreen(source: source));
+      expect(labelOf('Đang nấu'), startsWith('Đang nấu, đang ở bước này'));
+      await tester.tap(find.text('Chuyển sang “Đã nấu xong”'));
+      await tester.pumpAndSettle();
+      expect(
+        labelOf('Đã nấu xong'),
+        startsWith('Đã nấu xong, đang ở bước này'),
+      );
 
-  testWidgets('K06: báo thiếu điền sẵn món thiếu, gửi cho Phó HT', (
-    tester,
-  ) async {
-    final source = FakeIngredientReceiptSource();
-    var sent = false;
-    await pumpScreen(
-      tester,
-      ShortageReportScreen(source: source, onSent: () => sent = true),
-    );
-    expect(find.text('Cá basa phi lê'), findsOneWidget);
-    expect(find.text('0,7 kg'), findsOneWidget);
-    await tester.tap(find.text('Gửi báo thiếu cho Phó HT'));
-    await tester.pumpAndSettle();
-    expect(sent, isTrue);
-    expect(source.reports.single.food, 'Cá basa phi lê');
-  });
-
-  testWidgets('K07 (NUT-14): chuyển bước nấu; Phó HT chỉ xem', (tester) async {
-    final source = FakeCookingStatusSource();
-    await pumpScreen(tester, CookingStatusScreen(source: source));
-    expect(labelOf('Đang nấu'), startsWith('Đang nấu, đang ở bước này'));
-    await tester.tap(find.text('Chuyển sang “Đã nấu xong”'));
-    await tester.pumpAndSettle();
-    expect(labelOf('Đã nấu xong'), startsWith('Đã nấu xong, đang ở bước này'));
-
-    await pumpScreen(
-      tester,
-      CookingStatusScreen(source: source, readOnly: true),
-    );
-    expect(find.textContaining('Chuyển sang'), findsNothing);
-  });
+      await pumpScreen(
+        tester,
+        CookingStatusScreen(source: source, readOnly: true),
+      );
+      expect(find.textContaining('Chuyển sang'), findsNothing);
+    },
+  );
 
   for (final (name, screen, scaffold) in <(String, Widget, bool)>[
     ('Trang chủ bếp', KitchenHomeScreen(source: homeSource()), true),
@@ -332,13 +292,6 @@ void main() {
       false,
     ),
     ('Định lượng', const FoodQuantitiesScreen(), false),
-    (
-      'Nhận nguyên liệu',
-      IngredientReceiptScreen(onReportShortage: () {}, onConfirmed: () {}),
-      false,
-    ),
-    ('Báo thiếu', ShortageReportScreen(onSent: () {}), false),
-    ('Trạng thái nấu', const CookingStatusScreen(), false),
   ]) {
     testWidgets('AC-10: $name chữ 2.0 không tràn', (tester) async {
       await pumpScreen(tester, screen, textScale: 2, inScaffold: scaffold);

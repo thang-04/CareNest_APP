@@ -32,15 +32,12 @@ import 'package:carenest_app/features/management/campus_children/presentation/sc
 import 'package:carenest_app/features/management/campuses/presentation/screens/campuses_screen.dart';
 import 'package:carenest_app/features/teacher/class_leave_notices/presentation/screens/class_leave_screen.dart';
 import 'package:carenest_app/features/teacher/class_roster/presentation/screens/class_roster_screen.dart';
-import 'package:carenest_app/features/kitchen/cooking_status/presentation/screens/cooking_status_screen.dart';
 import 'package:carenest_app/features/teacher/daily_review/presentation/screens/daily_review_detail_screen.dart';
 import 'package:carenest_app/features/teacher/daily_review/presentation/screens/daily_review_list_screen.dart';
 import 'package:carenest_app/features/shared/dev_preview/presentation/screens/role_preview_screen.dart';
 import 'package:carenest_app/features/kitchen/food_quantities/presentation/screens/food_quantities_screen.dart';
 import 'package:carenest_app/features/teacher/health_measure/presentation/screens/health_measure_detail_screen.dart';
 import 'package:carenest_app/features/teacher/health_measure/presentation/screens/health_measure_list_screen.dart';
-import 'package:carenest_app/features/kitchen/ingredient_receipt/presentation/screens/ingredient_receipt_screen.dart';
-import 'package:carenest_app/features/kitchen/ingredient_receipt/presentation/screens/shortage_report_screen.dart';
 import 'package:carenest_app/features/kitchen/food_samples/presentation/screens/food_samples_screen.dart';
 import 'package:carenest_app/features/kitchen/kitchen_home/presentation/screens/kitchen_home_screen.dart';
 import 'package:carenest_app/features/kitchen/kitchen_meals/presentation/screens/kitchen_meals_screen.dart';
@@ -451,22 +448,6 @@ List<GoRoute> _kitchenRoutes() => [
   GoRoute(
     path: RoutePaths.kitchenQuantities,
     builder: (context, state) => const FoodQuantitiesScreen(),
-  ),
-  GoRoute(
-    path: RoutePaths.kitchenReceipts,
-    builder: (context, state) => IngredientReceiptScreen(
-      onReportShortage: () => context.push(RoutePaths.kitchenShortage),
-      onConfirmed: () => context.pop(),
-    ),
-  ),
-  GoRoute(
-    path: RoutePaths.kitchenShortage,
-    builder: (context, state) =>
-        ShortageReportScreen(onSent: () => context.pop()),
-  ),
-  GoRoute(
-    path: RoutePaths.kitchenCooking,
-    builder: (context, state) => const CookingStatusScreen(),
   ),
   GoRoute(
     path: RoutePaths.kitchenPhotos,
