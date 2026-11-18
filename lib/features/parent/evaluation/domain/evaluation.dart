@@ -223,21 +223,8 @@ class SemesterResult {
   final DateTime? confirmedAt;
 }
 
-/// Lần cân đo gần nhất tới cuối năm học (BE `SheetMeasurement`).
-@immutable
-class Measurement {
-  const Measurement({
-    required this.date,
-    required this.weightKg,
-    required this.heightCm,
-  });
-
-  final DateTime date;
-  final double weightKg;
-  final double heightCm;
-}
-
-/// Phiếu đánh giá sự phát triển cuối năm (OBS-28).
+/// Phiếu đánh giá sự phát triển cuối năm (OBS-28); cân đo của phiếu (BE `SheetMeasurement`)
+/// không hiện cho phụ huynh ở đây — số đo xem ở Sổ sức khỏe (user 18/11).
 @immutable
 class YearEndResult {
   const YearEndResult({
@@ -252,7 +239,6 @@ class YearEndResult {
     this.commentedAt,
     this.noteForParent,
     this.domains = const [],
-    this.measurement,
     this.confirmedBy,
     this.confirmedAt,
   });
@@ -274,7 +260,6 @@ class YearEndResult {
   /// Chỉ "Lưu ý cho cha mẹ" (user 18/11); 3 lưu ý còn lại không hiện cho phụ huynh.
   final String? noteForParent;
   final List<DomainResult> domains;
-  final Measurement? measurement;
   final String? confirmedBy;
   final DateTime? confirmedAt;
 }

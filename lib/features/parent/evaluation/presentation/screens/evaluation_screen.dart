@@ -24,7 +24,6 @@ class EvaluationScreen extends StatefulWidget {
     super.key,
     required this.child,
     required this.onOpenTheme,
-    required this.onOpenHealthBook,
     this.initialTab = EvaluationTab.day,
     this.source = const FakeEvaluationSource(),
   });
@@ -33,7 +32,6 @@ class EvaluationScreen extends StatefulWidget {
 
   /// Mở kết quả một chủ đề theo id
   final ValueChanged<String> onOpenTheme;
-  final VoidCallback onOpenHealthBook;
   final EvaluationTab initialTab;
   final EvaluationSource source;
 
@@ -105,7 +103,6 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
                 ),
                 EvaluationTab.yearEnd => EvaluationYearEndTab(
                   yearEnd: book.yearEnd,
-                  onOpenHealthBook: widget.onOpenHealthBook,
                 ),
               },
             ],

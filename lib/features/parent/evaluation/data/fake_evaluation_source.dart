@@ -620,11 +620,6 @@ EvaluationBook _minhAnh() {
           ],
         ),
       ],
-      measurement: Measurement(
-        date: DateTime(2027, 5, 14),
-        weightKg: 18.1,
-        heightCm: 107.5,
-      ),
       confirmedBy: _teacherHa,
       confirmedAt: DateTime(2027, 5, 27),
     ),
@@ -1056,11 +1051,6 @@ EvaluationBook _baoNgoc() {
           ],
         ),
       ],
-      measurement: Measurement(
-        date: DateTime(2027, 5, 14),
-        weightKg: 19.4,
-        heightCm: 112.5,
-      ),
       confirmedBy: _teacherThu,
       confirmedAt: DateTime(2027, 5, 27),
     ),

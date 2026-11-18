@@ -10,7 +10,6 @@ import '../../../helpers/pump_app.dart';
 
 class _Opened {
   final themes = <String>[];
-  var healthBook = 0;
 }
 
 Future<_Opened> _pumpEvaluation(
@@ -32,7 +31,6 @@ Future<_Opened> _pumpEvaluation(
         initialTab: tab,
         source: FakeEvaluationSource(mode: mode, delay: Duration.zero),
         onOpenTheme: opened.themes.add,
-        onOpenHealthBook: () => opened.healthBook++,
       ),
     ),
   );
@@ -176,24 +174,23 @@ void main() {
     },
   );
 
-  testWidgets('Mục Cuối năm: phiếu, lưu ý cho gia đình, lĩnh vực, cân đo', (
-    tester,
-  ) async {
-    final opened = await _pumpEvaluation(tester, tab: EvaluationTab.yearEnd);
+  testWidgets('Mục Cuối năm: phiếu, lưu ý cho gia đình, lĩnh vực hiện đủ MT; '
+      'không có cân đo cuối năm', (tester) async {
+    await _pumpEvaluation(tester, tab: EvaluationTab.yearEnd);
     expect(find.text('PHIẾU ĐÁNH GIÁ SỰ PHÁT TRIỂN'), findsOneWidget);
     expect(find.text('Năm học 2026–2027'), findsOneWidget);
     expect(find.bySemanticsLabel('21 trên 25 mục tiêu đạt'), findsOneWidget);
     // Nhóm 3–4 tuổi không có nhãn hoàn thành chương trình
     expect(find.text('Hoàn thành chương trình mầm non'), findsNothing);
     expect(find.text('Lưu ý cho gia đình'), findsOneWidget);
-    // Lĩnh vực đầu tiên có MT chưa đạt mở sẵn, kèm nhận xét của cô
+    // Lĩnh vực đầu tiên có MT chưa đạt mở sẵn, kèm nhận xét của cô và đủ MT đạt
     expect(find.text('Cô nhận xét'), findsOneWidget);
     expect(find.text('Xúc cơm ăn gọn gàng'), findsOneWidget);
-    expect(find.bySemanticsLabel('Cân nặng: 18,1 kg'), findsOneWidget);
-    expect(find.bySemanticsLabel('Chiều cao: 107,5 cm'), findsOneWidget);
-
-    await _tapVisible(tester, find.text('Sổ sức khỏe'));
-    expect(opened.healthBook, 1);
+    expect(find.text('Tự rửa tay bằng xà phòng'), findsOneWidget);
+    expect(find.textContaining(RegExp('^Xem ')), findsNothing);
+    // User 18/11: bỏ cân đo cuối năm, số đo xem ở Sổ sức khỏe
+    expect(find.text('Cân đo cuối năm'), findsNothing);
+    expect(find.text('Sổ sức khỏe'), findsNothing);
   });
 
   testWidgets('Mục Cuối năm: lớp 5–6 tuổi có nhãn hoàn thành chương trình', (

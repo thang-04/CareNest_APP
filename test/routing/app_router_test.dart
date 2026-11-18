@@ -184,9 +184,7 @@ void main() {
       // Danh sách còn cuộn ở chỗ chủ đề vừa chạm ⇒ cuộn lên tới thanh mục
       await tester.scrollUntilVisible(find.text('Cuối năm'), -200);
       await tapVisible(find.text('Cuối năm'));
-      await tester.scrollUntilVisible(find.text('Sổ sức khỏe'), 200);
-      await tapVisible(find.text('Sổ sức khỏe'));
-      expect(find.byType(HealthBookScreen), findsOneWidget);
+      expect(find.text('PHIẾU ĐÁNH GIÁ SỰ PHÁT TRIỂN'), findsOneWidget);
     },
   );
 

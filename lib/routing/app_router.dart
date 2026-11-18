@@ -367,9 +367,6 @@ List<GoRoute> _parentChildRoutes() {
         onOpenTheme: (themeId) => context.push<void>(
           RoutePaths.parentEvaluationTheme(themeId, childId: child.id),
         ),
-        onOpenHealthBook: () => context.push<void>(
-          RoutePaths.withChild(RoutePaths.parentHealthBook, child.id),
-        ),
       ),
     ),
     route(
