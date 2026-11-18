@@ -250,7 +250,8 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
       onOpenAttendance: () => _push(RoutePaths.parentAttendance),
       onOpenMenu: () => _push(RoutePaths.parentMenu),
       onOpenActivities: () => _push(RoutePaths.parentActivities),
-      onOpenProfile: () => _push(RoutePaths.parentChildProfile),
+      // Hồ sơ của bé nằm ở tab Bé của tôi (user 18/11) ⇒ chuyển tab, không mở màn con
+      onOpenProfile: () => context.go(RoutePaths.parentChild),
     );
     if (others.isEmpty) return card;
     // Bé khác nằm dưới thẻ đang chọn: vẽ trước, kéo lên, thẻ đang chọn đè lên mép trên

@@ -54,7 +54,6 @@ import 'package:carenest_app/features/parent/leave_notice/presentation/screens/l
 import 'package:carenest_app/features/management/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/child_activities_screen.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/child_attendance_screen.dart';
-import 'package:carenest_app/features/parent/my_child/presentation/screens/child_profile_screen.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/my_child_screen.dart';
 import 'package:carenest_app/features/shared/notifications/presentation/screens/notification_detail_screen.dart';
 import 'package:carenest_app/features/shared/notifications/presentation/screens/notifications_screen.dart';
@@ -247,13 +246,7 @@ List<RouteBase> _staffAndParentRoutes(
 }) => [
   _roleShell(rootKey, AppRole.parent, NavDestinations.parent, {
     RoutePaths.parentToday: (context, state) => const ParentHomeScreen(),
-    RoutePaths.parentChild: (context, state) => MyChildScreen(
-      initialTab: switch (state.uri.queryParameters['tab']) {
-        'development' => MyChildTab.development,
-        _ => MyChildTab.today,
-      },
-      focusRewards: state.uri.queryParameters['section'] == 'rewards',
-    ),
+    RoutePaths.parentChild: (context, state) => const MyChildScreen(),
   }, account: account),
   ..._parentChildRoutes(),
   _roleShell(rootKey, AppRole.teacher, NavDestinations.teacher, {
@@ -350,10 +343,6 @@ List<GoRoute> _parentChildRoutes() {
       RoutePaths.parentAttendance,
       (context, state, child) =>
           ChildAttendanceScreen(childId: child.id, initialDay: today),
-    ),
-    route(
-      RoutePaths.parentChildProfile,
-      (context, state, child) => ChildProfileScreen(childId: child.id),
     ),
     route(
       RoutePaths.parentHealthBook,

@@ -77,8 +77,9 @@ void main() {
       find.descendant(of: bar, matching: find.text('Bé của tôi')),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Hôm nay'), findsOneWidget);
-    expect(find.text('Phát triển'), findsOneWidget);
+    // User 18/11: Bé của tôi là hồ sơ của bé, một trang, không chia tab
+    expect(find.text('Thông tin chung'), findsOneWidget);
+    expect(find.text('Hôm nay'), findsNothing);
     // Sức khỏe chuyển sang Sổ sức khỏe ở Trang chủ (user 17/11)
     expect(find.text('Sức khỏe'), findsNothing);
   });
@@ -92,27 +93,24 @@ void main() {
   });
 
   testWidgets(
-    'Phụ huynh: tab=development mở Phát triển, section=rewards cuộn tới khen thưởng',
+    'Phụ huynh: "Xem hồ sơ của …" ở Trang chủ chuyển sang tab Bé của tôi; '
+    'link cũ có tab vẫn mở Bé của tôi',
     (tester) async {
       final router = await pumpRouter(tester, enablePreview: true);
-      // Chữ lớn để phần khen thưởng nằm dưới mép màn khi chưa cuộn
-      tester.platformDispatcher.textScaleFactorTestValue = 1.5;
-      final reviews = find.textContaining('Nhận xét tuần').hitTestable();
-      final rewards = find.text('Khen thưởng cuối năm').hitTestable();
-
-      router.go('/parent/child?tab=development');
+      router.go(RoutePaths.parentToday);
       await tester.pumpAndSettle();
-      expect(reviews, findsOneWidget);
-      expect(rewards, findsNothing);
+      final link = find.text('Xem hồ sơ của Minh Anh ›');
+      await tester.ensureVisible(link);
+      await tester.pumpAndSettle();
+      await tester.tap(link);
+      await tester.pumpAndSettle();
+      expect(find.text('Thông tin chung'), findsOneWidget);
+      final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+      expect(bar.selectedIndex, 1);
 
       router.go('/parent/child?tab=development&section=rewards');
       await tester.pumpAndSettle();
-      expect(rewards, findsOneWidget);
-
-      // Bỏ section (vd. bấm "Đánh giá" sau "Khen thưởng") ⇒ về đầu tab
-      router.go('/parent/child?tab=development');
-      await tester.pumpAndSettle();
-      expect(reviews, findsOneWidget);
+      expect(find.text('Thông tin chung'), findsOneWidget);
     },
   );
 

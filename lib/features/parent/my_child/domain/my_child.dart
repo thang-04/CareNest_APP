@@ -3,19 +3,6 @@ import 'package:flutter/foundation.dart';
 /// Mọi nhãn/đánh giá dưới đây là giá trị BE trả (đã công bố cho phụ huynh — PAR-02, P-13b);
 /// APP không tự xếp loại, không tự tính.
 
-enum DayEventKind { attendance, meal, activity, pickup }
-
-@immutable
-class DayEvent {
-  const DayEvent({required this.time, required this.kind, required this.label});
-
-  final DateTime time;
-  final DayEventKind kind;
-
-  /// "Điểm danh – Có mặt"
-  final String label;
-}
-
 /// Tiêu chí đánh giá hằng ngày; danh sách thật do trường cấu hình (OBS-02, P-11).
 enum ReviewCriterion { health, emotion, learning, behavior }
 
@@ -37,66 +24,6 @@ class DailyReview {
   final String teacher;
   final List<ReviewTag> tags;
   final String? note;
-}
-
-@immutable
-class LeaveSummary {
-  const LeaveSummary({
-    required this.title,
-    required this.detail,
-    required this.seenByTeacher,
-  });
-
-  final String title;
-  final String detail;
-  final bool seenByTeacher;
-}
-
-@immutable
-class ChildToday {
-  const ChildToday({
-    required this.date,
-    required this.events,
-    this.review,
-    this.upcomingLeave,
-  });
-
-  final DateTime date;
-  final List<DayEvent> events;
-  final DailyReview? review;
-  final LeaveSummary? upcomingLeave;
-}
-
-@immutable
-class DevelopmentSummary {
-  const DevelopmentSummary({
-    required this.weekRange,
-    required this.weekNote,
-    required this.weekAuthor,
-    required this.weekConfirmed,
-    required this.monthlyTitle,
-    required this.flagMonth,
-    required this.flagsEarned,
-    required this.flagsNeeded,
-    required this.flagSlots,
-    required this.yearEndNote,
-  });
-
-  /// "05/10 – 09/10"
-  final String weekRange;
-  final String weekNote;
-
-  /// "Cô Trần Thu Hà · 09/10/2026"
-  final String weekAuthor;
-  final bool weekConfirmed;
-  final String monthlyTitle;
-
-  /// Phiếu bé ngoan (OBS-10 PROPOSED): số phiếu và ngưỡng do BE trả.
-  final String flagMonth;
-  final int flagsEarned;
-  final int flagsNeeded;
-  final int flagSlots;
-  final String yearEndNote;
 }
 
 @immutable
@@ -189,36 +116,85 @@ class Guardian {
   final String phone;
 }
 
+/// Trạng thái một mục khai báo sức khỏe khi tiếp nhận: BE `REPORTED` / `NONE_REPORTED` /
+/// `NOT_PROVIDED` (CHD-06).
+enum DeclarationState { reported, noneReported, notProvided }
+
+/// Mục khai báo có chữ đi kèm khi `reported`: chế độ ăn, tên bệnh tiền sử (HLT-06).
+@immutable
+class DeclaredItem {
+  const DeclaredItem.reported(String this.text)
+    : state = DeclarationState.reported;
+  const DeclaredItem.noneReported()
+    : state = DeclarationState.noneReported,
+      text = null;
+  const DeclaredItem.notProvided()
+    : state = DeclarationState.notProvided,
+      text = null;
+
+  final DeclarationState state;
+  final String? text;
+}
+
+/// Khai báo sức khỏe khi tiếp nhận (CHD-06): dị ứng, chế độ ăn, tiền sử bản thân và gia đình.
+@immutable
+class DeclaredHealth {
+  const DeclaredHealth({
+    required this.allergyState,
+    this.allergies = const [],
+    required this.diet,
+    required this.selfHistory,
+    required this.familyHistory,
+  });
+
+  final DeclarationState allergyState;
+
+  /// Tên chất gây dị ứng khi [allergyState] là `reported` (HLT-06).
+  final List<String> allergies;
+  final DeclaredItem diet;
+  final DeclaredItem selfHistory;
+  final DeclaredItem familyHistory;
+}
+
+/// Hồ sơ của bé cho phụ huynh (tab Bé của tôi): chỉ xem, nhà trường sửa (CHD-05).
 @immutable
 class ChildProfile {
   const ChildProfile({
     required this.fullName,
-    required this.classLine,
+    required this.className,
+    required this.ageLabel,
+    required this.schoolYear,
     required this.birthDate,
     required this.gender,
     required this.campus,
     required this.teachers,
-    required this.healthLine,
+    required this.health,
     required this.guardians,
   });
 
   final String fullName;
 
-  /// "Lớp Mầm 3A · Năm học 2026–2027"
-  final String classLine;
+  /// "Mầm 3A"
+  final String className;
+
+  /// "4 tuổi"
+  final String ageLabel;
+
+  /// "2026–2027"
+  final String schoolYear;
 
   /// "14/03/2022 (4 tuổi)"
   final String birthDate;
   final String gender;
   final String campus;
+
+  /// "Cô Trần Thu Hà · Cô Lê Mai"
   final String teachers;
-  final String healthLine;
+  final DeclaredHealth health;
   final List<Guardian> guardians;
 }
 
 abstract interface class MyChildSource {
-  Future<ChildToday> loadToday(String childId);
-  Future<DevelopmentSummary> loadDevelopment(String childId);
   Future<ActivityDay> loadActivities(String childId);
   Future<AttendanceMonth> loadAttendance(String childId);
   Future<ChildProfile> loadProfile(String childId);
