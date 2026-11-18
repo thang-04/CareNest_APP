@@ -11,6 +11,7 @@ import 'package:carenest_app/features/kitchen/ingredient_receipt/presentation/sc
 import 'package:carenest_app/features/kitchen/kitchen_home/data/fake_kitchen_home_source.dart';
 import 'package:carenest_app/features/kitchen/kitchen_home/presentation/screens/kitchen_home_screen.dart';
 import 'package:carenest_app/features/kitchen/kitchen_meals/data/fake_kitchen_meals_source.dart';
+import 'package:carenest_app/features/kitchen/kitchen_meals/domain/kitchen_meals.dart';
 import 'package:carenest_app/features/kitchen/kitchen_meals/presentation/screens/kitchen_meals_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 import 'package:carenest_app/features/shared/school_menu/presentation/screens/school_menu_screen.dart';
@@ -18,6 +19,21 @@ import 'package:carenest_app/features/shared/school_menu/presentation/screens/sc
 import '../../../helpers/pump_app.dart';
 
 final today = DateTime(2026, 10, 12);
+
+/// Lần tải đầu lỗi, các lần sau trả số suất giả.
+class _RetrySource implements KitchenMealsSource {
+  final _data = FakeKitchenMealsSource(delay: Duration.zero);
+  var _calls = 0;
+
+  @override
+  Future<MealCountSheet?> loadSheet() {
+    _calls++;
+    if (_calls == 1) {
+      return Future.error(StateError('Không tải được dữ liệu giả'));
+    }
+    return _data.loadSheet();
+  }
+}
 
 Future<void> pumpScreen(
   WidgetTester tester,
@@ -130,6 +146,15 @@ void main() {
       ),
     );
     expect(find.text('Chưa có số suất đã chốt'), findsOneWidget);
+  });
+
+  // APP-BUG-261118-setstate-future-retry: closure trả Future vào setState làm "Thử lại" hỏng
+  testWidgets('K03: lỗi tải ⇒ "Thử lại" tải lại số suất', (tester) async {
+    await pumpScreen(tester, KitchenMealsScreen(source: _RetrySource()));
+    expect(find.text('Thử lại'), findsOneWidget);
+    await tester.tap(find.text('Thử lại'));
+    await tester.pumpAndSettle();
+    expect(find.bySemanticsLabel('Tổng suất: 182'), findsOneWidget);
   });
 
   testWidgets('K04 (NUT-07): định lượng 182 suất, phiếu xuất kho đã duyệt', (

@@ -50,7 +50,10 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
   // Quay lại từ màn chi tiết ⇒ tải lại để yêu cầu đã xử lý biến khỏi danh sách
   Future<void> _open(String path) async {
     await context.push<void>(path);
-    if (mounted) setState(() => _data = _load());
+    if (!mounted) return;
+    setState(() {
+      _data = _load();
+    });
   }
 
   @override
@@ -104,7 +107,9 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                 AppErrorState(
                   title: 'Chưa tải được yêu cầu',
                   message: 'Kiểm tra kết nối mạng rồi thử lại.',
-                  onRetry: () => setState(() => _data = _load()),
+                  onRetry: () => setState(() {
+                    _data = _load();
+                  }),
                 )
               else if (data == null)
                 const AppSkeletonList(rows: 3)

@@ -101,3 +101,7 @@ Còn `- [ ]` ⇒ không được `approved` (check-ai-layer E5).
 - `docs/features/parent/README.md` (mục Bé của tôi, lệch BE), `docs/architecture/NAVIGATION.md`, `docs/context/CURRENT_STATE.md`, incident + `ISSUE_INDEX.md`.
 - `node scripts/verify.mjs` (Flutter 3.47.6) → `VERIFY PASS full | format ok | design ok | analyze ok | tests 443 fail 0 skip 0`.
 - Chưa commit, chưa push: chờ user cho phép.
+
+### 2026-11-18 — Sửa lỗi "Thử lại" ở các màn còn lại (user cho phép)
+- 14 chỗ ở bếp Suất ăn và các màn quản lý đổi sang thân khối; thêm test `K03: lỗi tải ⇒ "Thử lại" tải lại số suất`; incident `APP-BUG-261118-setstate-future-retry` chuyển `fixed`.
+- `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 444 fail 0 skip 0`.

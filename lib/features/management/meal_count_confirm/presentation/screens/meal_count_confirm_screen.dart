@@ -36,7 +36,9 @@ class _MealCountConfirmScreenState extends State<MealCountConfirmScreen> {
     try {
       final updated = await _source.confirm();
       if (!mounted) return;
-      setState(() => _draft = Future.value(updated));
+      setState(() {
+        _draft = Future.value(updated);
+      });
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.maybeOf(context)?.showSnackBar(
@@ -75,7 +77,9 @@ class _MealCountConfirmScreenState extends State<MealCountConfirmScreen> {
               child: AppErrorState(
                 title: 'Chưa tải được số suất',
                 message: 'Kiểm tra kết nối mạng rồi thử lại.',
-                onRetry: () => setState(() => _draft = _source.loadToday()),
+                onRetry: () => setState(() {
+                  _draft = _source.loadToday();
+                }),
               ),
             ),
             _ when draft == null => const Padding(

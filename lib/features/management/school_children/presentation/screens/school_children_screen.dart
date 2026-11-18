@@ -70,7 +70,9 @@ class _SchoolChildrenScreenState extends State<SchoolChildrenScreen> {
               AppErrorState(
                 title: 'Chưa tải được danh sách trẻ',
                 message: 'Kiểm tra kết nối mạng rồi thử lại.',
-                onRetry: () => setState(() => _data = _load()),
+                onRetry: () => setState(() {
+                  _data = _load();
+                }),
               ),
             ],
           );

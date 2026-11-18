@@ -53,8 +53,9 @@ class _CampusesScreenState extends State<CampusesScreen> {
                 AppErrorState(
                   title: 'Chưa tải được danh sách cơ sở',
                   message: 'Kiểm tra kết nối mạng rồi thử lại.',
-                  onRetry: () =>
-                      setState(() => _campuses = _source.loadCampuses()),
+                  onRetry: () => setState(() {
+                    _campuses = _source.loadCampuses();
+                  }),
                 )
               else if (campuses == null)
                 const AppSkeletonList(rows: 2)

@@ -153,7 +153,9 @@ class _RewardBatchScreenState extends State<RewardBatchScreen> {
               child: AppErrorState(
                 title: 'Chưa tải được đề xuất',
                 message: 'Kiểm tra kết nối mạng rồi thử lại.',
-                onRetry: () => setState(() => _batch = _load()),
+                onRetry: () => setState(() {
+                  _batch = _load();
+                }),
               ),
             ),
             AsyncSnapshot(connectionState: ConnectionState.waiting) =>

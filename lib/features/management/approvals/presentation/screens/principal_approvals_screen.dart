@@ -33,7 +33,10 @@ class _PrincipalApprovalsScreenState extends State<PrincipalApprovalsScreen> {
   // Quay lại từ màn chi tiết ⇒ tải lại để đợt đã xử lý chuyển xuống mục dưới
   Future<void> _open(String id) async {
     await context.push<void>(RoutePaths.principalRewardBatch(id));
-    if (mounted) setState(() => _batches = _source.loadBatches());
+    if (!mounted) return;
+    setState(() {
+      _batches = _source.loadBatches();
+    });
   }
 
   @override
@@ -80,8 +83,9 @@ class _PrincipalApprovalsScreenState extends State<PrincipalApprovalsScreen> {
                 AppErrorState(
                   title: 'Chưa tải được yêu cầu',
                   message: 'Kiểm tra kết nối mạng rồi thử lại.',
-                  onRetry: () =>
-                      setState(() => _batches = _source.loadBatches()),
+                  onRetry: () => setState(() {
+                    _batches = _source.loadBatches();
+                  }),
                 )
               else if (pending == null || done == null)
                 const AppSkeletonList(rows: 3)

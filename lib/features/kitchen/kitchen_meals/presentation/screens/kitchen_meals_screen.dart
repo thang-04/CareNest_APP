@@ -57,7 +57,9 @@ class _KitchenMealsScreenState extends State<KitchenMealsScreen> {
               child: AppErrorState(
                 title: 'Chưa tải được suất ăn',
                 message: 'Kiểm tra kết nối mạng rồi thử lại.',
-                onRetry: () => setState(() => _sheet = _source.loadSheet()),
+                onRetry: () => setState(() {
+                  _sheet = _source.loadSheet();
+                }),
               ),
             ),
             AsyncSnapshot(connectionState: ConnectionState.waiting) =>
