@@ -1,6 +1,6 @@
 ---
 title: Trang Đánh giá của phụ huynh — 5 mục Ngày · Tuần · Chủ đề · Học kỳ · Cuối năm
-status: in-progress  # user duyệt 18/11, làm liền 3 phase; draft → approved → in-progress → done | blocked | cancelled
+status: done         # user duyệt 18/11, làm liền 3 phase; draft → approved → in-progress → done | blocked | cancelled
 owner: Giáp
 jira: TBD-4 / FE-FEAT-0   # mã tạm của nhánh (plan 2026-11-16) — đổi sang mã Jira thật trước khi mở PR
 branch: feature/TBD-4-FE-FEAT-0-app-foundation
@@ -105,3 +105,11 @@ Còn `- [ ]` ⇒ không được `approved` (check-ai-layer E5).
 - Máy có 2 Flutter: PATH là 3.44.0, lockfile cần ≥ 3.47 ⇒ chạy bằng `D:\Flutter_Setup\stable-3.47.6\flutter` (SDK của VS Code).
 - `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 433 fail 0 skip 0`.
 - Commit: xem `git log` nhánh, chưa push.
+
+### 2026-11-18 — Phase 2 (done)
+- Route `/parent/evaluation`, `/parent/evaluation/themes/<themeId>` (ID con ở query, con lạ ⇒ 404); ô "Đánh giá" ở Trang chủ mở trang mới; ô "Khen thưởng" vẫn mở tab Phát triển.
+- Test router: Việc nhanh › Đánh giá › Chủ đề › kết quả chủ đề › quay lại › Cuối năm › Sổ sức khỏe; trang theo bé trên đường dẫn, bé lạ ⇒ 404.
+- `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 435 fail 0 skip 0`.
+
+### 2026-11-18 — Phase 3 (done)
+- `docs/features/parent/README.md` (mục Trang Đánh giá, chốt 18/11, lệch BE), `docs/architecture/NAVIGATION.md`, `docs/context/CURRENT_STATE.md`; thêm Attempts 9–11 vào `APP-ENV-261008-flutter-sdk-mismatch`.
