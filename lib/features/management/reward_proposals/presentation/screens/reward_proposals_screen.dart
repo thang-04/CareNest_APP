@@ -104,7 +104,9 @@ class _RewardProposalsScreenState extends State<RewardProposalsScreen> {
                 AppErrorState(
                   title: 'Chưa tải được đề xuất',
                   message: 'Kiểm tra kết nối mạng rồi thử lại.',
-                  onRetry: () => setState(() => _items = _source.load()),
+                  onRetry: () => setState(() {
+                    _items = _source.load();
+                  }),
                 )
               else if (items == null)
                 const AppSkeletonList(rows: 4)

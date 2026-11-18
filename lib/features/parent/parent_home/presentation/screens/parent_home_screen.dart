@@ -206,25 +206,25 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                 () => _push(RoutePaths.parentMenu),
                 tone: AppStatusTone.green,
               ),
+              // User 17/11: Sổ sức khỏe là màn riêng (Kỳ cân đo | Đợt khám | Xu hướng)
               UtilityItem(
                 AppIcons.heart,
-                'Sức khỏe',
-                () => context.go(RoutePaths.parentChildAt('health')),
+                'Sổ sức khỏe',
+                () => _push(RoutePaths.parentHealthBook),
                 tone: AppStatusTone.red,
               ),
-              // User 17/11: nhận xét tuần/tháng và phiếu bé ngoan + khen thưởng ở tab Phát triển
+              // User 18/11: trang Đánh giá riêng (Ngày | Tuần | Chủ đề | Học kỳ | Cuối năm)
               UtilityItem(
                 AppIcons.clipboardCheck,
                 'Đánh giá',
-                () => context.go(RoutePaths.parentChildAt('development')),
+                () => _push(RoutePaths.parentEvaluation),
                 tone: AppStatusTone.teal,
               ),
+              // User 18/11: trang Khen thưởng riêng (Tuần | Tháng | Cuối năm)
               UtilityItem(
                 AppIcons.trophy,
                 'Khen thưởng',
-                () => context.go(
-                  RoutePaths.parentChildAt('development', section: 'rewards'),
-                ),
+                () => _push(RoutePaths.parentRewards),
                 tone: AppStatusTone.approval,
               ),
             ],
@@ -250,7 +250,8 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
       onOpenAttendance: () => _push(RoutePaths.parentAttendance),
       onOpenMenu: () => _push(RoutePaths.parentMenu),
       onOpenActivities: () => _push(RoutePaths.parentActivities),
-      onOpenProfile: () => _push(RoutePaths.parentChildProfile),
+      // Hồ sơ của bé nằm ở tab Bé của tôi (user 18/11) ⇒ chuyển tab, không mở màn con
+      onOpenProfile: () => context.go(RoutePaths.parentChild),
     );
     if (others.isEmpty) return card;
     // Bé khác nằm dưới thẻ đang chọn: vẽ trước, kéo lên, thẻ đang chọn đè lên mép trên

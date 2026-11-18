@@ -132,8 +132,9 @@ class _MealAdjustmentScreenState extends State<MealAdjustmentScreen> {
               child: AppErrorState(
                 title: 'Chưa tải được yêu cầu',
                 message: 'Kiểm tra kết nối mạng rồi thử lại.',
-                onRetry: () =>
-                    setState(() => _item = _source.loadOne(widget.id)),
+                onRetry: () => setState(() {
+                  _item = _source.loadOne(widget.id);
+                }),
               ),
             ),
             AsyncSnapshot(connectionState: ConnectionState.waiting) =>

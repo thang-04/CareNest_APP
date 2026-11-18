@@ -150,8 +150,9 @@ class _CampusChildrenScreenState extends State<CampusChildrenScreen> {
               AppErrorState(
                 title: 'Chưa tải được danh sách trẻ',
                 message: 'Kiểm tra kết nối mạng rồi thử lại.',
-                onRetry: () =>
-                    setState(() => _data = _source.load(widget.campusId)),
+                onRetry: () => setState(() {
+                  _data = _source.load(widget.campusId);
+                }),
               ),
             ],
           );

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
+import 'package:carenest_app/core/widgets/app_status_badge.dart';
+import 'package:carenest_app/features/parent/my_child/data/fake_my_child_source.dart';
+import 'package:carenest_app/features/parent/my_child/domain/my_child.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/child_activities_screen.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/child_attendance_screen.dart';
-import 'package:carenest_app/features/parent/my_child/presentation/screens/child_profile_screen.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/my_child_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/presentation/selected_child.dart';
 import 'package:carenest_app/features/parent/parent_menu/presentation/screens/weekly_menu_screen.dart';
@@ -12,6 +14,49 @@ import 'package:carenest_app/features/parent/parent_menu/presentation/screens/we
 import '../../../helpers/pump_app.dart';
 
 final today = DateTime(2026, 10, 12);
+
+/// Lần tải đầu lỗi, các lần sau trả dữ liệu giả — để thử "Thử lại".
+class _FlakySource extends FakeMyChildSource {
+  _FlakySource();
+
+  var _calls = 0;
+
+  @override
+  Future<ChildProfile> loadProfile(String childId) {
+    _calls++;
+    if (_calls == 1) {
+      return Future.error(StateError('Không tải được dữ liệu giả'));
+    }
+    return super.loadProfile(childId);
+  }
+}
+
+/// Mọi mục khai báo sức khỏe là "chưa cung cấp" (BE `NOT_PROVIDED`).
+class _NotProvidedSource extends FakeMyChildSource {
+  const _NotProvidedSource();
+
+  @override
+  Future<ChildProfile> loadProfile(String childId) async {
+    final base = await super.loadProfile(childId);
+    return ChildProfile(
+      fullName: base.fullName,
+      className: base.className,
+      ageLabel: base.ageLabel,
+      schoolYear: base.schoolYear,
+      birthDate: base.birthDate,
+      gender: base.gender,
+      campus: base.campus,
+      teachers: base.teachers,
+      health: const DeclaredHealth(
+        allergyState: DeclarationState.notProvided,
+        diet: DeclaredItem.notProvided(),
+        selfHistory: DeclaredItem.notProvided(),
+        familyHistory: DeclaredItem.notProvided(),
+      ),
+      guardians: base.guardians,
+    );
+  }
+}
 
 Future<void> pumpScreen(
   WidgetTester tester,
@@ -33,52 +78,93 @@ void main() {
   setUp(SelectedChild.reset);
 
   testWidgets(
-    'P08: Hôm nay có dòng thời gian, đánh giá, đơn nghỉ GV chưa xem',
+    'Bé của tôi = hồ sơ của bé: thẻ đầu, thông tin chung, cô chủ nhiệm, '
+    'sức khỏe đã khai báo, người đưa đón',
     (tester) async {
       await pumpScreen(tester, const MyChildScreen(), inScaffold: true);
-      expect(find.text('07:42 · Điểm danh – Có mặt'), findsOneWidget);
-      expect(find.text('Sức khỏe: Tốt'), findsOneWidget);
-      await tester.scrollUntilVisible(find.text('Đơn xin nghỉ 13/10'), 200);
-      expect(find.text('GV chưa xem'), findsOneWidget);
+      expect(find.text('Bé của tôi'), findsOneWidget);
+      expect(find.text('Nguyễn Minh Anh'), findsOneWidget);
+      expect(find.text('Mầm 3A · 4 tuổi'), findsOneWidget);
+      expect(find.text('Năm học 2026–2027'), findsOneWidget);
+      // User 18/11: không thanh chọn bé, không nút Gọi cô / Hồ sơ của bé, bỏ hành trình năm học
+      expect(find.text('Bảo Ngọc'), findsNothing);
+      expect(find.text('Gọi cô'), findsNothing);
+      expect(find.text('Hồ sơ của bé'), findsNothing);
+      expect(find.text('Hành trình năm học'), findsNothing);
+
+      expect(find.text('14/03/2022 (4 tuổi)'), findsOneWidget);
+      expect(find.text('Cơ sở chính – Thượng Hồng'), findsOneWidget);
+      expect(find.text('Cô Trần Thu Hà · Cô Lê Mai'), findsOneWidget);
+      expect(find.byTooltip('Gọi giáo viên chủ nhiệm'), findsOneWidget);
+
+      await tester.scrollUntilVisible(find.text('Tiền sử gia đình'), 200);
+      expect(find.text('Sức khỏe đã khai báo'), findsOneWidget);
+      // Dị ứng và tiền sử bản thân đều "Không"; tiền sử có bệnh ghi như web
+      expect(find.text('Không'), findsNWidgets(2));
+      expect(find.text('Bình thường'), findsOneWidget);
+      expect(find.text('Có — Tăng huyết áp'), findsOneWidget);
+      expect(find.byType(AppStatusBadge), findsNothing);
+
+      await tester.scrollUntilVisible(
+        find.textContaining('Thông tin do nhà trường quản lý'),
+        200,
+      );
+      expect(find.text('Mẹ – Thu Lan'), findsOneWidget);
+      expect(find.text('0912 345 678'), findsOneWidget);
+      expect(find.text('Bố – Văn Hùng'), findsOneWidget);
     },
   );
 
   testWidgets(
-    'P11 / AC-8 (HLT-04): Sức khỏe có số đo, biểu đồ, câu không chẩn đoán',
+    'Đổi bé ở Trang chủ ⇒ hồ sơ đổi theo; bé có dị ứng hiện chip, tiền sử',
     (tester) async {
       await pumpScreen(tester, const MyChildScreen(), inScaffold: true);
-      await tester.tap(find.text('Sức khỏe'));
+      expect(find.text('Nguyễn Minh Anh'), findsOneWidget);
+      SelectedChild.notifier.value = 'child-2';
       await tester.pumpAndSettle();
-      expect(find.bySemanticsLabel('Chiều cao: 104 cm'), findsOneWidget);
-      expect(
-        find.bySemanticsLabel(RegExp('^Cân nặng các tháng: T6')),
-        findsOneWidget,
-      );
-      await tester.scrollUntilVisible(
-        find.textContaining('không thay thế chẩn đoán y tế'),
-        200,
-      );
-      expect(find.textContaining('điều trị'), findsNothing);
+      expect(find.text('Nguyễn Hoàng Bảo Ngọc'), findsOneWidget);
+      expect(find.text('Lá 1 · 5 tuổi'), findsOneWidget);
+      expect(find.text('Cô Vũ Minh Thư'), findsOneWidget);
+      expect(find.widgetWithText(AppStatusBadge, 'Hải sản'), findsOneWidget);
+      expect(find.text('Suất thay thế'), findsOneWidget);
+      expect(find.text('Có — Hen phế quản'), findsOneWidget);
     },
   );
 
-  testWidgets('P12: Phát triển có nhận xét tuần, phiếu bé ngoan, khen thưởng', (
+  testWidgets('Khai báo chưa cung cấp ⇒ "Chưa cung cấp" ở cả bốn mục', (
     tester,
   ) async {
-    await pumpScreen(tester, const MyChildScreen(), inScaffold: true);
-    await tester.tap(find.text('Phát triển'));
-    await tester.pumpAndSettle();
-    expect(find.text('Nhận xét tuần 05/10 – 09/10'), findsOneWidget);
-    expect(find.bySemanticsLabel('2 trên 4 phiếu tuần'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Khen thưởng cuối năm'), 200);
+    await pumpScreen(
+      tester,
+      const MyChildScreen(source: _NotProvidedSource()),
+      inScaffold: true,
+    );
+    expect(find.text('Chưa cung cấp'), findsNWidgets(4));
   });
 
-  testWidgets('Đổi bé ở chỗ khác ⇒ tab Bé của tôi đổi theo', (tester) async {
-    await pumpScreen(tester, const MyChildScreen(), inScaffold: true);
-    expect(find.textContaining('Nguyễn Minh Anh'), findsWidgets);
-    SelectedChild.notifier.value = 'child-2';
+  testWidgets('Lỗi tải ⇒ báo lỗi, "Thử lại" tải lại hồ sơ', (tester) async {
+    await pumpScreen(
+      tester,
+      MyChildScreen(source: _FlakySource()),
+      inScaffold: true,
+    );
+    expect(find.text('Chưa tải được thông tin của bé'), findsOneWidget);
+    await tester.tap(find.text('Thử lại'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Nguyễn Hoàng Bảo Ngọc'), findsOneWidget);
+    expect(find.text('Nguyễn Minh Anh'), findsOneWidget);
+  });
+
+  testWidgets('Chữ 1,3 và 2,0 với bé có dị ứng: không tràn', (tester) async {
+    SelectedChild.notifier.value = 'child-2';
+    for (final scale in [1.3, 2.0]) {
+      await pumpScreen(
+        tester,
+        MyChildScreen(key: UniqueKey()),
+        textScale: scale,
+        inScaffold: true,
+      );
+      expect(tester.takeException(), isNull);
+    }
   });
 
   testWidgets('P09 / AC-9: ảnh hoạt động là khối giữ chỗ, có "+1"', (
@@ -109,15 +195,6 @@ void main() {
       ),
       findsOneWidget,
     );
-  });
-
-  testWidgets('P13: hồ sơ có GV chủ nhiệm, người đưa đón; chỉ xem', (
-    tester,
-  ) async {
-    await pumpScreen(tester, const ChildProfileScreen(childId: 'child-1'));
-    expect(find.text('Cô Trần Thu Hà · Cô Lê Mai'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Mẹ – Thu Lan'), 200);
-    expect(find.byType(TextField), findsNothing);
   });
 
   testWidgets(
@@ -153,19 +230,12 @@ void main() {
 
   for (final (name, screen, scaffold) in <(String, Widget, bool)>[
     ('Bé của tôi', const MyChildScreen(), true),
-    ('Sức khỏe', const MyChildScreen(initialTab: MyChildTab.health), true),
-    (
-      'Phát triển',
-      const MyChildScreen(initialTab: MyChildTab.development),
-      true,
-    ),
     ('Hoạt động', const ChildActivitiesScreen(childId: 'child-1'), false),
     (
       'Điểm danh',
       ChildAttendanceScreen(childId: 'child-1', initialDay: today),
       false,
     ),
-    ('Hồ sơ', const ChildProfileScreen(childId: 'child-1'), false),
     (
       'Thực đơn',
       WeeklyMenuScreen(childId: 'child-1', initialDay: today),

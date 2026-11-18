@@ -44,12 +44,17 @@ import 'package:carenest_app/features/kitchen/kitchen_day/presentation/screens/k
 import 'package:carenest_app/features/teacher/health_measure/presentation/screens/health_measure_detail_screen.dart';
 import 'package:carenest_app/features/teacher/health_measure/presentation/screens/health_measure_list_screen.dart';
 import 'package:carenest_app/features/kitchen/kitchen_home/presentation/screens/kitchen_home_screen.dart';
+import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
+import 'package:carenest_app/features/parent/evaluation/presentation/screens/evaluation_screen.dart';
+import 'package:carenest_app/features/parent/evaluation/presentation/screens/theme_result_screen.dart';
+import 'package:carenest_app/features/parent/rewards/presentation/screens/rewards_screen.dart';
+import 'package:carenest_app/features/parent/health_book/presentation/screens/exam_detail_screen.dart';
+import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_form_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_list_screen.dart';
 import 'package:carenest_app/features/management/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/child_activities_screen.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/child_attendance_screen.dart';
-import 'package:carenest_app/features/parent/my_child/presentation/screens/child_profile_screen.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/my_child_screen.dart';
 import 'package:carenest_app/features/shared/notifications/presentation/screens/notification_detail_screen.dart';
 import 'package:carenest_app/features/shared/notifications/presentation/screens/notifications_screen.dart';
@@ -73,7 +78,6 @@ import 'package:carenest_app/features/management/vice_principal_home/presentatio
 import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/campus_menu_screen.dart';
 import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/vice_principal_home_screen.dart';
 import 'package:carenest_app/routing/navigation_destinations.dart';
-import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
 /// `enablePreview` mặc định theo debug: màn theo vai trò còn phụ thuộc PENDING và chưa có auth
@@ -117,14 +121,8 @@ GoRouter buildAppRouter({
         ),
         _roleShell(rootKey, AppRole.parent, NavDestinations.parent, {
           RoutePaths.parentToday: (context, state) => const ParentHomeScreen(),
-          RoutePaths.parentChild: (context, state) => MyChildScreen(
-            initialTab: switch (state.uri.queryParameters['tab']) {
-              'health' => MyChildTab.health,
-              'development' => MyChildTab.development,
-              _ => MyChildTab.today,
-            },
-            focusRewards: state.uri.queryParameters['section'] == 'rewards',
-          ),
+          // TBD-4 18/11: Bé của tôi là một trang hồ sơ, bỏ qua `tab`, `section` ở link cũ
+          RoutePaths.parentChild: (context, state) => const MyChildScreen(),
         }),
         ..._parentChildRoutes(),
         _roleShell(rootKey, AppRole.teacher, NavDestinations.teacher, {
@@ -244,8 +242,45 @@ List<GoRoute> _parentChildRoutes() {
           ChildAttendanceScreen(childId: child.id, initialDay: today),
     ),
     route(
-      RoutePaths.parentChildProfile,
-      (context, state, child) => ChildProfileScreen(childId: child.id),
+      RoutePaths.parentHealthBook,
+      (context, state, child) => HealthBookScreen(
+        child: child,
+        onOpenExam: (examId) => context.push<void>(
+          RoutePaths.parentHealthExam(examId, childId: child.id),
+        ),
+      ),
+    ),
+    route(
+      '${RoutePaths.parentHealthExams}/:examId',
+      (context, state, child) => ExamDetailScreen(
+        child: child,
+        examId: state.pathParameters['examId']!,
+      ),
+    ),
+    route(
+      RoutePaths.parentEvaluation,
+      (context, state, child) => EvaluationScreen(
+        child: child,
+        onOpenTheme: (themeId) => context.push<void>(
+          RoutePaths.parentEvaluationTheme(themeId, childId: child.id),
+        ),
+      ),
+    ),
+    route(
+      '${RoutePaths.parentEvaluationThemes}/:themeId',
+      (context, state, child) => ThemeResultScreen(
+        child: child,
+        themeId: state.pathParameters['themeId']!,
+      ),
+    ),
+    route(
+      RoutePaths.parentRewards,
+      (context, state, child) => RewardsScreen(
+        child: child,
+        onOpenDailyEvaluation: () => context.push<void>(
+          RoutePaths.withChild(RoutePaths.parentEvaluation, child.id),
+        ),
+      ),
     ),
   ];
 }

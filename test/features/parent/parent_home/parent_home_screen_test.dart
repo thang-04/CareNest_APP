@@ -93,17 +93,17 @@ void main() {
       top(find.text('Chị Nguyễn Thu Lan')),
       lessThan(top(find.text('Minh Anh'))),
     );
-    await tester.scrollUntilVisible(find.text('Sức khỏe'), 200);
+    await tester.scrollUntilVisible(find.text('Sổ sức khỏe'), 200);
     expect(top(find.text('Minh Anh')), lessThan(top(find.text('Việc nhanh'))));
     for (final label in [
       'Xin nghỉ cho bé',
       'Hoạt động & đánh giá',
       'Thực đơn tuần',
-      'Sức khỏe',
+      'Sổ sức khỏe',
     ]) {
       expect(find.text(label), findsOneWidget);
     }
-    // Hàng cuối (user 17/11): đánh giá và khen thưởng mở tab Phát triển
+    // Hàng cuối: Đánh giá và Khen thưởng mở trang riêng (user 18/11)
     await tester.scrollUntilVisible(find.text('Khen thưởng'), 200);
     expect(find.text('Đánh giá'), findsOneWidget);
   });

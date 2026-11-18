@@ -36,6 +36,9 @@ Dự án yêu cầu Dart ^3.12.0; chưa có package config, analyzer báo không
 | 6 | User duyệt; flutter pub get bằng SDK mới | Exit 0; đúng 5 package đổi; SDK tự thêm analyzer.exclude | Giữ migration bỏ qua thư mục build/nền tảng sinh tự động |
 | 7 | node scripts/verify.mjs bằng SDK mới | PASS: format/analyze ok, 27 test, fail 0, skip 0 | Đã kiểm chứng dự án với SDK mới |
 | 8 | enforce-lockfile sau cập nhật | Exit 0, hash lockfile không đổi | Dependency đã đồng bộ và ổn định |
+| 9 | 18/11: `flutter analyze` bằng Flutter trên PATH (C:\Users\admin\Downloads\flutter, 3.44.0 / Dart 3.12.0); lockfile lúc này cần Dart >=3.13.0, Flutter >=3.47.0 | Tự chạy pub get ⇒ version solving failed (build_runner ^2.17.1 cần meta ^1.18.3, flutter_test ghim 1.18.0) | PATH lại trỏ SDK cũ, lockfile đã theo 3.47 |
+| 10 | `flutter analyze --no-pub` / `flutter test --no-pub` bằng SDK 3.44.0 | Analyze chạy được; test lỗi "Can't load Kernel binary: Invalid kernel binary format version (expected 130, found 138)" ở hook native asset `objective_c` | `.dart_tool` do SDK mới dựng; không trộn SDK |
+| 11 | Đặt `D:\Flutter_Setup\stable-3.47.6\flutter\bin` lên đầu PATH (SDK trong `.vscode/settings.json` `dart.flutterSdkPath`) rồi `node scripts/verify.mjs` | VERIFY PASS full, 435 test, fail 0 | Chạy verify bằng SDK của VS Code, không sửa lockfile |
 
 ## Root cause
 Thiết bị/môi trường: SDK trên PATH thấp hơn pubspec.yaml:22 (Dart ^3.12.0) và pubspec.lock:262-263 (Flutter >=3.44.0). Lỗi lộ trong checkout này vì máy chọn SDK 3.41.8, trong khi dự án/lockfile được tạo bằng SDK mới hơn.

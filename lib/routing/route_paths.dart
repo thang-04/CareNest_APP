@@ -24,13 +24,6 @@ abstract final class RoutePaths {
 
   static const parentToday = '/parent';
   static const parentChild = '/parent/child';
-
-  /// Bé của tôi mở sẵn tab [tab] (`health` | `development`); [section] `rewards` ⇒ cuộn tới
-  /// phiếu bé ngoan + khen thưởng cuối năm.
-  static String parentChildAt(String tab, {String? section}) => Uri(
-    path: parentChild,
-    queryParameters: {'tab': tab, 'section': ?section},
-  ).toString();
   static const parentNotifications = '/parent/notifications';
   static const parentAccount = '/parent/account';
   static const parentLeaveNotices = '/parent/leave-notices';
@@ -38,7 +31,27 @@ abstract final class RoutePaths {
   static const parentMenu = '/parent/menu';
   static const parentActivities = '/parent/activities';
   static const parentAttendance = '/parent/attendance';
-  static const parentChildProfile = '/parent/child-profile';
+
+  /// Sổ sức khỏe (Kỳ cân đo | Đợt khám | Xu hướng); ID con ở query như các màn con khác.
+  static const parentHealthBook = '/parent/health';
+  static const parentHealthExams = '$parentHealthBook/exams';
+
+  /// Chi tiết một đợt khám: ID đợt trên đường dẫn, ID con ở query.
+  static String parentHealthExam(String examId, {required String childId}) =>
+      withChild('$parentHealthExams/$examId', childId);
+
+  /// Trang Đánh giá (Ngày | Tuần | Chủ đề | Học kỳ | Cuối năm); ID con ở query.
+  static const parentEvaluation = '/parent/evaluation';
+  static const parentEvaluationThemes = '$parentEvaluation/themes';
+
+  /// Kết quả một chủ đề: ID chủ đề trên đường dẫn, ID con ở query.
+  static String parentEvaluationTheme(
+    String themeId, {
+    required String childId,
+  }) => withChild('$parentEvaluationThemes/$themeId', childId);
+
+  /// Trang Khen thưởng (Tuần | Tháng | Cuối năm); ID con ở query.
+  static const parentRewards = '/parent/rewards';
 
   static const teacherToday = '/teacher';
   static const teacherClass = '/teacher/class';

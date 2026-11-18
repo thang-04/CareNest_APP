@@ -70,7 +70,9 @@ class _NutritionBalanceScreenState extends State<NutritionBalanceScreen> {
               child: AppErrorState(
                 title: 'Chưa tải được cân đối dinh dưỡng',
                 message: 'Kiểm tra kết nối mạng rồi thử lại.',
-                onRetry: () => setState(() => _data = _load()),
+                onRetry: () => setState(() {
+                  _data = _load();
+                }),
               ),
             ),
             AsyncSnapshot(connectionState: ConnectionState.waiting) =>
