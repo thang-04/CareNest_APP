@@ -48,6 +48,16 @@ abstract final class RoutePaths {
   static String parentHealthExam(String examId, {required String childId}) =>
       withChild('$parentHealthExams/$examId', childId);
 
+  /// Trang Đánh giá (Ngày | Tuần | Chủ đề | Học kỳ | Cuối năm); ID con ở query.
+  static const parentEvaluation = '/parent/evaluation';
+  static const parentEvaluationThemes = '$parentEvaluation/themes';
+
+  /// Kết quả một chủ đề: ID chủ đề trên đường dẫn, ID con ở query.
+  static String parentEvaluationTheme(
+    String themeId, {
+    required String childId,
+  }) => withChild('$parentEvaluationThemes/$themeId', childId);
+
   static const teacherToday = '/teacher';
   static const teacherClass = '/teacher/class';
   static const teacherNotifications = '/teacher/notifications';

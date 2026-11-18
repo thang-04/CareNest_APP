@@ -44,6 +44,8 @@ import 'package:carenest_app/features/kitchen/ingredient_receipt/presentation/sc
 import 'package:carenest_app/features/kitchen/kitchen_home/presentation/screens/kitchen_home_screen.dart';
 import 'package:carenest_app/features/kitchen/kitchen_meals/presentation/screens/kitchen_meals_screen.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
+import 'package:carenest_app/features/parent/evaluation/presentation/screens/evaluation_screen.dart';
+import 'package:carenest_app/features/parent/evaluation/presentation/screens/theme_result_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/exam_detail_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_form_screen.dart';
@@ -366,6 +368,25 @@ List<GoRoute> _parentChildRoutes() {
       (context, state, child) => ExamDetailScreen(
         child: child,
         examId: state.pathParameters['examId']!,
+      ),
+    ),
+    route(
+      RoutePaths.parentEvaluation,
+      (context, state, child) => EvaluationScreen(
+        child: child,
+        onOpenTheme: (themeId) => context.push<void>(
+          RoutePaths.parentEvaluationTheme(themeId, childId: child.id),
+        ),
+        onOpenHealthBook: () => context.push<void>(
+          RoutePaths.withChild(RoutePaths.parentHealthBook, child.id),
+        ),
+      ),
+    ),
+    route(
+      '${RoutePaths.parentEvaluationThemes}/:themeId',
+      (context, state, child) => ThemeResultScreen(
+        child: child,
+        themeId: state.pathParameters['themeId']!,
       ),
     ),
   ];
