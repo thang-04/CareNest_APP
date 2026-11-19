@@ -1,6 +1,6 @@
 # Push Notification — Mobile
 
-> **Status: CHƯA CÓ NỘI DUNG — không dùng làm nguồn.** Push provider (vd. FCM/APNs trực tiếp hoặc dịch vụ trung gian) chưa chốt; endpoint đăng ký device token chưa có. Agent không tự chọn provider/SDK — hỏi.
+> **Cập nhật 2026-11-16:** Tiền duyệt Firebase Cloud Messaging cho spec 902. BE có `PUT/DELETE /me/devices`, `GET /me/notifications/{id}`, `GET /me/announcements/{id}` và API tải tệp có bearer. Tích hợp đang kiểm thử; chưa có cấu hình Firebase và chưa chứng minh nhận trên Android thật. Xem [hướng dẫn cấu hình](FIREBASE_SETUP.md).
 
 ## Nguyên tắc (dùng được)
 - BE quyết định **khi nào** gửi (domain event after-commit → module `notification`, `BE:docs/modules/notification.md`). APP nhận, hiển thị, đăng ký token.

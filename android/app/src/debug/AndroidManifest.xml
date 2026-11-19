@@ -4,4 +4,6 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Chỉ bản debug: cho Keycloak/BE local qua http (adb reverse); release vẫn chặn cleartext. -->
+    <application android:usesCleartextTraffic="true"/>
 </manifest>

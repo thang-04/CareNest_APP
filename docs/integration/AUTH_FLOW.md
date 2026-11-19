@@ -1,11 +1,11 @@
 # Auth Flow — Mobile
 
-> **Status: CHƯA CÓ NỘI DUNG — không dùng làm nguồn.** Cơ chế auth BE chưa chốt (`BE:docs/contracts/AUTH_CONTRACT.md` SKELETON; `BE:docs/backend-coding-guide.md` §2 chỉ định hướng JWT access + refresh, chưa triển khai). Agent không tự chọn cơ chế/thư viện — hỏi.
+> **Cập nhật 2026-11-16:** BE `docs/contracts/AUTH_CONTRACT.md` xác định Mobile dùng Keycloak authorization code + PKCE, client `carenest-mobile`, redirect `carenest://oauth/callback`. Tiền duyệt `flutter_appauth` và `flutter_secure_storage` cho spec 902. Tích hợp đang kiểm thử; chưa xác nhận trên Android thật.
 
 ## Đã biết (dùng được)
 - Quyền = Role × Permission ∩ Access scope, kiểm tra ở BE (`BE:docs/business/USER_ROLES.md`, AUTH-07). APP chỉ ẩn/hiện UI theo dữ liệu BE.
 - 401 / 403 trả envelope `{code, desc, data}` như mọi lỗi khác (`BACKEND_INTEGRATION.md`).
-- Policy PROPOSED: token chỉ trong OS secure storage (Keychain/Keystore), không SharedPreferences; thư viện chưa chọn. Logout xóa token + cache + offline queue (`.claude/rules/security-storage.md`).
+- Refresh token trong OS secure storage; access token ở bộ nhớ. Đăng xuất xóa phiên cục bộ và cố gắng hủy đăng ký thiết bị bằng phiên cũ; ngoại tuyến không khẳng định server đã hủy.
 
 ## Điền khi BE chốt
 - [ ] Đăng nhập: tài khoản do trường cấp? SĐT/OTP cho phụ huynh?
