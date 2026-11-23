@@ -33,9 +33,10 @@ import 'package:carenest_app/features/management/campus_children/presentation/sc
 import 'package:carenest_app/features/management/campuses/presentation/screens/campuses_screen.dart';
 import 'package:carenest_app/features/teacher/class_leave_notices/presentation/screens/class_leave_screen.dart';
 import 'package:carenest_app/features/teacher/class_roster/presentation/screens/class_roster_screen.dart';
-import 'package:carenest_app/features/teacher/daily_review/presentation/screens/daily_review_detail_screen.dart';
+import 'package:carenest_app/features/teacher/daily_review/presentation/screens/kid_evaluation_screen.dart';
+import 'package:carenest_app/features/teacher/class_roster/data/fake_class_roster_source.dart';
+import 'package:carenest_app/features/teacher/class_roster/domain/class_roster.dart';
 import 'package:carenest_app/features/teacher/daily_review/presentation/screens/daily_review_list_screen.dart';
-import 'package:carenest_app/features/teacher/daily_review/domain/daily_review.dart';
 import 'package:carenest_app/features/shared/dev_preview/presentation/screens/role_preview_screen.dart';
 import 'package:carenest_app/features/kitchen/food_samples/presentation/screens/food_sample_log_screen.dart';
 import 'package:carenest_app/features/kitchen/kitchen_day/presentation/screens/food_needs_screen.dart';
@@ -78,6 +79,8 @@ import 'package:carenest_app/features/management/vice_principal_home/presentatio
 import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/campus_menu_screen.dart';
 import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/vice_principal_home_screen.dart';
 import 'package:carenest_app/routing/navigation_destinations.dart';
+import 'package:carenest_app/features/shared/app_mode/app_mode.dart';
+import 'package:carenest_app/features/teacher/school_year/presentation/selected_school_year.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
 /// `enablePreview` mặc định theo debug: màn theo vai trò còn phụ thuộc PENDING và chưa có auth
@@ -126,8 +129,10 @@ GoRouter buildAppRouter({
         }),
         ..._parentChildRoutes(),
         _roleShell(rootKey, AppRole.teacher, NavDestinations.teacher, {
-          RoutePaths.teacherToday: (context, state) =>
-              const TeacherHomeScreen(),
+          // Xem thử: cô Hà kiêm phụ huynh (AUTH-21) ⇒ có nút chuyển sang chế độ phụ huynh
+          RoutePaths.teacherToday: (context, state) => TeacherHomeScreen(
+            onSwitchToParent: () => context.go(RoutePaths.parentToday),
+          ),
           RoutePaths.teacherClass: (context, state) =>
               const ClassRosterScreen(),
         }),
@@ -317,23 +322,41 @@ List<GoRoute> _teacherRoutes() {
     GoRoute(
       path: RoutePaths.teacherReviews,
       builder: (context, state) => DailyReviewListScreen(
-        onOpenKid: (id, view) => context.push<void>(
-          '${RoutePaths.kidDetail(RoutePaths.teacherReviews, id)}?view=${view.name}',
+        onOpenKid: (id) => context.push<void>(
+          RoutePaths.kidDetail(RoutePaths.teacherReviews, id),
         ),
       ),
       routes: [
         GoRoute(
           path: ':childId',
-          builder: (context, state) {
-            final viewName = state.uri.queryParameters['view'];
-            final view = ReviewDetailView.values
-                .where((item) => item.name == viewName)
-                .firstOrNull;
-            return DailyReviewDetailScreen(
-              childId: state.pathParameters['childId']!,
-              view: view ?? ReviewDetailView.day,
-            );
-          },
+          builder: (context, state) => KidEvaluationScreen(
+            childId: state.pathParameters['childId']!,
+            onOpenTheme: (childId, themeId) => context.push<void>(
+              '${RoutePaths.kidDetail(RoutePaths.teacherReviews, childId)}/themes/$themeId',
+            ),
+          ),
+          routes: [
+            GoRoute(
+              path: 'themes/:themeId',
+              builder: (context, state) {
+                final kid = FakeClassRosterSource.kidById(
+                  state.pathParameters['childId']!,
+                );
+                return ThemeResultScreen(
+                  child: KidEvaluationScreen.summaryOf(
+                    kid,
+                    ClassRoster(
+                      classId: FakeClassRosterSource.classId,
+                      className: FakeClassRosterSource.className,
+                      campusName: FakeClassRosterSource.campusName,
+                      kids: const [],
+                    ),
+                  ),
+                  themeId: state.pathParameters['themeId']!,
+                );
+              },
+            ),
+          ],
         ),
       ],
     ),
@@ -617,14 +640,31 @@ StatefulShellRoute _roleShell(
                 NavTab.account when live => AccountScreen(
                   role: role,
                   source: account,
+                  modeSwitches: _liveModeSwitches(context, role),
                   onOpenProfile: () =>
                       openComingSoon(context, 'Thông tin cá nhân'),
                   onChangePassword: () =>
                       openComingSoon(context, 'Đổi mật khẩu'),
-                  onLogout: () => onLogout?.call(),
+                  onLogout: () {
+                    SelectedSchoolYear.reset();
+                    AppMode.reset();
+                    onLogout?.call();
+                  },
                 ),
                 NavTab.account => AccountScreen(
                   role: role,
+                  modeSwitches: [
+                    if (role == AppRole.teacher)
+                      AccountModeSwitch(
+                        label: 'Chuyển sang chế độ phụ huynh',
+                        onTap: () => context.go(RoutePaths.parentToday),
+                      ),
+                    if (role == AppRole.parent)
+                      AccountModeSwitch(
+                        label: 'Chuyển sang chế độ giáo viên',
+                        onTap: () => context.go(RoutePaths.teacherToday),
+                      ),
+                  ],
                   onOpenProfile: () => context.push(
                     '${destination.path}/${RoutePaths.profileSegment}',
                   ),
@@ -637,6 +677,8 @@ StatefulShellRoute _roleShell(
                   // Chưa có phiên thật ⇒ đăng xuất chỉ về Đăng nhập, xoá back stack
                   onLogout: () {
                     SelectedChild.reset();
+                    SelectedSchoolYear.reset();
+                    AppMode.reset();
                     context.go(RoutePaths.login);
                   },
                 ),
@@ -697,4 +739,24 @@ class NotFoundScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Phiên thật: GV kiêm phụ huynh ⇒ đổi chế độ App (AUTH-21); BE không nhận chế độ đang chọn.
+List<AccountModeSwitch> _liveModeSwitches(BuildContext context, AppRole role) {
+  if (!AppMode.dualRole.value) return const [];
+  final target = role == AppRole.parent ? AppRole.teacher : AppRole.parent;
+  if (role != AppRole.teacher && role != AppRole.parent) return const [];
+  return [
+    AccountModeSwitch(
+      label: 'Chuyển sang chế độ ${target.label.toLowerCase()}',
+      onTap: () {
+        AppMode.active.value = target;
+        context.go(
+          target == AppRole.parent
+              ? '/live${RoutePaths.parentToday}'
+              : '/live${RoutePaths.teacherToday}',
+        );
+      },
+    ),
+  ];
 }

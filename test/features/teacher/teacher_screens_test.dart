@@ -3,14 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
-import 'package:carenest_app/core/widgets/app_filter_chip.dart';
 import 'package:carenest_app/features/teacher/activity_schedule/presentation/screens/activity_schedule_screen.dart';
 import 'package:carenest_app/features/teacher/class_leave_notices/presentation/screens/class_leave_screen.dart';
 import 'package:carenest_app/features/teacher/class_roster/data/fake_class_roster_source.dart';
 import 'package:carenest_app/features/teacher/class_roster/presentation/screens/class_roster_screen.dart';
 import 'package:carenest_app/features/teacher/daily_review/data/fake_daily_review_source.dart';
-import 'package:carenest_app/features/teacher/daily_review/domain/daily_review.dart';
-import 'package:carenest_app/features/teacher/daily_review/presentation/screens/daily_review_detail_screen.dart';
+import 'package:carenest_app/features/teacher/daily_review/presentation/screens/kid_evaluation_screen.dart';
 import 'package:carenest_app/features/teacher/daily_review/presentation/screens/daily_review_list_screen.dart';
 import 'package:carenest_app/features/teacher/health_measure/data/fake_health_measure_source.dart';
 import 'package:carenest_app/features/teacher/health_measure/presentation/screens/health_measure_detail_screen.dart';
@@ -43,7 +41,6 @@ Future<void> pumpScreen(
 }
 
 Future<void> noop(String _) async {}
-Future<void> noopReview(String _, ReviewDetailView _) async {}
 
 void main() {
   testWidgets('T09 (AUTH-03): danh sách lớp, nhãn dị ứng, tìm không dấu', (
@@ -70,137 +67,64 @@ void main() {
     },
   );
 
-  testWidgets('T04 → T04.1 (OBS-02): mỗi loại đánh giá mở riêng', (
+  testWidgets('T04: danh sách lớp hôm nay, chạm bé mở trang Đánh giá', (
     tester,
   ) async {
-    final source = FakeDailyReviewSource();
     String? openedChildId;
     await pumpScreen(
       tester,
       DailyReviewListScreen(
-        onOpenKid: (childId, view) async {
-          expect(view, ReviewDetailView.week);
-          openedChildId = childId;
-        },
-        source: source,
+        onOpenKid: (childId) async => openedChildId = childId,
+        source: FakeDailyReviewSource(),
       ),
     );
     expect(find.text('Đánh giá trẻ'), findsOneWidget);
-    expect(find.text('Ngày'), findsOneWidget);
-    expect(find.text('Tuần'), findsOneWidget);
-    expect(find.text('Cuối chủ đề'), findsOneWidget);
-    expect(find.text('Học kỳ'), findsOneWidget);
-    expect(find.text('Cuối năm'), findsOneWidget);
-    expect(find.text('Định kỳ'), findsNothing);
     expect(find.text('Đã có'), findsWidgets);
     expect(find.text('Nhận xét chung của lớp'), findsOneWidget);
     expect(find.widgetWithText(AppButton, 'Đánh giá'), findsNothing);
-
-    await tester.tap(find.text('Tuần'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('Tuần 12–16/10'), findsWidgets);
-    expect(find.textContaining('hoạt động trong tuần'), findsWidgets);
     await tester.tap(
       find.text(FakeClassRosterSource.kids.first.fullName).first,
     );
     await tester.pumpAndSettle();
     expect(openedChildId, FakeClassRosterSource.kids.first.id);
-
-    await tester.tap(find.text('Cuối chủ đề'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('Cuối chủ đề'), findsWidgets);
-    final periods = await source.loadPeriods(FakeClassRosterSource.classId);
-    expect(
-      periods.any((review) => review.kind == ReviewPeriodKind.semester),
-      isTrue,
-    );
-
-    await pumpScreen(
-      tester,
-      DailyReviewDetailScreen(childId: 'k-06', source: source),
-    );
-    expect(find.textContaining('iáo án'), findsNothing);
-    expect(find.text('Ăn bữa trưa'), findsOneWidget);
-    expect(find.text('Ngủ ít'), findsOneWidget);
-    expect(find.text('Cần cố gắng'), findsNothing);
-    await tester.fling(
-      find.byType(Scrollable).first,
-      const Offset(0, -700),
-      1000,
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('Nhận xét về bé'), findsOneWidget);
-    expect(find.text('Hành vi'), findsOneWidget);
-    expect(
-      find.text('Bé tham gia tốt, cần ổn định giờ ngủ trưa.'),
-      findsOneWidget,
-    );
-    await tester.fling(
-      find.byType(Scrollable).first,
-      const Offset(0, -1800),
-      1000,
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('Nhận xét chung của lớp'), findsOneWidget);
-    expect(find.text('Chỉ xem · dữ liệu được ghi trên web.'), findsOneWidget);
-    expect(find.text('Tuần & định kỳ'), findsNothing);
-    expect(find.widgetWithText(AppButton, 'Lưu'), findsNothing);
-    expect(find.byType(AppFilterChip), findsNothing);
-
-    await pumpScreen(
-      tester,
-      DailyReviewDetailScreen(
-        childId: 'k-06',
-        view: ReviewDetailView.week,
-        source: source,
-      ),
-    );
-    expect(find.text('Nhận xét tuần'), findsOneWidget);
-    expect(find.text('Tuần 12–16/10'), findsOneWidget);
-    expect(find.textContaining('Theo dõi thêm giấc ngủ trưa.'), findsOneWidget);
-    expect(find.text('Ăn bữa trưa'), findsNothing);
-    expect(find.textContaining('Cuối chủ đề'), findsNothing);
-
-    await pumpScreen(
-      tester,
-      DailyReviewDetailScreen(
-        childId: 'k-06',
-        view: ReviewDetailView.theme,
-        source: source,
-      ),
-    );
-    expect(find.text('Đánh giá cuối chủ đề'), findsOneWidget);
-    expect(find.text('Cuối chủ đề · Mùa thu của bé'), findsOneWidget);
-    expect(find.text('Học kỳ I'), findsNothing);
-    expect(find.text('Cuối năm học 2025–2026'), findsNothing);
-
-    await pumpScreen(
-      tester,
-      DailyReviewDetailScreen(
-        childId: 'k-06',
-        view: ReviewDetailView.semester,
-        source: source,
-      ),
-    );
-    expect(find.text('Đánh giá học kỳ'), findsOneWidget);
-    expect(find.text('Học kỳ I'), findsOneWidget);
-    expect(find.textContaining('Cuối chủ đề'), findsNothing);
-    expect(find.text('Cuối năm học 2025–2026'), findsNothing);
-
-    await pumpScreen(
-      tester,
-      DailyReviewDetailScreen(
-        childId: 'k-06',
-        view: ReviewDetailView.yearEnd,
-        source: source,
-      ),
-    );
-    expect(find.text('Đánh giá cuối năm'), findsOneWidget);
-    expect(find.text('Cuối năm học 2025–2026'), findsOneWidget);
-    expect(find.textContaining('Cuối chủ đề'), findsNothing);
-    expect(find.text('Học kỳ I'), findsNothing);
-    expect(find.text('Tuần 12–16/10'), findsNothing);
   });
+
+  testWidgets(
+    'T04.1: cùng giao diện Đánh giá phụ huynh, 5 mục, đổi bé nhanh, chỉ xem',
+    (tester) async {
+      final kids = FakeClassRosterSource.kids;
+      await pumpScreen(
+        tester,
+        KidEvaluationScreen(childId: kids[1].id, onOpenTheme: (_, _) {}),
+      );
+      for (final tab in ['Ngày', 'Tuần', 'Chủ đề', 'Học kỳ', 'Cuối năm']) {
+        expect(find.text(tab), findsOneWidget, reason: tab);
+      }
+      expect(find.text(kids[1].fullName), findsOneWidget);
+      expect(find.text('Mầm 3A · 2/${kids.length}'), findsOneWidget);
+      expect(find.widgetWithText(AppButton, 'Lưu'), findsNothing);
+
+      await tester.tap(find.byTooltip('Bé sau'));
+      await tester.pumpAndSettle();
+      expect(find.text(kids[2].fullName), findsOneWidget);
+      await tester.tap(find.byTooltip('Bé trước'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Bé trước'));
+      await tester.pumpAndSettle();
+      expect(find.text(kids.first.fullName), findsOneWidget);
+
+      await tester.tap(find.text(kids.first.fullName));
+      await tester.pumpAndSettle();
+      expect(find.text('Chọn bé'), findsOneWidget);
+      await tester.tap(find.text(kids[4].fullName).last);
+      await tester.pumpAndSettle();
+      expect(find.text('Mầm 3A · 5/${kids.length}'), findsOneWidget);
+
+      await tester.tap(find.text('Tuần'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'ATT-05: đơn nghỉ lớp theo trạng thái BE, có Đã hủy và ngày không áp dụng',
@@ -399,8 +323,12 @@ void main() {
   for (final (name, screen, scaffold) in <(String, Widget, bool)>[
     ('Lớp học', const ClassRosterScreen(), true),
     ('Đơn nghỉ lớp', const ClassLeaveScreen(), false),
-    ('Đánh giá', DailyReviewListScreen(onOpenKid: noopReview), false),
-    ('Đánh giá bé', DailyReviewDetailScreen(childId: 'child-1'), false),
+    ('Đánh giá', DailyReviewListScreen(onOpenKid: noop), false),
+    (
+      'Đánh giá bé',
+      KidEvaluationScreen(childId: 'k-06', onOpenTheme: (_, _) {}),
+      false,
+    ),
     ('Khen thưởng', const TeacherRewardsScreen(), false),
     ('Đón trẻ', PickupListScreen(onVerify: noop), false),
     ('Xác minh', PickupVerifyScreen(childId: 'k-02', onDone: () {}), false),

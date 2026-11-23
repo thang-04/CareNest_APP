@@ -10,6 +10,7 @@ import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_stat_tile.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
+import 'package:carenest_app/features/teacher/school_year/presentation/selected_school_year.dart';
 import 'package:carenest_app/features/teacher/class_roster/data/fake_class_roster_source.dart';
 import 'package:carenest_app/features/teacher/rewards/data/fake_teacher_reward_source.dart';
 import 'package:carenest_app/features/teacher/rewards/domain/teacher_rewards.dart';
@@ -64,6 +65,8 @@ class _TeacherRewardsScreenState extends State<TeacherRewardsScreen> {
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.pagePadding),
             children: [
+              const SchoolYearChip(),
+              const SizedBox(height: AppSpacing.space3),
               AppSegmented<_RewardView>(
                 segments: const [
                   (_RewardView.tickets, 'Phiếu bé ngoan'),

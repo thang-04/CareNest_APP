@@ -77,3 +77,13 @@ Kết quả: **OK** · **LỆCH** (khác BE/FE) · **THIẾU** (chưa làm) · *
 ## Cập nhật theo BE/FE dev mới (18/11, pull BE 696051b0, FE b76c575b)
 - ATT-02a CONFIRMED (BE `a19fa882`, FE `727f10d8`): GV tắt tham gia ăn cho trẻ có mặt, cả ngày một nút ⇒ màn "Tham gia ăn" của App khớp; hết mục chờ "Chọn trẻ ăn". Đổi nhãn nút theo Web.
 - Thông báo: `NotificationResponse` thêm `announcementId`, `typeLabel`; thông báo của trường mở `GET /me/announcements/{id}` (`MyAnnouncementResponse`: title, body, sentAt, senderName, attachments) — PAR-07..13. App thông báo dùng chung GV/phụ huynh/bếp: khi nối API hiện `typeLabel` của BE, mở chi tiết theo `announcementId`.
+
+## Đánh giá trẻ theo giao diện phụ huynh (18/11, chưa commit)
+- User 18/11: màn Đánh giá trẻ của GV dùng cùng UI trang Đánh giá phụ huynh (nhánh TBD-4, đã merge 44a7433) cho đồng nhất. Danh sách lớp (tình trạng đánh giá hôm nay, tìm tên) ⇒ chạm bé mở `KidEvaluationScreen`: 5 mục Ngày | Tuần | Chủ đề | Học kỳ | Cuối năm, dùng lại các tab của `features/parent/evaluation` (không sửa code phụ huynh); thêm ‹ › và sheet chọn bé (có tìm) để đổi bé nhanh. Chỉ xem, đánh giá trên Web. Chủ đề mở màn kết quả chủ đề (`/teacher/reviews/<bé>/themes/<id>`).
+- Bỏ màn chi tiết cũ `DailyReviewDetailScreen` và 5 chip kỳ ở danh sách (đã nằm trong trang của bé).
+- Dữ liệu giả: mọi bé dùng chung sổ đánh giá giả của Minh Anh (`FakeEvaluationSource`, mốc 05/2027) — khác ngày giả của danh sách lớp (12/10/2026). Khi nối API: BE `DailySheetResponse`, nhận xét tuần, cuối chủ đề, học kỳ, cuối năm theo trẻ (GV có quyền ASSESSMENT_VIEW).
+
+## Trang chủ GV, chế độ GV/phụ huynh, năm học (24/11)
+- Trang chủ GV cùng bố cục Trang chủ phụ huynh: lời chào + chuông, thẻ lớp nổi (lớp, sĩ số, hạn điểm danh, dải Điểm danh / Hoạt động), Cần làm (Điểm danh → Sức khỏe → Trả trẻ), lưới Việc nhanh (dùng `UtilityGrid` của phụ huynh). Bỏ mốc "Từ 16:30" ở Trả trẻ (PCK-04 không có giờ đón cố định).
+- GV kiêm phụ huynh (AUTH-21, ADR-0022, `AUTH_CONTRACT.md`): App token trả cả TEACHER và PARENT + `childIds`; App chuyển giao diện, không gửi chế độ lên BE. `AppMode` (shared): mặc định chế độ nhân sự, giữ chế độ đã chọn trong phiên (chưa lưu qua lần mở app — plan 16/11 `LastModeStore`). Nút "Phụ huynh" ở Trang chủ GV (xem thử) và "Chuyển sang chế độ …" ở Tài khoản; phiên thật chỉ hiện khi có cả hai vai.
+- Năm học: BE `GET /school-years` (GV gọi được), lớp theo `schoolYearId`; Web có ô "Năm học" chung ở header, mặc định năm ACTIVE, năm CLOSED chỉ xem. App: `SelectedSchoolYear` + ô "Năm học …" ở Trang chủ, Lớp học, Đánh giá trẻ, Khen thưởng; năm cũ ⇒ nhãn "Chỉ xem", Trang chủ ẩn Cần làm (việc theo ngày chỉ ở năm đang chạy, như Web `activeYear`; AUTH-03). Dữ liệu giả các màn chưa đổi theo năm.

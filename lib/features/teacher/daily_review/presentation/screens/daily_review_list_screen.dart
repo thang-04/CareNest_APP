@@ -7,18 +7,20 @@ import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_avatar.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
-import 'package:carenest_app/core/widgets/app_filter_chip.dart';
 import 'package:carenest_app/core/widgets/app_list_row.dart';
 import 'package:carenest_app/core/widgets/app_search_field.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_stat_tile.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
+import 'package:carenest_app/features/teacher/school_year/presentation/selected_school_year.dart';
 import 'package:carenest_app/features/teacher/class_roster/data/fake_class_roster_source.dart';
 import 'package:carenest_app/features/teacher/daily_review/data/fake_daily_review_source.dart';
 import 'package:carenest_app/features/teacher/daily_review/domain/daily_review.dart';
 
-/// Đánh giá trẻ theo ngày, tuần và kỳ — CHỈ XEM trên App giáo viên.
+/// Đánh giá trẻ — CHỈ XEM trên App giáo viên: tình trạng đánh giá hôm nay của cả lớp;
+/// chạm một bé mở trang Đánh giá của bé (Ngày, Tuần, Chủ đề, Học kỳ, Cuối năm — cùng giao diện
+/// phụ huynh).
 class DailyReviewListScreen extends StatefulWidget {
   const DailyReviewListScreen({
     super.key,
@@ -28,7 +30,7 @@ class DailyReviewListScreen extends StatefulWidget {
   });
 
   /// Mở màn đánh giá một bé; trả về khi màn đóng để tải lại.
-  final Future<void> Function(String childId, ReviewDetailView view) onOpenKid;
+  final Future<void> Function(String childId) onOpenKid;
   final String classId;
   final DailyReviewSource? source;
 
@@ -36,16 +38,12 @@ class DailyReviewListScreen extends StatefulWidget {
   State<DailyReviewListScreen> createState() => _DailyReviewListScreenState();
 }
 
-enum _ReviewView { day, week, theme, semester, yearEnd }
-
 class _DailyReviewListScreenState extends State<DailyReviewListScreen> {
   late final DailyReviewSource _source =
       widget.source ?? FakeDailyReviewSource.shared;
   ReviewDay? _day;
-  List<PeriodReview>? _periods;
   Object? _error;
   String _query = '';
-  _ReviewView _view = _ReviewView.day;
 
   @override
   void initState() {
@@ -57,20 +55,14 @@ class _DailyReviewListScreenState extends State<DailyReviewListScreen> {
     setState(() => _error = null);
     try {
       final day = await _source.loadDay(widget.classId);
-      final periods = await _source.loadPeriods(widget.classId);
-      if (mounted) {
-        setState(() {
-          _day = day;
-          _periods = periods;
-        });
-      }
+      if (mounted) setState(() => _day = day);
     } catch (error) {
       if (mounted) setState(() => _error = error);
     }
   }
 
   Future<void> _open(KidReview kid) async {
-    await widget.onOpenKid(kid.childId, ReviewDetailView.day);
+    await widget.onOpenKid(kid.childId);
     if (mounted) _load();
   }
 
@@ -88,60 +80,17 @@ class _DailyReviewListScreenState extends State<DailyReviewListScreen> {
               message: 'Kiểm tra kết nối mạng rồi thử lại.',
               onRetry: _load,
             )
-          else if (day == null || _periods == null)
+          else if (day == null)
             const AppSkeletonList(rows: 5)
           else ...[
-            Wrap(
-              spacing: AppSpacing.space2,
-              runSpacing: AppSpacing.space1,
-              children: [
-                for (final (view, label) in const [
-                  (_ReviewView.day, 'Ngày'),
-                  (_ReviewView.week, 'Tuần'),
-                  (_ReviewView.theme, 'Cuối chủ đề'),
-                  (_ReviewView.semester, 'Học kỳ'),
-                  (_ReviewView.yearEnd, 'Cuối năm'),
-                ])
-                  AppFilterChip(
-                    label: label,
-                    selected: _view == view,
-                    onSelected: () => setState(() => _view = view),
-                  ),
-              ],
-            ),
+            const SchoolYearChip(),
             const SizedBox(height: AppSpacing.space3),
             AppSearchField(
               hint: 'Tìm tên bé…',
               onChanged: (value) => setState(() => _query = value),
             ),
             const SizedBox(height: AppSpacing.space3),
-            ...switch (_view) {
-              _ReviewView.day => _dayContent(day),
-              _ReviewView.week => _periodContent(
-                _periods!.where(
-                  (review) => review.kind == ReviewPeriodKind.week,
-                ),
-                ReviewDetailView.week,
-              ),
-              _ReviewView.theme => _periodContent(
-                _periods!.where(
-                  (review) => review.kind == ReviewPeriodKind.theme,
-                ),
-                ReviewDetailView.theme,
-              ),
-              _ReviewView.semester => _periodContent(
-                _periods!.where(
-                  (review) => review.kind == ReviewPeriodKind.semester,
-                ),
-                ReviewDetailView.semester,
-              ),
-              _ReviewView.yearEnd => _periodContent(
-                _periods!.where(
-                  (review) => review.kind == ReviewPeriodKind.yearEnd,
-                ),
-                ReviewDetailView.yearEnd,
-              ),
-            },
+            ..._dayContent(day),
           ],
         ],
       ),
@@ -203,53 +152,15 @@ class _DailyReviewListScreenState extends State<DailyReviewListScreen> {
                 tone: AppStatusTone.gray,
               ),
             },
-            onTap: kid.state == KidReviewState.absent ? null : () => _open(kid),
+            onTap: () => _open(kid),
           ),
         ),
         const SizedBox(height: AppSpacing.space2),
       ],
       Text(
-        'Chỉ xem · chạm một bé để xem chi tiết.',
+        'Chỉ xem · chạm một bé để xem ngày, tuần, chủ đề, học kỳ, cuối năm.',
         style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
       ),
-    ];
-  }
-
-  List<Widget> _periodContent(
-    Iterable<PeriodReview> reviews,
-    ReviewDetailView view,
-  ) {
-    final visible = reviews
-        .where((review) => matchesSearch(review.fullName, _query))
-        .toList();
-    if (visible.isEmpty) {
-      return const [
-        AppEmptyState(
-          icon: AppIcons.review,
-          title: 'Chưa có nhận xét',
-          message: 'Kỳ này chưa có dữ liệu.',
-        ),
-      ];
-    }
-    return [
-      for (final review in visible) ...[
-        AppCard(
-          flush: true,
-          child: AppListRow(
-            leading: AppAvatar(name: review.fullName),
-            title: review.fullName,
-            subtitle: Text('${review.periodLabel} · ${review.summary}'),
-            trailing: AppStatusBadge(
-              label: review.statusLabel,
-              tone: review.statusLabel == 'Đang cập nhật'
-                  ? AppStatusTone.gray
-                  : AppStatusTone.green,
-            ),
-            onTap: () => widget.onOpenKid(review.childId, view),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.space2),
-      ],
     ];
   }
 

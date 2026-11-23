@@ -1,5 +1,6 @@
 import 'package:carenest_app/core/integration/mobile_session.dart';
 import 'package:carenest_app/features/shared/account/domain/account_profile.dart';
+import 'package:carenest_app/features/shared/app_mode/app_mode.dart';
 
 /// Hồ sơ của phiên đăng nhập thật, lấy từ `/accounts/me` đã tải khi đăng nhập.
 class LiveAccountSource implements AccountSource {
@@ -21,17 +22,9 @@ class LiveAccountSource implements AccountSource {
 }
 
 /// Vai trò App hỗ trợ theo DESIGN.md §B5.2; BGH, Admin dùng Web (AUTH-21) ⇒ null.
+/// GV kiêm phụ huynh ⇒ theo chế độ đang chọn (`AppMode`), mặc định chế độ nhân sự.
 AppRole? liveRoleOf(MobileSession session) {
   final roles = session.account?['roles'] as List? ?? const [];
-  for (final role in roles) {
-    switch (role) {
-      case 'PARENT':
-        return AppRole.parent;
-      case 'TEACHER':
-        return AppRole.teacher;
-      case 'KITCHEN_STAFF':
-        return AppRole.kitchen;
-    }
-  }
-  return null;
+  final childIds = session.account?['childIds'] as List? ?? const [];
+  return AppMode.resolve(AppMode.appRolesOf(roles, childIds));
 }
