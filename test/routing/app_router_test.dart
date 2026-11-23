@@ -7,6 +7,7 @@ import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/otp_verify_screen.dart';
+import 'package:carenest_app/features/kitchen/food_samples/presentation/screens/food_samples_screen.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
 import 'package:carenest_app/features/parent/evaluation/presentation/screens/evaluation_screen.dart';
 import 'package:carenest_app/features/parent/evaluation/presentation/screens/theme_result_screen.dart';
@@ -274,6 +275,32 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(MealSamplePhotosScreen), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
+  });
+
+  testWidgets('Bếp: Trang chủ mở Sổ lưu mẫu; màn BE đã bỏ không còn route', (
+    tester,
+  ) async {
+    final router = await pumpRouter(tester, enablePreview: true);
+    router.go(RoutePaths.kitchenHome);
+    await tester.pumpAndSettle();
+    // Cuộn tới Xem nhanh để việc Sổ lưu mẫu không nằm dưới thanh đáy
+    await tester.scrollUntilVisible(find.text('Xem nhanh'), 200);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sổ lưu mẫu'));
+    await tester.pumpAndSettle();
+    expect(find.byType(FoodSamplesScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+
+    // Nhận nguyên liệu, Báo thiếu, Trạng thái nấu (NUT-11, NUT-12, NUT-14, NUT-22)
+    for (final path in [
+      '/kitchen/receipts',
+      '/kitchen/receipts/shortage',
+      '/kitchen/cooking',
+    ]) {
+      router.go(path);
+      await tester.pumpAndSettle();
+      expect(find.text('Không tìm thấy trang'), findsOneWidget, reason: path);
+    }
   });
 
   testWidgets('Phó HT: màn con ẩn thanh đáy, ngữ cảnh lấy từ query', (

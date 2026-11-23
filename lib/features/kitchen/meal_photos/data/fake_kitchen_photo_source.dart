@@ -1,63 +1,115 @@
 import 'package:flutter/foundation.dart';
 
-import 'package:carenest_app/features/kitchen/kitchen_day/domain/kitchen_day.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/domain/kitchen_meal_photos.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 
-/// Ảnh mẫu giả của bếp cơ sở chính lúc khoảng 11:00 ngày 12/10: bữa phụ sáng đã có ảnh
-/// (hết giờ đăng), bữa trưa đang mở chưa có ảnh, bữa chiều chưa tới giờ.
-/// Ảnh đăng thêm chỉ giữ trong bộ nhớ; đăng lại thay ảnh cũ như BE.
+/// Ảnh mẫu giả của bếp cơ sở chính lúc 10:50 ngày 12/10 (canvas "Màn bếp theo nhóm tuổi (B)"):
+/// bữa phụ sáng đã hết giờ đăng, bữa trưa đang mở, bữa chiều chưa tới giờ. Bữa của từng nhóm
+/// theo seed BE `age_groups.meal_sessions`: Nhà trẻ 3 bữa, Mẫu giáo bé/nhỡ/lớn bữa trưa và
+/// bữa chiều. Ảnh đăng thêm chỉ giữ trong bộ nhớ.
 class FakeKitchenPhotoSource implements KitchenPhotoSource {
   FakeKitchenPhotoSource({
     this.mode = FakeMode.data,
     this.delay = const Duration(milliseconds: 300),
   });
 
+  /// Một nguồn cho Trang chủ bếp và màn Ảnh mẫu khi chạy bản giả: chụp ở màn ảnh thì việc ở Trang chủ đổi theo.
+  static final shared = FakeKitchenPhotoSource();
+
   final FakeMode mode;
   final Duration delay;
 
-  final Map<MealSession, SamplePhoto> _uploaded = {};
-  int _nextId = 1;
+  /// Giờ giả "bây giờ", gắn cho ảnh vừa đăng
+  static const _now = '10:50';
+
+  /// Ảnh đăng thêm theo "nhóm|bữa".
+  final Map<String, List<Uint8List>> _added = {};
 
   static const _windows = {
-    MealSession.morning: ('07:30–08:30', PhotoWindow.closed),
-    MealSession.lunch: ('10:30–11:30', PhotoWindow.open),
-    MealSession.afternoon: ('14:30–15:30', PhotoWindow.upcoming),
+    'MORNING': ('Bữa phụ sáng', '07:30', '08:30', PhotoWindow.closed, null),
+    'LUNCH': ('Bữa trưa', '10:30', '11:30', PhotoWindow.open, 40),
+    'AFTERNOON': ('Bữa chiều', '14:30', '15:30', PhotoWindow.upcoming, null),
   };
 
-  KitchenPhotoDay _day() {
-    final today = FakeParentHomeSource.today;
-    return KitchenPhotoDay(
-      date: today,
-      kitchenLabel: 'Bếp cơ sở chính',
-      meals: mode == FakeMode.empty
-          ? const []
-          : [
-              for (final MapEntry(key: session, value: (label, window))
-                  in _windows.entries)
-                SampleMeal(
-                  session: session,
-                  windowLabel: label,
-                  window: window,
-                  photo:
-                      _uploaded[session] ??
-                      (session == MealSession.morning
-                          // Ảnh giả có sẵn: chưa có tệp, hiện ô giữ chỗ
-                          ? SamplePhoto(
-                              id: 'seed-morning',
-                              uploadedAt: DateTime(
-                                today.year,
-                                today.month,
-                                today.day,
-                                7,
-                                50,
-                              ),
-                            )
-                          : null),
-                ),
-            ],
+  /// Giờ đăng các ảnh có sẵn theo bữa
+  static const _groups = [
+    (
+      'nha-tre',
+      'Nhà trẻ',
+      '24–36 tháng',
+      {
+        'MORNING': ['07:52', '07:55'],
+        'LUNCH': ['10:41'],
+        'AFTERNOON': <String>[],
+      },
+    ),
+    (
+      'mg-be',
+      'Mẫu giáo bé',
+      '3–4 tuổi',
+      {
+        'LUNCH': ['10:44'],
+        'AFTERNOON': <String>[],
+      },
+    ),
+    (
+      'mg-nho',
+      'Mẫu giáo nhỡ',
+      '4–5 tuổi',
+      {'LUNCH': <String>[], 'AFTERNOON': <String>[]},
+    ),
+    (
+      'mg-lon',
+      'Mẫu giáo lớn',
+      '5–6 tuổi',
+      {'LUNCH': <String>[], 'AFTERNOON': <String>[]},
+    ),
+  ];
+
+  SampleMeal _meal(String groupId, String mealId, List<String> posted) {
+    final (name, opensAt, closesAt, window, minutesLeft) = _windows[mealId]!;
+    final added = _added['$groupId|$mealId'] ?? const [];
+    return SampleMeal(
+      id: mealId,
+      name: name,
+      window: window,
+      opensAt: opensAt,
+      closesAt: closesAt,
+      minutesLeft: minutesLeft,
+      photos: [
+        // Ảnh giả có sẵn: chưa có tệp, hiện ô giữ chỗ
+        for (final (i, time) in posted.indexed)
+          SamplePhoto(id: '$groupId-$mealId-${i + 1}', postedAt: time),
+        for (final (i, bytes) in added.indexed)
+          SamplePhoto(
+            id: '$groupId-$mealId-new-${i + 1}',
+            postedAt: _now,
+            bytes: bytes,
+          ),
+      ],
     );
   }
+
+  KitchenPhotoDay _day() => KitchenPhotoDay(
+    date: FakeParentHomeSource.today,
+    campusLabel: 'Cơ sở chính',
+    isDayOff: mode == FakeMode.empty,
+    groups: mode == FakeMode.empty
+        ? const []
+        : [
+            for (final (id, name, ageRange, meals) in _groups)
+              AgeGroupMeals(
+                id: id,
+                name: name,
+                ageRange: ageRange,
+                meals: [
+                  for (final MapEntry(key: mealId, value: posted)
+                      in meals.entries)
+                    _meal(id, mealId, posted),
+                ],
+              ),
+          ],
+  );
 
   @override
   Future<KitchenPhotoDay> loadToday() async {
@@ -67,17 +119,13 @@ class FakeKitchenPhotoSource implements KitchenPhotoSource {
   }
 
   @override
-  Future<KitchenPhotoDay> upload({
-    required MealSession session,
+  Future<KitchenPhotoDay> addPhoto({
+    required String groupId,
+    required String mealId,
     required Uint8List bytes,
   }) async {
     await Future<void>.delayed(delay);
-    final today = FakeParentHomeSource.today;
-    _uploaded[session] = SamplePhoto(
-      id: 'new-${_nextId++}',
-      uploadedAt: DateTime(today.year, today.month, today.day, 11),
-      bytes: bytes,
-    );
+    (_added['$groupId|$mealId'] ??= []).add(bytes);
     return _day();
   }
 }

@@ -1,11 +1,19 @@
 import 'package:carenest_app/features/parent/leave_notice/domain/leave_notice.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 
-/// Nguồn dữ liệu đơn xin nghỉ; bản thật gọi API (`leave:create`, chưa có endpoint).
+/// Nguồn dữ liệu đơn xin nghỉ; bản thật gọi BE `POST /leave-requests`, `GET /leave-requests/me`.
 abstract interface class LeaveNoticeSource {
   DateTime get today;
   Future<List<LeaveNotice>> loadNotices(String childId);
   Future<LeaveNotice> submit(LeaveNoticeDraft draft);
+
+  /// Bữa bị huỷ / bữa còn học của ngày nghỉ nửa buổi. BE chưa có API trả bữa nhóm tuổi trước
+  /// khi gửi đơn (chỉ có `eatsMeals` sau khi tạo) ⇒ bản thật cần BE bổ sung.
+  Future<LeaveMealPlan> loadMealPlan(
+    String childId,
+    DateTime date,
+    LeaveSession session,
+  );
 }
 
 /// Dữ liệu giả theo mockup P04, không phải dữ liệu thật của trẻ.
@@ -42,6 +50,8 @@ class FakeLeaveNoticeSource implements LeaveNoticeSource {
             reason: 'Bé sốt nhẹ',
             status: LeaveNoticeStatus.submitted,
             seenByTeacher: true,
+            eats: true,
+            eatsMeals: [LeaveMeal.morningSnack, LeaveMeal.lunch],
           ),
           LeaveNotice(
             id: 'leave-1',
@@ -68,8 +78,42 @@ class FakeLeaveNoticeSource implements LeaveNoticeSource {
   }
 
   @override
+  Future<LeaveMealPlan> loadMealPlan(
+    String childId,
+    DateTime date,
+    LeaveSession session,
+  ) async {
+    await Future<void>.delayed(delay);
+    if (mode == FakeMode.error) {
+      throw StateError('Không tải được dữ liệu giả');
+    }
+    return _mealPlan(session);
+  }
+
+  /// Giả lập cách BE chia (ATT-12): buổi sáng = Phụ sáng + Trưa, buổi chiều = Xế; nhóm tuổi giả có đủ 3 bữa.
+  LeaveMealPlan _mealPlan(LeaveSession session) {
+    const morning = [LeaveMeal.morningSnack, LeaveMeal.lunch];
+    const afternoon = [LeaveMeal.afternoonSnack];
+    return switch (session) {
+      LeaveSession.fullDay => const LeaveMealPlan(
+        offMeals: [...morning, ...afternoon],
+        keptMeals: [],
+      ),
+      LeaveSession.morning => const LeaveMealPlan(
+        offMeals: morning,
+        keptMeals: afternoon,
+      ),
+      LeaveSession.afternoon => const LeaveMealPlan(
+        offMeals: afternoon,
+        keptMeals: morning,
+      ),
+    };
+  }
+
+  @override
   Future<LeaveNotice> submit(LeaveNoticeDraft draft) async {
     await Future<void>.delayed(delay);
+    final kept = _mealPlan(draft.session).keptMeals;
     final notice = LeaveNotice(
       id: 'leave-${_notices.length + 1}',
       childId: draft.childId,
@@ -78,6 +122,8 @@ class FakeLeaveNoticeSource implements LeaveNoticeSource {
       session: draft.session,
       reason: draft.reason,
       status: LeaveNoticeStatus.submitted,
+      eats: kept.isEmpty ? null : (draft.eats ?? true),
+      eatsMeals: kept,
     );
     _notices.insert(0, notice);
     return notice;

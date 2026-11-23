@@ -1,5 +1,7 @@
 # Đề xuất BE cho App bếp — 18/11/2026
 
+> 24/11: user chốt dùng màn bếp của nhánh TBD-4 (Giáp); code bếp mô tả trong file này đã thay bằng bản TBD-4 khi merge. Giữ làm tham khảo đối chiếu BE.
+
 Gửi người phụ trách BE. Nguồn: rà soát `docs/plans/kitchen-app-review.md` (mục "Nhóm tuổi và ảnh mẫu"). App bếp hiện chạy dữ liệu giả theo đúng dạng dưới đây; chưa sửa repo BE. Trạng thái: **PROPOSED** — cần BE/user chốt.
 
 Còn thiếu thật sự: **mục 1** (bếp chưa đọc được nguyên liệu + gam/trẻ). Mục 2 tùy chọn.

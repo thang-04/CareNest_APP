@@ -38,13 +38,12 @@ import 'package:carenest_app/features/teacher/class_roster/data/fake_class_roste
 import 'package:carenest_app/features/teacher/class_roster/domain/class_roster.dart';
 import 'package:carenest_app/features/teacher/daily_review/presentation/screens/daily_review_list_screen.dart';
 import 'package:carenest_app/features/shared/dev_preview/presentation/screens/role_preview_screen.dart';
-import 'package:carenest_app/features/kitchen/food_samples/presentation/screens/food_sample_log_screen.dart';
-import 'package:carenest_app/features/kitchen/kitchen_day/presentation/screens/food_needs_screen.dart';
-import 'package:carenest_app/features/kitchen/kitchen_day/presentation/screens/kitchen_menu_screen.dart';
-import 'package:carenest_app/features/kitchen/kitchen_day/presentation/screens/kitchen_servings_screen.dart';
 import 'package:carenest_app/features/teacher/health_measure/presentation/screens/health_measure_detail_screen.dart';
 import 'package:carenest_app/features/teacher/health_measure/presentation/screens/health_measure_list_screen.dart';
+import 'package:carenest_app/features/kitchen/food_samples/presentation/screens/food_samples_screen.dart';
+import 'package:carenest_app/features/kitchen/food_quantities/presentation/screens/food_quantities_screen.dart';
 import 'package:carenest_app/features/kitchen/kitchen_home/presentation/screens/kitchen_home_screen.dart';
+import 'package:carenest_app/features/kitchen/kitchen_meals/presentation/screens/kitchen_meals_screen.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
 import 'package:carenest_app/features/parent/evaluation/presentation/screens/evaluation_screen.dart';
 import 'package:carenest_app/features/parent/evaluation/presentation/screens/theme_result_screen.dart';
@@ -154,7 +153,12 @@ GoRouter buildAppRouter({
         ),
         _roleShell(rootKey, AppRole.kitchen, NavDestinations.kitchen, {
           RoutePaths.kitchenHome: (context, state) => const KitchenHomeScreen(),
-          RoutePaths.kitchenMenu: (context, state) => const KitchenMenuScreen(),
+          RoutePaths.kitchenMenu: (context, state) => SchoolMenuScreen(
+            asTab: true,
+            initialDay: FakeParentHomeSource.today,
+            footerNote:
+                'Chỉ xem. Thực đơn mẫu theo nhóm tuổi do Phó hiệu trưởng lập và công bố trên web.',
+          ),
         }),
         ..._kitchenRoutes(),
         _roleShell(
@@ -393,20 +397,20 @@ List<GoRoute> _teacherRoutes() {
 /// Màn con của Bếp.
 List<GoRoute> _kitchenRoutes() => [
   GoRoute(
+    path: RoutePaths.kitchenMeals,
+    builder: (context, state) => const KitchenMealsScreen(),
+  ),
+  GoRoute(
+    path: RoutePaths.kitchenQuantities,
+    builder: (context, state) => const FoodQuantitiesScreen(),
+  ),
+  GoRoute(
     path: RoutePaths.kitchenPhotos,
     builder: (context, state) => const MealSamplePhotosScreen(),
   ),
   GoRoute(
-    path: RoutePaths.kitchenMeals,
-    builder: (context, state) => const KitchenServingsScreen(),
-  ),
-  GoRoute(
-    path: RoutePaths.kitchenQuantities,
-    builder: (context, state) => const FoodNeedsScreen(),
-  ),
-  GoRoute(
     path: RoutePaths.kitchenSamples,
-    builder: (context, state) => const FoodSampleLogScreen(),
+    builder: (context, state) => const FoodSamplesScreen(),
   ),
 ];
 

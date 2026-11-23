@@ -51,6 +51,14 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
   /// Ngày đã có đơn nghỉ (để không báo trùng); tải lỗi ⇒ để trống, không chặn form.
   Set<DateTime> _reportedDays = const {};
   LeaveSession _session = LeaveSession.fullDay;
+
+  /// Bữa của ngày nghỉ nửa buổi do BE chia (ATT-12); null khi cả ngày, đang tải hoặc lỗi.
+  LeaveMealPlan? _mealPlan;
+  bool _mealPlanFailed = false;
+  int _mealPlanRequest = 0;
+
+  /// Công tắc "Bé tham gia ăn" cho bữa của buổi còn học; BE mặc định có ăn.
+  bool _eats = true;
   final _reason = TextEditingController();
   String? _reasonError;
   String? _submitError;
@@ -90,6 +98,38 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
 
   DateTime get _lastDay => _source.today.add(const Duration(days: 180));
 
+  bool get _isHalfDay => _session != LeaveSession.fullDay;
+
+  Future<void> _loadMealPlan() async {
+    final request = ++_mealPlanRequest;
+    setState(() {
+      _mealPlan = null;
+      _mealPlanFailed = false;
+    });
+    if (!_isHalfDay) return;
+    try {
+      final plan = await _source.loadMealPlan(widget.child.id, _from, _session);
+      // Bỏ kết quả của lần chọn buổi/ngày cũ
+      if (mounted && request == _mealPlanRequest) {
+        setState(() => _mealPlan = plan);
+      }
+    } catch (_) {
+      if (mounted && request == _mealPlanRequest) {
+        setState(() => _mealPlanFailed = true);
+      }
+    }
+  }
+
+  void _selectSession(LeaveSession session) {
+    setState(() {
+      _session = session;
+      _eats = true;
+      // ATT-12: nghỉ nửa buổi chỉ cho đơn 1 ngày (BE 4031)
+      if (_isHalfDay) _to = _from;
+    });
+    _loadMealPlan();
+  }
+
   Future<void> _pickFrom() async {
     final day = await _pickDay(
       title: 'Chọn ngày bắt đầu nghỉ',
@@ -99,9 +139,10 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
     if (day == null || !mounted) return;
     setState(() {
       _from = day;
-      // Đến ngày không được trước Từ ngày
-      if (_to.isBefore(day)) _to = day;
+      // Đến ngày không được trước Từ ngày; nửa buổi luôn 1 ngày
+      if (_to.isBefore(day) || _isHalfDay) _to = day;
     });
+    if (_isHalfDay) _loadMealPlan();
   }
 
   Future<void> _pickTo() async {
@@ -143,7 +184,7 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
       label: 'Đến ngày',
       labelSuffix: '*',
       value: DateLabels.date(_to),
-      onTap: _submitting ? null : _pickTo,
+      onTap: _submitting || _isHalfDay ? null : _pickTo,
     );
     // Chữ hệ thống lớn: hai ô cạnh nhau phải ngắt ngày giữa chừng ⇒ xếp dọc
     if (MediaQuery.textScalerOf(context).scale(1) > 1.2) {
@@ -182,6 +223,7 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
           to: _to,
           session: _session,
           reason: reason,
+          eats: _sentEats,
         ),
       );
       if (!mounted) return;
@@ -200,14 +242,71 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
   String get _teacherNotice =>
       '${widget.child.homeroomTeacher} (GV lớp ${widget.child.className}) sẽ nhận được thông báo về đơn này.';
 
-  /// Dòng đậm đầu hộp (Figma PH03). Nửa buổi chưa có luật suất ăn ⇒ không báo.
+  /// `eats` gửi BE: chỉ đơn nửa buổi; buổi còn học không có bữa ⇒ null (BE bỏ qua).
+  bool? get _sentEats {
+    if (!_isHalfDay) return null;
+    final plan = _mealPlan;
+    return plan == null || plan.keptMeals.isNotEmpty ? _eats : null;
+  }
+
+  /// Dòng đậm đầu hộp (Figma PH03): bữa nào huỷ theo đơn, lấy từ cách chia bữa BE trả.
   String? get _mealNotice {
-    if (_session != LeaveSession.fullDay) return null;
-    // ATT-04 CONFIRMED: nghỉ cả ngày ⇒ huỷ suất các ngày đó
-    final days = DateLabels.dayMonth(_from) == DateLabels.dayMonth(_to)
-        ? 'ngày ${DateLabels.dayMonth(_from)}'
-        : 'từ ${DateLabels.dayMonth(_from)} đến ${DateLabels.dayMonth(_to)}';
-    return 'Suất ăn $days sẽ được huỷ tự động.';
+    final day = 'ngày ${DateLabels.dayMonth(_from)}';
+    if (!_isHalfDay) {
+      // ATT-04 CONFIRMED: nghỉ cả ngày ⇒ huỷ suất các ngày đó
+      final days = DateLabels.dayMonth(_from) == DateLabels.dayMonth(_to)
+          ? day
+          : 'từ ${DateLabels.dayMonth(_from)} đến ${DateLabels.dayMonth(_to)}';
+      return 'Suất ăn $days sẽ được huỷ tự động.';
+    }
+    final plan = _mealPlan;
+    if (plan == null) return null;
+    final cancelled = [...plan.offMeals, if (!_eats) ...plan.keptMeals];
+    if (cancelled.isEmpty) return 'Suất ăn $day không đổi.';
+    final kept = _eats && plan.keptMeals.isNotEmpty
+        ? ', bé vẫn ăn bữa ${plan.keptMeals.labels} ở trường'
+        : '';
+    return 'Suất ${cancelled.labels} $day sẽ được huỷ tự động$kept.';
+  }
+
+  /// Lựa chọn ăn của đơn nửa buổi (ATT-12): một công tắc cho các bữa của buổi còn học.
+  List<Widget> _mealChoice(TextTheme textTheme) {
+    if (!_isHalfDay) return const [];
+    final plan = _mealPlan;
+    final muted = textTheme.bodyMedium?.copyWith(color: AppColors.textMuted);
+    if (_mealPlanFailed) {
+      return [
+        const SizedBox(height: AppSpacing.space4),
+        const AppBanner(
+          kind: AppBannerKind.danger,
+          message: 'Chưa tải được bữa ăn của buổi còn học.',
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: AppLinkButton(label: 'Thử lại', onPressed: _loadMealPlan),
+        ),
+      ];
+    }
+    if (plan == null) return const [];
+    if (plan.keptMeals.isEmpty) {
+      return [
+        const SizedBox(height: AppSpacing.space4),
+        Text('Buổi còn học không có bữa ăn của nhóm tuổi bé.', style: muted),
+      ];
+    }
+    return [
+      const SizedBox(height: AppSpacing.space4),
+      Text(
+        'Bé có ăn bữa ${plan.keptMeals.labels} ở trường không?',
+        style: textTheme.labelLarge,
+      ),
+      const SizedBox(height: AppSpacing.space2),
+      AppSegmented<bool>(
+        segments: const [(true, 'Có ăn'), (false, 'Không ăn')],
+        selected: _eats,
+        onChanged: (value) => setState(() => _eats = value),
+      ),
+    ];
   }
 
   @override
@@ -260,8 +359,9 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
                 (session, session.label),
             ],
             selected: _session,
-            onChanged: (value) => setState(() => _session = value),
+            onChanged: _submitting ? (_) {} : _selectSession,
           ),
+          ..._mealChoice(textTheme),
           const SizedBox(height: AppSpacing.space4),
           AppTextField(
             label: 'Lý do',

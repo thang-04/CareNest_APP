@@ -52,19 +52,20 @@ Không có: chat, xem trẻ khác, trẻ đã thôi học (mất quyền xem nga
 
 ## Kitchen
 
-Bếp giữ màn tối thiểu (AUTH-21, user chốt 29/10): số suất theo lớp, thực đơn, ảnh mẫu, sổ lưu mẫu. Định lượng và dị ứng là dữ liệu bếp được xem theo BE USER_ROLES; hỏi trước khi thêm màn.
+Bếp giữ màn tối thiểu (AUTH-21, user chốt 29/10): số suất theo lớp, thực đơn, ảnh mẫu, sổ lưu mẫu. Lượng thực phẩm và dị ứng là dữ liệu bếp được xem theo BE USER_ROLES; hỏi trước khi thêm màn. Các màn bếp làm lại theo BE `GET /nutrition/kitchen/day`, `/nutrition/food-samples` ngày 18/11 (dữ liệu giả, chưa nối).
 
 | Nhóm màn hình | Nội dung | Ghi chú |
 | --- | --- | --- |
-| Suất ăn hôm nay | Số suất **đã xác nhận** theo lớp, từng bữa của cơ sở mình | NUT-02, NUT-17; mỗi cơ sở bếp riêng, 1 tài khoản chung (AUTH-05, AUTH-22) |
+| Trang chủ bếp | Số suất **đã xác nhận** từng bữa + giờ PHT xác nhận; Việc hôm nay (ảnh mẫu, lưu mẫu, hủy mẫu); Xem nhanh | NUT-02, NUT-16, NUT-21 · canvas "Trang chủ bếp (theo BE)" (user 18/11) |
+| Suất ăn theo lớp | Số suất **đã xác nhận** theo lớp, chọn bữa Phụ sáng / Trưa / Chiều | NUT-02, NUT-17; mỗi cơ sở bếp riêng, 1 tài khoản chung (AUTH-05, AUTH-22) |
 | Thực đơn | Thực đơn **đã công bố** (một thực đơn chung hai cơ sở, nhà trẻ khác mẫu giáo, 4 tuần xoay vòng) | NUT-08, NUT-13 |
-| Định lượng thực phẩm | Kế hoạch định lượng, tách Fresh / Stored | Chỉ hiển thị BE tính |
+| Lượng thực phẩm | Lượng cần cả ngày, chia Hàng tươi / Hàng khô | Chỉ hiển thị BE tính (NUT-07, NUT-10); không phiếu xuất kho |
 | Dị ứng cần cho nấu | Số suất dị ứng/thay thế theo món và lớp, không tên trẻ | AUTH-05, NUT-23 |
 | Thay đổi số suất | Không có adjustment riêng: PHT mở lại điểm danh rồi xác nhận lại; bếp thấy số đã xác nhận lại | ATT-08, NUT-03, NUT-04 |
-| Ảnh mẫu bữa | Chụp ảnh mẫu mỗi bữa (phụ huynh xem trong thực đơn ngày) | NUT-16 · chưa có màn |
-| Sổ lưu mẫu | Ghi lưu mẫu thức ăn mỗi bữa | NUT-21 · mẫu sổ [P] P-26 · chưa có màn |
+| Ảnh mẫu bữa | Chụp ảnh mẫu theo nhóm tuổi: mỗi bữa nhóm đó ăn cần ít nhất 1 ảnh, chụp bao nhiêu cũng được (phụ huynh xem trong thực đơn ngày) | NUT-16, NUT-17 · bữa theo cấu hình nhóm tuổi của HT; hết giờ chưa có ảnh chỉ báo đỏ · màn dữ liệu giả `/kitchen/photos` (user 17/11, bố cục B 18/11) |
+| Sổ lưu mẫu | Ghi lưu mẫu mỗi bữa (khối lượng, dụng cụ chứa, nhiệt độ từng món), sửa khi chưa duyệt, ghi hủy mẫu khi đủ 24 giờ; PHT duyệt trên Web | NUT-21 · mẫu sổ [P] P-26 · màn dữ liệu giả `/kitchen/samples` (user 18/11) |
 
-Không có trên App bếp (BE 28/10): trạng thái nấu (NUT-14 REMOVED), bàn giao suất (NUT-15 REMOVED), nhận nguyên liệu / kho / phiếu (PHT ghi trên Web — NUT-11, NUT-12), báo thiếu (Zalo/điện thoại — NUT-22). Lệch BE (28/10): route K05–K07 vẫn còn ở bản debug — cần sửa khi tích hợp.
+Không có trên App bếp (BE 28/10): trạng thái nấu (NUT-14 REMOVED), bàn giao suất (NUT-15 REMOVED), nhận nguyên liệu / kho / phiếu (PHT ghi trên Web — NUT-11, NUT-12), báo thiếu (Zalo/điện thoại — NUT-22). Route K05–K07 đã bỏ 18/11.
 
 ## Vice Principal (Phó Hiệu trưởng)
 
@@ -109,7 +110,9 @@ Nhãn tab theo mockup `docs/design/figma/` (user 2026-10-13). Chưa có auth ⇒
 | `/parent`, `/parent/child`, `/parent/notifications`, `/parent/account` | Tab Phụ huynh: Trang chủ · Bé của tôi · Thông báo · Tài khoản | không | Tab chưa làm hiện "Sắp có" |
 | `/teacher`, `/teacher/class`, `/teacher/notifications`, `/teacher/account` | Tab Giáo viên: Trang chủ (T01) · Lớp học (T09) · Thông báo · Tài khoản | không | |
 | `/kitchen`, `/kitchen/menu`, `/kitchen/notifications`, `/kitchen/account` | Tab Bếp: Trang chủ (K01) · Thực đơn (K02) · Thông báo · Tài khoản | không | |
-| `/kitchen/meals`, `/kitchen/quantities`, `/kitchen/receipts`, `/kitchen/receipts/shortage`, `/kitchen/cooking` | Suất ăn đã chốt (K03) · Định lượng (K04) · Nhận nguyên liệu (K05) · Báo thiếu (K06) · Trạng thái nấu (K07) | không | Lệch BE (28/10): K05 nhận hàng do PHT ghi trên Web (NUT-11, NUT-12), K06 báo thiếu qua Zalo (NUT-22), K07 NUT-14 REMOVED — cần sửa khi tích hợp |
+| `/kitchen/meals`, `/kitchen/quantities` | Suất ăn theo lớp (K03, chọn bữa) · Lượng thực phẩm (K04, hàng tươi / hàng khô) | không | Dữ liệu giả theo BE `GET /nutrition/kitchen/day` (18/11). K05–K07 (`/kitchen/receipts`, `/kitchen/receipts/shortage`, `/kitchen/cooking`) đã bỏ 18/11 |
+| `/kitchen/samples` | Sổ lưu mẫu: ghi, sửa lưu mẫu từng bữa; ghi hủy mẫu (mở từ việc "Sổ lưu mẫu" / "Hủy mẫu" trên Trang chủ bếp) | không | Dữ liệu giả theo BE `/nutrition/food-samples` (user 18/11) |
+| `/kitchen/photos` | Ảnh mẫu bữa ăn theo nhóm tuổi: chọn nhóm tuổi rồi chụp từng bữa (mở từ việc trên Trang chủ bếp) | không | Dữ liệu giả (user 17/11, bố cục B 18/11). Lệch BE: MealPhoto 1 ảnh mỗi bữa theo cơ sở, chưa theo nhóm tuổi — cần BE trước khi tích hợp |
 | `/vice-principal`, `/vice-principal/approvals`, `/vice-principal/notifications`, `/vice-principal/account` | Tab Phó HT: Trang chủ (V01) · Duyệt (V02) · Thông báo · Tài khoản | không | Ngoài phạm vi App (AUTH-21), tham khảo — áp cho mọi route `/vice-principal/*`, `/principal/*` |
 | `/vice-principal/approvals/meals/<id>`, `/vice-principal/approvals/rewards` | Duyệt điều chỉnh suất (V03) · Đề xuất khen thưởng (V12) | không | Chi tiết chỉ mang ID; OBS-10, OBS-14 (chốt 29/10) |
 | `/vice-principal/meal-confirm`, `/vice-principal/kitchen`, `/vice-principal/menu`, `/vice-principal/menu/nutrition?group=<id>&day=<yyyy-mm-dd>`, `/vice-principal/children` | Chốt suất (V04) · Trạng thái bếp (V05) · Thực đơn tuần (V06) · Cân đối dinh dưỡng (V07) · Trẻ của cơ sở (V10) | không | V04 phụ thuộc P-05; nhóm tuổi + ngày là ngữ cảnh ở query |

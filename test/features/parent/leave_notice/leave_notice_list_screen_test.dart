@@ -136,20 +136,108 @@ void main() {
     expect(submitted, isFalse);
   });
 
+  testWidgets('P03 (ATT-04): nghỉ cả ngày báo huỷ suất, không hỏi ăn', (
+    tester,
+  ) async {
+    await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
+    await tester.scrollUntilVisible(
+      find.textContaining('Suất ăn ngày 13/10 sẽ được huỷ tự động'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.textContaining('Cô Hà (GV lớp Mầm 3A)'), findsOneWidget);
+    expect(find.text('Có ăn'), findsNothing);
+  });
+
   testWidgets(
-    'P03 (ATT-04): nghỉ cả ngày báo huỷ suất; nửa buổi không tự suy',
+    'ATT-12: nghỉ sáng ⇒ hỏi ăn bữa Xế, mặc định có ăn, huỷ Phụ sáng + Trưa',
     (tester) async {
       await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
+      await tester.tap(find.text('Buổi sáng'));
+      await tester.pumpAndSettle();
+      expect(find.text('Bé có ăn bữa Xế ở trường không?'), findsOneWidget);
       await tester.scrollUntilVisible(
-        find.textContaining('Suất ăn ngày 13/10 sẽ được huỷ tự động'),
+        find.text(
+          'Suất Phụ sáng, Trưa ngày 13/10 sẽ được huỷ tự động, '
+          'bé vẫn ăn bữa Xế ở trường.',
+        ),
         200,
         scrollable: find.byType(Scrollable).first,
       );
-      expect(find.textContaining('Cô Hà (GV lớp Mầm 3A)'), findsOneWidget);
 
-      await tester.tap(find.text('Buổi sáng'));
-      await tester.pump();
-      expect(find.textContaining('Suất ăn'), findsNothing);
+      await tester.tap(find.text('Không ăn'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Suất Phụ sáng, Trưa, Xế ngày 13/10 sẽ được huỷ tự động.'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('ATT-12: nghỉ chiều ⇒ một lựa chọn cho Phụ sáng + Trưa', (
+    tester,
+  ) async {
+    await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
+    await tester.tap(find.text('Buổi chiều'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Bé có ăn bữa Phụ sáng, Trưa ở trường không?'),
+      findsOneWidget,
+    );
+    await tester.scrollUntilVisible(
+      find.text(
+        'Suất Xế ngày 13/10 sẽ được huỷ tự động, '
+        'bé vẫn ăn bữa Phụ sáng, Trưa ở trường.',
+      ),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+  });
+
+  testWidgets('ATT-12: nửa buổi ⇒ Đến ngày = Từ ngày, không mở lịch', (
+    tester,
+  ) async {
+    await pumpForm(tester, FakeLeaveNoticeSource(delay: Duration.zero));
+    await tester.tap(dateField('Đến ngày'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Sáu, 16/10/2026')));
+    await tester.pumpAndSettle();
+    expect(dateValue('Đến ngày', '16/10/2026'), findsOneWidget);
+
+    await tester.tap(find.text('Buổi sáng'));
+    await tester.pumpAndSettle();
+    expect(dateValue('Đến ngày', '13/10/2026'), findsOneWidget);
+    await tester.tap(dateField('Đến ngày'));
+    await tester.pumpAndSettle();
+    expect(find.text('Chọn ngày kết thúc nghỉ'), findsNothing);
+  });
+
+  testWidgets(
+    'ATT-12: gửi đơn nghỉ chiều không ăn ⇒ eats false, danh sách ghi bữa',
+    (tester) async {
+      final source = FakeLeaveNoticeSource(delay: Duration.zero);
+      await pumpForm(tester, source);
+      await tester.tap(find.text('Buổi chiều'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Không ăn'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byType(TextField),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.enterText(find.byType(TextField), 'Bé đi khám');
+      await tester.tap(find.text('Gửi đơn xin nghỉ'));
+      await tester.pumpAndSettle();
+      final notices = (await tester.runAsync(
+        () => source.loadNotices('child-1'),
+      ))!;
+      expect(notices.first.eats, isFalse);
+
+      await pumpList(tester, source);
+      expect(find.text('Bé không ăn bữa Phụ sáng, Trưa'), findsOneWidget);
+      // Đơn mẫu nghỉ chiều có ăn
+      expect(find.text('Bé ăn bữa Phụ sáng, Trưa ở trường'), findsOneWidget);
     },
   );
 

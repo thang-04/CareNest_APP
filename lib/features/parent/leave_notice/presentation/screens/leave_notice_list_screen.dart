@@ -103,6 +103,10 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
                               notice.periodLabel,
                               style: textTheme.titleSmall,
                             ),
+                            if (notice.mealLabel case final meal?) ...[
+                              const SizedBox(height: AppSpacing.space1),
+                              Text(meal, style: textTheme.bodyMedium),
+                            ],
                             const SizedBox(height: AppSpacing.space1),
                             Text(
                               notice.reason,
@@ -123,7 +127,8 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
                 const SizedBox(height: AppSpacing.space3),
               ],
               Text(
-                'Suất ăn của các ngày nghỉ được huỷ tự động ngay khi gửi đơn.',
+                'Suất ăn của buổi nghỉ được huỷ tự động ngay khi gửi đơn; '
+                'nghỉ nửa buổi thì bữa của buổi còn học theo lựa chọn trong đơn.',
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textMuted,
                 ),

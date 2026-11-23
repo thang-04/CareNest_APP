@@ -1,5 +1,7 @@
 # Rà soát App bếp — 18/11/2026
 
+> 24/11: user chốt dùng màn bếp của nhánh TBD-4 (Giáp); code bếp mô tả trong file này đã thay bằng bản TBD-4 khi merge. Giữ làm tham khảo đối chiếu BE.
+
 Nhánh làm việc: `feature/G94-385-APP-FEAT-54-teacher-app` (chưa commit; tạo nhánh riêng cho bếp bị chặn trên máy, chờ user). Đối chiếu: BE `docs/business/BUSINESS_RULES.md` (NUT-*, AUTH-05/21/22), `KitchenRecordsController` + DTO (`KitchenDayResponse`, `FoodSampleRequest/Response`, `MealPhotoResponse`, `MealPhotoWindowResponse`) nhánh `dev`; Web `CareNest_FE` (`KitchenTodayPage.jsx`, `FoodSampleQueuePage.jsx`, `MealPhotosPage.jsx`, `kitchenRecordConstants.js`) — Web là màn của BGH, bếp không dùng Web (AUTH-21); Figma `docs/design/figma/kitchen-*.png`.
 
 Kết quả: **OK** · **LỆCH** · **THIẾU** · **CHỜ** (cần user chốt).
