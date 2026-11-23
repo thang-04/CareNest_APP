@@ -18,6 +18,27 @@ extension LeaveNoticeView on LeaveNotice {
 
   /// "13/10/2026 · Cả ngày" hoặc "11/10 – 13/10/2026 · Cả ngày"
   String get periodLabel => '${DateLabels.range(from, to)} · ${session.label}';
+
+  /// Dòng bữa ăn của đơn nửa buổi theo `eats` BE trả; cả ngày hoặc không áp dụng ⇒ null.
+  String? get mealLabel {
+    final value = eats;
+    if (value == null || eatsMeals.isEmpty) return null;
+    final meals = eatsMeals.labels;
+    return value ? 'Bé ăn bữa $meals ở trường' : 'Bé không ăn bữa $meals';
+  }
+}
+
+extension LeaveMealView on LeaveMeal {
+  String get label => switch (this) {
+    LeaveMeal.morningSnack => 'Phụ sáng',
+    LeaveMeal.lunch => 'Trưa',
+    LeaveMeal.afternoonSnack => 'Xế',
+  };
+}
+
+extension LeaveMealListView on List<LeaveMeal> {
+  /// "Phụ sáng, Trưa"
+  String get labels => map((meal) => meal.label).join(', ');
 }
 
 extension LeaveSessionView on LeaveSession {
