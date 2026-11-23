@@ -7,6 +7,7 @@ import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_avatar.dart';
 import 'package:carenest_app/core/widgets/app_bottom_sheet.dart';
+import 'package:carenest_app/core/widgets/app_filter_chip.dart';
 import 'package:carenest_app/core/constants/shadows.dart';
 import 'package:carenest_app/core/widgets/app_hero_header.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
@@ -19,9 +20,12 @@ import 'package:carenest_app/routing/route_paths.dart';
 
 /// Phụ huynh · Trang chủ — bố cục H (thẻ ví xếp chồng các bé): lời chào → thẻ bé đang chọn + bé khác ló ra → Việc nhanh.
 class ParentHomeScreen extends StatefulWidget {
-  const ParentHomeScreen({super.key, this.source});
+  const ParentHomeScreen({super.key, this.source, this.onSwitchToTeacher});
 
   final ParentHomeSource? source;
+
+  /// Tài khoản GV kiêm phụ huynh (AUTH-21) ⇒ nút "Giáo viên" chuyển chế độ; null ⇒ ẩn.
+  final VoidCallback? onSwitchToTeacher;
 
   @override
   State<ParentHomeScreen> createState() => _ParentHomeScreenState();
@@ -173,6 +177,19 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
               ),
             ],
           ),
+          // Cùng vị trí nút "Phụ huynh" ở Trang chủ GV: chuyển vai trò chỉ ở Trang chủ
+          if (widget.onSwitchToTeacher case final onSwitch?) ...[
+            const SizedBox(height: AppSpacing.space3),
+            Align(
+              alignment: Alignment.centerRight,
+              child: AppFilterChip(
+                label: 'Giáo viên',
+                icon: AppIcons.school,
+                selected: false,
+                onSelected: onSwitch,
+              ),
+            ),
+          ],
           const SizedBox(height: AppSpacing.space5),
           _buildWallet(),
           // Phần ló được kéo lên ⇒ trừ đúng đoạn đó để khoảng cách tới mục sau vẫn bằng sectionGap

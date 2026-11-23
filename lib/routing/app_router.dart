@@ -122,7 +122,12 @@ GoRouter buildAppRouter({
           builder: (context, state) => const RolePreviewScreen(),
         ),
         _roleShell(rootKey, AppRole.parent, NavDestinations.parent, {
-          RoutePaths.parentToday: (context, state) => const ParentHomeScreen(),
+          // Chuyển vai trò chỉ ở Trang chủ; nút "Giáo viên" chỉ khi đến từ chế độ GV kiêm phụ huynh
+          RoutePaths.parentToday: (context, state) => ParentHomeScreen(
+            onSwitchToTeacher: AppMode.dualRole.value
+                ? () => context.go(RoutePaths.teacherToday)
+                : null,
+          ),
           // TBD-4 18/11: Bé của tôi là một trang hồ sơ, bỏ qua `tab`, `section` ở link cũ
           RoutePaths.parentChild: (context, state) => const MyChildScreen(),
         }),
@@ -130,7 +135,10 @@ GoRouter buildAppRouter({
         _roleShell(rootKey, AppRole.teacher, NavDestinations.teacher, {
           // Xem thử: cô Hà kiêm phụ huynh (AUTH-21) ⇒ có nút chuyển sang chế độ phụ huynh
           RoutePaths.teacherToday: (context, state) => TeacherHomeScreen(
-            onSwitchToParent: () => context.go(RoutePaths.parentToday),
+            onSwitchToParent: () {
+              AppMode.dualRole.value = true;
+              context.go(RoutePaths.parentToday);
+            },
           ),
           RoutePaths.teacherClass: (context, state) =>
               const ClassRosterScreen(),
@@ -644,7 +652,6 @@ StatefulShellRoute _roleShell(
                 NavTab.account when live => AccountScreen(
                   role: role,
                   source: account,
-                  modeSwitches: _liveModeSwitches(context, role),
                   onOpenProfile: () =>
                       openComingSoon(context, 'Thông tin cá nhân'),
                   onChangePassword: () =>
@@ -657,18 +664,6 @@ StatefulShellRoute _roleShell(
                 ),
                 NavTab.account => AccountScreen(
                   role: role,
-                  modeSwitches: [
-                    if (role == AppRole.teacher)
-                      AccountModeSwitch(
-                        label: 'Chuyển sang chế độ phụ huynh',
-                        onTap: () => context.go(RoutePaths.parentToday),
-                      ),
-                    if (role == AppRole.parent)
-                      AccountModeSwitch(
-                        label: 'Chuyển sang chế độ giáo viên',
-                        onTap: () => context.go(RoutePaths.teacherToday),
-                      ),
-                  ],
                   onOpenProfile: () => context.push(
                     '${destination.path}/${RoutePaths.profileSegment}',
                   ),
@@ -743,24 +738,4 @@ class NotFoundScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Phiên thật: GV kiêm phụ huynh ⇒ đổi chế độ App (AUTH-21); BE không nhận chế độ đang chọn.
-List<AccountModeSwitch> _liveModeSwitches(BuildContext context, AppRole role) {
-  if (!AppMode.dualRole.value) return const [];
-  final target = role == AppRole.parent ? AppRole.teacher : AppRole.parent;
-  if (role != AppRole.teacher && role != AppRole.parent) return const [];
-  return [
-    AccountModeSwitch(
-      label: 'Chuyển sang chế độ ${target.label.toLowerCase()}',
-      onTap: () {
-        AppMode.active.value = target;
-        context.go(
-          target == AppRole.parent
-              ? '/live${RoutePaths.parentToday}'
-              : '/live${RoutePaths.teacherToday}',
-        );
-      },
-    ),
-  ];
 }

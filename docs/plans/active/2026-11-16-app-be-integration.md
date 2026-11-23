@@ -43,7 +43,7 @@ updated: 2026-11-16
 4. BGH giữ "chỉ xem trên App", làm phase cuối, chặn tới khi nhánh BE `feature/TBD-1-BE-FEAT-0-bgh-mobile-view-only` vào `dev` — user 16/11. Tới lúc đó tài khoản BGH đăng nhập App thấy "dùng trên Web".
 5. Quên mật khẩu: chờ BE (API SMS ở nhánh BE `feature/G94-87-BE-FEAT-0-app-rules-sms-reset`), chưa làm; bản release ẩn lối vào — user 16/11.
 6. Thông báo: danh sách trong App trước (`GET /me/notifications`); FCM sau, khi BE có bộ gửi FCM và nhóm có project Firebase — user 16/11.
-7. Tài khoản nhiều role: mở chế độ nhân sự, chuyển sang phụ huynh ở màn Tài khoản, nhớ chế độ cuối — user 14/11; BE ADR-0022 (có `PARENT` và `childIds` không rỗng mới có chế độ phụ huynh; chế độ không gửi lên BE).
+7. Tài khoản nhiều role: mở chế độ nhân sự, chuyển chế độ ở Trang chủ (nút "Phụ huynh" / "Giáo viên"; user 24/11 thay quyết định 14/11 chuyển ở Tài khoản), nhớ chế độ cuối — user 14/11; BE ADR-0022 (có `PARENT` và `childIds` không rỗng mới có chế độ phụ huynh; chế độ không gửi lên BE).
 8. Capstone chỉ build Android; không offline — user 14/11.
 9. Phiên đăng nhập: phiên thường, không xin `offline_access` (hết sau khoảng 30 phút không có refresh, tối đa 10 giờ từ lúc đăng nhập) — user 16/11. Đổi sang `offline_access` chỉ khi user báo; lúc đó thêm scope vào `kOidcScopes` và làm task BE cho client `carenest-mobile`.
 10. Thêm 2 gói đi kèm `json_serializable`: `json_annotation` (runtime) và `build_runner` (dev) — user 16/11.
@@ -100,7 +100,7 @@ updated: 2026-11-16
 - **AC-5:** Given access token đã hết hạn (5 phút), When App gọi API, Then App tự refresh; người dùng không thấy lỗi.
 - **AC-6:** Given phiên hết hạn hoặc bị thu hồi, When App gọi API hoặc mở App, Then về Đăng nhập, back stack bị xóa, hiện "Phiên đăng nhập đã hết. Vui lòng đăng nhập lại."
 - **AC-7** (CODING_GUIDE §5.6): When bấm "Đăng xuất" và xác nhận, Then App thu hồi refresh token ở Keycloak (lỗi mạng vẫn xóa trên máy), xóa token và state, về Đăng nhập. Keycloak không còn phiên `carenest-mobile` của người đó.
-- **AC-8** (ADR-0022, quyết định 7): Given tài khoản có `TEACHER` + `PARENT` và `childIds` không rỗng, Then mở chế độ GV; màn Tài khoản có "Chuyển sang chế độ phụ huynh"; mở lại App giữ chế độ cuối.
+- **AC-8** (ADR-0022, quyết định 7): Given tài khoản có `TEACHER` + `PARENT` và `childIds` không rỗng, Then mở chế độ GV; Trang chủ GV có nút "Phụ huynh", Trang chủ phụ huynh có nút "Giáo viên", màn Tài khoản không có lối chuyển (user 24/11); mở lại App giữ chế độ cuối.
 - **AC-9** (AUTH-18, ADR-0026): Given phụ huynh nhận SMS mã kích hoạt, When nhập SĐT, mã 6 số, mật khẩu mới 2 lần ở "Kích hoạt tài khoản", Then App mở trang Keycloak có sẵn tên đăng nhập BE trả. Mã sai hoặc hết hạn (400 / 1006) ⇒ "Mã kích hoạt sai hoặc đã hết hạn. Liên hệ nhà trường để gửi lại mã."
 - **AC-10** (quyết định 5): Màn Đăng nhập thật (`USE_MOCK=false`) không có lối vào "Quên mật khẩu".
 - **AC-11:** `USE_MOCK=true` (mặc định) ⇒ App chạy như `dev` hiện tại (Đăng nhập giả + Xem thử theo vai trò), trừ hộp xác nhận đăng xuất thêm ở Task 9. `USE_MOCK=false` mà thiếu `API_BASE_URL` hoặc `OIDC_ISSUER` ⇒ màn lỗi cấu hình nêu tên biến thiếu.
@@ -448,7 +448,7 @@ Phase 3–5: màn theo contract BE `dev`. Phần BE đã làm theo quyết đị
 - Consumes: `ApiClient` (`skipAuth: true`), `AuthController.signIn/signOut/switchMode`, `AuthSignedIn.user.modes` (Task 7).
 - Produces: `class ActivationRemoteDataSource { ActivationRemoteDataSource(ApiClient api); Future<String> activate({required String phone, required String code, required String newPassword, required String confirmPassword}); }` — POST `/parent-activation`, trả `username`.
   Màn "Kích hoạt tài khoản": ô SĐT, Mã kích hoạt 6 số (`AppOtpField`), Mật khẩu mới, Nhập lại mật khẩu; ghi chú "Nhập mã 6 số trong tin nhắn nhà trường gửi."; nút "Kích hoạt" (khóa trong lúc gửi). Kiểm ở App chỉ để hỗ trợ nhập: SĐT 10 số bắt đầu bằng 0, mã 6 số, mật khẩu 8–128 ký tự, 2 lần nhập khớp — BE kiểm lại. Lỗi: 400/1006 ⇒ chữ AC-9; 400/1009 ⇒ hiện `desc`; 400/9001, 9002 ⇒ lỗi theo ô hoặc `desc`; `NetworkFailure` ⇒ "Không kết nối được. Thử lại." Thành công ⇒ `signIn(loginHint: username)`.
-  Màn Tài khoản (khi `USE_MOCK=false`): họ tên + tên đăng nhập lấy từ `AppUser`; "Đăng xuất" ⇒ hộp xác nhận "Đăng xuất khỏi CareNest?" ⇒ `signOut()`; có > 1 chế độ ⇒ dòng "Chuyển sang chế độ phụ huynh" / "Chuyển sang chế độ giáo viên" ⇒ `switchMode`.
+  Màn Tài khoản (khi `USE_MOCK=false`): họ tên + tên đăng nhập lấy từ `AppUser`; "Đăng xuất" ⇒ hộp xác nhận "Đăng xuất khỏi CareNest?" ⇒ `signOut()`; chuyển chế độ không ở Tài khoản mà ở Trang chủ (user 24/11).
 - [ ] **Step 1:** Viết test:
   - `activate_success_startsSignInWithUsername` (API giả trả `{'username':'0900000001'}` ⇒ controller giả nhận `loginHint == '0900000001'`).
   - `activate_1006_showsContactSchool`.

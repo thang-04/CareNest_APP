@@ -53,6 +53,7 @@ Future<void> pumpParentHome(
   FakeMode mode, {
   double textScale = 1,
   ParentHomeSource? source,
+  VoidCallback? onSwitchToTeacher,
 }) async {
   usePhoneSize(tester, textScale: textScale);
   await tester.pumpWidget(
@@ -62,6 +63,7 @@ Future<void> pumpParentHome(
         body: ParentHomeScreen(
           source:
               source ?? FakeParentHomeSource(mode: mode, delay: Duration.zero),
+          onSwitchToTeacher: onSwitchToTeacher,
         ),
       ),
     ),
@@ -71,6 +73,23 @@ Future<void> pumpParentHome(
 
 void main() {
   setUp(SelectedChild.reset);
+
+  testWidgets(
+    'Nút "Giáo viên" chỉ khi kiêm GV, chạm ⇒ chuyển chế độ (AUTH-21)',
+    (tester) async {
+      await pumpParentHome(tester, FakeMode.data);
+      expect(find.text('Giáo viên'), findsNothing);
+
+      var switched = false;
+      await pumpParentHome(
+        tester,
+        FakeMode.data,
+        onSwitchToTeacher: () => switched = true,
+      );
+      await tester.tap(find.text('Giáo viên'));
+      expect(switched, isTrue);
+    },
+  );
 
   testWidgets('Bố cục H (PAR-01): lời chào → thẻ bé → Việc nhanh', (
     tester,
