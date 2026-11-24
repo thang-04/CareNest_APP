@@ -1,626 +1,407 @@
 ---
-title: App nối BE thật — nền App (đăng nhập PKCE, API client) và lộ trình theo vai trò
-status: in-progress  # user duyệt 2026-11-16 (Native); draft → approved → in-progress → done | blocked | cancelled
+title: App nối BE thật — nền đăng nhập/API/push của Tiền (PR #8), UI của Giáp, và lộ trình theo vai trò
+status: in-progress  # user duyệt lại 2026-11-25 (Q9, Q10 = có; Native)
 owner: Giáp
 jira: TBD-4 / FE-FEAT-0   # mã tạm (user 16/11, quyết định 11) — đổi sang mã Jira thật trước khi mở PR vào dev
-branch: feature/TBD-4-FE-FEAT-0-app-foundation   # tạo từ origin/dev a811d3d ngày 16/11
+branch: feature/TBD-4-FE-FEAT-0-app-foundation   # tạo từ origin/dev a811d3d ngày 16/11; đang merge dev 244fbf3 (24/11)
 modules: [integration, architecture, features]
-rules: [AUTH-07, AUTH-18, AUTH-21, AUTH-22, ADR-0022, ADR-0026]
-risk: high           # đổi auth, API client chung, router (vùng dùng chung), thêm dependency
+rules: [AUTH-07, AUTH-18, AUTH-21, AUTH-22, ADR-0022, ADR-0026, PCK-02]
+risk: high           # đổi auth, API client chung, router (vùng dùng chung), sửa code của thành viên khác, gỡ dependency
 created: 2026-11-16
-updated: 2026-11-16
+updated: 2026-11-24
 ---
-# App nối BE thật — nền App và lộ trình theo vai trò
+# App nối BE thật — nền của Tiền, UI của Giáp, lộ trình theo vai trò
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** App Android đăng nhập thật qua Keycloak (PKCE) và gọi API BE `dev` thay dữ liệu giả cho phụ huynh, GV, bếp; phần còn chặn bởi BE làm sau cùng.
+**Goal:** App Android chạy thật trên nền đăng nhập, gọi API và push của Tiền (PR #8, đã ở `dev`), giữ toàn bộ màn hình của Giáp, rồi nối API BE cho GV, phụ huynh, bếp.
 
-**Architecture:** Feature-based + Clean Architecture theo `docs/architecture/CODING_GUIDE.md` §2–5. Riverpod ghép dependency; một `ApiClient` (Dio) parse envelope và lỗi ở một chỗ; `SessionManager` giữ access token trong bộ nhớ, refresh token trong secure storage; go_router chuyển màn theo `AuthState`. Mỗi feature có repository interface với 2 bản: giả (`USE_MOCK=true`) và gọi BE.
+**Architecture:** `MobileSession` (ChangeNotifier; `flutter_appauth` + `flutter_secure_storage`) giữ phiên. `MobileApi` (`dart:io` `HttpClient`) gọi BE, đọc envelope, ném `ApiFailure`. Mỗi feature có interface `XSource` với bản `FakeXSource` (đã có) và `LiveXSource` (gọi `MobileApi`). Router chế độ thật truyền bản `Live` vào màn. Không dùng Riverpod, Dio.
 
-**Tech Stack:** Flutter 3.47.6 / Dart 3.13.5, `go_router`, `flutter_riverpod`, `dio`, `json_serializable` (+ `json_annotation`, `build_runner`), `flutter_appauth`, `flutter_secure_storage`. `firebase_core` + `firebase_messaging` chỉ thêm ở Phase 7.
+**Tech Stack:** Flutter 3.47.6 / Dart 3.13.5, `go_router`, `flutter_appauth` 13.0.0, `flutter_secure_storage` 11.2.0, `firebase_core` ^4.15.2 + `firebase_messaging` ^16.7.1 (Tiền), `image_picker` ^1.2.4, `url_launcher` ^6.3.2.
 
-**Spec:** plan này (Quyết định đã chốt, Làm rõ nghiệp vụ, Acceptance criteria) + contract BE `BE:docs/contracts/AUTH_CONTRACT.md`, `BE:docs/contracts/ERROR_CONTRACT.md`, `docs/integration/BE_API_INDEX.md`.
+**Spec:** plan này (Đổi hướng 24/11, Quyết định đã chốt, AC) + code PR #8 (`dev` `244fbf3`: `lib/core/integration/`, `push_coordinator.dart`, `live_*_source.dart`) + contract BE `BE:docs/contracts/AUTH_CONTRACT.md`, `BE:docs/contracts/ERROR_CONTRACT.md`, `docs/integration/BE_API_INDEX.md`.
+
+## Đổi hướng 24/11/2026 (đọc trước)
+- 17/11 PR #8 của Tiền (G94-288, `nqtienvn`) vào `dev`: đăng nhập PKCE (`MobileSession`, `LiveLoginScreen`), `MobileApi`, thông báo thật, push FCM. Lớp này làm song song với Phase 1 của plan này (Riverpod/Dio, `SessionManager`), chưa vào `dev`.
+- 24/11 user merge `dev` vào nhánh, lấy bản Tiền ở cả 22 file conflict. Merge **chưa commit**: `flutter analyze` 488 lỗi (nguyên nhân ở Context).
+- User 24/11: giữ phần Tiền đã code, giữ UI của Giáp, nối hoàn chỉnh BE cho App trên nền đó. Phase 1 cũ được thay bằng **Phase R** dưới đây; code Phase 1 cũ gỡ ở Task R6; lịch sử ở Progress log và git (`ac60703`).
 
 ## Context
-- App `dev` (`a811d3d`, 16/11): 33 thư mục feature dùng `Fake*Source`, chưa gọi API (`docs/integration/BACKEND_INTEGRATION.md:13`). `pubspec.yaml` chỉ có `go_router`. `lib/core/config/env.dart:2-8` có `API_BASE_URL`, `USE_MOCK`, `APP_ENV`. `lib/routing/app_router.dart:76-80` mở thẳng màn Đăng nhập giả; màn theo vai trò chỉ có khi `enablePreview` (debug).
-- PR #6 (redraw G94-194) vào `dev` rồi bị PR #7 revert ngày 15/11. User 16/11 chọn giữ style Clay của `dev` (`DESIGN.md` Phần B). Plan này làm trên code `dev`.
-- BE `dev` (`a5ad6b1e`, 15/11):
-  - Keycloak realm `carenest`, client `carenest-mobile` public + PKCE S256, redirect mặc định `carenest://oauth/callback`, `directAccessGrantsEnabled: false` (`BE:docker/keycloak/import/carenest-realm.json`). Access token 5 phút; phiên SSO hết sau 30 phút không dùng, tối đa 10 giờ.
-  - `GET /accounts/me`, `POST /parent-activation` (công khai), thông báo `GET /me/notifications`, `PUT|DELETE /me/devices`, API nghiệp vụ điểm danh, sức khỏe, đơn nghỉ, đón trẻ, đánh giá, bếp.
-  - Push thật chưa có: chỉ `LoggingPushGateway` ghi log.
-  - BGH dùng token App ⇒ mọi API trả 403 `errorCode` 1101 (ADR-0022, ACCEPTED).
-- Docs App trên `dev` lệch BE:
-  - `docs/integration/AUTH_FLOW.md` ghi "CHƯA CÓ NỘI DUNG".
-  - `CODING_GUIDE.md` §5.2 đề xuất `/mobile/auth/login`. BE không có endpoint này; Mobile dùng PKCE (`BE:docs/contracts/AUTH_CONTRACT.md:9`).
-  - `BACKEND_INTEGRATION.md` chưa nói tới `errorCode` và coi `desc` là tiếng Anh; BE đã có `errorCode`, `desc` là câu tiếng Việt (`BE:docs/contracts/ERROR_CONTRACT.md`).
-  - Phase 1 sửa các docs này (Task 10).
+- **Nền của Tiền** (bản merge hiện tại = `dev`):
+  - `lib/core/integration/mobile_session.dart:39` `signIn()`: scope `openid profile` (`:49`), không `prompt=login`, không `loginHint`. `profileUpdateRequired` ⇒ ném lỗi và xóa phiên (`:66`, `:74`); `restore()` cũng xóa (`:122-123`).
+  - `lib/core/integration/mobile_api.dart:21` `json()`, `:27` `binary()`; `:32` cần `userId` (không gọi được API công khai); `:59` 401 ⇒ refresh 1 lần rồi gửi lại; chỉ có body JSON, không multipart; `:83` `registerDevice`.
+  - `lib/app.dart:63-64` đăng nhập xong `go('/live/notifications')`; `:32` bấm push ⇒ `go('/live/notifications/$id')`; `:75` đăng xuất ⇒ `go('/login')`. Không xóa con đang chọn (`SelectedChild`).
+  - Router `dev` (`lib/routing/app_router.dart:490` `_liveRoutes`): chế độ thật dưới `/live/...`, mỗi vai trò chỉ có tab Thông báo + Tài khoản (trang khác `const {}`). Vai trò lấy từ `liveRoleOf()` (`live_account_source.dart`): role đầu tiên trong `roles` (BE sắp TEACHER → KITCHEN_STAFF → PARENT), không chuyển chế độ.
+  - Không có: kích hoạt tài khoản (AUTH-18), chuyển chế độ GV ↔ phụ huynh (ADR-0022), màn ảnh chân dung (PCK-02), tải ảnh multipart.
+- **UI của Giáp** (`HEAD` `718198e`): màn theo vai trò ở `lib/features/{parent,teacher,kitchen,shared,management}/`; shell + màn con ở `_staffAndParentRoutes` (`HEAD:lib/routing/app_router.dart:241`), `_roleShell` (`:597`); `lib/routing/route_access_policy.dart:7` `homePathFor`. Màn dùng `FakeXSource` và nhận `source` qua constructor. Màn điều hướng bằng đường tuyệt đối (`RoutePaths.parentLeaveNotices = '/parent/leave-notices'`) ⇒ chế độ thật phải dùng đường thường, không tiền tố `/live`.
+- **488 lỗi của bản merge:**
+  - `pubspec.yaml` bản Tiền thiếu `image_picker`, `url_launcher` (UI cần) và `flutter_riverpod`, `dio`, `json_*` (Phase 1 cũ).
+  - `app_router.dart` bản Tiền trỏ đường thư mục cũ (167 lỗi).
+  - 8 file của Tiền import `features/notifications|account/...`; nhánh đã chuyển 2 thư mục vào `features/shared/`.
+  - Manifest bản Tiền mất `allowBackup="false"` và quyền mở trình quay số.
+  - 5 file plugin desktop được khôi phục, trong khi nhánh đã bỏ linux/macos/windows (`45cddf1`).
+- BE `dev`: nền tảng lấy từ claim `azp` của token (không cần header). `GET /accounts/me` trả `roles` (đã sắp xếp), `childIds`, `profileUpdateRequired`. `PUT /accounts/me/photo` multipart, part `file`; lỗi 1131 "Chọn ảnh chân dung JPG, PNG hoặc WEBP". `POST /parent-activation` công khai, trả `username`; mã sai hoặc hết hạn 400/1006.
 
 ## Quyết định đã chốt
-1. Thư viện `flutter_riverpod`, `dio`, `json_serializable`, `flutter_appauth`, `flutter_secure_storage`, `firebase_core` + `firebase_messaging` — user 13/11. Docs `dev` còn ghi PROPOSED vì PR #6 bị revert.
-2. Đăng nhập PKCE qua trang Keycloak; theme CareNest cho trang này là task BE — user 13/11, BE `AUTH_CONTRACT.md:9`.
-3. Style Clay theo `DESIGN.md` Phần B của `dev`; không làm lại style phẳng — user 16/11.
-4. BGH giữ "chỉ xem trên App", làm phase cuối, chặn tới khi nhánh BE `feature/TBD-1-BE-FEAT-0-bgh-mobile-view-only` vào `dev` — user 16/11. Tới lúc đó tài khoản BGH đăng nhập App thấy "dùng trên Web".
-5. Quên mật khẩu: chờ BE (API SMS ở nhánh BE `feature/G94-87-BE-FEAT-0-app-rules-sms-reset`), chưa làm; bản release ẩn lối vào — user 16/11.
-6. Thông báo: danh sách trong App trước (`GET /me/notifications`); FCM sau, khi BE có bộ gửi FCM và nhóm có project Firebase — user 16/11.
-7. Tài khoản nhiều role: mở chế độ nhân sự, chuyển sang phụ huynh ở màn Tài khoản, nhớ chế độ cuối — user 14/11; BE ADR-0022 (có `PARENT` và `childIds` không rỗng mới có chế độ phụ huynh; chế độ không gửi lên BE).
-8. Capstone chỉ build Android; không offline — user 14/11.
-9. Phiên đăng nhập: phiên thường, không xin `offline_access` (hết sau khoảng 30 phút không có refresh, tối đa 10 giờ từ lúc đăng nhập) — user 16/11. Đổi sang `offline_access` chỉ khi user báo; lúc đó thêm scope vào `kOidcScopes` và làm task BE cho client `carenest-mobile`.
-10. Thêm 2 gói đi kèm `json_serializable`: `json_annotation` (runtime) và `build_runner` (dev) — user 16/11.
-11. Mã Jira tạm `TBD-4` (mã công việc tạm `FE-FEAT-0`) cho mọi commit của plan; chưa có task Jira thật — user 16/11. Mỗi commit vẫn ứng với đúng 1 task trong plan, ghi bảng commit → task ở Progress log. Trước khi mở PR vào `dev`: user tạo task Jira thật, agent đổi mã từng commit theo bảng (viết lại lịch sử nhánh; đã push thì force push có lease — hỏi user lúc đó). `TBD-1`, `TBD-2`, `TBD-3` đã dùng ở nhánh khác.
-12. Chạy thử với BE + Keycloak local (docker) và `adb reverse` — user 16/11.
+1. ~~Riverpod, Dio, json_serializable~~ — thay 24/11 (quyết định 13). Giữ `flutter_appauth`, `flutter_secure_storage`, `firebase_*` (user 13/11).
+2. Đăng nhập PKCE qua trang Keycloak — user 13/11, BE `AUTH_CONTRACT.md:9`.
+3. Style Clay theo `DESIGN.md` Phần B — user 16/11.
+4. BGH chỉ xem, làm phase cuối, chờ BE `TBD-1` — user 16/11. Tới lúc đó BGH/Admin thấy màn "dùng trên Web" (`UnsupportedRoleScreen` của Tiền).
+5. Quên mật khẩu: chờ BE G94-87; bản thật không có lối vào — user 16/11.
+6. Thông báo trong App + push FCM: dùng code của Tiền (PR #8) — user 24/11 (thay quyết định 6 cũ).
+7. Tài khoản nhiều role: mở chế độ nhân sự trước, chuyển sang phụ huynh ở Tài khoản, nhớ chế độ cuối — user 14/11; BE ADR-0022 (phụ huynh cần `childIds` không rỗng).
+8. Chỉ build Android; không offline — user 14/11.
+9. Phiên thường, không `offline_access` — user 16/11. Code Tiền đúng như vậy (`mobile_session.dart:49`).
+10. ~~`json_annotation`, `build_runner`~~ — gỡ ở Task R6 (quyết định 13).
+11. Mã Jira tạm `TBD-4`; đổi sang mã thật trước khi mở PR vào `dev` — user 16/11.
+12. Chạy thử với BE + Keycloak local và `adb reverse` — user 16/11.
+13. **Nền = code PR #8 của Tiền**; Phase 1 cũ (Riverpod/Dio, `SessionManager`, `ApiClient`, `AuthController`) gỡ hết — user 24/11.
+14. **Giữ toàn bộ màn hình của Giáp**; chế độ thật dùng shell và màn của Giáp — user 24/11.
+15. **File của Tiền: chỉ thêm** (hàm, tham số tùy chọn mới; không đổi hành vi đang chạy), ghi vào mô tả PR để Tiền biết — user 24/11. Ngoại lệ: quyết định 18.
+16. Màn Đăng nhập thật = `LiveLoginScreen` của Tiền + link "Kích hoạt tài khoản"; bỏ `SignInScreen` của Giáp — user 24/11.
+17. Hai màn Thông báo = bản của Tiền — user 24/11.
+18. Phụ huynh chưa có ảnh chân dung (PCK-02): cho đăng nhập rồi bắt tải ảnh; được đổi hành vi `signIn`/`restore` của Tiền — user 24/11.
 
 ## Làm rõ nghiệp vụ
-- **Hiểu nghiệp vụ:** actor phụ huynh, GV, tổ bếp (AUTH-21 CONFIRMED) · outcome: đăng nhập thật, thấy dữ liệu BE theo phạm vi · rule AUTH-07 (ACCEPTED), AUTH-18 (CONFIRMED), AUTH-21 (CONFIRMED), AUTH-22 (CONFIRMED), ADR-0022 (ACCEPTED), ADR-0026 (ACCEPTED) · flow `[B]` Keycloak cấp token → `[S]` `GET /accounts/me` trả role, quyền, phân công, `childIds` → App dựng màn theo chế độ.
-- **Đối chiếu thiết kế ban đầu:** `CODING_GUIDE.md` §5.2 (form mật khẩu + `/mobile/auth/*`) khác BE (PKCE, không password grant) ⇒ theo BE (quyết định 2). Màn Đăng nhập App thật không còn ô SĐT/mật khẩu; người dùng nhập ở trang Keycloak.
-- **Ảnh hưởng:** `APP: Đăng nhập, Kích hoạt tài khoản (mới), Tài khoản (đăng xuất, chuyển chế độ), mọi shell vai trò` · vùng dùng chung `lib/core/**`, `lib/routing/**`, `lib/app.dart` · BE: Phase 1 không đổi contract.
+- **Hiểu nghiệp vụ:** actor phụ huynh, GV, tổ bếp (AUTH-21 CONFIRMED) · outcome: đăng nhập thật, dùng màn của Giáp, dữ liệu BE theo phạm vi · rule AUTH-18 (CONFIRMED), AUTH-21 (CONFIRMED), AUTH-22 (CONFIRMED), PCK-02 (CONFIRMED, ảnh chân dung bắt buộc), ADR-0022 (ACCEPTED), ADR-0026 (ACCEPTED) · flow `[B]` Keycloak cấp token → `[S]` `GET /accounts/me` → App chọn chế độ → shell của chế độ.
+- **Đối chiếu:** code Tiền chặn đăng nhập khi `profileUpdateRequired` (`mobile_session.dart:66`); PCK-02 và BE `MyAccountResponse` ghi "App bắt cập nhật hồ sơ trước khi dùng" ⇒ đổi theo quyết định 18.
+- **Ảnh hưởng:** `APP: Đăng nhập, Kích hoạt (mới trên nền Tiền), Ảnh chân dung (mới), Tài khoản (chuyển chế độ), mọi shell vai trò` · vùng dùng chung `lib/core/**`, `lib/routing/**`, `lib/app.dart` · code của Tiền: `mobile_session.dart`, `mobile_api.dart`, `live_login_screen.dart`, `app.dart` (chỉ thêm, trừ quyết định 18) · BE: không đổi contract.
 
 ### Câu hỏi mở
-- [x] Q1 Phiên đăng nhập: `offline_access` hay phiên thường? — user 16/11: phiên thường; đổi sau thì user báo (quyết định 9).
-- [x] Q2 Mã Jira và mã công việc cho Phase 1? — user 16/11: chưa có task Jira, dùng mã tạm gộp chung, tách task sau (quyết định 11).
-- [x] Q3 Môi trường chạy thử: BE local hay VPS dev? — user 16/11: BE local (quyết định 12).
-- [x] Q4 Duyệt `json_annotation` và `build_runner`? — user 16/11: duyệt (quyết định 10).
+- [x] Q5 Sửa file của Tiền tới mức nào? — user 24/11: chỉ thêm (quyết định 15).
+- [x] Q6 Màn Đăng nhập? — user 24/11: của Tiền + link kích hoạt (quyết định 16).
+- [x] Q7 Màn Thông báo? — user 24/11: của Tiền (quyết định 17).
+- [x] Q8 Phụ huynh chưa có ảnh? — user 24/11: cho vào, bắt tải ảnh (quyết định 18).
+- [x] Q9 Mỗi lần đăng nhập gửi `prompt=login` để Keycloak luôn hỏi mật khẩu? Lý do: máy bếp dùng chung (AUTH-22); đăng xuất lúc mất mạng thì Keycloak còn phiên, người sau bấm Đăng nhập sẽ vào thẳng tài khoản người trước. Việc này đổi hành vi `signIn` của Tiền. Đề xuất: **có** (Task R3 Step 6).
+- [x] Q10 Đang dùng mà Keycloak từ chối làm mới token (hết phiên 30 phút / 10 giờ) ⇒ xóa phiên, về Đăng nhập với chữ "Phiên đăng nhập đã hết. Vui lòng đăng nhập lại."? Hiện code Tiền chỉ báo lỗi ở từng màn, người dùng phải tự mở lại App. Việc này đổi hành vi `_renew` của Tiền. Đề xuất: **có** (Task R5).
 
 | Câu hỏi | Trả lời | Ai | Ngày | Rule/doc đã cập nhật |
 | --- | --- | --- | --- | --- |
-| BGH trên App | Giữ chỉ xem, phase cuối, chờ BE | user | 2026-11-16 | Quyết định 4 |
-| Quên mật khẩu khi BE chưa có API SMS | Chờ BE, chưa làm | user | 2026-11-16 | Quyết định 5 |
-| Thông báo / push | Danh sách trước, FCM sau | user | 2026-11-16 | Quyết định 6 |
-| Style | Clay của `dev` | user | 2026-11-16 | Quyết định 3 |
-| Q1 Phiên đăng nhập | Phiên thường; `offline_access` tính sau, user báo khi đổi | user | 2026-11-16 | Quyết định 9 |
-| Q2 Mã Jira | Mã tạm `TBD-4` gộp chung, tách task Jira thật trước PR | user | 2026-11-16 | Quyết định 11 |
-| Q3 Môi trường chạy thử | BE + Keycloak local | user | 2026-11-16 | Quyết định 12 |
-| Q4 Gói đi kèm | Duyệt `json_annotation`, `build_runner` | user | 2026-11-16 | Quyết định 10 |
+| Q5 File của Tiền | Chỉ thêm | user | 2026-11-24 | Quyết định 15 |
+| Q6 Màn Đăng nhập | `LiveLoginScreen` + link kích hoạt | user | 2026-11-24 | Quyết định 16 |
+| Q7 Màn Thông báo | Bản Tiền | user | 2026-11-24 | Quyết định 17 |
+| Q8 Ảnh chân dung | Cho vào, bắt tải ảnh | user | 2026-11-24 | Quyết định 18 |
+| Q9 `prompt=login` | Có | user | 2026-11-25 | Task R3 Step 6 |
+| Q10 Hết phiên khi đang dùng | Có, về Đăng nhập kèm câu báo | user | 2026-11-25 | Task R5 |
 
 ## Global Constraints
-- SDK Flutter 3.47.6 / Dart 3.13.5 theo `pubspec.lock`. Chạy lệnh `flutter` qua PATH tiến trình `D:\Flutter_Setup\stable-3.47.6\flutter\bin`. `flutter pub get --enforce-lockfile` exit 0 trước khi verify.
-- Dependency chỉ gồm quyết định 1 và 10. Gói khác (`flutter_local_notifications`, `shared_preferences`) ⇒ hỏi trước. `image_picker` user duyệt 17/11 cho camera ảnh mẫu bữa của bếp.
-- Envelope BE `{code, errorCode, desc, data}`; `code` == HTTP status. Phân nhánh lỗi theo status + `errorCode`, không so `desc`. `desc` là câu tiếng Việt, hiển thị được.
-- Access token chỉ ở bộ nhớ. Refresh token và id token chỉ ở `flutter_secure_storage`. Không log token, không đưa token vào URL. Bearer chỉ gửi tới host của `API_BASE_URL`.
-- Test, fixture, log không chứa dữ liệu trẻ thật hoặc token thật (AGENTS nguyên tắc 4).
-- Giao diện dùng token/widget của `lib/core`; `node scripts/check-design.mjs` (chạy trong verify) không tăng vi phạm.
-- Commit `<mã-jira>: <English verb…>` ≤72 ký tự; `<mã-jira>` hiện là mã tạm `TBD-4` (quyết định 11). Chỉ commit/push khi user cho phép trong tin nhắn đó.
-- Commit nhỏ, đủ ý: mỗi commit 1 thay đổi logic (vd. 1 lớp + test của nó), verify vẫn PASS sau mỗi commit; không gộp cả task thành 1 commit — user 16/11.
-- Mỗi phần review: `node scripts/verify.mjs` → `VERIFY PASS full`, skip 0. Sửa docs ⇒ `node scripts/check-ai-layer.mjs` 0 lỗi.
+- Flutter 3.47.6 qua PATH `D:\Flutter_Setup\stable-3.47.6\flutter\bin`; `flutter pub get --enforce-lockfile` exit 0 trước verify.
+- Dependency sau Task R6: `go_router`, `flutter_appauth`, `flutter_secure_storage`, `firebase_core`, `firebase_messaging`, `image_picker`, `url_launcher` (+ có sẵn của `dev`). Gói khác ⇒ hỏi trước.
+- File của Tiền chỉ thêm (quyết định 15). Mỗi chỗ thêm ghi ở Progress log, mục "Thêm vào code Tiền", để đưa vào mô tả PR.
+- Envelope `{code, errorCode, desc, data}`; phân nhánh lỗi theo `ApiFailure.status` + `errorCode`, không so `desc`; `desc` là câu tiếng Việt, hiển thị được.
+- Không log token; Bearer chỉ gửi tới host của `CARENEST_API_BASE_URL`; refresh token chỉ ở secure storage (code Tiền đã đúng).
+- Test, fixture không chứa dữ liệu trẻ thật, token thật (AGENTS nguyên tắc 4).
+- Giao diện mới dùng token/widget `lib/core`; `node scripts/check-design.mjs` (trong verify) không tăng vi phạm.
+- Commit `TBD-4: <English verb…>` ≤72 ký tự, commit nhỏ, verify PASS sau mỗi commit; chỉ commit/push khi user cho phép.
+- Exit mỗi task: `node scripts/verify.mjs` → `VERIFY PASS full`, skip 0. Sửa docs ⇒ `node scripts/check-ai-layer.mjs` 0 lỗi.
 
 ## Review Focus
-1. Mở lại App khi refresh token đã hết hạn hoặc bị thu hồi ⇒ về Đăng nhập, không kẹt màn chờ, không vòng lặp refresh — Task 6 `restore_expiredRefresh_signsOut`.
-2. Mất mạng hoặc Keycloak/BE trả 503 lúc mở App ⇒ màn "Thử lại", **giữ** token, không đăng xuất — Task 6 `restore_networkError_keepsTokens`, Task 7 `start_meServiceUnavailable_showsRetry`.
-3. Nhiều request cùng nhận 401 ⇒ chỉ một lần refresh, mỗi request gửi lại tối đa một lần — Task 3 `on401_refreshesOnceThenRetries`, Task 6 `refresh_concurrentCalls_singleFlight`.
-4. Đăng xuất rồi đăng nhập tài khoản khác trên cùng máy (máy bếp dùng chung — AUTH-22) ⇒ Keycloak hỏi lại mật khẩu, không còn dữ liệu hay chế độ của người trước — Task 5 `signIn_requestsPromptLoginAndPkceClient`, Task 7 `signOut_clearsUserAndMode`.
-5. Đổi máy hoặc khôi phục backup làm secure storage đọc lỗi ⇒ coi như chưa đăng nhập, xóa khóa hỏng, không crash — Task 4 `read_platformError_returnsNullAndClears`.
+1. Phụ huynh A đăng xuất, phụ huynh B đăng nhập trên cùng máy ⇒ không thấy con, chế độ hay dữ liệu của A — Task R2 `signOut_clearsModeAndSelectedChild`, Task R1 `live_signOut_resetsSelectedChild`.
+2. Đang ở chế độ thật mà màn đẩy tới đường của vai trò khác hoặc đường Xem thử ⇒ về màn chính của chế độ hiện tại, không 404, không lộ màn dữ liệu giả — Task R1 `signedIn_otherRolePath_goesModeHome`.
+3. Bấm push khi App đang tắt ⇒ mở đúng chi tiết thông báo trong shell của chế độ hiện tại — Task R1 `live_pushDeepLink_opensDetail`.
+4. Phụ huynh chưa có ảnh: mọi đường (kể cả bấm push, đổi chế độ) đều về màn ảnh chân dung tới khi lưu xong — Task R4 `liveRedirect_photoRequired_blocksEveryPath`.
+5. Tài khoản GV kiêm phụ huynh nhưng chưa có con đang học ⇒ không có nút chuyển sang phụ huynh — Task R2 `fromAccount_parentNoChild_noParentMode`.
 
 ---
 
-## Acceptance criteria (Phase 1)
-- **AC-1** (AUTH-21, ADR-0022): Given tài khoản GV, bếp hoặc phụ huynh đang ACTIVE, When bấm "Đăng nhập" và nhập SĐT + mật khẩu ở trang Keycloak, Then vào màn chính của chế độ: GV ⇒ `/teacher`, bếp ⇒ `/kitchen`, phụ huynh ⇒ `/parent`.
-- **AC-2** (ADR-0022, quyết định 4): Given tài khoản chỉ có role BGH hoặc Admin, When đăng nhập App, Then thấy "Tài khoản này dùng trên Web CareNest." và nút "Đăng xuất"; không vào shell nào.
-- **AC-3** (AUTH_CONTRACT 1014, 1015): Given tài khoản bị khóa hoặc chưa có hồ sơ, When đăng nhập hoặc App gọi API, Then thấy "Tài khoản chưa dùng được. Vui lòng liên hệ nhà trường." và nút "Đăng xuất"; không tự thử lại.
-- **AC-4:** Given đã đăng nhập, When đóng App rồi mở lại trong thời hạn phiên, Then vào thẳng màn chính, không hỏi mật khẩu.
-- **AC-5:** Given access token đã hết hạn (5 phút), When App gọi API, Then App tự refresh; người dùng không thấy lỗi.
-- **AC-6:** Given phiên hết hạn hoặc bị thu hồi, When App gọi API hoặc mở App, Then về Đăng nhập, back stack bị xóa, hiện "Phiên đăng nhập đã hết. Vui lòng đăng nhập lại."
-- **AC-7** (CODING_GUIDE §5.6): When bấm "Đăng xuất" và xác nhận, Then App thu hồi refresh token ở Keycloak (lỗi mạng vẫn xóa trên máy), xóa token và state, về Đăng nhập. Keycloak không còn phiên `carenest-mobile` của người đó.
-- **AC-8** (ADR-0022, quyết định 7): Given tài khoản có `TEACHER` + `PARENT` và `childIds` không rỗng, Then mở chế độ GV; màn Tài khoản có "Chuyển sang chế độ phụ huynh"; mở lại App giữ chế độ cuối.
-- **AC-9** (AUTH-18, ADR-0026): Given phụ huynh nhận SMS mã kích hoạt, When nhập SĐT, mã 6 số, mật khẩu mới 2 lần ở "Kích hoạt tài khoản", Then App mở trang Keycloak có sẵn tên đăng nhập BE trả. Mã sai hoặc hết hạn (400 / 1006) ⇒ "Mã kích hoạt sai hoặc đã hết hạn. Liên hệ nhà trường để gửi lại mã."
-- **AC-10** (quyết định 5): Màn Đăng nhập thật (`USE_MOCK=false`) không có lối vào "Quên mật khẩu".
-- **AC-11:** `USE_MOCK=true` (mặc định) ⇒ App chạy như `dev` hiện tại (Đăng nhập giả + Xem thử theo vai trò), trừ hộp xác nhận đăng xuất thêm ở Task 9. `USE_MOCK=false` mà thiếu `API_BASE_URL` hoặc `OIDC_ISSUER` ⇒ màn lỗi cấu hình nêu tên biến thiếu.
+## Acceptance criteria (Phase R)
+- **AC-R1:** Given bản merge, When `node scripts/verify.mjs`, Then `VERIFY PASS full`, skip 0; test của Tiền (`live_router_test`, `mobile_session_test`, `mobile_api_test`, `push_coordinator_test`, `live_notification_detail_test`) pass không sửa `expect`.
+- **AC-R2** (AUTH-21): Given cấu hình thật, When GV, bếp hoặc phụ huynh đăng nhập, Then vào tab Thông báo trong shell của vai trò (code Tiền, `app.dart:64`); các tab khác là màn của Giáp; tab Thông báo dùng dữ liệu BE.
+- **AC-R3** (AUTH-21, ADR-0022): Given chỉ có role BGH/Admin, When đăng nhập, Then thấy "Tài khoản này dùng trên Web" và nút Đăng xuất; không vào shell.
+- **AC-R4** (ADR-0022, quyết định 7): Given `TEACHER` + `PARENT` và `childIds` không rỗng, Then mở chế độ GV; Tài khoản có "Chuyển sang chế độ phụ huynh"; mở lại App giữ chế độ cuối.
+- **AC-R5** (AUTH-18, ADR-0026): Given màn Đăng nhập, When bấm "Kích hoạt tài khoản", nhập SĐT, mã 6 số, mật khẩu mới 2 lần, Then thấy "Tài khoản đã kích hoạt" và nút Đăng nhập; bấm ⇒ trang Keycloak có sẵn tên đăng nhập. 400/1006 ⇒ "Mã kích hoạt sai hoặc đã hết hạn. Liên hệ nhà trường để gửi lại mã."
+- **AC-R6** (PCK-02, quyết định 18): Given phụ huynh `profileUpdateRequired`, When đăng nhập, Then vào màn "Cập nhật ảnh chân dung"; mọi đường khác về màn này; lưu ảnh thành công ⇒ vào App; 400/1131 ⇒ câu BE.
+- **AC-R7** (AUTH-22): When đăng xuất, Then con đang chọn và chế độ trong bộ nhớ bị xóa (chế độ cuối đã lưu theo `userId` vẫn giữ).
+- **AC-R8:** Given đã đăng nhập, When mở đường con của vai trò (vd. `/parent/leave-notices`), Then mở được; đường của vai trò khác ⇒ màn chính của chế độ hiện tại.
+- **AC-R9** (Q9 = có): mỗi lần đăng nhập, Keycloak hỏi lại mật khẩu dù còn phiên trình duyệt.
+- **AC-R10** (Q10 = có): refresh bị Keycloak từ chối ⇒ về Đăng nhập, hiện "Phiên đăng nhập đã hết. Vui lòng đăng nhập lại."
+- **AC-R11** (quyết định 13): `lib/` và `test/` không còn `flutter_riverpod`, `package:dio`; `AGENTS.md` mục Stack ghi đúng nền mới.
 
 ## Key decisions
 | Quyết định | Chọn | Phương án khác | Vì sao |
 | --- | --- | --- | --- |
-| Chọn giả/thật | `USE_MOCK` chọn implementation ở provider; không `if` trong màn | Nhánh riêng cho bản thật | Nối dần từng feature, `dev` luôn chạy được (CODING_GUIDE §4 bước 4) |
-| Màn Đăng nhập | Màn mới `SignInScreen` cho bản thật; giữ `LoginScreen` giả cho `USE_MOCK=true` | Sửa `LoginScreen` cho cả hai | Không làm hỏng luồng xem thử (AC-11) |
-| Chạy với BE local | `adb reverse tcp:8080 tcp:8080` và `tcp:8180 tcp:8180`; App dùng `http://localhost:...` | `10.0.2.2` | `iss` của token phải trùng issuer BE kiểm (`localhost:8180`); dùng `10.0.2.2` làm lệch `iss` ⇒ mọi API 401 |
-| HTTP không mã hóa | Chỉ manifest debug (`usesCleartextTraffic`); release chỉ HTTPS | Mở cho mọi bản | Release không gửi token qua HTTP |
-| Làm mới token | Chủ động (token còn < 30 giây thì refresh trước khi gửi) + bị động (401 ⇒ refresh 1 lần, gửi lại 1 lần, trừ body `FormData`) | Chỉ bị động | Token 5 phút; 401 của Resource Server xảy ra trước controller nên gửi lại body JSON an toàn |
-| Đăng xuất | POST `{issuer}/protocol/openid-connect/logout` với `client_id` + `refresh_token`, không mở trình duyệt; mỗi lần đăng nhập gửi `prompt=login` | `endSession` qua trình duyệt | Không bật trình duyệt khi đăng xuất; `prompt=login` chặn tự đăng nhập lại bằng cookie Keycloak còn trong Custom Tabs |
-| Lưu chế độ cuối | `flutter_secure_storage`, khóa theo `userId`, giữ sau đăng xuất | `shared_preferences` | Không thêm gói ngoài danh sách duyệt; chế độ không nhạy cảm |
-| Backup Android | `android:allowBackup="false"` | Giữ mặc định | Khóa Keystore không theo backup ⇒ dữ liệu secure storage khôi phục sang máy mới bị hỏng |
-| File `*.g.dart` | Commit; thêm `**/*.g.dart` vào `analyzer.exclude` | Sinh khi CI chạy | `verify.mjs` chạy analyze/test, không chạy build_runner |
-| Làm mới `/accounts/me` | Khi App quay lại foreground (tối đa 1 lần/60 giây) | Chỉ lúc mở App | BE đổi quyền/khóa tài khoản có hiệu lực ngay (`AUTH_CONTRACT`: gọi lại `/accounts/me`) |
+| Đường của chế độ thật | Đường thường (`/parent/...`); giữ `/live/notifications`, `/live/notifications/:id`, `/live/unsupported` làm lối vào | Giữ tiền tố `/live` cho mọi màn | Màn của Giáp đẩy đường tuyệt đối; `app.dart` và push của Tiền vẫn chạy không sửa |
+| Khi nào dùng router thật | Có `session`, `api`, `signIn`, `signOut` **và** (`enablePreview` = false **hoặc** session có `apiBaseUrl` + `issuer`) | Luôn dùng khi có `session` (như Tiền) | Debug chưa cấu hình vẫn có Xem thử; test của Tiền (`enablePreview: false`) vẫn vào router thật |
+| Xem thử khi đã cấu hình thật | Không có | Cùng router | Hai bộ shell trùng đường; giống AC-11 cũ (bản thật không Xem thử) |
+| Màn sau đăng nhập | Giữ tab Thông báo (`app.dart:64`) | Về Hôm nay | Quyết định 15 (không đổi hành vi Tiền); đổi sau nếu Tiền đồng ý |
+| Chuyển màn theo phiên | Hàm thuần `liveRedirect(...)` ở `lib/routing/live_access.dart` | `redirect` rải ở từng shell | Test được không cần widget; một chỗ cho Review Focus 2, 4 |
+| Chế độ | `LiveModeController` (ChangeNotifier) nghe `MobileSession`; lưu bằng `LastModeStore` có sẵn | Sửa `liveRoleOf` của Tiền | Quyết định 15; dùng lại `AppUser.modes` (ADR-0022) |
+| Xóa con đang chọn | `LiveModeController` reset `SelectedChild` khi phiên kết thúc | Sửa `app.dart` | Mọi đường đăng xuất/hết phiên đi qua `MobileSession.clear()` ⇒ một chỗ |
+| API công khai, multipart | Thêm `MobileApi.publicJson`, `MobileApi.multipart` (+ tham số tùy chọn cho `_request`) | Lớp HTTP riêng | Không lặp lại xử lý envelope/401; chỉ thêm (quyết định 15) |
+| Hồ sơ, Đổi mật khẩu ở chế độ thật | Giữ "sẽ có trong bản sau" như Tiền | Nối ngay `PUT /me/password` | Ngoài phạm vi Phase R; đưa vào phase Tài khoản sau |
+| Cấu hình | `--dart-define-from-file`, khóa `CARENEST_API_BASE_URL`, `CARENEST_OIDC_ISSUER` (`MobileConfig` của Tiền) + `APP_ENV` | Khóa cũ `API_BASE_URL`, `OIDC_ISSUER`, `USE_MOCK` | Một bộ khóa; `USE_MOCK` thay bằng "đã cấu hình hay chưa" |
 
-## Bản tác động (vùng dùng chung — điểm dừng 2)
+## Bản tác động (vùng dùng chung — điểm dừng 2, 3)
 ```text
-Thay đổi: thêm lib/core/{errors,network,storage}/, lib/bootstrap.dart; sửa lib/core/config/env.dart,
-  lib/app.dart, lib/main.dart, lib/routing/app_router.dart, route_paths.dart (thêm /splash, /activate, /blocked)
-Ảnh hưởng (impact.mjs 16/11): app_router.dart — chỉ lib/app.dart dùng, lan 0 file giao diện;
-  app.dart — chỉ lib/main.dart; env.dart — chưa file nào dùng. Ownership chưa khai.
-Luồng người dùng: USE_MOCK=true không đổi. USE_MOCK=false: mở App ⇒ màn chờ ⇒ Đăng nhập (Keycloak)
-  hoặc màn chính theo chế độ; không có "Quên mật khẩu".
-Module của: chưa khai ownership; Phase 1 không sửa màn đơn nghỉ (G94-284/G94-331 chờ Cần).
-Phương án: A (đề xuất) giữ màn giả sau USE_MOCK, gắn auth ở router · B thay toàn bộ màn giả cùng lúc
-  (PR rất lớn, rủi ro cao) · C nhánh bản thật riêng (lệch dev lâu).
-Cách kiểm: test redirect (Task 8), test controller (Task 7), chạy emulator theo checklist Task 10.
+Thay đổi: hoàn tất merge dev (PR #8); router chế độ thật dùng shell của Giáp; thêm vào code Tiền
+  (MobileApi.publicJson/multipart, MobileSession.signIn(loginHint), reloadAccount, LiveLoginScreen.onActivate);
+  đổi hành vi signIn/restore khi profileUpdateRequired (quyết định 18); gỡ Phase 1 cũ + Riverpod/Dio.
+impact.mjs 24/11: app_router.dart — dùng bởi lib/app.dart, lan 0 file giao diện;
+  mobile_session.dart — dùng bởi app.dart, mobile_api.dart, live_account_source.dart, push_coordinator.dart,
+  app_router.dart; lan 0 file giao diện. Ownership chưa khai; lib/core/integration/** do Tiền viết (PR #8).
+Luồng người dùng: chưa cấu hình ⇒ như dev (Đăng nhập + Xem thử). Đã cấu hình ⇒ Đăng nhập Keycloak ⇒
+  shell của chế độ với màn của Giáp; phụ huynh thiếu ảnh ⇒ màn ảnh trước; GV kiêm PH chuyển được chế độ.
+Phương án: A (chọn) nền Tiền + UI Giáp · B nền Phase 1 của Giáp, đổi code Tiền sang ApiClient ·
+  C hủy merge, bàn với Tiền trước.
+Cách kiểm: test của Tiền pass không sửa expect (AC-R1); test live_access, live_mode_controller,
+  widget router thật; chạy BE local theo checklist Task R7.
 ```
 
 ## Lộ trình
-Phase 1 có task chi tiết dưới. Mỗi phase sau có plan con riêng ở `docs/plans/active/`, lập khi bắt đầu: đọc controller + DTO BE của từng màn, ghi khoảng trống contract. Phase 2–5 làm lần lượt. Phase bị chặn làm khi phần BE tương ứng đã vào `dev`.
+| Phase | Nội dung | Trạng thái / chặn |
+| --- | --- | --- |
+| 1 (cũ) | Nền Riverpod/Dio | Thay bằng Phase R (24/11); code gỡ ở Task R6 |
+| 2 | Thông báo + push FCM | Code App xong (Tiền, PR #8). Push thật cần project Firebase + `google-services.json` (không commit) + BE gửi FCM |
+| **R** | Hoàn tất merge, chế độ thật dùng UI của Giáp, chế độ GV ↔ PH, kích hoạt, ảnh chân dung, gỡ nền cũ | Task R0–R7 dưới đây |
+| 3 | GV nối API | Sau R. Plan con khi bắt đầu (cập nhật `2026-11-15-teacher-api-integration.md` theo `MobileApi`) |
+| 4 | Phụ huynh nối API | Sau R. API có: hồ sơ, sức khỏe, nhận xét tuần, đơn nghỉ; thiếu: file `API-phu-huynh-con-thieu-2026-11-24.md` (ngoài repo, thư mục `web` của Giáp, đã gửi Cần) |
+| 5 | Bếp nối API | Sau R |
+| 6 | Quên mật khẩu SMS | Chặn: BE G94-87 |
+| 8 | BGH chỉ xem | Chặn: BE TBD-1 |
+| 9 | Release Android | `applicationId` thật, khóa ký, build release, máy thật |
 
-| Phase | Nội dung | API BE `dev` (kiểm quyền + DTO ở plan con) | Phụ thuộc / chặn |
-| --- | --- | --- | --- |
-| 0 | Chuẩn bị (Task 0) | — | Plan được duyệt |
-| 1 | Nền App | Keycloak, `GET /accounts/me`, `POST /parent-activation` | Phase 0 |
-| 2 | Thông báo, mọi vai trò | `GET /me/notifications`, `POST /me/notifications/{id}/read`, `POST /me/notifications/read-all` | Phase 1 |
-| 3 | Giáo viên | `GET /attendance/classes`, `GET /attendance/day-info`, `GET\|PUT /classes/{classId}/attendance`, `POST /daily-health-entries`, `GET /classes/{classId}/children/{childId}/daily-health`, `GET /leave-requests`, `GET /classes/{classId}/daily-assessment`, `PUT .../general`, `PUT .../skills`, `GET /pickups/classes`, `GET\|POST /pickups`, `GET /children/{childId}/guardian-photos/{guardianId}/url`, `GET /health-checks`, `GET /health-checks/{campaignId}/classes/{classId}/children`, `POST\|PUT /children/{childId}/health/measurements` | Phase 1 |
-| 4 | Phụ huynh | `GET /children/{childId}`, `GET /children/{childId}/photo/url`, `POST /leave-requests`, `GET /leave-requests/me`, `PATCH /leave-requests/{id}/cancel`, `GET /children/{childId}/health/published`, `GET /children/{childId}/weekly-comments`, `GET /pickups/children/{childId}`, `GET /children/{childId}/daily-health`, `PUT /accounts/me/photo`. Thực đơn, ảnh bữa, hoạt động: kiểm quyền phụ huynh, thiếu ⇒ đề xuất BE | Phase 1; ảnh tài khoản cần `image_picker` (hỏi) |
-| 5 | Bếp | `GET /nutrition/kitchen/day`, `GET /meal-counts`, `GET /nutrition/day-board`, `GET\|POST /nutrition/food-samples`, `GET\|POST /nutrition/meal-photos` (multipart) | Phase 1; chụp ảnh cần `image_picker` (hỏi) |
-| 6 | Quên mật khẩu SMS | API SMS ở nhánh BE G94-87 | Chặn: BE G94-87 vào `dev` |
-| 7 | Push FCM | `PUT\|DELETE /me/devices` | Chặn: BE gửi FCM thật; project Firebase; `applicationId` thật (hiện `com.example.carenest_app`) |
-| 8 | BGH chỉ xem | GET của nhánh BE TBD-1 | Chặn: nhánh BE TBD-1 vào `dev` |
-| 9 | Bản release Android | — | `applicationId`, khóa ký (không commit), build release, chạy máy thật |
+### Mẫu nối một màn (Phase 3–5)
+1. Đọc controller + DTO BE của màn; ghi field dùng; field BE không có ⇒ ghi khoảng trống, không bịa.
+2. Thêm `Live<X>Source implements <X>Source` cạnh `fake_<x>_source.dart`, gọi `MobileApi.json(...)`, map DTO → domain có sẵn.
+3. Router chế độ thật truyền `Live<X>Source(api)` vào màn (màn đã nhận `source`).
+4. Test bằng `HttpServer` loopback như `test/features/shared/notifications/mobile_api_test.dart` (Tiền): map đúng; 403/404/409 hiện đúng trạng thái.
 
-Phase 3–5: màn theo contract BE `dev`. Phần BE đã làm theo quyết định 14/11 (khóa ngày nghỉ `NOT_SCHOOL_DAY`, hủy phần còn lại của đơn `cancelFrom`, form sức khỏe đầu ngày như Web) đi vào màn khi nối API, vì BE là nguồn (AGENTS nguyên tắc 1).
+| Phase | API BE `dev` (đã kiểm có trong controller 24/11) |
+| --- | --- |
+| 3 GV | `GET /attendance/classes`, `GET /attendance/day-info`, `GET\|PUT /classes/{classId}/attendance`, `POST /daily-health-entries`, `GET /classes/{classId}/children/{childId}/daily-health`, `GET /leave-requests`, `GET\|PUT /classes/{classId}/daily-assessment/...`, `GET /pickups/classes`, `GET\|POST /pickups`, `GET /children/{childId}/guardian-photos/{guardianId}/url`, `GET /health-checks`, `POST\|PUT /children/{childId}/health/measurements` |
+| 4 PH | `GET /children/{childId}/profile`, `GET /children/{childId}/photo/url`, `POST /leave-requests`, `GET /leave-requests/me`, `PATCH /leave-requests/{id}/cancel`, `GET /children/{childId}/health/published`, `GET /children/{childId}/weekly-comments` |
+| 5 Bếp | `GET /nutrition/kitchen/day`, `GET /meal-counts`, `GET /nutrition/day-board`, `GET\|POST\|PUT /nutrition/food-samples`, ảnh bữa `/nutrition/meal-photos` (multipart — dùng `MobileApi.multipart` của Task R4) |
 
-## Phase 1 — Nền App
-3 lần review: **1a** = Task 0–4 (chuẩn bị, cấu hình, lỗi, client, storage) · **1b** = Task 5–6 (Keycloak, phiên) · **1c** = Task 7–10 (tài khoản, router, kích hoạt, docs + chạy thật). Dừng chờ review sau mỗi phần.
+## Phase R — Nền của Tiền + UI của Giáp
+Review sau mỗi task R0, R1–R2, R3–R5, R6–R7. Dừng chờ user review ở mỗi mốc.
 
 ### File structure
-- C `lib/bootstrap.dart` — kiểm cấu hình, tạo `ProviderScope`.
-- M `lib/main.dart`, `lib/app.dart` — chạy qua bootstrap; router lấy từ provider khi `USE_MOCK=false`.
-- M `lib/core/config/env.dart` — biến OIDC, kiểm thiếu cấu hình.
-- C `lib/core/errors/app_failure.dart` — lỗi chuẩn hóa.
-- C `lib/core/network/api_envelope.dart`, `api_error_mapper.dart`, `dio_client.dart`, `auth_interceptor.dart`, `safe_log_interceptor.dart`, `api_client.dart`.
-- C `lib/core/storage/secure_store.dart`, `token_storage.dart`.
-- C `lib/features/auth/data/datasources/oidc_client.dart`, `app_auth_oidc_client.dart`, `account_remote_data_source.dart`, `activation_remote_data_source.dart`.
-- C `lib/features/auth/data/models/me_dto.dart` (+ `me_dto.g.dart`), `lib/features/auth/data/session_manager.dart`.
-- C `lib/features/auth/domain/entities/app_user.dart`, `app_mode.dart`.
-- C `lib/features/auth/presentation/controllers/auth_state.dart`, `auth_controller.dart`; `presentation/providers/auth_providers.dart`.
-- C `lib/features/auth/presentation/screens/sign_in_screen.dart`, `session_loading_screen.dart`, `blocked_screen.dart`, `activation_screen.dart`, `config_error_screen.dart`.
-- C `lib/routing/route_access_policy.dart`; M `lib/routing/app_router.dart`, `route_paths.dart`.
-- M `lib/features/account/presentation/screens/account_screen.dart` — Đăng xuất, chuyển chế độ.
-- M `pubspec.yaml`, `pubspec.lock`, `analysis_options.yaml`, `.gitignore`; C `env/local.example.json`.
-- M `android/app/build.gradle.kts`, `android/app/src/main/AndroidManifest.xml`, `android/app/src/debug/AndroidManifest.xml`, `ios/Runner/Info.plist`.
-- Test: C `test/helpers/fake_http_adapter.dart`, `test/helpers/fake_oidc_client.dart`, `test/core/config/env_test.dart`, `test/core/network/{api_envelope,api_error_mapper,api_client,auth_interceptor,safe_log_interceptor}_test.dart`, `test/core/storage/token_storage_test.dart`, `test/features/auth/**`, `test/routing/route_access_policy_test.dart`, `test/routing/app_router_auth_test.dart`.
-- Docs (Task 10): M `AGENTS.md` (mục Stack), `docs/integration/AUTH_FLOW.md`, `BACKEND_INTEGRATION.md`, `docs/architecture/{MOBILE_ARCHITECTURE,STATE_MANAGEMENT,CODING_GUIDE,NAVIGATION}.md`, `.claude/rules/{api-client,state,security-storage}.md` (dòng "chưa chọn"), `docs/context/CURRENT_STATE.md`, `docs/quality/VERIFICATION.md`, `docs/integration/BE_API_INDEX.md` (sinh lại).
+- C `lib/routing/live_access.dart` — `liveRedirect(...)`.
+- C `lib/features/auth/data/live_mode_controller.dart` — chế độ GV/bếp/PH của phiên thật.
+- C `lib/features/auth/data/activation_api.dart` (thay `datasources/activation_remote_data_source.dart`).
+- C `lib/core/media/photo_picker.dart` — chọn/chụp ảnh qua `image_picker`.
+- C `lib/features/shared/account/data/profile_photo_api.dart`, `presentation/screens/profile_photo_required_screen.dart`.
+- M (Tiền, chỉ thêm) `lib/core/integration/mobile_api.dart`, `mobile_session.dart`, `lib/app.dart`, `lib/features/auth/presentation/screens/live_login_screen.dart`.
+- M `lib/routing/app_router.dart`, `route_paths.dart`, `route_access_policy.dart`; `lib/features/auth/domain/entities/app_user.dart`; `activation_screen.dart`.
+- D Phase 1 cũ (Task R6).
 
-### Task 0: Chuẩn bị môi trường (không có test)
-- [ ] **Step 1:** Trả `pubspec.lock` về bản commit: chạy `flutter pub get` bằng Flutter 3.47.6. Expected: `git diff --quiet pubspec.lock` exit 0. (16/11 IDE dùng 3.44.0 đã sửa lock; đổi `dart.flutterSdkPath` của IDE sang `D:\Flutter_Setup\stable-3.47.6\flutter` trước.)
-- [ ] **Step 2:** User cho phép ⇒ tạo nhánh `feature/TBD-4-FE-FEAT-0-app-foundation` từ `origin/dev` (quyết định 11); sửa `branch:` của plan theo nhánh này.
-- [ ] **Step 3:** `node scripts/ai-layer/api-index.mjs`. Expected: `docs/integration/BE_API_INDEX.md` có `GET /accounts/me` và `POST /parent-activation`.
-- [ ] **Step 4:** Đưa worktree chạy BE `D:\project_capstone\CareNest_BE-devdb` lên `origin/dev` mới nhất (`git fetch` + `git checkout --detach origin/dev`; worktree chỉ để chạy, không sửa code). User chạy `D:\project_capstone\run-be-dev.ps1` trong terminal của mình (Keycloak 8180 + BE 8080, DB local có seed). Kiểm `curl http://localhost:8180/realms/carenest/.well-known/openid-configuration` ⇒ 200, `issuer` = `http://localhost:8180/realms/carenest`. Kiểm redirect URI của client `carenest-mobile` là `carenest://oauth/callback`.
-- [ ] **Step 5:** Emulator `Pixel_8_Pro`: `adb reverse tcp:8080 tcp:8080` và `adb reverse tcp:8180 tcp:8180`.
-- [ ] **Step 6:** Chọn tài khoản seed cho checklist Task 10: GV, bếp, phụ huynh, GV kiêm phụ huynh, BGH (từ `BE:docker/keycloak/dev/carenest-users-0.json`). Không ghi mật khẩu vào repo App.
-
-### Task 1: Dependency và cấu hình
-**Files:** M `pubspec.yaml`, `pubspec.lock`, `analysis_options.yaml`, `.gitignore`, `lib/core/config/env.dart`, `android/app/build.gradle.kts`, `android/app/src/main/AndroidManifest.xml`, `android/app/src/debug/AndroidManifest.xml`, `ios/Runner/Info.plist` · C `env/local.example.json` · Test `test/core/config/env_test.dart`
+### Task R0: Hoàn tất merge `dev` — build và test xanh, giữ hành vi hai bên
+**Files:**
+- M `pubspec.yaml`, `pubspec.lock`.
+- M (chỉ dòng import) `lib/app.dart`, `lib/features/shared/account/data/live_account_source.dart`, `lib/features/shared/notifications/data/{live_notification_source,push_coordinator}.dart`, `lib/features/shared/notifications/presentation/screens/{notifications_screen,notification_detail_screen}.dart`, `test/features/shared/notifications/{live_notification_detail_test,mobile_api_test,push_coordinator_test}.dart`.
+- M `lib/routing/app_router.dart`.
+- M `android/app/src/main/AndroidManifest.xml`.
+- D `linux/flutter/generated_plugin_registrant.cc`, `linux/flutter/generated_plugins.cmake`, `macos/Flutter/GeneratedPluginRegistrant.swift`, `windows/flutter/generated_plugin_registrant.cc`, `windows/flutter/generated_plugins.cmake`.
+- D `test/app_test.dart` (kiểm `CareNestApp.start/onResumed` của `app.dart` cũ, đã thay bằng bản Tiền).
 
 **Interfaces:**
-- Produces: `Env.oidcIssuer` (`OIDC_ISSUER`, không mặc định), `Env.oidcClientId` (`OIDC_CLIENT_ID`, mặc định `carenest-mobile`), `Env.oidcRedirectUri` (`OIDC_REDIRECT_URI`, mặc định `carenest://oauth/callback`); giữ `Env.apiBaseUrl` (đã gồm `/api`), `Env.useMock`, `Env.appEnv`. `static List<String> Env.missingKeys({required bool useMock, required String apiBaseUrl, required String oidcIssuer})`.
+- Produces (tạm, R6 bỏ 4 tham số đầu sau `enablePreview`): `GoRouter buildAppRouter({bool enablePreview = kDebugMode, Listenable? refresh, AuthState Function()? readAuth, Future<void> Function()? onSignOut, Future<void> Function(AppMode mode)? onSwitchMode, MobileSession? session, MobileApi? api, Future<void> Function()? signIn, Future<void> Function()? signOut})`.
+- `StatefulShellRoute _roleShell(GlobalKey<NavigatorState> rootKey, AppRole role, List<NavDestination> destinations, Map<String, GoRouterWidgetBuilder> screens, {_AccountTab account = const _AccountTab(), NotificationSource notifications = const FakeNotificationSource(), String? Function()? redirect})`.
+- `_AccountTab` thêm `final bool live` (true ⇒ "Thông tin cá nhân", "Đổi mật khẩu" gọi `openComingSoon` như `dev`).
 
-- [ ] **Step 1:** `flutter pub add flutter_riverpod dio json_annotation flutter_appauth flutter_secure_storage` và `flutter pub add --dev json_serializable build_runner`. Expected: `flutter pub get --enforce-lockfile` exit 0. Ghi version vào Progress log.
-- [ ] **Step 2:** Viết test:
-  ```dart
-  test('missingKeys_mock_needsNothing', () => expect(Env.missingKeys(useMock: true, apiBaseUrl: '', oidcIssuer: ''), isEmpty));
-  test('missingKeys_real_listsMissing', () => expect(Env.missingKeys(useMock: false, apiBaseUrl: '', oidcIssuer: ''), ['API_BASE_URL', 'OIDC_ISSUER']));
-  test('missingKeys_real_complete', () => expect(Env.missingKeys(useMock: false, apiBaseUrl: 'http://localhost:8080/api', oidcIssuer: 'http://localhost:8180/realms/carenest'), isEmpty));
+- [ ] **Step 1:** `git status` → "All conflicts fixed but you are still merging." (MERGE_HEAD = `244fbf3`).
+- [ ] **Step 2:** `pubspec.yaml` = bản Tiền + `image_picker: ^1.2.4`, `url_launcher: ^6.3.2`, `flutter_riverpod: ^3.5.0`, `dio: ^5.11.1`, `json_annotation: ^4.12.0`; dev: `json_serializable: ^6.15.2`, `build_runner: ^2.17.1`. `flutter pub get` → exit 0.
+- [ ] **Step 3:** Sửa import `features/notifications/` → `features/shared/notifications/`, `features/account/` → `features/shared/account/`. `grep -rn "carenest_app/features/notifications/\|carenest_app/features/account/" lib test` → 0 dòng.
+- [ ] **Step 4:** `app_router.dart` = bản `HEAD` + các phần của `dev`: tham số `session/api/signIn/signOut`; route Đăng nhập dùng `LiveLoginScreen` khi có `session` và `signIn` (như `dev:lib/routing/app_router.dart` khoảng dòng 96–110); `..._liveRoutes(...)` của Tiền, gọi `_roleShell(..., account: _AccountTab(live: true, source: LiveAccountSource(session), onLogout: signOut), notifications: notifications, redirect: ...)`.
+- [ ] **Step 5:** Manifest main = bản Tiền (giữ việc bỏ `taskAffinity`, sửa redirect đăng nhập `268c81d`) + `android:allowBackup="false"` + `<queries>` intent `android.intent.action.DIAL` / `tel` của `HEAD`.
+- [ ] **Step 6:** Xóa 5 file desktop và `test/app_test.dart`.
+- [ ] **Step 6b:** Plan của Tiền `docs/plans/active/2026-11-16-notification-integration.md` thiếu frontmatter ⇒ `check-ai-layer` lỗi E5 (có sẵn từ `dev`). Chỉ thêm frontmatter theo `docs/plans/_TEMPLATE.md`: `status: done`, `owner: Tiền`, `jira: G94-288 / APP-FEAT-55`, `branch: feature/G94-288-APP-FEAT-55-notification-client`, `created: 2026-11-16`. `node scripts/check-ai-layer.mjs` → 0 lỗi.
+- [ ] **Step 7:** `flutter analyze` → "No issues found!". `flutter test test/routing/live_router_test.dart test/features/auth/mobile_session_test.dart test/features/shared/notifications` → All tests passed (AC-R1, không sửa `expect` của Tiền).
+- [ ] **Step 8:** `node scripts/verify.mjs` → `VERIFY PASS full`, skip 0.
+- [ ] **Step 9:** Commit merge (hook cho message bắt đầu bằng `Merge `):
+  ```text
+  Merge branch 'dev' into feature/TBD-4-FE-FEAT-0-app-foundation
+
+  - Conflicts take dev (PR #8 live sign-in, notifications, push)
+  - Fix imports for features moved to shared/, merge router params
+  - Keep allowBackup=false and DIAL query, drop desktop plugin files
   ```
-- [ ] **Step 3:** `flutter test test/core/config/env_test.dart`. Expected: FAIL (chưa có `missingKeys`).
-- [ ] **Step 4:** Thêm biến và `missingKeys` vào `env.dart`.
-- [ ] **Step 5:** Chạy lại test. Expected: PASS.
-- [ ] **Step 6:** Android: `manifestPlaceholders["appAuthRedirectScheme"] = "carenest"` trong `defaultConfig`. Manifest main: `<uses-permission android:name="android.permission.INTERNET"/>`, `android:allowBackup="false"` trên `<application>`. Manifest debug: `<application android:usesCleartextTraffic="true"/>`. iOS `Info.plist`: `CFBundleURLTypes` với scheme `carenest` (chưa kiểm trên iOS — máy Windows không build iOS). Build lỗi vì `minSdk` thấp hơn mức gói yêu cầu ⇒ đặt `minSdk` đúng số gói báo.
-- [ ] **Step 7:** `env/local.example.json`: `{"USE_MOCK": false, "APP_ENV": "development", "API_BASE_URL": "http://localhost:8080/api", "OIDC_ISSUER": "http://localhost:8180/realms/carenest"}`. `.gitignore`: `env/*.json`, `!env/*.example.json`. `analysis_options.yaml`: thêm `**/*.g.dart` vào `analyzer.exclude` đang có.
-- [ ] **Step 8:** `node scripts/verify.mjs` ⇒ `VERIFY PASS full`; `flutter build apk --debug` ⇒ `√ Built`.
-- [ ] **Step 9:** Commit (khi user cho phép): `<mã-jira>: Add networking, auth and storage dependencies`.
+  **Dừng chờ review.**
 
-### Task 2: Lỗi chuẩn hóa và envelope
-**Files:** C `lib/core/errors/app_failure.dart`, `lib/core/network/api_envelope.dart`, `lib/core/network/api_error_mapper.dart` · Test `test/core/network/api_envelope_test.dart`, `api_error_mapper_test.dart`
+### Task R1: Chế độ thật dùng shell và màn của Giáp
+**Files:** C `lib/routing/live_access.dart` · M `lib/routing/app_router.dart` · Test C `test/routing/live_access_test.dart`, C `test/routing/live_ui_router_test.dart`
 
 **Interfaces:**
-- Produces:
+- Consumes: `homePathFor(AppMode)`, `shellRoleFor(AppMode)` (`route_access_policy.dart`).
+- Produces: `String? liveRedirect({required bool signedIn, required AppMode? mode, required bool photoRequired, required String location})` — thứ tự: chưa đăng nhập ⇒ `RoutePaths.login` (trừ khi đang ở `login`, `activate`); không có chế độ ⇒ `/live/unsupported` (trừ khi đang ở đó); `photoRequired` ⇒ `RoutePaths.profilePhoto` (trừ khi đang ở đó); đang ở `login`/`activate` ⇒ `homePathFor(mode)`; đường bắt đầu `/live/` ⇒ `null`; đường ngoài `homePathFor(mode)` ⇒ `homePathFor(mode)`; còn lại `null`.
+- Produces: router thật `GoRouter _buildLiveRouter(GlobalKey<NavigatorState> rootKey, {required MobileSession session, required MobileApi api, required Future<void> Function() signIn, required Future<void> Function() signOut})` — dùng khi điều kiện ở Key decisions đúng; `List<RouteBase> _staffAndParentRoutes(rootKey, {_AccountTab account, NotificationSource notifications})`.
+- `RoutePaths.profilePhoto = '/profile-photo'` (thêm ngay để `liveRedirect` biên dịch; màn ở R4).
+
+- [ ] **Step 1:** Test `live_access_test.dart`:
   ```dart
-  sealed class AppFailure implements Exception { int? get status; int? get errorCode; String? get message; } // message = desc của BE
-  // 400 ValidationFailure(fieldErrors) · 401 UnauthenticatedFailure · 403 ForbiddenFailure · 404 NotFoundFailure
-  // 409 ConflictFailure · 502/503/504 ServiceUnavailableFailure · 4xx/5xx khác ServerFailure
-  // NetworkFailure · TimeoutFailure · CancelledFailure · ContractFailure (không phải envelope, hoặc code ≠ status)
-  class FieldError { final String field; final String message; }
-  abstract final class ApiErrorCodes { // AUTH_CONTRACT, ERROR_CONTRACT
-    static const unauthenticated = 1002, otpInvalidOrExpired = 1006, passwordPolicyViolation = 1009,
-      authServiceUnavailable = 1013, accountNotProvisioned = 1014, accountInactive = 1015,
-      forbidden = 1101, invalidRequestData = 9001, malformedRequest = 9002;
-  }
-  Object? unwrapEnvelope(Object? body, int httpStatus); // trả data; sai envelope ⇒ throw ContractFailure
-  AppFailure mapDioException(DioException e);
+  test('signedOut_anyPath_goesLogin', () => expect(liveRedirect(signedIn: false, mode: null, photoRequired: false, location: '/parent'), RoutePaths.login));
+  test('signedOut_activate_stays', () => expect(liveRedirect(signedIn: false, mode: null, photoRequired: false, location: RoutePaths.activate), isNull));
+  test('signedIn_noAppMode_goesUnsupported', () => expect(liveRedirect(signedIn: true, mode: null, photoRequired: false, location: '/teacher'), '/live/unsupported'));
+  test('signedIn_login_goesModeHome', () => expect(liveRedirect(signedIn: true, mode: AppMode.teacher, photoRequired: false, location: RoutePaths.login), RoutePaths.teacherToday));
+  test('signedIn_otherRolePath_goesModeHome', () => expect(liveRedirect(signedIn: true, mode: AppMode.parent, photoRequired: false, location: RoutePaths.teacherAttendance), RoutePaths.parentToday));
+  test('signedIn_previewPath_goesModeHome', () => expect(liveRedirect(signedIn: true, mode: AppMode.kitchen, photoRequired: false, location: RoutePaths.preview), RoutePaths.kitchenHome));
+  test('signedIn_ownChildPath_stays', () => expect(liveRedirect(signedIn: true, mode: AppMode.parent, photoRequired: false, location: RoutePaths.parentLeaveNew), isNull));
+  test('signedIn_liveEntry_passesThrough', () => expect(liveRedirect(signedIn: true, mode: AppMode.teacher, photoRequired: false, location: '/live/notifications/12'), isNull));
   ```
-- [ ] **Step 1:** Viết test (thân envelope dùng dữ liệu giả):
-  - `unwrapEnvelope_success_returnsData`: `{'code':200,'errorCode':null,'desc':'ok','data':{'a':1}}`, 200 ⇒ `{'a':1}`.
-  - `unwrapEnvelope_codeMismatch_throwsContract`: `code` 201, status 200 ⇒ `ContractFailure`.
-  - `unwrapEnvelope_notMap_throwsContract`: body `'<html>'` ⇒ `ContractFailure`.
-  - `map400_withFieldErrors`: 400, `{'code':400,'errorCode':9001,'desc':'Dữ liệu không hợp lệ','data':[{'field':'phone','message':'Sai'}]}` ⇒ `ValidationFailure`, `fieldErrors.single.field == 'phone'`, `errorCode == 9001`, `message == 'Dữ liệu không hợp lệ'`.
-  - `map403_keepsErrorCode`: 403, `errorCode` 1015 ⇒ `ForbiddenFailure`, `errorCode == 1015`.
-  - `map503_htmlBody_isServiceUnavailable`: 503, body HTML ⇒ `ServiceUnavailableFailure`, `status == 503`, `errorCode == null`.
-  - `map401`, `map404`, `map409`, `map500` ⇒ đúng lớp theo bảng trên.
-  - `mapConnectionError_isNetwork`, `mapReceiveTimeout_isTimeout`, `mapCancel_isCancelled`.
-- [ ] **Step 2:** Chạy test. Expected: FAIL (chưa có lớp).
-- [ ] **Step 3:** Viết 3 file theo Interfaces.
-- [ ] **Step 4:** Chạy test. Expected: PASS.
-- [ ] **Step 5:** Commit: `<mã-jira>: Add API envelope parsing and error mapping`.
+- [ ] **Step 2:** `flutter test test/routing/live_access_test.dart` → FAIL (chưa có `liveRedirect`).
+- [ ] **Step 3:** Viết `liveRedirect`. Chạy lại → PASS.
+- [ ] **Step 4:** Test `live_ui_router_test.dart`, dùng `FakeSession`/`FeedApi` cùng kiểu `test/routing/live_router_test.dart` (chép vào `test/helpers/live_fakes.dart`, không sửa file của Tiền):
+  - `live_teacher_landsOnNotifications_thenHomeTabShowsTeacherHome`: `go('/live/notifications')` ⇒ `NavigationBar`; bấm tab "Hôm nay" ⇒ `find.byType(TeacherHomeScreen)` 1.
+  - `live_parentChildRoute_opens`: vai trò `['PARENT']` + `childIds: [1]`, `go(RoutePaths.parentLeaveNotices)` ⇒ `LeaveNoticeListScreen`.
+  - `live_pushDeepLink_opensDetail`: `go('/live/notifications/7')` ⇒ `NotificationDetailScreen`.
+  - `live_signOut_resetsSelectedChild`: đặt `SelectedChild.notifier.value = 'child-2'`, bấm Đăng xuất + xác nhận ⇒ `signOut` được gọi, `SelectedChild.notifier.value == FakeParentHomeSource.children.first.id`.
+- [ ] **Step 5:** Router: thêm `_buildLiveRouter`; `redirect` gọi `liveRedirect(signedIn: session.signedIn, mode: <vai trò từ liveRoleOf → AppMode>, photoRequired: false, location: state.matchedLocation)`; `refreshListenable: session`; giữ 3 lối vào `/live/...` của Tiền (đổi đích sang đường thường); bỏ shell `/live/<vai trò>` của `_liveRoutes`. Đăng xuất: `SelectedChild.reset()` rồi `signOut()`.
+- [ ] **Step 6:** `flutter test test/routing` → PASS, gồm `live_router_test.dart` của Tiền không sửa `expect`.
+- [ ] **Step 7:** Verify → PASS. Commit: `TBD-4: Route live sessions to the role screens` (live_access + test riêng 1 commit, router + widget test 1 commit).
 
-### Task 3: Dio client, interceptor, `ApiClient`
-**Files:** C `lib/core/network/dio_client.dart`, `auth_interceptor.dart`, `safe_log_interceptor.dart`, `api_client.dart`, `test/helpers/fake_http_adapter.dart` · Test `test/core/network/api_client_test.dart`, `auth_interceptor_test.dart`, `safe_log_interceptor_test.dart`
+### Task R2: Chế độ GV ↔ phụ huynh (ADR-0022, quyết định 7)
+**Files:** M `lib/features/auth/domain/entities/app_user.dart` · C `lib/features/auth/data/live_mode_controller.dart` · M `lib/routing/app_router.dart` · Test M `test/features/auth/domain/app_user_test.dart`, C `test/features/auth/data/live_mode_controller_test.dart`, M `test/routing/live_ui_router_test.dart`
 
 **Interfaces:**
-- Consumes: `unwrapEnvelope`, `mapDioException`, `AppFailure` (Task 2).
-- Produces:
+- Produces: `factory AppUser.fromAccount(Map<String, dynamic> account)` — khóa `userId`, `username`, `fullName`, `roles`, `permissions`, `assignments` (`staffRole`, `campusId`, `classroomId`), `childIds`; khóa thiếu ⇒ rỗng.
+- Produces: `class LiveModeController extends ChangeNotifier { LiveModeController(MobileSession session, LastModeStore store); AppMode? get mode; List<AppMode> get modes; Future<void> switchTo(AppMode mode); }` — phiên mới (`userId` đổi) ⇒ `modes = AppUser.fromAccount(account).modes`, `mode` = chế độ đã lưu nếu còn trong `modes`, không thì `modes.first`, rỗng ⇒ `null`; phiên kết thúc ⇒ `mode = null`, `modes = []`, `SelectedChild.reset()`; `switchTo` ngoài `modes` ⇒ bỏ qua.
+- Router: `refreshListenable: Listenable.merge([session, modeController])`; `liveRedirect(mode: modeController.mode)`; tab Tài khoản `modeSwitches` = mỗi chế độ khác `mode`: `AccountModeSwitch(label: 'Chuyển sang chế độ phụ huynh' | 'giáo viên' | 'bếp', onTap: () => modeController.switchTo(m))`.
+
+- [ ] **Step 1:** Test `app_user_test.dart`:
   ```dart
-  abstract interface class AccessTokenSource {
-    Future<String?> validAccessToken();      // null = chưa đăng nhập
-    Future<bool> refreshAfterUnauthorized(); // true = đã có token mới
-  }
-  Dio createApiDio({required String baseUrl, required AccessTokenSource tokens, HttpClientAdapter? adapter, void Function(String line)? logSink});
-  // timeout: connect 10 s, receive 20 s, send 30 s; header Accept: application/json
-  class ApiClient {
-    ApiClient(Dio dio);
-    Future<T> get<T>(String path, {Map<String, Object?>? query, required T Function(Object? data) decode, CancelToken? cancelToken});
-    Future<T> post<T>(String path, {Object? body, required T Function(Object? data) decode, CancelToken? cancelToken, bool skipAuth = false});
-    Future<T> put<T>(String path, {Object? body, required T Function(Object? data) decode, CancelToken? cancelToken});
-    Future<T> patch<T>(String path, {Object? body, required T Function(Object? data) decode, CancelToken? cancelToken});
-    Future<T> delete<T>(String path, {required T Function(Object? data) decode, CancelToken? cancelToken});
-  } // lỗi ⇒ throw AppFailure
+  test('fromAccount_teacherParentWithChild_modesTeacherThenParent', () => expect(AppUser.fromAccount({'userId': 3, 'roles': ['TEACHER', 'PARENT'], 'childIds': [9]}).modes, [AppMode.teacher, AppMode.parent]));
+  test('fromAccount_parentNoChild_noParentMode', () => expect(AppUser.fromAccount({'userId': 3, 'roles': ['TEACHER', 'PARENT'], 'childIds': []}).modes, [AppMode.teacher]));
   ```
-  `AuthInterceptor`: Bearer chỉ khi host trùng host của `baseUrl` và không có `extra['skipAuth']`. 401 + chưa có `extra['authRetried']` + body không phải `FormData` ⇒ `refreshAfterUnauthorized()`; `true` ⇒ gửi lại 1 lần với `extra['authRetried'] = true`. `SafeLogInterceptor`: chỉ chạy khi `kDebugMode`; mỗi request một dòng `METHOD path status ms`; không header, body, query.
-- [ ] **Step 1:** Viết test:
-  - `get_addsBearerForApiHost`: header `authorization == 'Bearer t1'`.
-  - `request_toOtherHost_hasNoBearer`: URL tuyệt đối `https://other.example/x` ⇒ không có `authorization`.
-  - `on401_refreshesOnceThenRetries`: adapter trả 401 rồi 200; `refreshAfterUnauthorized` trả `true`, token thành `t2` ⇒ request 2 mang `Bearer t2`, refresh gọi 1 lần, kết quả decode đúng.
-  - `on401_refreshFails_throwsUnauthenticated`: refresh `false` ⇒ `UnauthenticatedFailure`, adapter gọi 1 lần.
-  - `on401_twice_noLoop`: 401, refresh `true`, 401 ⇒ `UnauthenticatedFailure`, refresh gọi 1 lần.
-  - `on401_formData_notRetried`: body `FormData` ⇒ `UnauthenticatedFailure`, refresh gọi 0 lần.
-  - `post_400_throwsValidation`.
-  - `log_hasNoTokenOrBody`: dòng log chứa `GET /accounts/me 200`, không chứa `Bearer`, không chứa body.
-- [ ] **Step 2:** Chạy test. Expected: FAIL.
-- [ ] **Step 3:** Viết 4 file + `FakeHttpAdapter` (xếp sẵn danh sách response, ghi lại request đã nhận).
-- [ ] **Step 4:** Chạy test. Expected: PASS.
-- [ ] **Step 5:** Commit: `<mã-jira>: Add shared API client with token refresh`.
+- [ ] **Step 2:** Test `live_mode_controller_test.dart` (session giả + `LastModeStore` trên `FlutterSecureStorage.setMockInitialValues({})`):
+  - `signIn_teacherParent_noStored_opensTeacher` → `mode == AppMode.teacher`.
+  - `signIn_storedParent_opensParent` → lưu sẵn `parent` cho `userId` 3 ⇒ `mode == AppMode.parent`.
+  - `switchTo_parent_persistsAndNotifies` → listener gọi 1 lần; controller mới đọc lại ⇒ `parent`.
+  - `signOut_clearsModeAndSelectedChild` → `mode == null`, `SelectedChild` về con đầu.
+  - `signIn_principalOnly_modeNull` → `mode == null`.
+- [ ] **Step 3:** Chạy → FAIL. Viết code. Chạy lại → PASS.
+- [ ] **Step 4:** Router dùng controller. Widget test `live_teacherParent_switchToParent_opensParentShell`: tab Tài khoản có "Chuyển sang chế độ phụ huynh"; bấm ⇒ `find.byType(ParentHomeScreen)` sau khi về màn chính.
+- [ ] **Step 5:** Verify → PASS. Commit: `TBD-4: Add GV-parent mode switching to live sessions` (tách: `AppUser.fromAccount`; controller; router).
+  **Dừng chờ review R1–R2.**
 
-### Task 4: Secure storage
-**Files:** C `lib/core/storage/secure_store.dart`, `token_storage.dart` · Test `test/core/storage/token_storage_test.dart`
+### Task R3: Kích hoạt tài khoản, đăng nhập có sẵn tên (AUTH-18, ADR-0026)
+**Files:** M (Tiền, chỉ thêm) `mobile_api.dart`, `mobile_session.dart`, `lib/app.dart`, `live_login_screen.dart` · C `lib/features/auth/data/activation_api.dart` · D `lib/features/auth/data/datasources/activation_remote_data_source.dart` · M `activation_screen.dart`, `app_router.dart` · Test C `test/core/integration/mobile_api_public_test.dart`, C `test/core/integration/mobile_session_sign_in_test.dart`, C `test/features/auth/data/activation_api_test.dart` (thay `activation_remote_data_source_test.dart`), M `test/features/auth/presentation/activation_screen_test.dart`
 
 **Interfaces:**
-- Produces:
-  ```dart
-  abstract interface class SecureStore { Future<String?> read(String key); Future<void> write(String key, String value); Future<void> delete(String key); }
-  class FlutterSecureStore implements SecureStore { const FlutterSecureStore(); } // const FlutterSecureStorage(), tùy chọn mặc định của gói
-  class MemorySecureStore implements SecureStore {}
-  class StoredTokens { final String refreshToken; final String? idToken; }
-  class TokenStorage { // khóa carenest.<env>.refresh_token, carenest.<env>.id_token
-    TokenStorage(SecureStore store, {required String env});
-    Future<StoredTokens?> read(); // đọc lỗi ⇒ xóa 2 khóa, trả null
-    Future<void> write(StoredTokens tokens);
-    Future<void> clear();
-  }
-  class LastModeStore { // khóa carenest.<env>.last_mode.<userId>
-    LastModeStore(SecureStore store, {required String env});
-    Future<String?> read(int userId);
-    Future<void> write(int userId, String mode);
-  }
-  ```
-- [ ] **Step 1:** Viết test: `write_thenRead_roundTrip`; `clear_removesBothKeys`; `keys_includeEnv` (env `development` ⇒ có khóa `carenest.development.refresh_token`); `read_platformError_returnsNullAndClears` (store ném `PlatformException` khi đọc ⇒ `null`, `delete` được gọi cho cả 2 khóa); `lastMode_perUser` (user 1 `parent`, user 2 chưa có ⇒ `null`).
-- [ ] **Step 2:** Chạy test. Expected: FAIL.
-- [ ] **Step 3:** Viết 2 file.
-- [ ] **Step 4:** Chạy test. Expected: PASS. `node scripts/verify.mjs` ⇒ `VERIFY PASS full`.
-- [ ] **Step 5:** Commit: `<mã-jira>: Add secure token storage`. Ghi Progress log **1a**. **Dừng chờ user review.**
+- `Future<Object?> MobileApi.publicJson(String method, String path, {Object? body})` — không gửi `Authorization`, không cần phiên; đọc envelope và ném `ApiFailure(status, desc, errorCode)` như `json`.
+- `Future<void> MobileSession.signIn({String? loginHint})` — truyền `loginHint` vào `AuthorizationTokenRequest`.
+- `lib/app.dart`: `Future<void> _signIn({String? loginHint})`. Tham số `signIn` của `buildAppRouter` và `_buildLiveRouter` đổi kiểu thành `Future<void> Function({String? loginHint})`; `LiveLoginScreen` nhận `() => signIn()`.
+- `LiveLoginScreen({super.key, required this.signIn, this.onPreview, this.onActivate})` — `onActivate != null` ⇒ nút chữ "Kích hoạt tài khoản" dưới nút Đăng nhập.
+- `class ActivationApi { ActivationApi(MobileApi api); Future<String> activate({required String phone, required String code, required String newPassword, required String confirmPassword}); }` — `POST /parent-activation`, body đúng 4 field đó, trả `data.username`.
+- `ActivationScreen({super.key, required ActivationApi api, required Future<void> Function({String? loginHint}) signIn})` — StatefulWidget, bỏ Riverpod, giữ giao diện; lỗi: `ApiFailure` 400 + `errorCode` 1006 ⇒ "Mã kích hoạt sai hoặc đã hết hạn. Liên hệ nhà trường để gửi lại mã."; 400 khác ⇒ `desc`; lỗi mạng ⇒ "Không kết nối được. Kiểm tra mạng rồi thử lại."
 
-### Task 5: Keycloak PKCE client
-**Files:** C `lib/features/auth/data/datasources/oidc_client.dart`, `app_auth_oidc_client.dart`, `test/helpers/fake_oidc_client.dart` · Test `test/features/auth/data/app_auth_oidc_client_test.dart`
+- [ ] **Step 1:** Test `mobile_api_public_test.dart` (server loopback như test của Tiền): `publicJson_sendsNoAuthorization` (header `authorization` null; trả `data`), `publicJson_400_throwsApiFailureWithErrorCode` (body `{code:400,errorCode:1006,desc:'x'}` ⇒ `ApiFailure.status == 400`, `errorCode == 1006`).
+- [ ] **Step 2:** Test `mobile_session_sign_in_test.dart` (dùng lại `FakeAppAuth` kiểu `test/features/auth/mobile_session_test.dart`): `signIn_loginHint_passedToKeycloak` ⇒ `authorization.loginHint == '0912345678'`.
+- [ ] **Step 3:** Test `activation_api_test.dart`: `activate_success_returnsUsername`, `activate_postsFourFieldsWithoutAuth`. Test `activation_screen_test.dart`: `activate_success_signInWithUsername` (bấm Đăng nhập ⇒ `signIn(loginHint: '0912345678')`), `activate_1006_showsContactSchool`. Widget router: `liveLogin_activateLink_opensActivation`.
+- [ ] **Step 4:** Chạy → FAIL. Viết code theo Interfaces. Chạy lại → PASS.
+- [ ] **Step 5:** Ghi Progress log mục "Thêm vào code Tiền": `publicJson`, `signIn({loginHint})`, `_signIn({loginHint})`, `onActivate`.
+- [ ] **Step 6 (chỉ khi Q9 = có):** test `signIn_promptLogin_everyTime` ⇒ `authorization.promptValues == ['login']`; thêm `promptValues: const ['login']` vào `signIn`. Ghi Progress log là đổi hành vi (Q9).
+- [ ] **Step 7:** Verify → PASS. Commit tách: `TBD-4: Add public JSON calls to MobileApi`, `TBD-4: Pass login hint through live sign-in`, `TBD-4: Rewire account activation to the live session`.
+
+### Task R4: Ảnh chân dung bắt buộc cho phụ huynh (PCK-02, quyết định 18)
+**Files:** M (Tiền) `mobile_session.dart` (đổi hành vi theo quyết định 18 + thêm), `mobile_api.dart` (thêm) · C `lib/core/media/photo_picker.dart`, `lib/features/shared/account/data/profile_photo_api.dart`, `lib/features/shared/account/presentation/screens/profile_photo_required_screen.dart` · M `app_router.dart` · Test C `test/core/integration/mobile_session_profile_test.dart`, `test/core/integration/mobile_api_multipart_test.dart`, `test/features/shared/account/profile_photo_required_screen_test.dart`, M `test/routing/live_access_test.dart`
 
 **Interfaces:**
-- Produces:
-  ```dart
-  const kOidcScopes = ['openid', 'profile']; // phiên thường (quyết định 9); đổi sang offline_access ⇒ thêm 'offline_access' + task BE
-  class OidcTokens { final String accessToken; final DateTime accessTokenExpiresAt; final String refreshToken; final String? idToken; }
-  sealed class OidcFailure implements Exception {} // OidcCancelled · OidcInvalidGrant · OidcUnavailable(Object cause)
-  abstract interface class OidcClient {
-    Future<OidcTokens> signIn({String? loginHint});
-    Future<OidcTokens> refresh(String refreshToken);
-    Future<void> revoke(String refreshToken);
-  }
-  class AppAuthOidcClient implements OidcClient {
-    AppAuthOidcClient({required FlutterAppAuth appAuth, required Dio plainDio, required String issuer, required String clientId, required String redirectUri});
-  }
-  OidcFailure mapAppAuthError(Object error);
-  // FlutterAppAuthUserCancelledException ⇒ OidcCancelled; FlutterAppAuthPlatformException có 'invalid_grant' ⇒ OidcInvalidGrant; còn lại ⇒ OidcUnavailable
-  ```
-  `signIn`: `authorizeAndExchangeCode(AuthorizationTokenRequest(clientId, redirectUri, issuer: issuer, scopes: kOidcScopes, promptValues: ['login'], loginHint: loginHint, ...))`; khi issuer là `http://` và `kDebugMode` thì bật tham số cho phép HTTP của gói (tên theo API docs bản đã cài). `refresh`: `appAuth.token(TokenRequest(..., refreshToken: ..., scopes: kOidcScopes))`. `revoke`: `plainDio` POST form `{issuer}/protocol/openid-connect/logout` với `client_id`, `refresh_token`; lỗi ⇒ ném `OidcUnavailable` (bên gọi bỏ qua).
-- [ ] **Step 1:** Viết test với `RecordingAppAuth implements FlutterAppAuth` (ghi request, trả kết quả/ném lỗi theo cấu hình):
-  - `signIn_requestsPromptLoginAndPkceClient`: `promptValues == ['login']`, `clientId == 'carenest-mobile'`, `redirectUrl == 'carenest://oauth/callback'`, `scopes == kOidcScopes`.
-  - `signIn_userCancelled_throwsOidcCancelled`.
-  - `refresh_invalidGrant_throwsOidcInvalidGrant` (dựng `FlutterAppAuthPlatformException` theo constructor của bản đã cài).
-  - `signIn_missingRefreshToken_throwsUnavailable` (kết quả thiếu refresh token).
-  - `revoke_postsFormToLogoutEndpoint`: path `/realms/carenest/protocol/openid-connect/logout`, body có `client_id=carenest-mobile` và `refresh_token=r1`, content-type form.
-- [ ] **Step 2:** Chạy test. Expected: FAIL.
-- [ ] **Step 3:** Viết 2 file + `FakeOidcClient` (đếm số lần gọi, trả token theo hàng đợi, ném lỗi theo cấu hình).
-- [ ] **Step 4:** Chạy test. Expected: PASS.
-- [ ] **Step 5:** Commit: `<mã-jira>: Add Keycloak PKCE client`.
+- `MobileSession`: `signIn` và `restore` giữ phiên khi `profileUpdateRequired` (bỏ ném lỗi `:66-69`, bỏ `clear()` `:122-124`); thêm `bool get profileUpdateRequired` (= `account?['profileUpdateRequired'] == true`), `Future<void> reloadAccount()` (gọi `/accounts/me` bằng `accessToken()`, gán `account`, `notifyListeners()`).
+- `Future<Object?> MobileApi.multipart(String method, String path, {required String field, required Uint8List bytes, required String filename, required String contentType})` — Bearer + refresh-gửi-lại như `json`; `_request` thêm tham số tùy chọn cho phần multipart, nhánh JSON giữ nguyên.
+- `abstract interface class PhotoPicker { Future<PickedPhoto?> pick(PhotoSource source); }`, `enum PhotoSource { camera, gallery }`, `class PickedPhoto { final Uint8List bytes; final String filename; final String contentType; }`, `class ImagePickerPhotoPicker implements PhotoPicker` (`maxWidth: 1080`, `imageQuality: 85`).
+- `class ProfilePhotoApi { ProfilePhotoApi(MobileApi api); Future<void> upload(PickedPhoto photo); }` — `PUT /accounts/me/photo`, part `file`.
+- `ProfilePhotoRequiredScreen({super.key, required ProfilePhotoApi api, required PhotoPicker picker, required Future<void> Function() onSaved, required Future<void> Function() onSignOut})` — chữ: tiêu đề "Cập nhật ảnh chân dung"; mô tả "Nhà trường cần ảnh chân dung của phụ huynh để cô giáo nhận đúng người khi đón bé."; nút "Chụp ảnh", "Chọn ảnh có sẵn", nút chính "Lưu ảnh" (tắt khi chưa có ảnh), nút chữ "Đăng xuất". Lỗi 400/1131 ⇒ `desc` BE; khác ⇒ "Chưa lưu được ảnh. Kiểm tra mạng rồi thử lại."
+- Router: `liveRedirect(photoRequired: session.profileUpdateRequired)`; route `RoutePaths.profilePhoto` → màn trên với `onSaved: session.reloadAccount`.
 
-### Task 6: `SessionManager`
-**Files:** C `lib/features/auth/data/session_manager.dart` · Test `test/features/auth/data/session_manager_test.dart`
+- [ ] **Step 1:** Test: `signIn_profileUpdateRequired_keepsSession` (`signedIn` true, `profileUpdateRequired` true), `restore_profileUpdateRequired_keepsSession`, `reloadAccount_updatesFlag`, `multipart_sendsFilePartWithBearer` (server đọc `content-type: multipart/form-data`, part `name="file"`, header `Bearer`), `liveRedirect_photoRequired_blocksEveryPath` (`/live/notifications/3`, `/parent`, `/teacher` ⇒ `RoutePaths.profilePhoto`; ở `RoutePaths.profilePhoto` ⇒ `null`), màn: `noPhoto_saveDisabled`, `save_success_callsOnSaved`, `save_1131_showsBeMessage`.
+- [ ] **Step 2:** Chạy → FAIL. Viết code. Chạy lại → PASS; `flutter test test/features/auth/mobile_session_test.dart` (Tiền) vẫn PASS.
+- [ ] **Step 3:** Ghi Progress log: đổi hành vi `signIn`/`restore` (quyết định 18); thêm `profileUpdateRequired`, `reloadAccount`, `multipart`.
+- [ ] **Step 4:** Verify → PASS. Commit tách: `TBD-4: Keep live sessions that need a parent photo`, `TBD-4: Add multipart upload to MobileApi`, `TBD-4: Ask parents for a portrait before using the app`.
+
+### Task R5: Hết phiên khi đang dùng (chỉ khi Q10 = có)
+**Files:** M (Tiền) `mobile_session.dart`, `live_login_screen.dart` · M `app_router.dart` · Test C `test/core/integration/mobile_session_expiry_test.dart`, M `test/routing/live_ui_router_test.dart`
 
 **Interfaces:**
-- Consumes: `OidcClient`, `OidcTokens`, `OidcFailure` (Task 5); `TokenStorage` (Task 4); `AccessTokenSource` (Task 3).
-- Produces:
-  ```dart
-  enum RestoreResult { restored, noSession, ended } // ended = refresh token bị từ chối
-  class SessionManager implements AccessTokenSource {
-    SessionManager({required OidcClient oidc, required TokenStorage storage, DateTime Function()? now});
-    Future<void> signIn({String? loginHint}); // ném OidcFailure
-    Future<RestoreResult> restore();          // mạng/Keycloak lỗi ⇒ ném OidcUnavailable, giữ token
-    Future<void> signOut();                   // revoke (bỏ qua lỗi), xóa storage, bỏ access token
-    Stream<void> get sessionEnded;            // phát khi refresh gặp OidcInvalidGrant lúc đang dùng
-  }
-  ```
-  Một `Future` refresh dùng chung cho mọi bên gọi (single-flight). Mỗi `signIn`/`signOut` tăng số thế hệ; kết quả refresh thuộc thế hệ cũ bị bỏ (trả `false`, không ghi storage). Token mới sau refresh ghi storage trước khi trả `true`.
-- [ ] **Step 1:** Viết test (đồng hồ giả, `FakeOidcClient`, `MemorySecureStore`):
-  - `signIn_storesRefreshAndIdToken`.
-  - `restore_noStoredTokens_returnsNoSession` (không gọi `oidc.refresh`).
-  - `restore_validRefresh_restoredAndRotates` (storage `r1`, refresh trả `r2` ⇒ storage `r2`, `validAccessToken()` trả token mới).
-  - `restore_expiredRefresh_signsOut` (`OidcInvalidGrant` ⇒ `ended`, storage rỗng).
-  - `restore_networkError_keepsTokens` (`OidcUnavailable` ⇒ ném lại, storage vẫn `r1`).
-  - `validAccessToken_nearExpiry_refreshesFirst` (còn 10 giây ⇒ refresh 1 lần).
-  - `refresh_concurrentCalls_singleFlight` (3 lời gọi `refreshAfterUnauthorized()` song song ⇒ `oidc.refresh` 1 lần, cả 3 nhận `true`).
-  - `refresh_invalidGrant_emitsSessionEnded`.
-  - `signOut_duringRefresh_doesNotRestoreSession` (refresh xong sau `signOut` ⇒ storage rỗng, `validAccessToken()` trả `null`).
-  - `signOut_revokeFails_stillClears`.
-- [ ] **Step 2:** Chạy test. Expected: FAIL.
-- [ ] **Step 3:** Viết `session_manager.dart`.
-- [ ] **Step 4:** Chạy test. Expected: PASS. `node scripts/verify.mjs` ⇒ `VERIFY PASS full`.
-- [ ] **Step 5:** Commit: `<mã-jira>: Add session manager with single refresh`. Ghi Progress log **1b**. **Dừng chờ user review.**
+- `_renew()`: lỗi `invalid_grant` của Keycloak (`FlutterAppAuthPlatformException`, `platformErrorDetails.error == 'invalid_grant'`) ⇒ `clear()`, đặt `expired = true`, ném lại; lỗi mạng ⇒ giữ phiên như cũ. Thêm `bool expired` (về `false` khi `signIn` thành công).
+- `LiveLoginScreen` thêm `this.notice` (String?) hiện phía trên nút Đăng nhập. Router truyền `session.expired ? 'Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.' : null`.
 
-### Task 7: Tài khoản, chế độ, `AuthController`
-**Files:** C `lib/features/auth/data/models/me_dto.dart` (+ `.g.dart`), `lib/features/auth/data/datasources/account_remote_data_source.dart`, `lib/features/auth/domain/entities/app_user.dart`, `app_mode.dart`, `lib/features/auth/presentation/controllers/auth_state.dart`, `auth_controller.dart`, `lib/features/auth/presentation/providers/auth_providers.dart`, `lib/bootstrap.dart`, `lib/features/auth/presentation/screens/config_error_screen.dart` · M `lib/main.dart`, `lib/app.dart` · Test `test/features/auth/data/me_dto_test.dart`, `test/features/auth/domain/app_user_test.dart`, `test/features/auth/presentation/auth_controller_test.dart`
+- [ ] **Step 1:** Test `renew_invalidGrant_clearsAndMarksExpired`, `renew_networkError_keepsSession`, widget `liveLogin_expired_showsNotice`.
+- [ ] **Step 2:** FAIL → viết → PASS. Ghi Progress log (đổi hành vi, Q10).
+- [ ] **Step 3:** Verify → PASS. Commit: `TBD-4: Send expired live sessions back to sign-in`.
+  **Dừng chờ review R3–R5.**
 
-**Interfaces:**
-- Consumes: `ApiClient` (Task 3), `LastModeStore` (Task 4), `SessionManager` (Task 6).
-- Produces:
-  ```dart
-  @JsonSerializable() class MeDto { userId, username, fullName, email?, roles, permissions, schoolWidePermissions, assignments: List<AssignmentDto>, childIds: List<int>; AppUser toEntity(); }
-  @JsonSerializable() class AssignmentDto { staffRole, campusId?, classroomId?, validFrom?, validTo?; }
-  class AccountRemoteDataSource { AccountRemoteDataSource(ApiClient api); Future<AppUser> fetchMe(); } // GET /accounts/me
-  enum AppMode { teacher, kitchen, parent; AppRole get shellRole; String get homePath; String get pathPrefix; }
-  // homePath: /teacher, /kitchen, /parent (RoutePaths.teacherToday, kitchenHome, parentToday)
-  class AppUser { userId, username, fullName, roles: Set<String>, permissions: Set<String>, assignments, childIds; List<AppMode> get modes; }
-  // modes theo thứ tự: TEACHER ⇒ teacher; KITCHEN_STAFF ⇒ kitchen; PARENT và childIds không rỗng ⇒ parent
-  sealed class AuthState {} // AuthChecking · AuthSignedOut({AuthNotice? notice}) · AuthSigningIn · AuthSignedIn(AppUser user, AppMode mode) · AuthBlocked(AuthBlockReason reason) · AuthRetryNeeded(AppFailure failure)
-  enum AuthNotice { sessionExpired, signInCancelled, signInFailed }
-  enum AuthBlockReason { webOnlyAccount, accountUnavailable }
-  // /accounts/me trả 403 1101, hoặc không có role TEACHER/KITCHEN_STAFF/PARENT ⇒ webOnlyAccount
-  // 403 1014/1015, hoặc có PARENT nhưng modes rỗng ⇒ accountUnavailable
-  class AuthController extends Notifier<AuthState> {
-    Future<void> start();                      // restore ⇒ fetchMe ⇒ chọn chế độ
-    Future<void> signIn({String? loginHint});
-    Future<void> retry();
-    Future<void> signOut({AuthNotice? notice});
-    Future<void> switchMode(AppMode mode);     // chỉ chế độ có trong user.modes; ghi LastModeStore
-    Future<void> onResumed();                  // signed in và đã quá 60 giây từ lần trước ⇒ fetchMe lại
-  }
-  // providers: secureStoreProvider, tokenStorageProvider, lastModeStoreProvider, oidcClientProvider,
-  // sessionManagerProvider, apiClientProvider, accountRemoteDataSourceProvider, authControllerProvider
-  Future<Widget> bootstrap(); // thiếu cấu hình ⇒ ConfigErrorApp(missingKeys); còn lại ⇒ ProviderScope(child: CareNestApp())
-  ```
-  Chế độ ban đầu: chế độ cuối đã lưu nếu còn trong `user.modes`, không thì `user.modes.first`. `sessionEnded` ⇒ `signOut(notice: AuthNotice.sessionExpired)`. Đăng xuất giữ `LastModeStore`, xóa state user.
-- [ ] **Step 1:** Viết test:
-  - `me_dto_test`: `fromJson_fullPayload` với payload dạng mẫu `AUTH_CONTRACT` (giá trị giả) ⇒ đủ field, `childIds == [7]`.
-  - `app_user_test`: `modes_teacherAndParentWithChildren` ⇒ `[teacher, parent]`; `modes_parentWithoutChildren_empty`; `modes_principalOnly_empty`; `modes_kitchen` ⇒ `[kitchen]`.
-  - `auth_controller_test` (ProviderContainer + override `FakeOidcClient`, `MemorySecureStore`, `FakeHttpAdapter`):
-    - `start_noSession_signedOut`.
-    - `start_restoredTeacher_signedInTeacher`.
-    - `start_teacherParent_opensTeacher_thenRemembersParent` (switchMode(parent), container mới, `start()` ⇒ parent).
-    - `start_principal403_1101_blockedWebOnly`.
-    - `start_inactive1015_blockedUnavailable`.
-    - `start_parentWithoutChildren_blockedUnavailable`.
-    - `start_meServiceUnavailable_showsRetry` (503 ⇒ `AuthRetryNeeded`, storage còn token).
-    - `signIn_cancelled_signedOutWithNotice` (⇒ `AuthSignedOut(notice: signInCancelled)`).
-    - `signOut_clearsUserAndMode` (⇒ `AuthSignedOut`, storage token rỗng, `LastModeStore` vẫn còn).
-    - `sessionEnded_signsOutWithExpiredNotice`.
-    - `onResumed_inactiveAccount_blocks` (lần 2 `/accounts/me` trả 403 1015 ⇒ `AuthBlocked(accountUnavailable)`).
-- [ ] **Step 2:** Chạy test. Expected: FAIL.
-- [ ] **Step 3:** Viết file theo Interfaces; `dart run build_runner build --delete-conflicting-outputs` sinh `me_dto.g.dart`.
-- [ ] **Step 4:** Chạy test. Expected: PASS.
-- [ ] **Step 5:** Commit: `<mã-jira>: Add account loading and auth state`.
+### Task R6: Gỡ nền Phase 1 cũ, đổi stack và docs (quyết định 13)
+**Files:**
+- D `lib/core/network/` (7 file), `lib/core/errors/app_failure.dart`, `lib/core/storage/token_storage.dart`, `lib/features/auth/data/session_manager.dart`, `lib/features/auth/data/datasources/{oidc_client,app_auth_oidc_client,account_remote_data_source}.dart`, `lib/features/auth/data/models/me_dto.dart` + `.g.dart`, `lib/features/auth/presentation/controllers/{auth_controller,auth_state}.dart`, `lib/features/auth/presentation/providers/auth_providers.dart`, `lib/features/auth/presentation/screens/{sign_in_screen,session_loading_screen,blocked_screen,config_error_screen}.dart`, `lib/bootstrap.dart`.
+- D test: `test/bootstrap_test.dart`, `test/core/network/*` (5), `test/core/storage/token_storage_test.dart`, `test/core/config/env_test.dart`, `test/features/auth/data/{account_remote_data_source_test,app_auth_oidc_client_test,me_dto_test,session_manager_test}.dart`, `test/features/auth/presentation/{auth_controller_test,auth_screens_test}.dart`, `test/helpers/{fake_auth_controller,fake_http_adapter}.dart`, `test/routing/app_router_auth_test.dart`.
+- M `lib/main.dart` (= `dev`: `runApp(const CareNestApp())`), `lib/core/config/env.dart` (chỉ còn `appEnv`), `lib/routing/app_router.dart` (bỏ `refresh/readAuth/onSignOut/onSwitchMode`, `_buildSessionRouter`, `_SessionAccountSource`), `lib/routing/route_access_policy.dart` (bỏ `redirectFor`), `test/routing/route_access_policy_test.dart` (bỏ test `redirectFor`), `pubspec.yaml`/`.lock` (bỏ `flutter_riverpod`, `dio`, `json_annotation`, `json_serializable`, `build_runner`), `analysis_options.yaml` (bỏ exclude `*.g.dart`), `env/local.example.json` → `{"APP_ENV": "development", "CARENEST_API_BASE_URL": "http://localhost:8080/api", "CARENEST_OIDC_ISSUER": "http://localhost:8180/realms/carenest"}`, `scripts/check-auth-contract.mjs` (đọc khóa mới nếu đang đọc khóa cũ).
+- Docs: `AGENTS.md` (đoạn Stack: thay Riverpod/Dio/json_serializable bằng nền `MobileSession`/`MobileApi` — user 24/11), `docs/architecture/{CODING_GUIDE,STATE_MANAGEMENT,MOBILE_ARCHITECTURE,NAVIGATION}.md`, `.claude/rules/{api-client,state}.md` (+ bản `.agents/` nếu có), `docs/integration/{AUTH_FLOW,BACKEND_INTEGRATION}.md`, `docs/context/CURRENT_STATE.md`.
 
-### Task 8: Chuyển màn theo phiên và chế độ
-**Files:** C `lib/routing/route_access_policy.dart`, `lib/features/auth/presentation/screens/sign_in_screen.dart`, `session_loading_screen.dart`, `blocked_screen.dart` · M `lib/routing/app_router.dart`, `route_paths.dart` · Test `test/routing/route_access_policy_test.dart`, `test/routing/app_router_auth_test.dart`
+- [ ] **Step 1:** Xóa/sửa theo danh sách. `grep -rn "flutter_riverpod\|package:dio\|json_annotation" lib test` → 0 dòng.
+- [ ] **Step 2:** `flutter pub get` → exit 0; `flutter analyze` → "No issues found!".
+- [ ] **Step 3:** Sửa docs; `node scripts/check-ai-layer.mjs` → 0 lỗi.
+- [ ] **Step 4:** Verify → PASS. Commit tách: `TBD-4: Remove the superseded Riverpod and Dio auth stack`, `TBD-4: Drop unused Riverpod, Dio and codegen packages`, `TBD-4: Document the live session stack from PR #8`.
 
-**Interfaces:**
-- Consumes: `AuthState`, `AppMode`, `authControllerProvider` (Task 7).
-- Produces:
-  ```dart
-  // RoutePaths.splash = '/splash'; RoutePaths.activate = '/activate'; RoutePaths.blocked = '/blocked'
-  String? redirectFor(AuthState state, String location);
-  // AuthChecking, AuthRetryNeeded ⇒ /splash · AuthSignedOut, AuthSigningIn ⇒ /login (giữ nguyên nếu đang ở /login hoặc /activate)
-  // AuthBlocked ⇒ /blocked · AuthSignedIn ⇒ null nếu location == mode.pathPrefix hoặc bắt đầu bằng '${mode.pathPrefix}/', còn lại ⇒ mode.homePath
-  GoRouter buildAppRouter({bool enablePreview = kDebugMode, Listenable? refresh, AuthState Function()? readAuth});
-  // readAuth == null (USE_MOCK=true) ⇒ hành vi như dev hiện tại; readAuth != null ⇒ initialLocation /splash, /login dùng SignInScreen,
-  // chỉ đăng ký shell parent/teacher/kitchen, không đăng ký /preview, BGH, /forgot-password
-  ```
-  `SignInScreen`: logo, nút "Đăng nhập", dòng "Tên đăng nhập là số điện thoại 10 số, bắt đầu bằng 0.", liên kết "Kích hoạt tài khoản" ⇒ `/activate`, banner theo `AuthNotice` ("Phiên đăng nhập đã hết. Vui lòng đăng nhập lại." · "Bạn đã đóng trang đăng nhập." · "Không đăng nhập được. Thử lại sau."). `SessionLoadingScreen`: vòng tải; ở `AuthRetryNeeded` thêm "Không kết nối được máy chủ." + nút "Thử lại" (`retry()`). `BlockedScreen`: chữ theo AC-2/AC-3 + nút "Đăng xuất".
-- [ ] **Step 1:** Viết test:
-  - Policy: `checking_goesSplash`; `retryNeeded_goesSplash`; `signedOut_onTeacherRoute_goesLogin`; `signedOut_onActivate_stays`; `blocked_goesBlocked`; `signedInTeacher_onLogin_goesTeacherHome`; `signedInParent_onTeacherRoute_goesParentHome`; `signedInTeacher_onTeacherAttendance_stays` (`/teacher/attendance`).
-  - Widget: `signOut_clearsBackStack` (đang ở màn con của `/teacher`, state ⇒ `AuthSignedOut` ⇒ location `/login`, `router.canPop() == false`); `signInScreen_hasNoForgotPassword` (không có chữ "Quên mật khẩu"); `retryScreen_retryButtonCallsRetry`.
-- [ ] **Step 2:** Chạy test. Expected: FAIL.
-- [ ] **Step 3:** Viết file theo Interfaces; `app.dart` truyền `refresh` (Listenable từ `authControllerProvider`) và `readAuth` khi `USE_MOCK=false`; gọi `start()` lúc khởi động, `onResumed()` khi `AppLifecycleState.resumed`.
-- [ ] **Step 4:** Chạy test. Expected: PASS. Test router cũ trong `test/routing/` vẫn PASS (USE_MOCK=true không đổi).
-- [ ] **Step 5:** Commit: `<mã-jira>: Gate routes by session and app mode`.
-
-### Task 9: Kích hoạt tài khoản; Đăng xuất và chuyển chế độ ở Tài khoản
-**Files:** C `lib/features/auth/data/datasources/activation_remote_data_source.dart`, `lib/features/auth/presentation/screens/activation_screen.dart` · M `lib/features/account/presentation/screens/account_screen.dart` · Test `test/features/auth/presentation/activation_screen_test.dart`, `test/features/account/account_screen_auth_test.dart`
-
-**Interfaces:**
-- Consumes: `ApiClient` (`skipAuth: true`), `AuthController.signIn/signOut/switchMode`, `AuthSignedIn.user.modes` (Task 7).
-- Produces: `class ActivationRemoteDataSource { ActivationRemoteDataSource(ApiClient api); Future<String> activate({required String phone, required String code, required String newPassword, required String confirmPassword}); }` — POST `/parent-activation`, trả `username`.
-  Màn "Kích hoạt tài khoản": ô SĐT, Mã kích hoạt 6 số (`AppOtpField`), Mật khẩu mới, Nhập lại mật khẩu; ghi chú "Nhập mã 6 số trong tin nhắn nhà trường gửi."; nút "Kích hoạt" (khóa trong lúc gửi). Kiểm ở App chỉ để hỗ trợ nhập: SĐT 10 số bắt đầu bằng 0, mã 6 số, mật khẩu 8–128 ký tự, 2 lần nhập khớp — BE kiểm lại. Lỗi: 400/1006 ⇒ chữ AC-9; 400/1009 ⇒ hiện `desc`; 400/9001, 9002 ⇒ lỗi theo ô hoặc `desc`; `NetworkFailure` ⇒ "Không kết nối được. Thử lại." Thành công ⇒ `signIn(loginHint: username)`.
-  Màn Tài khoản (khi `USE_MOCK=false`): họ tên + tên đăng nhập lấy từ `AppUser`; "Đăng xuất" ⇒ hộp xác nhận "Đăng xuất khỏi CareNest?" ⇒ `signOut()`; có > 1 chế độ ⇒ dòng "Chuyển sang chế độ phụ huynh" / "Chuyển sang chế độ giáo viên" ⇒ `switchMode`.
-- [ ] **Step 1:** Viết test:
-  - `activate_success_startsSignInWithUsername` (API giả trả `{'username':'0900000001'}` ⇒ controller giả nhận `loginHint == '0900000001'`).
-  - `activate_1006_showsContactSchool`.
-  - `activate_passwordMismatch_blocksSubmit` (không gửi request).
-  - `activate_doubleTap_sendsOnce`.
-  - `account_switchMode_onlyForMultiMode` (1 chế độ ⇒ không có dòng chuyển).
-  - `account_logout_confirm_callsSignOut`.
-- [ ] **Step 2:** Chạy test. Expected: FAIL.
-- [ ] **Step 3:** Viết file theo Interfaces; đăng ký `/activate` trong router bản thật.
-- [ ] **Step 4:** Chạy test. Expected: PASS.
-- [ ] **Step 5:** Commit: `<mã-jira>: Add parent activation and sign-out`.
-
-### Task 10: Docs, chạy thật, ghi kiểm chứng
-**Files:** M `AGENTS.md` (mục Stack: thư viện CONFIRMED theo quyết định 1), `docs/integration/AUTH_FLOW.md` (viết lại theo BE `AUTH_CONTRACT`: PKCE, scope, phiên, 401/403/503, kích hoạt, đăng xuất, chế độ), `docs/integration/BACKEND_INTEGRATION.md` (`errorCode`, `desc` tiếng Việt, `ApiClient`), `docs/architecture/MOBILE_ARCHITECTURE.md`, `STATE_MANAGEMENT.md`, `CODING_GUIDE.md` §1.2 (biến OIDC, `--dart-define-from-file`) và §5 (PKCE thay `/mobile/auth/*`), `NAVIGATION.md` (chuyển màn theo phiên), `.claude/rules/{api-client,state,security-storage}.md` (bỏ dòng "chưa chọn"), `docs/context/CURRENT_STATE.md`, `docs/quality/VERIFICATION.md`, `docs/knowledge/TROUBLESHOOTING.md` (`adb reverse`, lệch `iss`).
-
-- [ ] **Step 1:** Sửa docs. `node scripts/check-ai-layer.mjs` ⇒ 0 lỗi.
-- [ ] **Step 2:** Chạy `flutter run --dart-define-from-file=env/local.json` trên emulator (BE local + `adb reverse`) và ghi kết quả từng dòng:
-  1. GV ⇒ `/teacher` (AC-1). 2. Bếp ⇒ `/kitchen`. 3. Phụ huynh ⇒ `/parent`.
-  4. GV kiêm phụ huynh ⇒ GV; chuyển phụ huynh; tắt hẳn App, mở lại ⇒ phụ huynh (AC-8, AC-4).
-  5. BGH ⇒ màn "dùng trên Web" (AC-2).
-  6. Khóa tài khoản phụ huynh trên Web ⇒ đưa App về foreground ⇒ màn liên hệ nhà trường (AC-3).
-  7. Để App nền > 6 phút ⇒ quay lại ⇒ không lỗi (AC-5).
-  8. Đăng xuất ⇒ Keycloak Admin › Users › Sessions không còn phiên `carenest-mobile`; đăng nhập lại ⇒ trang Keycloak hỏi mật khẩu (AC-7).
-  9. Kích hoạt: lấy mã bằng "Gửi lại mã" trên Web (cổng SMS giả trả `activationCode`) ⇒ kích hoạt ⇒ trang Keycloak có sẵn tên đăng nhập (AC-9).
-  10. Phiên thường (quyết định 9): để App không dùng > 30 phút ⇒ mở lại ⇒ về Đăng nhập với chữ "Phiên đăng nhập đã hết…" (AC-6).
-- [ ] **Step 3:** `node scripts/verify.mjs` ⇒ `VERIFY PASS full | … | skip 0`; `flutter build apk --debug` ⇒ `√ Built`. Ghi `docs/quality/VERIFICATION.md` + Progress log **1c**.
-- [ ] **Step 4:** Commit: `<mã-jira>: Document PKCE auth flow and API conventions`. **Dừng chờ user review.**
+### Task R7: Chạy thật, ghi kiểm chứng, PR
+- [ ] **Step 1:** BE + Keycloak local (`D:\project_capstone\run-be-dev.ps1`, user chạy); `adb reverse tcp:8080 tcp:8080`, `adb reverse tcp:8180 tcp:8180`; `flutter run --dart-define-from-file=env/local.example.json`.
+- [ ] **Step 2:** Checklist (tài khoản seed từ `BE:docker/keycloak/dev/carenest-users-0.json`, không ghi mật khẩu vào repo):
+  1. GV ⇒ tab Thông báo; tab Hôm nay là màn của Giáp (AC-R2).
+  2. Bếp ⇒ như trên (AC-R2).
+  3. Phụ huynh có ảnh ⇒ shell phụ huynh; mở Xin nghỉ (AC-R8).
+  4. Phụ huynh chưa có ảnh ⇒ màn ảnh; lưu ⇒ vào App (AC-R6).
+  5. GV kiêm phụ huynh ⇒ chế độ GV; chuyển phụ huynh; đóng mở lại giữ chế độ (AC-R4).
+  6. BGH ⇒ "dùng trên Web" (AC-R3).
+  7. Kích hoạt bằng mã từ log BE (cổng SMS giả) ⇒ Keycloak có sẵn tên (AC-R5).
+  8. Đăng xuất rồi đăng nhập người khác (AC-R7; AC-R9 nếu Q9 = có).
+  9. Thông báo: đọc, "Đọc tất cả". Push: chỉ khi có `google-services.json`, không thì ghi "chưa kiểm".
+- [ ] **Step 3:** Ghi `docs/quality/VERIFICATION.md` + Progress log.
+- [ ] **Step 4:** User cho phép ⇒ push nhánh. PR vào `dev`: cần mã Jira thật (quyết định 11) ⇒ hỏi user; mô tả PR liệt kê mục "Thêm vào code Tiền" và 2 chỗ đổi hành vi (quyết định 18, Q9/Q10 nếu có), nhắn Tiền review.
 
 ## Test matrix
-| AC | Rule | Test (tầng) | Phase | Kết quả |
+| AC | Rule | Test (tầng) | Task | Kết quả |
 | --- | --- | --- | --- | --- |
-| AC-1 | AUTH-21 | `start_restoredTeacher_signedInTeacher`, `signedInTeacher_onLogin_goesTeacherHome` (unit) · checklist 1–3 | 1c | — |
-| AC-2 | ADR-0022 | `start_principal403_1101_blockedWebOnly`, `blocked_goesBlocked` · checklist 5 | 1c | — |
-| AC-3 | AUTH_CONTRACT 1014/1015 | `start_inactive1015_blockedUnavailable`, `onResumed_inactiveAccount_blocks` · checklist 6 | 1c | — |
-| AC-4 | — | `restore_validRefresh_restoredAndRotates` · checklist 4 | 1b, 1c | — |
-| AC-5 | — | `validAccessToken_nearExpiry_refreshesFirst`, `on401_refreshesOnceThenRetries` · checklist 7 | 1a, 1b | — |
-| AC-6 | — | `restore_expiredRefresh_signsOut`, `sessionEnded_signsOutWithExpiredNotice`, `signOut_clearsBackStack` · checklist 10 | 1b, 1c | — |
-| AC-7 | CODING_GUIDE §5.6 | `signOut_revokeFails_stillClears`, `revoke_postsFormToLogoutEndpoint`, `account_logout_confirm_callsSignOut` · checklist 8 | 1b, 1c | — |
-| AC-8 | ADR-0022 | `modes_teacherAndParentWithChildren`, `start_teacherParent_opensTeacher_thenRemembersParent`, `account_switchMode_onlyForMultiMode` · checklist 4 | 1c | — |
-| AC-9 | AUTH-18, ADR-0026 | `activate_success_startsSignInWithUsername`, `activate_1006_showsContactSchool` · checklist 9 | 1c | — |
-| AC-10 | Quyết định 5 | `signInScreen_hasNoForgotPassword` | 1c | — |
-| AC-11 | — | `missingKeys_*`, test router cũ trong `test/routing/` | 1a, 1c | — |
+| AC-R1 | — | test của Tiền chạy lại, `verify.mjs` | R0 | — |
+| AC-R2 | AUTH-21 | `live_teacher_landsOnNotifications_thenHomeTabShowsTeacherHome` · checklist 1–2 | R1 | — |
+| AC-R3 | AUTH-21, ADR-0022 | `signedIn_noAppMode_goesUnsupported`, `live_router_test` (Tiền) · checklist 6 | R1 | — |
+| AC-R4 | ADR-0022 | `fromAccount_*`, `live_mode_controller_test`, `live_teacherParent_switchToParent_opensParentShell` · checklist 5 | R2 | — |
+| AC-R5 | AUTH-18, ADR-0026 | `publicJson_*`, `signIn_loginHint_passedToKeycloak`, `activate_*`, `liveLogin_activateLink_opensActivation` · checklist 7 | R3 | — |
+| AC-R6 | PCK-02 | `signIn_profileUpdateRequired_keepsSession`, `multipart_sendsFilePartWithBearer`, `liveRedirect_photoRequired_blocksEveryPath`, `save_*` · checklist 4 | R4 | — |
+| AC-R7 | AUTH-22 | `signOut_clearsModeAndSelectedChild`, `live_signOut_resetsSelectedChild` · checklist 8 | R1, R2 | — |
+| AC-R8 | — | `signedIn_otherRolePath_goesModeHome`, `live_parentChildRoute_opens` · checklist 3 | R1 | — |
+| AC-R9 | AUTH-22 | `signIn_promptLogin_everyTime` · checklist 8 | R3 (Q9) | — |
+| AC-R10 | — | `renew_invalidGrant_clearsAndMarksExpired`, `liveLogin_expired_showsNotice` | R5 (Q10) | — |
+| AC-R11 | Quyết định 13 | grep R6 Step 1, `check-ai-layer` | R6 | — |
 
 ## Rủi ro & rollback
 | Rủi ro | Tác động | Giảm thiểu | Rollback |
 | --- | --- | --- | --- |
-| `iss` của token khác issuer BE kiểm | Mọi API 401 | `adb reverse`, App dùng `localhost`; ghi TROUBLESHOOTING | Không cần |
-| Tên tham số `flutter_appauth`/`flutter_secure_storage` khác giữa các bản | Code không biên dịch | Đọc API docs bản đã cài; test giữ hành vi | Sửa theo bản đã cài |
-| IDE dùng Flutter 3.44.0 sửa `pubspec.lock` | Verify không phản ánh lockfile | Đổi SDK của IDE; `--enforce-lockfile` trước verify | Chạy lại `flutter pub get` bằng 3.47.6 |
-| Thành viên khác sửa `lib/routing` trên `dev` cùng lúc | Conflict | PR nhỏ theo 1a/1b/1c; merge `dev` trước mỗi PR | Revert commit của phần đó |
-| Mã tạm `TBD-4` (quyết định 11) | Đổi mã sau phải viết lại lịch sử nhánh; quên đổi thì PR vào `dev` mang mã giả | Giữ 1 commit = 1 task, bảng commit → task ở Progress log; đổi mã trước khi mở PR | Nhánh chưa vào `dev` nên đổi được |
-| Phiên thường (quyết định 9): không có request nào khoảng 30 phút, hoặc quá 10 giờ từ lúc đăng nhập | Phải đăng nhập lại; form đang nhập bị mất | Banner "Phiên đăng nhập đã hết…"; user báo đổi ⇒ thêm `offline_access` (1 hằng số `kOidcScopes` + task BE) | — |
-| Sau này đổi sang `offline_access`: thu hồi qua `logout` có thể không xóa phiên offline | Token cũ còn dùng được | Lúc đổi, chạy lại checklist 8 trên Keycloak Admin; sai ⇒ dùng endpoint `revoke` | — |
-
-Rollback chung: `USE_MOCK=true` (mặc định) giữ hành vi `dev` hiện tại; revert commit theo phần 1a/1b/1c.
+| Tiền tiếp tục sửa `lib/core/integration`, router trên `dev` | Conflict lần nữa | Báo Tiền trước khi làm R3–R5; PR sớm sau R7 | Merge `dev` lại, giữ quyết định 15 |
+| Đổi hành vi `signIn`/`restore` (quyết định 18), Q9, Q10 | Tiền không biết, sửa ngược | Ghi rõ ở mô tả PR, nhờ Tiền review | Revert commit tương ứng |
+| Gỡ Riverpod/Dio trái docs cũ | Agent sau làm theo docs cũ | Task R6 sửa `AGENTS.md`, rules, docs kiến trúc | — |
+| Push thật cần `google-services.json` (không có trong repo) | Không kiểm được push | Checklist ghi "chưa kiểm"; plugin chỉ bật khi có file (`android/app/build.gradle.kts:8`) | — |
+| Merge commit lớn (R0) | Khó review | Commit merge chỉ gồm sửa để biên dịch; việc mới ở R1+ | Trước khi commit merge: `git merge --abort` (hỏi user); sau: revert merge |
+| Mã tạm `TBD-4` | PR mang mã giả | Đổi trước PR (quyết định 11) | — |
 
 ## Validation log
-- [x] Khẳng định về code có `file:line` (Context; BE contract có đường dẫn)
-- [x] Đổi contract ⇒ consumer cụ thể: Phase 1 không đổi contract BE (phiên thường, quyết định 9)
-- [x] Mỗi AC có test; mỗi phần review có Exit = lệnh + kết quả mong đợi
-- [x] >8 file hoặc >3 phase ⇒ đã tách: Phase 1 review 3 lần (1a/1b/1c); Phase 2–9 có plan con riêng
-- [x] Không dùng rule PENDING/OPEN như đã chốt (HLT-07 CONFIRMED/PENDING chỉ dùng ở Phase 3, kiểm lại ở plan con)
-- [x] Tự review: không placeholder ngoài mã Jira tạm `TBD-4` (quyết định 11) · không mâu thuẫn · không câu mơ hồ
+- [x] Khẳng định về code có `file:line` (Context, Interfaces)
+- [x] Đổi contract ⇒ consumer cụ thể: BE không đổi; `buildAppRouter` chỉ `lib/app.dart` dùng (impact 24/11); `MobileSession` 5 file dùng, liệt kê ở Bản tác động
+- [x] Mỗi AC có test; mỗi task có Exit = lệnh + kết quả mong đợi
+- [x] >8 file hoặc >3 phase ⇒ Phase R review 4 mốc; Phase 3–5 có plan con riêng
+- [x] Không dùng rule PENDING/OPEN như đã chốt (AUTH-18, AUTH-21, AUTH-22, PCK-02 CONFIRMED; ADR-0022, ADR-0026 ACCEPTED)
+- [x] Q9, Q10 user trả lời 25/11: có
 
 ## Progress log
-### 2026-11-16 — Plan draft (chờ user duyệt)
-- Commit: chưa commit
-- Verify: chưa chạy (chỉ thêm file plan); `node scripts/check-ai-layer.mjs` chạy sau khi viết
-- Q1–Q4 xong (user 16/11): phiên thường (quyết định 9), mã tạm `TBD-4` (quyết định 11), BE local (quyết định 12), duyệt `json_annotation` + `build_runner` (quyết định 10).
-- Bảng commit → task (điền khi commit; dùng để đổi sang mã Jira thật): chưa có commit.
-- Tiếp: user duyệt plan và chọn cách làm (Native / Subagent-driven) ⇒ `status: approved`, làm Task 0.
+### 2026-11-16 → 2026-11-23 — Phase 1 cũ và các màn (tóm tắt)
+- Phase 1 (Riverpod/Dio, `SessionManager`, `ApiClient`, `AuthController`, kích hoạt, chuyển chế độ) làm và review 16/11 (verify `tests 356`), chi tiết commit ở git log nhánh (`1ad0f31`..`aa95fa6`). Thay bằng Phase R (24/11).
+- 17/11–23/11: các màn phụ huynh, GV, bếp vẽ lại theo Figma và BE (dữ liệu giả), đến `718198e` (xin nghỉ nửa buổi chọn ăn, 24/11).
 
-### 2026-11-16 — Plan được duyệt (user), bắt đầu Phase 1a
-- User: duyệt plan, chọn Native, cho tạo nhánh `feature/TBD-4-FE-FEAT-0-app-foundation`, commit nhỏ theo từng phần.
-- Nhánh tạo từ `origin/dev` `a811d3d` (không track `origin/dev`).
-- Task 0 Step 1: `pubspec.lock` trả về bản commit; `flutter pub get --enforce-lockfile` (3.47.6) exit 0. VS Code: workspace `D:\project_capstone\project\web\.vscode\settings.json` đặt `dart.flutterSdkPath` = `D:\Flutter_Setup\stable-3.47.6\flutter` (cài đặt user cũ trỏ tới thư mục không còn, nên extension dùng Flutter 3.44.0 trên PATH).
+### 2026-11-24 — Đổi hướng: merge `dev` (PR #8), plan cập nhật (chờ duyệt)
+- `dev` local fast-forward `a811d3d..244fbf3`; `git merge --no-commit --no-ff dev`; 22 conflict lấy bản `dev` (user). Chưa commit merge. `flutter analyze` → 488 lỗi (Context).
+- `node scripts/check-ai-layer.mjs` sau khi sửa plan: 1 lỗi E5 ở plan của Tiền (thiếu frontmatter, có sẵn từ `dev`) ⇒ Task R0 Step 6b; plan này không có lỗi.
+- User chốt Q5–Q8 (quyết định 15–18). Còn Q9, Q10.
+- Thêm vào code Tiền: chưa có.
+- Tiếp: user trả lời Q9, Q10, duyệt plan, chọn cách làm ⇒ `status: approved`, làm Task R0.
 
-### 2026-11-16 — Phase 1a: Task 0–4 (chờ review)
-- Verify: `node scripts/verify.mjs` (Flutter 3.47.6) → `VERIFY PASS full | format ok | design ok | analyze ok | tests 238 fail 0 skip 0`; `flutter pub get --enforce-lockfile` exit 0; `flutter build apk --debug` → `√ Built build\app\outputs\flutter-apk\app-debug.apk`; `node scripts/check-ai-layer.mjs` → 0 lỗi.
-- Gói đã thêm: `flutter_riverpod` 3.5.0, `dio` 5.11.1, `flutter_appauth` 13.0.0, `flutter_secure_storage` 11.2.0, `json_annotation` 4.12.0; dev `json_serializable` 6.15.2, `build_runner` 2.17.1.
+### 2026-11-25 — Task R0: hoàn tất merge `dev` (chờ review)
+- User 25/11: Q9 = có, Q10 = có, cách làm Native.
+- Commit merge `d9b330b` (2 cha: `718198e`, `244fbf3`).
+- Verify: `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 473 fail 0 skip 0`; `flutter analyze` → "No issues found!"; test của Tiền (`live_router_test`, `mobile_session_test`, `test/features/shared/notifications/`) → All tests passed, không sửa `expect`; `node scripts/check-ai-layer.mjs` → 0 lỗi.
 - Khác plan:
-  - Commit nhỏ hơn 1 commit/task (user 16/11).
-  - `AccessTokenSource` được ném `AppFailure` khi refresh không tới được Keycloak ⇒ App báo lỗi mạng, không đăng xuất nhầm (Review Focus 2). Task 6 phải đổi `OidcUnavailable` sang `NetworkFailure`.
-  - Mapper giữ nguyên `AppFailure` mà interceptor bọc trong `DioException`.
-  - Log che id số trong path thành `{id}`, path có tiền tố `/api`.
-  - `LastModeStore` ở file riêng `lib/core/storage/last_mode_store.dart`.
-  - Bảng `BE_API_INDEX.md` sinh từ worktree chạy BE `D:\project_capstone\CareNest_BE-devdb` (đưa lên `origin/dev` `f76e9092`); clone BE chính đang ở nhánh G94-329.
-  - Task 0 Step 5–6 (`adb reverse`, tài khoản seed) dời tới trước Task 10.
-- Bảng commit → task (đổi sang mã Jira thật trước PR):
-
-| Commit | Task plan | Nội dung |
-| --- | --- | --- |
-| `1ad0f31` | Task 0 | Plan |
-| `84b8f69` | Task 0 | Sinh lại `BE_API_INDEX.md` |
-| `7d67fa8` | Task 1 | Cấu hình Android/iOS cho redirect PKCE |
-| `8a880b5` | Task 1 | Thêm dependency |
-| `04a7316` | Task 1 | Biến OIDC + `Env.missingKeys` |
-| `35c04f6` | Task 1 | `env/local.example.json`, ignore `*.g.dart` |
-| `95eef62` | Task 2 | `AppFailure` + `unwrapEnvelope` |
-| `b4908a2` | Task 2 | `mapDioException` |
-| `1bac206` | Task 3 | `ApiClient` + `FakeHttpAdapter` |
-| `38038dc` | Task 3 | Mapper giữ lỗi của interceptor |
-| `57a419f` | Task 3 | `AuthInterceptor` + `createApiDio` |
-| `34c17fd` | Task 3 | `SafeLogInterceptor` |
-| `2d7457c` | Task 4 | `TokenStorage` |
-| `3662941` | Task 4 | `LastModeStore` |
-
-- Tiếp: user review 1a ⇒ Phase 1b (Task 5–6).
-
-### 2026-11-16 — Phase 1b: Task 5–6 (chờ review)
-- Verify: `node scripts/verify.mjs` (Flutter 3.47.6) → `VERIFY PASS full | format ok | design ok | analyze ok | tests 264 fail 0 skip 0`.
-- `AppAuthOidcClient` theo API `flutter_appauth` 13.0.0: `AuthorizationTokenRequest(... promptValues: ['login'], allowInsecureConnections: debug + issuer http)`, refresh qua `token(TokenRequest(refreshToken: ...))`, đăng xuất POST `{issuer}/protocol/openid-connect/logout`. `invalid_grant` ⇒ `OidcInvalidGrant`; đóng trang ⇒ `OidcCancelled`; lỗi khác ⇒ `OidcUnavailable`.
-- `SessionManager`: refresh dùng chung một `Future`; kết quả của phiên cũ bị bỏ sau đăng xuất; lỗi mạng khi refresh lúc đang dùng ⇒ `NetworkFailure`, giữ token.
-- Khác plan:
-  - Response Keycloak thiếu access token, hạn hoặc refresh token ⇒ `OidcUnavailable`. Refresh không trả refresh token mới ⇒ giữ token cũ.
-  - `restore()` gặp `invalid_grant` trả `RestoreResult.ended`, không phát `sessionEnded` (chỉ phát khi đang dùng App).
-  - Đăng xuất xóa storage trước, rồi mới thu hồi ở Keycloak.
-  - Tên biến cục bộ `access`/`refresh`: hook pre-commit coi `accessToken = …` là secret.
-- Commit → task:
-
-| Commit | Task plan | Nội dung |
-| --- | --- | --- |
-| `421eb0b` | Task 5 | `OidcClient` + `AppAuthOidcClient` |
-| `cdf6c27` | Task 6 | `SessionManager` + `FakeOidcClient` |
-
-- Tiếp: user review 1b ⇒ Phase 1c (Task 7–10).
-
-### 2026-11-16 — Phase 1c: Task 7–9 + docs Task 10 (chờ chạy thật)
-- Verify: `node scripts/verify.mjs` (Flutter 3.47.6) → `VERIFY PASS full | format ok | design ok | analyze ok | tests 338 fail 0 skip 0`; `node scripts/check-ai-layer.mjs` → 0 lỗi (1 cảnh báo E7 có sẵn).
-- Chưa chạy: Task 10 Step 2 (emulator + BE local) — cần user bật Docker, `run-be-dev.ps1`, emulator. Seed BE local không có tài khoản GV kiêm phụ huynh ⇒ checklist 4 cần liên kết phụ huynh trên Web hoặc bỏ qua.
-- Khác plan:
-  - `AppMode` là enum thuần; ánh xạ màn chính/shell ở `lib/routing/route_access_policy.dart`.
-  - `lib/core/network/api_providers.dart` giữ provider của API client; `authOverrides` ghép nguồn token với `SessionManager` (core không import feature).
-  - Đã đăng nhập mà vào route ngoài chế độ (Xem thử, BGH) ⇒ về màn chính, không ra 404.
-  - Hộp xác nhận đăng xuất áp cả bản giả; 2 test cũ sửa theo.
-  - Kích hoạt xong ⇒ màn "Tài khoản đã kích hoạt" có nút Đăng nhập riêng (mã SMS dùng một lần).
-  - Cổng thiết kế bắt tên token có chữ số (`AppSpacing.space6`) trong `EdgeInsets` ⇒ màn mới dùng `pagePadding`; logo bo góc bằng `ClipRRect`. Không sửa script cổng (harness).
-  - Hook secret bắt tên field API `newPassword`/`confirmPassword` và mật khẩu giả trong test ⇒ đổi tên biến cục bộ, đánh dấu `carenest:allow-secret` ở dòng tên field và giá trị giả.
-- Commit → task:
-
-| Commit | Task plan | Nội dung |
-| --- | --- | --- |
-| `ec1babd` | Task 7 | `AppUser`, `AppMode`, `MeDto` |
-| `cf7d85b` | Task 7 | `AccountRemoteDataSource` |
-| `ccd5c67` | Task 7 | `AuthController`, provider |
-| `ac770d5` | Task 7 | `bootstrap`, màn thiếu cấu hình |
-| `4fa2255` | Task 8 | Luật chuyển màn |
-| `892440b` | Task 8 | Màn Đăng nhập, Đang tải, Bị chặn |
-| `71fdddb` | Task 8 | Router theo phiên |
-| `6843ec6` | Task 8 | `app.dart`: `start()`, `onResumed()` |
-| `48cda79` | Task 9 | API kích hoạt |
-| `170490c` | Task 9 | Màn Kích hoạt tài khoản |
-| `2f077be` | Task 9 | Tài khoản: xác nhận đăng xuất, chuyển chế độ |
-| `fb03dba` | Task 9 | Router: kích hoạt, hồ sơ, chuyển chế độ |
-| `3c0bf50` | Task 10 | `AUTH_FLOW.md` |
-| `c935ef2` | Task 10 | `BACKEND_INTEGRATION.md`, rule api-client |
-| `f3c50dc` | Task 10 | Stack CONFIRMED ở docs |
-| `bb565e7` | Task 10 | `NAVIGATION.md`, `CURRENT_STATE.md` |
-
-- Tiếp: user bật BE local + emulator ⇒ Task 10 Step 2 (checklist), ghi `docs/quality/VERIFICATION.md`.
-
-### 2026-11-16 — Task 10 + review toàn nhánh (chờ user review)
-- Task 10 Step 2 theo cách B (user chọn — máy không chạy nổi emulator): script kiểm contract BE `f76e9092` + Keycloak local trên PC, 30/30 PASS; `flutter build apk --debug --dart-define-from-file=env/local.example.json` → `√ Built`. Chi tiết: `docs/quality/VERIFICATION.md` mục 2026-11-16. Chạy trên điện thoại Android thật: chưa, cần trước khi merge.
-- Review toàn nhánh (reviewer mới): "with fixes" — 0 Critical, 3 Important, 10 Minor. Đã sửa 3 Important + 4 Minor nâng mức theo tác động: lỗi khi quay lại App không còn đẩy về màn chờ; kết quả đến muộn sau đăng xuất bị bỏ; màn Thử lại nói đúng loại lỗi và có "Đăng xuất"; đăng xuất không chờ Keycloak; lỗi lạ không kẹt màn chờ; refresh chen lúc đăng xuất không làm token sống lại; "Thông tin cá nhân" hiện người đang đăng nhập.
-- Verify: `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 353 fail 0 skip 0`.
-- Để sau (Minor, user quyết): bấm Đăng nhập 2 lần sau kích hoạt; xóa con đang chọn ở mọi kiểu đăng xuất (cần khi Phase 4 có dữ liệu thật); 401 đến sau lần refresh vừa xong gây refresh thêm; `dataExtractionRules` cho chuyển máy; tách interface domain cho auth trước Phase 2; đưa script kiểm contract vào repo.
-- Commit → task: `a2e5b48`, `003a393`, `7ff6366`, `9074e47`, `0cde30e` (sửa sau review, Task 5–9); `a25db3c` (Task 10, kiểm chứng).
-
-### 2026-11-16 — Sửa Minor 1, 2, 6 (user chọn)
-- Đăng nhập khi trang Keycloak đang mở ⇒ bỏ lượt mới (AppAuth Android từ chối 2 lượt cùng lúc); nút "Đăng nhập" ở thẻ "Tài khoản đã kích hoạt" hiện đang xử lý như màn Đăng nhập.
-- Mọi đường về Đăng nhập (đăng xuất ở Tài khoản/màn chặn/màn Thử lại, hết phiên, 401) xóa con đang chọn, làm một chỗ ở `lib/app.dart`; router bỏ lần reset riêng của tab Tài khoản. `app.dart`, `app_router.dart` là vùng dùng chung: `impact.mjs` → dùng bởi `bootstrap.dart` / `app.dart`, 0 màn hình bị lan.
-- Script kiểm contract vào repo: `scripts/check-auth-contract.mjs`, mật khẩu seed qua `CARENEST_SEED_PASSWORD`, cách chạy ở `docs/integration/AUTH_FLOW.md`.
-- Verify: `tests 356 fail 0 skip 0`; chi tiết `docs/quality/VERIFICATION.md`.
-- Còn để sau: 401 đến sau lần refresh vừa xong gây refresh thêm; `dataExtractionRules` cho chuyển máy; tách interface domain cho auth (làm đầu Phase 2).
-- Commit → task: `f24ae1b` (Minor 1, Task 7), `5f0d71a` (Minor 1, Task 9); `78a4c89` (Minor 2, Task 8); `aa95fa6` (Minor 6, Task 10).
+  - `test/features/shared/notifications/live_notification_detail_test.dart`: đường `../../helpers/` → `../../../helpers/` (file nằm sâu thêm 1 cấp sau khi chuyển vào `shared/`).
+  - `scripts/design-baseline.json`: trả dòng `textStyle` = 1 cho `notifications_screen.dart` (nợ có sẵn ở baseline `dev`, đường cũ); không sửa màn của Tiền.
+  - Plan của Tiền: `status: in-progress` (không phải `done`): `check-ai-layer` không nhận `done` trong `active/`; plan của Tiền còn bước chạy Android thật + Firebase.
+  - Hook secret bắt dòng `onChangePassword` gán `account.live` ⇒ dùng biến cục bộ `live` trong `_roleShell`.
+  - Thư mục `linux/`, `macos/`, `windows/` (chỉ còn file sinh tự động, không theo dõi) xóa khỏi ổ đĩa.
+- Thêm vào code Tiền: chưa (R0 chỉ sửa import).
+- Tiếp: Task R1.
