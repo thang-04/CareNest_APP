@@ -122,6 +122,34 @@ void main() {
     expect(find.byType(NavigationBar), findsNothing);
   });
 
+  testWidgets('liveLogin_expired_showsNotice', (tester) async {
+    final session = FakeLiveSession(['TEACHER']);
+    await session.signOut();
+    session.expired = true;
+    await pumpLiveApp(tester, session, location: RoutePaths.login);
+
+    expect(
+      find.text('Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('live_sessionExpiresWhileUsing_goesLogin', (tester) async {
+    final session = FakeLiveSession(['TEACHER']);
+    await pumpLiveApp(tester, session);
+
+    session.expired = true;
+    await session.signOut();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(
+      find.text('Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.'),
+      findsOneWidget,
+    );
+    await tester.pump(const Duration(seconds: 1));
+  });
+
   testWidgets('live_parentNoChild_onlyTeacher_noSwitch', (tester) async {
     await pumpLiveApp(
       tester,

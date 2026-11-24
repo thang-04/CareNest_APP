@@ -612,6 +612,9 @@ GoRouter _buildLiveRouter(
         builder: (context, state) => LiveLoginScreen(
           signIn: signIn,
           onActivate: () => context.push(RoutePaths.activate),
+          notice: session.expired
+              ? 'Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.'
+              : null,
         ),
       ),
       GoRoute(

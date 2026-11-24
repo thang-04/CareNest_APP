@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
+import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/brand/app_logo.dart';
@@ -10,12 +11,16 @@ class LiveLoginScreen extends StatefulWidget {
     required this.signIn,
     this.onPreview,
     this.onActivate,
+    this.notice,
   });
   final Future<void> Function() signIn;
   final VoidCallback? onPreview;
 
   /// Phụ huynh nhận mã kích hoạt qua SMS (AUTH-18, ADR-0026).
   final VoidCallback? onActivate;
+
+  /// Lý do về màn này, vd. phiên đã hết (Q10).
+  final String? notice;
   @override
   State<LiveLoginScreen> createState() => _LiveLoginScreenState();
 }
@@ -63,6 +68,13 @@ class _LiveLoginScreenState extends State<LiveLoginScreen> {
                         const Text(
                           'Đăng nhập bằng tài khoản nhà trường qua trang đăng nhập bảo mật.',
                         ),
+                        if (widget.notice != null) ...[
+                          AppBanner(
+                            kind: AppBannerKind.warning,
+                            message: widget.notice!,
+                          ),
+                          const SizedBox(height: AppSpacing.space4),
+                        ],
                         const SizedBox(height: AppSpacing.space4),
                         if (error != null)
                           Text(
