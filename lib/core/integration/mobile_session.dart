@@ -36,7 +36,8 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
   @override
   int? get userId => account?['userId'] as int?;
 
-  Future<void> signIn() async {
+  /// `loginHint`: mở trang Keycloak có sẵn tên đăng nhập (sau kích hoạt tài khoản, AUTH-18).
+  Future<void> signIn({String? loginHint}) async {
     if (apiBaseUrl.isEmpty || issuer.isEmpty) {
       throw StateError('Chưa cấu hình địa chỉ API và Keycloak cho App.');
     }
@@ -47,6 +48,9 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
         MobileConfig.redirectUri,
         issuer: issuer,
         scopes: ['openid', 'profile'],
+        loginHint: loginHint,
+        // Máy dùng chung (AUTH-22): luôn hỏi mật khẩu, không vào bằng phiên cũ của trình duyệt
+        promptValues: const ['login'],
         // Chỉ bản debug cho Keycloak local qua http; release vẫn bắt buộc https.
         allowInsecureConnections: kDebugMode,
       ),
