@@ -24,6 +24,7 @@ class _CareNestAppState extends State<CareNestApp> {
     api: _api,
     signIn: _signIn,
     signOut: _signOut,
+    signInAs: (username) => _signIn(loginHint: username),
   );
   final _messengerKey = GlobalKey<ScaffoldMessengerState>();
   late final PushCoordinator _push = PushCoordinator(
@@ -59,8 +60,8 @@ class _CareNestAppState extends State<CareNestApp> {
     }
   }
 
-  Future<void> _signIn() async {
-    await _session.signIn();
+  Future<void> _signIn({String? loginHint}) async {
+    await _session.signIn(loginHint: loginHint);
     _router.go('/live/notifications');
     try {
       await _push.startSession();

@@ -1,28 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
-import 'package:carenest_app/core/errors/app_failure.dart';
+import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_otp_field.dart';
 import 'package:carenest_app/core/widgets/app_text_field.dart';
-import 'package:carenest_app/features/auth/presentation/controllers/auth_state.dart';
-import 'package:carenest_app/features/auth/presentation/providers/auth_providers.dart';
+import 'package:carenest_app/features/auth/data/activation_api.dart';
 
 /// Kích hoạt tài khoản phụ huynh bằng mã SMS (BE AUTH-18, ADR-0026): đặt mật khẩu rồi đăng nhập Keycloak
 /// với tên đăng nhập BE trả. Kiểm ở App chỉ hỗ trợ nhập; BE kiểm lại mã và mật khẩu.
-class ActivationScreen extends ConsumerStatefulWidget {
-  const ActivationScreen({super.key});
+class ActivationScreen extends StatefulWidget {
+  const ActivationScreen({
+    super.key,
+    required this.api,
+    required this.signInAs,
+  });
+
+  final ActivationGateway api;
+
+  /// Mở trang Keycloak có sẵn tên đăng nhập BE trả.
+  final Future<void> Function(String username) signInAs;
 
   @override
-  ConsumerState<ActivationScreen> createState() => _ActivationScreenState();
+  State<ActivationScreen> createState() => _ActivationScreenState();
 }
 
-class _ActivationScreenState extends ConsumerState<ActivationScreen> {
+class _ActivationScreenState extends State<ActivationScreen> {
   static final _phonePattern = RegExp(r'^0\d{9}$');
   static final _codePattern = RegExp(r'^\d{6}$');
 
@@ -37,6 +44,7 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
   String? _confirmError;
   String? _banner;
   bool _submitting = false;
+  bool _signingIn = false;
   String? _activatedUsername;
 
   @override
@@ -78,15 +86,13 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
 
     setState(() => _submitting = true);
     try {
-      final username = await ref
-          .read(activationRemoteDataSourceProvider)
-          .activate(
-            phone: phone,
-            code: _code,
-            newPassword: pw,
-            confirmPassword:
-                _pwConfirmInput.text, // carenest:allow-secret — tên tham số API
-          );
+      final username = await widget.api.activate(
+        phone: phone,
+        code: _code,
+        newPassword: pw,
+        confirmPassword:
+            _pwConfirmInput.text, // carenest:allow-secret — tên tham số API
+      );
       if (!mounted) return;
       // Xong form ⇒ xóa mật khẩu khỏi bộ nhớ (CODING_GUIDE §5.3)
       _pwInput.clear();
@@ -96,48 +102,40 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
         _activatedUsername = username;
       });
       await _signIn(username);
-    } on AppFailure catch (failure) {
+    } catch (error) {
       if (!mounted) return;
       setState(() {
         _submitting = false;
-        _showFailure(failure);
+        _showFailure(error);
       });
     }
   }
 
-  Future<void> _signIn(String username) =>
-      ref.read(authControllerProvider.notifier).signIn(loginHint: username);
+  Future<void> _signIn(String username) async {
+    // Trang Keycloak đang mở ⇒ bỏ lượt bấm thêm (AppAuth Android từ chối 2 lượt cùng lúc)
+    if (_signingIn) return;
+    setState(() => _signingIn = true);
+    try {
+      await widget.signInAs(username);
+    } finally {
+      if (mounted) setState(() => _signingIn = false);
+    }
+  }
 
-  void _showFailure(AppFailure failure) {
-    switch (failure) {
-      case ValidationFailure(errorCode: ApiErrorCodes.otpInvalidOrExpired):
+  // Phân nhánh theo status + errorCode BE, không theo nội dung desc
+  void _showFailure(Object error) {
+    switch (error) {
+      case ApiFailure(status: 400, errorCode: 1006):
         _banner =
             'Mã kích hoạt sai hoặc đã hết hạn. Liên hệ nhà trường để gửi lại mã.';
-      case ValidationFailure(
-        errorCode: ApiErrorCodes.passwordPolicyViolation,
-        :final message,
-      ):
-        _pwError = message ?? 'Mật khẩu chưa đạt yêu cầu.';
-      case ValidationFailure(:final fieldErrors, :final message)
-          when fieldErrors.isNotEmpty:
-        for (final error in fieldErrors) {
-          switch (error.field) {
-            case 'phone':
-              _phoneError = error.message;
-            case 'code':
-              _codeError = error.message;
-            case 'newPassword':
-              _pwError = error.message;
-            case 'confirmPassword':
-              _confirmError = error.message;
-            default:
-              _banner = message ?? error.message;
-          }
-        }
-      case NetworkFailure() || TimeoutFailure() || ServiceUnavailableFailure():
+      case ApiFailure(status: 400, errorCode: 1009, :final message):
+        _pwError = message;
+      case ApiFailure(:final status) when status >= 500:
         _banner = 'Không kết nối được máy chủ. Thử lại sau.';
+      case ApiFailure(:final message):
+        _banner = message;
       default:
-        _banner = failure.message ?? 'Không kích hoạt được. Thử lại sau.';
+        _banner = 'Không kết nối được máy chủ. Thử lại sau.';
     }
   }
 
@@ -159,7 +157,7 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
 
   Widget _done(BuildContext context, String username) {
     final textTheme = Theme.of(context).textTheme;
-    final signingIn = ref.watch(authControllerProvider) is AuthSigningIn;
+    final signingIn = _signingIn;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/features/auth/presentation/screens/activation_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_list_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 import 'package:carenest_app/features/parent/parent_home/presentation/screens/parent_home_screen.dart';
@@ -98,6 +99,17 @@ void main() {
 
     expect(find.byType(ParentHomeScreen), findsOneWidget);
     expect(find.byType(TeacherHomeScreen), findsNothing);
+  });
+
+  testWidgets('liveLogin_activateLink_opensActivation', (tester) async {
+    final session = FakeLiveSession(['PARENT']);
+    await session.signOut();
+    await pumpLiveApp(tester, session, location: RoutePaths.login);
+
+    await tester.tap(find.text('Kích hoạt tài khoản'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ActivationScreen), findsOneWidget);
   });
 
   testWidgets('live_parentNoChild_onlyTeacher_noSwitch', (tester) async {

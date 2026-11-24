@@ -5,9 +5,17 @@ import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/brand/app_logo.dart';
 
 class LiveLoginScreen extends StatefulWidget {
-  const LiveLoginScreen({super.key, required this.signIn, this.onPreview});
+  const LiveLoginScreen({
+    super.key,
+    required this.signIn,
+    this.onPreview,
+    this.onActivate,
+  });
   final Future<void> Function() signIn;
   final VoidCallback? onPreview;
+
+  /// Phụ huynh nhận mã kích hoạt qua SMS (AUTH-18, ADR-0026).
+  final VoidCallback? onActivate;
   @override
   State<LiveLoginScreen> createState() => _LiveLoginScreenState();
 }
@@ -70,6 +78,11 @@ class _LiveLoginScreenState extends State<LiveLoginScreen> {
                           expand: true,
                           onPressed: submit,
                         ),
+                        if (widget.onActivate != null)
+                          AppLinkButton(
+                            label: 'Kích hoạt tài khoản',
+                            onPressed: busy ? null : widget.onActivate,
+                          ),
                       ],
                     ),
                   ),
