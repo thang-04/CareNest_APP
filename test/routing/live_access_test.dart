@@ -70,4 +70,24 @@ void main() {
   test('signedIn_prefixLookalike_goesHome', () {
     expect(_go('/teacherx'), RoutePaths.teacherToday);
   });
+
+  test('liveRedirect_photoRequired_blocksEveryPath', () {
+    for (final path in ['/live/notifications/3', '/parent', '/teacher']) {
+      expect(
+        _go(path, mode: AppMode.parent, photoRequired: true),
+        RoutePaths.profilePhoto,
+      );
+    }
+    expect(
+      _go(RoutePaths.profilePhoto, mode: AppMode.parent, photoRequired: true),
+      isNull,
+    );
+  });
+
+  test('signedIn_photoDone_onPhotoPage_goesModeHome', () {
+    expect(
+      _go(RoutePaths.profilePhoto, mode: AppMode.parent),
+      RoutePaths.parentToday,
+    );
+  });
 }

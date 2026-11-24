@@ -13,13 +13,18 @@ import 'pump_app.dart';
 
 /// Phiên thật giả: `/accounts/me` đã tải, không gọi Keycloak (cùng kiểu test/routing/live_router_test.dart).
 class FakeLiveSession extends MobileSession {
-  FakeLiveSession(List<String> roles, {List<int> childIds = const []}) {
+  FakeLiveSession(
+    List<String> roles, {
+    List<int> childIds = const [],
+    bool photoMissing = false,
+  }) {
     account = {
       'userId': 4,
       'username': '0912345678',
       'fullName': 'Người Dùng Thử',
       'roles': roles,
       'childIds': childIds,
+      'profileUpdateRequired': photoMissing,
     };
   }
 

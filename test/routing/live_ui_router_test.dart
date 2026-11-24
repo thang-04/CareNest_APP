@@ -6,6 +6,7 @@ import 'package:carenest_app/features/parent/leave_notice/presentation/screens/l
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 import 'package:carenest_app/features/parent/parent_home/presentation/screens/parent_home_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/presentation/selected_child.dart';
+import 'package:carenest_app/features/shared/account/presentation/screens/profile_photo_required_screen.dart';
 import 'package:carenest_app/features/shared/notifications/presentation/screens/notification_detail_screen.dart';
 import 'package:carenest_app/features/teacher/teacher_home/presentation/screens/teacher_home_screen.dart';
 import 'package:carenest_app/routing/route_paths.dart';
@@ -110,6 +111,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ActivationScreen), findsOneWidget);
+  });
+
+  testWidgets('live_photoRequiredParent_landsOnPhotoScreen', (tester) async {
+    await pumpLiveApp(
+      tester,
+      FakeLiveSession(['PARENT'], childIds: [1], photoMissing: true),
+    );
+    expect(find.byType(ProfilePhotoRequiredScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
   });
 
   testWidgets('live_parentNoChild_onlyTeacher_noSwitch', (tester) async {
