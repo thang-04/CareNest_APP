@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'mobile_api.dart';
 import 'mobile_config.dart';
 
 abstract interface class MobileCredentials {
@@ -73,8 +74,13 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
       account = await _accountRequest(_access!);
       expired = false;
       notifyListeners();
-    } catch (_) {
-      await clear();
+    } catch (error) {
+      // Bị BE từ chối ⇒ thu hồi phiên ở Keycloak luôn, người sau không vào lại được bằng phiên này
+      if (error is ApiFailure && error.status == 403) {
+        await signOut();
+      } else {
+        await clear();
+      }
       rethrow;
     }
   }
@@ -153,9 +159,13 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
           jsonDecode(await utf8.decoder.bind(response).join())
               as Map<String, dynamic>;
       if (response.statusCode != 200) {
-        throw HttpException(
-          'Không thể xác minh tài khoản (${response.statusCode}).',
-        );
+        final code = body['errorCode'];
+        // 1101: token App của BGH/Admin (ADR-0022); 1014: tài khoản chưa được cấp quyền
+        throw ApiFailure(response.statusCode, switch (code) {
+          1101 => 'Tài khoản này dùng trên Web CareNest, không dùng trên App.',
+          1014 => 'Tài khoản chưa dùng được. Vui lòng liên hệ nhà trường.',
+          _ => 'Không thể xác minh tài khoản (${response.statusCode}).',
+        }, code);
       }
       return body['data'] as Map<String, dynamic>;
     } finally {
