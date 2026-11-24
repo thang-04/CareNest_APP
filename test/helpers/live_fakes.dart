@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/integration/mobile_session.dart';
+import 'package:carenest_app/core/storage/last_mode_store.dart';
+import 'package:carenest_app/core/storage/secure_store.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/routing/app_router.dart';
 
@@ -61,6 +63,7 @@ Future<GoRouter> pumpLiveApp(
     api: EmptyFeedApi(session),
     signIn: () async {},
     signOut: session.signOut,
+    modeStore: LastModeStore(MemorySecureStore(), env: 'test'),
   );
   addTearDown(router.dispose);
   await tester.pumpWidget(

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_list_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
+import 'package:carenest_app/features/parent/parent_home/presentation/screens/parent_home_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/presentation/selected_child.dart';
 import 'package:carenest_app/features/shared/notifications/presentation/screens/notification_detail_screen.dart';
 import 'package:carenest_app/features/teacher/teacher_home/presentation/screens/teacher_home_screen.dart';
@@ -78,5 +79,33 @@ void main() {
     );
     expect(find.byType(NavigationBar), findsNothing);
     await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('live_teacherParent_switchToParent_opensParentShell', (
+    tester,
+  ) async {
+    await pumpLiveApp(
+      tester,
+      FakeLiveSession(['TEACHER', 'PARENT'], childIds: [1]),
+      location: RoutePaths.teacherAccount,
+    );
+    expect(find.text('Chuyển sang chế độ phụ huynh'), findsOneWidget);
+
+    await tester.tap(find.text('Chuyển sang chế độ phụ huynh'));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ParentHomeScreen), findsOneWidget);
+    expect(find.byType(TeacherHomeScreen), findsNothing);
+  });
+
+  testWidgets('live_parentNoChild_onlyTeacher_noSwitch', (tester) async {
+    await pumpLiveApp(
+      tester,
+      FakeLiveSession(['TEACHER', 'PARENT']),
+      location: RoutePaths.teacherAccount,
+    );
+    expect(find.textContaining('Chuyển sang chế độ'), findsNothing);
   });
 }

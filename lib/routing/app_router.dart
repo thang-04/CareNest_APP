@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/integration/mobile_session.dart';
+import 'package:carenest_app/core/config/env.dart';
+import 'package:carenest_app/core/storage/last_mode_store.dart';
+import 'package:carenest_app/core/storage/secure_store.dart';
+import 'package:carenest_app/features/auth/data/live_mode_controller.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/layouts/app_shell.dart';
 import 'package:carenest_app/core/widgets/app_coming_soon.dart';
@@ -99,6 +103,7 @@ GoRouter buildAppRouter({
   MobileApi? api,
   Future<void> Function()? signIn,
   Future<void> Function()? signOut,
+  LastModeStore? modeStore,
 }) {
   final rootKey = GlobalKey<NavigatorState>();
   if (readAuth != null) {
@@ -126,6 +131,9 @@ GoRouter buildAppRouter({
       api: api,
       signIn: signIn,
       signOut: signOut,
+      modeStore:
+          modeStore ??
+          LastModeStore(const FlutterSecureStore(), env: Env.appEnv),
     );
   }
   return GoRouter(
@@ -660,13 +668,10 @@ GoRouter _buildLiveRouter(
   required MobileApi api,
   required Future<void> Function() signIn,
   required Future<void> Function() signOut,
+  required LastModeStore modeStore,
 }) {
-  AppMode? readMode() => switch (liveRoleOf(session)) {
-    AppRole.teacher => AppMode.teacher,
-    AppRole.kitchen => AppMode.kitchen,
-    AppRole.parent => AppMode.parent,
-    _ => null,
-  };
+  final modes = LiveModeController(session, modeStore);
+  AppMode? readMode() => modes.mode;
 
   String notificationsPath(AppMode mode) => switch (mode) {
     AppMode.teacher => RoutePaths.teacherNotifications,
@@ -683,7 +688,7 @@ GoRouter _buildLiveRouter(
   return GoRouter(
     navigatorKey: rootKey,
     initialLocation: RoutePaths.login,
-    refreshListenable: session,
+    refreshListenable: Listenable.merge([session, modes]),
     redirect: (context, state) => liveRedirect(
       signedIn: session.signedIn,
       mode: readMode(),
@@ -715,6 +720,14 @@ GoRouter _buildLiveRouter(
           live: true,
           source: LiveAccountSource(session),
           onLogout: logout,
+          modeSwitches: () => [
+            for (final mode in modes.modes)
+              if (mode != modes.mode)
+                AccountModeSwitch(
+                  label: 'Chuyển sang chế độ ${_modeLabel(mode)}',
+                  onTap: () => modes.switchTo(mode),
+                ),
+          ],
         ),
         notifications: LiveNotificationSource(api),
       ),
