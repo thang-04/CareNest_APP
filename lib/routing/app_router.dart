@@ -81,6 +81,7 @@ import 'package:carenest_app/features/teacher/teacher_home/presentation/screens/
 import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/campus_kitchen_screen.dart';
 import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/campus_menu_screen.dart';
 import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/vice_principal_home_screen.dart';
+import 'package:carenest_app/routing/live_access.dart';
 import 'package:carenest_app/routing/navigation_destinations.dart';
 import 'package:carenest_app/routing/route_access_policy.dart';
 import 'package:carenest_app/routing/route_paths.dart';
@@ -109,6 +110,24 @@ GoRouter buildAppRouter({
       onSwitchMode: onSwitchMode,
     );
   }
+  // Debug chưa cấu hình BE ⇒ giữ Đăng nhập giả + Xem thử; release luôn dùng phiên thật
+  final configured =
+      session != null &&
+      session.apiBaseUrl.isNotEmpty &&
+      session.issuer.isNotEmpty;
+  if (session != null &&
+      api != null &&
+      signIn != null &&
+      signOut != null &&
+      (!enablePreview || configured)) {
+    return _buildLiveRouter(
+      rootKey,
+      session: session,
+      api: api,
+      signIn: signIn,
+      signOut: signOut,
+    );
+  }
   return GoRouter(
     navigatorKey: rootKey,
     initialLocation: RoutePaths.login,
@@ -116,22 +135,13 @@ GoRouter buildAppRouter({
       GoRoute(path: '/', redirect: (context, state) => RoutePaths.login),
       GoRoute(
         path: RoutePaths.login,
-        builder: (context, state) => session != null && signIn != null
-            ? LiveLoginScreen(
-                signIn: signIn,
-                onPreview: enablePreview
-                    ? () => context.push(RoutePaths.preview)
-                    : null,
-              )
-            : LoginScreen(
-                onForgotPassword: () => context.push(RoutePaths.forgotPassword),
-                onOpenPreview: enablePreview
-                    ? () => context.push(RoutePaths.preview)
-                    : null,
-              ),
+        builder: (context, state) => LoginScreen(
+          onForgotPassword: () => context.push(RoutePaths.forgotPassword),
+          onOpenPreview: enablePreview
+              ? () => context.push(RoutePaths.preview)
+              : null,
+        ),
       ),
-      if (session != null && api != null && signOut != null)
-        ..._liveRoutes(rootKey, session, api, signOut),
       _forgotPasswordRoute(enablePreview: enablePreview),
       if (enablePreview) ...[
         GoRoute(
@@ -270,16 +280,31 @@ String _modeLabel(AppMode mode) => switch (mode) {
 List<RouteBase> _staffAndParentRoutes(
   GlobalKey<NavigatorState> rootKey, {
   _AccountTab account = const _AccountTab(),
+  NotificationSource notifications = const FakeNotificationSource(),
 }) => [
-  _roleShell(rootKey, AppRole.parent, NavDestinations.parent, {
-    RoutePaths.parentToday: (context, state) => const ParentHomeScreen(),
-    RoutePaths.parentChild: (context, state) => const MyChildScreen(),
-  }, account: account),
+  _roleShell(
+    rootKey,
+    AppRole.parent,
+    NavDestinations.parent,
+    {
+      RoutePaths.parentToday: (context, state) => const ParentHomeScreen(),
+      RoutePaths.parentChild: (context, state) => const MyChildScreen(),
+    },
+    account: account,
+    notifications: notifications,
+  ),
   ..._parentChildRoutes(),
-  _roleShell(rootKey, AppRole.teacher, NavDestinations.teacher, {
-    RoutePaths.teacherToday: (context, state) => const TeacherHomeScreen(),
-    RoutePaths.teacherClass: (context, state) => const ClassRosterScreen(),
-  }, account: account),
+  _roleShell(
+    rootKey,
+    AppRole.teacher,
+    NavDestinations.teacher,
+    {
+      RoutePaths.teacherToday: (context, state) => const TeacherHomeScreen(),
+      RoutePaths.teacherClass: (context, state) => const ClassRosterScreen(),
+    },
+    account: account,
+    notifications: notifications,
+  ),
   ..._teacherRoutes(),
   GoRoute(
     path: RoutePaths.teacherAttendance,
@@ -295,15 +320,22 @@ List<RouteBase> _staffAndParentRoutes(
     builder: (context, state) =>
         const DailyHealthScreen(classId: FakeAttendanceSource.classId),
   ),
-  _roleShell(rootKey, AppRole.kitchen, NavDestinations.kitchen, {
-    RoutePaths.kitchenHome: (context, state) => const KitchenHomeScreen(),
-    RoutePaths.kitchenMenu: (context, state) => SchoolMenuScreen(
-      asTab: true,
-      initialDay: FakeParentHomeSource.today,
-      footerNote:
-          'Chỉ xem. Thực đơn mẫu theo nhóm tuổi do Phó hiệu trưởng lập và công bố trên web.',
-    ),
-  }, account: account),
+  _roleShell(
+    rootKey,
+    AppRole.kitchen,
+    NavDestinations.kitchen,
+    {
+      RoutePaths.kitchenHome: (context, state) => const KitchenHomeScreen(),
+      RoutePaths.kitchenMenu: (context, state) => SchoolMenuScreen(
+        asTab: true,
+        initialDay: FakeParentHomeSource.today,
+        footerNote:
+            'Chỉ xem. Thực đơn mẫu theo nhóm tuổi do Phó hiệu trưởng lập và công bố trên web.',
+      ),
+    },
+    account: account,
+    notifications: notifications,
+  ),
   ..._kitchenRoutes(),
 ];
 
@@ -620,72 +652,75 @@ String _maskPhone(String phone) {
   return '${digits.substring(0, 3)}$hidden${digits.substring(digits.length - 3)}';
 }
 
-/// Phiên đăng nhập thật: cùng khung thanh đáy như bản xem thử, dưới `/live/...`.
-/// Thông báo và Tài khoản đọc dữ liệu thật; tab chưa nối API hiện "Sắp có", không dùng dữ liệu giả.
-List<RouteBase> _liveRoutes(
-  GlobalKey<NavigatorState> rootKey,
-  MobileSession session,
-  MobileApi api,
-  Future<void> Function() signOut,
-) {
-  List<NavDestination> destinationsOf(AppRole role) => [
-    for (final d in switch (role) {
-      AppRole.parent => NavDestinations.parent,
-      AppRole.teacher => NavDestinations.teacher,
-      _ => NavDestinations.kitchen,
-    })
-      NavDestination(d.label, d.icon, '/live${d.path}', d.tab),
-  ];
-  String? notificationsPath() {
-    final role = liveRoleOf(session);
-    return role == null
-        ? null
-        : destinationsOf(
-            role,
-          ).firstWhere((d) => d.tab == NavTab.notifications).path;
+/// Router khi chạy với BE thật (nền PR #8 của Tiền): shell và màn của từng vai trò,
+/// tab Thông báo và Tài khoản đọc dữ liệu thật; lối vào `/live/...` giữ cho `app.dart` và push.
+GoRouter _buildLiveRouter(
+  GlobalKey<NavigatorState> rootKey, {
+  required MobileSession session,
+  required MobileApi api,
+  required Future<void> Function() signIn,
+  required Future<void> Function() signOut,
+}) {
+  AppMode? readMode() => switch (liveRoleOf(session)) {
+    AppRole.teacher => AppMode.teacher,
+    AppRole.kitchen => AppMode.kitchen,
+    AppRole.parent => AppMode.parent,
+    _ => null,
+  };
+
+  String notificationsPath(AppMode mode) => switch (mode) {
+    AppMode.teacher => RoutePaths.teacherNotifications,
+    AppMode.kitchen => RoutePaths.kitchenNotifications,
+    AppMode.parent => RoutePaths.parentNotifications,
+  };
+
+  Future<void> logout() async {
+    // AUTH-22: máy dùng chung ⇒ người sau không thấy con của người trước
+    SelectedChild.reset();
+    await signOut();
   }
 
-  String? guard() {
-    if (!session.signedIn) return RoutePaths.login;
-    return liveRoleOf(session) == null ? '/live/unsupported' : null;
-  }
-
-  final notifications = LiveNotificationSource(api);
-  final account = LiveAccountSource(session);
-  return [
-    // Lối vào cố định cho đăng nhập và push; chuyển sang tab Thông báo của vai trò
-    GoRoute(
-      path: '/live/notifications',
-      redirect: (_, _) => guard() ?? notificationsPath(),
+  return GoRouter(
+    navigatorKey: rootKey,
+    initialLocation: RoutePaths.login,
+    refreshListenable: session,
+    redirect: (context, state) => liveRedirect(
+      signedIn: session.signedIn,
+      mode: readMode(),
+      photoRequired: false,
+      location: state.matchedLocation,
     ),
-    GoRoute(
-      path: '/live/notifications/:id',
-      redirect: (_, state) =>
-          guard() ?? '${notificationsPath()}/${state.pathParameters['id']}',
-    ),
-    GoRoute(
-      path: '/live/unsupported',
-      redirect: (_, _) => session.signedIn ? null : RoutePaths.login,
-      builder: (_, _) => UnsupportedRoleScreen(onSignOut: signOut),
-    ),
-    for (final role in [AppRole.parent, AppRole.teacher, AppRole.kitchen])
-      _roleShell(
+    routes: [
+      GoRoute(path: '/', redirect: (context, state) => RoutePaths.login),
+      GoRoute(
+        path: RoutePaths.login,
+        builder: (context, state) => LiveLoginScreen(signIn: signIn),
+      ),
+      GoRoute(
+        path: RoutePaths.liveNotifications,
+        redirect: (context, state) => notificationsPath(readMode()!),
+      ),
+      GoRoute(
+        path: '${RoutePaths.liveNotifications}/:id',
+        redirect: (context, state) =>
+            '${notificationsPath(readMode()!)}/${state.pathParameters['id']}',
+      ),
+      GoRoute(
+        path: RoutePaths.liveUnsupported,
+        builder: (context, state) => UnsupportedRoleScreen(onSignOut: logout),
+      ),
+      ..._staffAndParentRoutes(
         rootKey,
-        role,
-        destinationsOf(role),
-        const {},
-        notifications: notifications,
         account: _AccountTab(
           live: true,
-          source: account,
-          onLogout: () => signOut(),
+          source: LiveAccountSource(session),
+          onLogout: logout,
         ),
-        // Vào nhầm nhánh vai trò khác ⇒ về Thông báo của đúng vai trò
-        redirect: () =>
-            guard() ??
-            (liveRoleOf(session) == role ? null : notificationsPath()),
+        notifications: LiveNotificationSource(api),
       ),
-  ];
+    ],
+    errorBuilder: (context, state) => const NotFoundScreen(),
+  );
 }
 
 /// Một nhánh tab cho mỗi đích; Thông báo và Tài khoản dùng chung mọi vai trò,
