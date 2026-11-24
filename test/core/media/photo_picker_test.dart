@@ -43,7 +43,7 @@ void main() {
     expect(fake.maxWidth, 1080);
     expect(fake.quality, 85);
     expect(photo!.bytes, [7, 8]);
-    expect(photo.filename, 'IMG_1.jpg');
+    expect(photo.filename, 'photo.jpg');
     expect(photo.contentType, 'image/jpeg');
   });
 
@@ -57,6 +57,18 @@ void main() {
 
     expect(fake.source, ImageSource.gallery);
     expect(photo!.contentType, 'image/png');
+  });
+
+  test('pick_oddName_sendsFixedSafeFilename', () async {
+    final fake = _FakeImagePicker(
+      XFile.fromData(Uint8List.fromList([1]), path: 'Ảnh "mới".webp'),
+    );
+    final photo = await ImagePickerPhotoPicker(
+      picker: fake,
+    ).pick(PhotoSource.gallery);
+
+    expect(photo!.filename, 'photo.webp');
+    expect(photo.contentType, 'image/webp');
   });
 
   test('pick_cancelled_returnsNull', () async {

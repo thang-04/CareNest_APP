@@ -40,10 +40,12 @@ class ImagePickerPhotoPicker implements PhotoPicker {
       imageQuality: 85,
     );
     if (file == null) return null;
+    final type = _typeOf(file.name);
+    // Tên cố định: tên ảnh trong máy có thể chứa dấu nháy, chữ có dấu làm hỏng header multipart
     return PickedPhoto(
       bytes: await file.readAsBytes(),
-      filename: file.name,
-      contentType: _typeOf(file.name),
+      filename: 'photo.${type.split('/').last.replaceAll('jpeg', 'jpg')}',
+      contentType: type,
     );
   }
 
