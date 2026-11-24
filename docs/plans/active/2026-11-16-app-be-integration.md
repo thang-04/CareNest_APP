@@ -54,14 +54,14 @@ updated: 2026-11-24
 8. Chỉ build Android; không offline — user 14/11.
 9. Phiên thường, không `offline_access` — user 16/11. Code Tiền đúng như vậy (`mobile_session.dart:49`).
 10. ~~`json_annotation`, `build_runner`~~ — gỡ ở Task R6 (quyết định 13).
-11. Mã Jira tạm `TBD-4`; đổi sang mã thật trước khi mở PR vào `dev` — user 16/11.
+11. Mã Jira `TBD-4` — user 16/11; user 25/11: giữ `TBD-4` khi mở PR, không đổi sang mã thật.
 12. Chạy thử với BE + Keycloak local và `adb reverse` — user 16/11.
 13. **Nền = code PR #8 của Tiền**; Phase 1 cũ (Riverpod/Dio, `SessionManager`, `ApiClient`, `AuthController`) gỡ hết — user 24/11.
 14. **Giữ toàn bộ màn hình của Giáp**; chế độ thật dùng shell và màn của Giáp — user 24/11.
 15. **File của Tiền: chỉ thêm** (hàm, tham số tùy chọn mới; không đổi hành vi đang chạy), ghi vào mô tả PR để Tiền biết — user 24/11. Ngoại lệ: quyết định 18.
 16. Màn Đăng nhập thật = `LiveLoginScreen` của Tiền + link "Kích hoạt tài khoản"; bỏ `SignInScreen` của Giáp — user 24/11.
 17. Hai màn Thông báo = bản của Tiền — user 24/11.
-18. Phụ huynh chưa có ảnh chân dung (PCK-02): cho đăng nhập rồi bắt tải ảnh; được đổi hành vi `signIn`/`restore` của Tiền — user 24/11.
+18. ~~Phụ huynh chưa có ảnh: bắt tải ảnh~~ — **đổi 25/11 (user):** App **không buộc** cập nhật ảnh chân dung khi đăng nhập (đúng quyết định user 13/11; Q8 ngày 24/11 hỏi sai). Vẫn đổi hành vi `signIn`/`restore` của Tiền: `profileUpdateRequired` không chặn phiên.
 
 ## Làm rõ nghiệp vụ
 - **Hiểu nghiệp vụ:** actor phụ huynh, GV, tổ bếp (AUTH-21 CONFIRMED) · outcome: đăng nhập thật, dùng màn của Giáp, dữ liệu BE theo phạm vi · rule AUTH-18 (CONFIRMED), AUTH-21 (CONFIRMED), AUTH-22 (CONFIRMED), PCK-02 (CONFIRMED, ảnh chân dung bắt buộc), ADR-0022 (ACCEPTED), ADR-0026 (ACCEPTED) · flow `[B]` Keycloak cấp token → `[S]` `GET /accounts/me` → App chọn chế độ → shell của chế độ.
@@ -72,7 +72,7 @@ updated: 2026-11-24
 - [x] Q5 Sửa file của Tiền tới mức nào? — user 24/11: chỉ thêm (quyết định 15).
 - [x] Q6 Màn Đăng nhập? — user 24/11: của Tiền + link kích hoạt (quyết định 16).
 - [x] Q7 Màn Thông báo? — user 24/11: của Tiền (quyết định 17).
-- [x] Q8 Phụ huynh chưa có ảnh? — user 24/11: cho vào, bắt tải ảnh (quyết định 18).
+- [x] Q8 Phụ huynh chưa có ảnh? — user 24/11: bắt tải ảnh; **user 25/11 sửa: không buộc** (quyết định 18).
 - [x] Q9 Mỗi lần đăng nhập gửi `prompt=login` để Keycloak luôn hỏi mật khẩu? Lý do: máy bếp dùng chung (AUTH-22); đăng xuất lúc mất mạng thì Keycloak còn phiên, người sau bấm Đăng nhập sẽ vào thẳng tài khoản người trước. Việc này đổi hành vi `signIn` của Tiền. Đề xuất: **có** (Task R3 Step 6).
 - [x] Q10 Đang dùng mà Keycloak từ chối làm mới token (hết phiên 30 phút / 10 giờ) ⇒ xóa phiên, về Đăng nhập với chữ "Phiên đăng nhập đã hết. Vui lòng đăng nhập lại."? Hiện code Tiền chỉ báo lỗi ở từng màn, người dùng phải tự mở lại App. Việc này đổi hành vi `_renew` của Tiền. Đề xuất: **có** (Task R5).
 
@@ -81,7 +81,7 @@ updated: 2026-11-24
 | Q5 File của Tiền | Chỉ thêm | user | 2026-11-24 | Quyết định 15 |
 | Q6 Màn Đăng nhập | `LiveLoginScreen` + link kích hoạt | user | 2026-11-24 | Quyết định 16 |
 | Q7 Màn Thông báo | Bản Tiền | user | 2026-11-24 | Quyết định 17 |
-| Q8 Ảnh chân dung | Cho vào, bắt tải ảnh | user | 2026-11-24 | Quyết định 18 |
+| Q8 Ảnh chân dung | Không buộc cập nhật khi đăng nhập (sửa 25/11; 24/11 đã chọn bắt tải ảnh) | user | 2026-11-25 | Quyết định 18 |
 | Q9 `prompt=login` | Có | user | 2026-11-25 | Task R3 Step 6 |
 | Q10 Hết phiên khi đang dùng | Có, về Đăng nhập kèm câu báo | user | 2026-11-25 | Task R5 |
 
@@ -100,7 +100,7 @@ updated: 2026-11-24
 1. Phụ huynh A đăng xuất, phụ huynh B đăng nhập trên cùng máy ⇒ không thấy con, chế độ hay dữ liệu của A — Task R2 `signOut_clearsModeAndSelectedChild`, Task R1 `live_signOut_resetsSelectedChild`.
 2. Đang ở chế độ thật mà màn đẩy tới đường của vai trò khác hoặc đường Xem thử ⇒ về màn chính của chế độ hiện tại, không 404, không lộ màn dữ liệu giả — Task R1 `signedIn_otherRolePath_goesModeHome`.
 3. Bấm push khi App đang tắt ⇒ mở đúng chi tiết thông báo trong shell của chế độ hiện tại — Task R1 `live_pushDeepLink_opensDetail`.
-4. Phụ huynh chưa có ảnh: mọi đường (kể cả bấm push, đổi chế độ) đều về màn ảnh chân dung tới khi lưu xong — Task R4 `liveRedirect_photoRequired_blocksEveryPath`.
+4. ~~Phụ huynh chưa có ảnh bị chặn~~ — bỏ 25/11 (quyết định 18): phụ huynh chưa có ảnh vào App bình thường — Task R4 `live_parentWithoutPortrait_opensApp`.
 5. Tài khoản GV kiêm phụ huynh nhưng chưa có con đang học ⇒ không có nút chuyển sang phụ huynh — Task R2 `fromAccount_parentNoChild_noParentMode`.
 
 ---
@@ -111,7 +111,7 @@ updated: 2026-11-24
 - **AC-R3** (AUTH-21, ADR-0022): Given chỉ có role BGH/Admin, When đăng nhập, Then thấy "Tài khoản này dùng trên Web" và nút Đăng xuất; không vào shell.
 - **AC-R4** (ADR-0022, quyết định 7): Given `TEACHER` + `PARENT` và `childIds` không rỗng, Then mở chế độ GV; Tài khoản có "Chuyển sang chế độ phụ huynh"; mở lại App giữ chế độ cuối.
 - **AC-R5** (AUTH-18, ADR-0026): Given màn Đăng nhập, When bấm "Kích hoạt tài khoản", nhập SĐT, mã 6 số, mật khẩu mới 2 lần, Then thấy "Tài khoản đã kích hoạt" và nút Đăng nhập; bấm ⇒ trang Keycloak có sẵn tên đăng nhập. 400/1006 ⇒ "Mã kích hoạt sai hoặc đã hết hạn. Liên hệ nhà trường để gửi lại mã."
-- **AC-R6** (PCK-02, quyết định 18): Given phụ huynh `profileUpdateRequired`, When đăng nhập, Then vào màn "Cập nhật ảnh chân dung"; mọi đường khác về màn này; lưu ảnh thành công ⇒ vào App; 400/1131 ⇒ câu BE.
+- **AC-R6** (quyết định 18, sửa 25/11): Given phụ huynh `profileUpdateRequired`, When đăng nhập, Then vào App bình thường, không có màn bắt cập nhật ảnh.
 - **AC-R7** (AUTH-22): When đăng xuất, Then con đang chọn và chế độ trong bộ nhớ bị xóa (chế độ cuối đã lưu theo `userId` vẫn giữ).
 - **AC-R8:** Given đã đăng nhập, When mở đường con của vai trò (vd. `/parent/leave-notices`), Then mở được; đường của vai trò khác ⇒ màn chính của chế độ hiện tại.
 - **AC-R9** (Q9 = có): mỗi lần đăng nhập, Keycloak hỏi lại mật khẩu dù còn phiên trình duyệt.
@@ -293,7 +293,7 @@ Review sau mỗi task R0, R1–R2, R3–R5, R6–R7. Dừng chờ user review �
 - [ ] **Step 6 (chỉ khi Q9 = có):** test `signIn_promptLogin_everyTime` ⇒ `authorization.promptValues == ['login']`; thêm `promptValues: const ['login']` vào `signIn`. Ghi Progress log là đổi hành vi (Q9).
 - [ ] **Step 7:** Verify → PASS. Commit tách: `TBD-4: Add public JSON calls to MobileApi`, `TBD-4: Pass login hint through live sign-in`, `TBD-4: Rewire account activation to the live session`.
 
-### Task R4: Ảnh chân dung bắt buộc cho phụ huynh (PCK-02, quyết định 18)
+### Task R4: Ảnh chân dung (quyết định 18 — đổi 25/11: không buộc; màn ảnh, `PhotoPicker`, `ProfilePhotoApi`, `reloadAccount` đã gỡ, giữ `MobileApi.multipart` cho bếp)
 **Files:** M (Tiền) `mobile_session.dart` (đổi hành vi theo quyết định 18 + thêm), `mobile_api.dart` (thêm) · C `lib/core/media/photo_picker.dart`, `lib/features/shared/account/data/profile_photo_api.dart`, `lib/features/shared/account/presentation/screens/profile_photo_required_screen.dart` · M `app_router.dart` · Test C `test/core/integration/mobile_session_profile_test.dart`, `test/core/integration/mobile_api_multipart_test.dart`, `test/features/shared/account/profile_photo_required_screen_test.dart`, M `test/routing/live_access_test.dart`
 
 **Interfaces:**
@@ -339,7 +339,7 @@ Review sau mỗi task R0, R1–R2, R3–R5, R6–R7. Dừng chờ user review �
   1. GV ⇒ tab Thông báo; tab Hôm nay là màn của Giáp (AC-R2).
   2. Bếp ⇒ như trên (AC-R2).
   3. Phụ huynh có ảnh ⇒ shell phụ huynh; mở Xin nghỉ (AC-R8).
-  4. Phụ huynh chưa có ảnh ⇒ màn ảnh; lưu ⇒ vào App (AC-R6).
+  4. Phụ huynh chưa có ảnh ⇒ vào App bình thường (AC-R6).
   5. GV kiêm phụ huynh ⇒ chế độ GV; chuyển phụ huynh; đóng mở lại giữ chế độ (AC-R4).
   6. BGH ⇒ "dùng trên Web" (AC-R3).
   7. Kích hoạt bằng mã từ log BE (cổng SMS giả) ⇒ Keycloak có sẵn tên (AC-R5).
@@ -356,7 +356,7 @@ Review sau mỗi task R0, R1–R2, R3–R5, R6–R7. Dừng chờ user review �
 | AC-R3 | AUTH-21, ADR-0022 | `signedIn_noAppMode_goesUnsupported`, `live_router_test` (Tiền) · checklist 6 | R1 | — |
 | AC-R4 | ADR-0022 | `fromAccount_*`, `live_mode_controller_test`, `live_teacherParent_switchToParent_opensParentShell` · checklist 5 | R2 | — |
 | AC-R5 | AUTH-18, ADR-0026 | `publicJson_*`, `signIn_loginHint_passedToKeycloak`, `activate_*`, `liveLogin_activateLink_opensActivation` · checklist 7 | R3 | — |
-| AC-R6 | PCK-02 | `signIn_profileUpdateRequired_keepsSession`, `multipart_sendsFilePartWithBearer`, `liveRedirect_photoRequired_blocksEveryPath`, `save_*` · checklist 4 | R4 | — |
+| AC-R6 | Quyết định 18 | `signIn_profileUpdateRequired_keepsSession`, `restore_profileUpdateRequired_keepsSession`, `live_parentWithoutPortrait_opensApp` · checklist 4 | R4 | — |
 | AC-R7 | AUTH-22 | `signOut_clearsModeAndSelectedChild`, `live_signOut_resetsSelectedChild` · checklist 8 | R1, R2 | — |
 | AC-R8 | — | `signedIn_otherRolePath_goesModeHome`, `live_parentChildRoute_opens` · checklist 3 | R1 | — |
 | AC-R9 | AUTH-22 | `signIn_promptLogin_everyTime` · checklist 8 | R3 (Q9) | — |
@@ -431,3 +431,9 @@ Review sau mỗi task R0, R1–R2, R3–R5, R6–R7. Dừng chờ user review �
 - Để sau (Minor): màn Đăng nhập không hiện "phiên đã hết" khi hết phiên lúc mở App; danh sách chuyển chế độ không tự cập nhật sau khi tải lại tài khoản; `LiveModeController` không dispose; tệp ảnh tạm còn trong cache App; HEIC gửi nhãn JPEG; commit `14eda67` không biên dịch riêng (sửa phải viết lại lịch sử — hỏi user); route `splash`/`blocked` thừa; vài dòng docs còn `API_BASE_URL`/`USE_MOCK`; `liveRoleOf` của Tiền không còn dùng; push mở lúc đang ở màn ảnh bị bỏ sau khi lưu.
 - Cần BE/user quyết: tài khoản có role PARENT nhưng không còn con đang học vẫn bị BE đòi ảnh (`profileUpdateRequired` không xét `childIds`); phụ huynh không còn con thấy "dùng trên Web".
 - Chỉ điện thoại thật xác nhận được: AppAuth Android trả `invalid_grant` ở `platformErrorDetails.error`; Keycloak nhận `prompt=login`, `login_hint`; Spring nhận multipart ảnh.
+
+### 2026-11-25 — Không buộc ảnh chân dung; mã Jira giữ TBD-4
+- User 25/11: App không buộc cập nhật ảnh chân dung khi đăng nhập (quyết định 18 sửa, đúng quyết định 13/11). Gỡ màn `ProfilePhotoRequiredScreen`, `ProfilePhotoApi`, `PhotoPicker`, `MobileSession.reloadAccount`/`profileUpdateRequired`, tham số `photoRequired` của `liveRedirect`, route `/profile-photo`. Giữ `MobileApi.multipart` (bếp dùng ở Phase 5) và việc `signIn`/`restore` không huỷ phiên khi `profileUpdateRequired`. Test `live_parentWithoutPortrait_opensApp` đỏ trước, xanh sau.
+- Đề xuất BE (Cần/thangnd): `MyAccountResponse` ghi "App bắt cập nhật hồ sơ trước khi dùng (PCK-02, user chốt 2026-10-31)" — lệch quyết định 13/11; nhánh BE `feature/TBD-1-BE-FEAT-0-bgh-mobile-view-only` (TBD-2) đặt `profileUpdateRequired` luôn `false`, chưa vào `dev`.
+- User 25/11: giữ mã `TBD-4` cho PR, không cần mã Jira thật (thay quyết định 11).
+- Verify: `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 379 fail 0 skip 0`.

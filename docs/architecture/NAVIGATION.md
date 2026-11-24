@@ -129,16 +129,17 @@ Mọi vai trò dùng chung tab Thông báo (`<tab>/:id` mở chi tiết) và Tà
 
 ### Phiên đăng nhập thật (cập nhật 25/11/2026)
 
-Router phiên thật (`_buildLiveRouter`, `lib/routing/app_router.dart`) dùng cùng shell và màn của bản xem thử, đường thường (`/parent/...`, `/teacher/...`, `/kitchen/...`). Chuyển màn ở `liveRedirect` (`lib/routing/live_access.dart`): chưa đăng nhập ⇒ `/login` (trừ `/activate`); không có chế độ App (BGH, Admin — AUTH-21) ⇒ `/live/unsupported`; phụ huynh chưa có ảnh ⇒ `/profile-photo` (PCK-02); đường của chế độ khác hoặc Xem thử ⇒ màn chính của chế độ hiện tại.
+Router phiên thật (`_buildLiveRouter`, `lib/routing/app_router.dart`) dùng cùng shell và màn của bản xem thử, đường thường (`/parent/...`, `/teacher/...`, `/kitchen/...`). Chuyển màn ở `liveRedirect` (`lib/routing/live_access.dart`): chưa đăng nhập ⇒ `/login` (trừ `/activate`); không có chế độ App (BGH, Admin — AUTH-21) ⇒ `/live/unsupported`; đường của chế độ khác hoặc Xem thử ⇒ màn chính của chế độ hiện tại.
 
 | Route | Màn | Ghi chú |
 | --- | --- | --- |
 | `/login`, `/activate` | Đăng nhập Keycloak (PR #8) + link Kích hoạt tài khoản | Hết phiên ⇒ banner "Phiên đăng nhập đã hết…" |
 | `/live/notifications`, `/live/notifications/:id` | Lối vào cố định cho `app.dart` và push | Chuyển sang tab Thông báo (hoặc chi tiết) của chế độ hiện tại |
 | `/live/unsupported` | Tài khoản chỉ dùng Web | Có Đăng xuất |
-| `/profile-photo` | Cập nhật ảnh chân dung | Chụp / chọn ảnh, lưu ⇒ vào App |
 | Tab Thông báo, Tài khoản | Dữ liệu BE (`/me/notifications`, `/accounts/me`) | Thông tin cá nhân, Đổi mật khẩu: "Sắp có" |
 | Các tab và màn con khác | Màn của Giáp, **dữ liệu giả** tới khi nối API (Phase 3–5) | Quyết định 14 (user 24/11) |
+
+Không buộc cập nhật ảnh chân dung khi đăng nhập (user chốt 13/11): BE trả `profileUpdateRequired` vẫn vào App.
 
 Tài khoản vừa là giáo viên vừa là phụ huynh: mở chế độ GV, chuyển sang phụ huynh ở tab Tài khoản, nhớ chế độ cuối (user 14/11, ADR-0022; phụ huynh cần con đang học).
 

@@ -1,6 +1,6 @@
 # Auth Flow — Mobile
 
-> **Cập nhật 2026-11-25:** nền đăng nhập là code PR #8 của Tiền (`lib/core/integration/mobile_session.dart`), thêm kích hoạt tài khoản, ảnh chân dung, chế độ GV ↔ phụ huynh, `prompt=login`, hết phiên (plan `docs/plans/active/2026-11-16-app-be-integration.md`, Phase R). BE `docs/contracts/AUTH_CONTRACT.md`: Keycloak authorization code + PKCE, client `carenest-mobile`, redirect `carenest://oauth/callback`. Chưa chạy trên Android thật.
+> **Cập nhật 2026-11-25:** nền đăng nhập là code PR #8 của Tiền (`lib/core/integration/mobile_session.dart`), thêm kích hoạt tài khoản, chế độ GV ↔ phụ huynh, `prompt=login`, hết phiên (plan `docs/plans/active/2026-11-16-app-be-integration.md`, Phase R). BE `docs/contracts/AUTH_CONTRACT.md`: Keycloak authorization code + PKCE, client `carenest-mobile`, redirect `carenest://oauth/callback`. Chưa chạy trên Android thật.
 
 ## Đã biết (dùng được)
 - Quyền = Role × Permission ∩ Access scope, kiểm tra ở BE (`BE:docs/business/USER_ROLES.md`, AUTH-07). APP chỉ ẩn/hiện UI theo dữ liệu BE.
@@ -11,7 +11,7 @@
 1. **Cấu hình:** `--dart-define-from-file=env/local.json` với `CARENEST_API_BASE_URL`, `CARENEST_OIDC_ISSUER` (`MobileConfig`). Bản debug thiếu cấu hình ⇒ Đăng nhập giả + Xem thử; có cấu hình (hoặc bản release) ⇒ router phiên thật (`_buildLiveRouter`).
 2. **Đăng nhập:** `MobileSession.signIn({loginHint})` mở trang Keycloak (`flutter_appauth`, scope `openid profile`, `promptValues: ['login']` — máy dùng chung luôn hỏi mật khẩu, AUTH-22). Xong ⇒ `GET /accounts/me` lưu ở `session.account`.
 3. **Chọn chế độ** (`LiveModeController`, ADR-0022): `TEACHER` → `KITCHEN_STAFF` → `PARENT` (phụ huynh cần `childIds` không rỗng); chế độ cuối lưu theo `userId` (`LastModeStore`); chuyển ở tab Tài khoản. Không có chế độ nào (BGH, Admin — AUTH-21) ⇒ `/live/unsupported` "dùng trên Web".
-4. **Ảnh chân dung** (PCK-02): `profileUpdateRequired` ⇒ mọi đường về `/profile-photo`; lưu `PUT /accounts/me/photo` (multipart, part `file`) rồi `reloadAccount()`.
+4. **Ảnh chân dung:** App **không buộc** cập nhật khi đăng nhập (user chốt 13/11); `profileUpdateRequired` của `/accounts/me` không chặn phiên. Ảnh phụ huynh lấy ở hồ sơ tiếp nhận (PCK-02).
 5. **Kích hoạt tài khoản** (AUTH-18, ADR-0026): link trên màn Đăng nhập ⇒ `/activate`; `POST /parent-activation` (công khai, `MobileApi.publicJson`) trả `username` ⇒ mở Keycloak có sẵn tên. 400/1006 ⇒ "Mã kích hoạt sai hoặc đã hết hạn. Liên hệ nhà trường để gửi lại mã."
 6. **Làm mới token:** token còn < 30 giây ⇒ refresh trước khi gửi; 401 ⇒ refresh 1 lần rồi gửi lại 1 lần (`MobileApi`). Keycloak trả `invalid_grant` ⇒ xóa phiên, `expired = true`, về Đăng nhập kèm "Phiên đăng nhập đã hết. Vui lòng đăng nhập lại."; lỗi mạng giữ phiên.
 7. **Mở lại App:** `restore()` dùng refresh token trong secure storage; hỏng ⇒ coi như chưa đăng nhập.

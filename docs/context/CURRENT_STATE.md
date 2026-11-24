@@ -10,7 +10,7 @@ Cập nhật: 2026-11-16 (bắt đầu nối BE thật — plan `docs/plans/acti
 | AI context + docs | Bản đầu (routing, workflow, feature map theo role) |
 | Framework | Flutter CONFIRMED (user, 2026-10-08) — quy chuẩn `DESIGN.md` |
 | Thư viện nền | `go_router`, `flutter_appauth`, `flutter_secure_storage`, `firebase_core`, `firebase_messaging` (nền PR #8 của Tiền — user 24/11), `image_picker` (17/11), `url_launcher` (15/11); Riverpod/Dio/json_serializable gỡ 25/11 — `docs/architecture/MOBILE_ARCHITECTURE.md` |
-| Auth | PKCE qua Keycloak (`carenest-mobile`), phiên thường (user 16/11), `GET /accounts/me`, kích hoạt tài khoản phụ huynh `POST /parent-activation`, ảnh chân dung bắt buộc (PCK-02), chuyển chế độ GV ↔ phụ huynh, `prompt=login`, hết phiên về Đăng nhập — `MobileSession` khi có `CARENEST_API_BASE_URL` + `CARENEST_OIDC_ISSUER` (`docs/integration/AUTH_FLOW.md`). Quên mật khẩu: chờ API SMS ở nhánh BE G94-87 |
+| Auth | PKCE qua Keycloak (`carenest-mobile`), phiên thường (user 16/11), `GET /accounts/me`, kích hoạt tài khoản phụ huynh `POST /parent-activation`, không buộc ảnh chân dung khi đăng nhập (user 13/11), chuyển chế độ GV ↔ phụ huynh, `prompt=login`, hết phiên về Đăng nhập — `MobileSession` khi có `CARENEST_API_BASE_URL` + `CARENEST_OIDC_ISSUER` (`docs/integration/AUTH_FLOW.md`). Quên mật khẩu: chờ API SMS ở nhánh BE G94-87 |
 | Push provider | FCM (user 13/11). Danh sách `GET /me/notifications` và đăng ký `/me/devices` chạy thật (PR #8); push thật cần `google-services.json` và BE gửi FCM |
 | BE | `dev` (`f76e9092`, 15/11) có Keycloak + `/accounts/me`, kích hoạt phụ huynh, thông báo, API điểm danh/sức khỏe/đơn nghỉ/đón trẻ/đánh giá/bếp — `docs/integration/BE_API_INDEX.md`. Chi tiết: `BE:docs/context/CURRENT_STATE.md` |
 
