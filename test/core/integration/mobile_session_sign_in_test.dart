@@ -27,6 +27,17 @@ class RecordingAppAuth extends FlutterAppAuth {
       null,
     );
   }
+
+  @override
+  Future<TokenResponse> token(TokenRequest request) async => TokenResponse(
+    'access-2',
+    'refresh-2',
+    DateTime.now().add(const Duration(minutes: 5)),
+    null,
+    'Bearer',
+    null,
+    null,
+  );
 }
 
 /// BE giả trả `/accounts/me`; trả server để đóng sau test.
