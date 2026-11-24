@@ -7,6 +7,7 @@ import 'package:carenest_app/core/integration/mobile_session.dart';
 import 'package:carenest_app/core/config/env.dart';
 import 'package:carenest_app/core/storage/last_mode_store.dart';
 import 'package:carenest_app/core/storage/secure_store.dart';
+import 'package:carenest_app/features/auth/data/activation_api.dart';
 import 'package:carenest_app/features/auth/data/live_mode_controller.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/layouts/app_shell.dart';
@@ -30,15 +31,11 @@ import 'package:carenest_app/features/teacher/attendance/data/fake_attendance_so
 import 'package:carenest_app/features/teacher/attendance/presentation/screens/attendance_screen.dart';
 import 'package:carenest_app/features/teacher/daily_health/presentation/screens/daily_health_screen.dart';
 import 'package:carenest_app/features/auth/domain/entities/app_mode.dart';
-import 'package:carenest_app/features/auth/presentation/controllers/auth_state.dart';
 import 'package:carenest_app/features/auth/presentation/screens/activation_screen.dart';
-import 'package:carenest_app/features/auth/presentation/screens/blocked_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/new_password_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/otp_verify_screen.dart';
-import 'package:carenest_app/features/auth/presentation/screens/session_loading_screen.dart';
-import 'package:carenest_app/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:carenest_app/features/management/campus_children/data/fake_campus_children_source.dart';
 import 'package:carenest_app/features/management/campus_children/presentation/screens/campus_children_screen.dart';
 import 'package:carenest_app/features/management/campuses/presentation/screens/campuses_screen.dart';
@@ -87,34 +84,21 @@ import 'package:carenest_app/features/management/vice_principal_home/presentatio
 import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/vice_principal_home_screen.dart';
 import 'package:carenest_app/routing/live_access.dart';
 import 'package:carenest_app/routing/navigation_destinations.dart';
-import 'package:carenest_app/routing/route_access_policy.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
 /// `enablePreview` mặc định theo debug: màn theo vai trò còn phụ thuộc PENDING và chưa có auth
 /// ⇒ bản release chỉ có Đăng nhập và luồng quên mật khẩu (docs/architecture/NAVIGATION.md).
-/// `readAuth` có giá trị (chạy với BE thật, `USE_MOCK=false`) ⇒ router theo phiên: [_buildSessionRouter].
+/// Có `session`, `api`, `signIn`, `signOut` (`app.dart`, PR #8) ⇒ router phiên thật [_buildLiveRouter].
 GoRouter buildAppRouter({
   bool enablePreview = kDebugMode,
-  Listenable? refresh,
-  AuthState Function()? readAuth,
-  Future<void> Function()? onSignOut,
-  Future<void> Function(AppMode mode)? onSwitchMode,
   MobileSession? session,
   MobileApi? api,
   Future<void> Function()? signIn,
   Future<void> Function()? signOut,
+  Future<void> Function(String username)? signInAs,
   LastModeStore? modeStore,
 }) {
   final rootKey = GlobalKey<NavigatorState>();
-  if (readAuth != null) {
-    return _buildSessionRouter(
-      rootKey,
-      refresh: refresh,
-      readAuth: readAuth,
-      onSignOut: onSignOut,
-      onSwitchMode: onSwitchMode,
-    );
-  }
   // Debug chưa cấu hình BE ⇒ giữ Đăng nhập giả + Xem thử; release luôn dùng phiên thật
   final configured =
       session != null &&
@@ -131,6 +115,7 @@ GoRouter buildAppRouter({
       api: api,
       signIn: signIn,
       signOut: signOut,
+      signInAs: signInAs ?? (_) => signIn(),
       modeStore:
           modeStore ??
           LastModeStore(const FlutterSecureStore(), env: Env.appEnv),
@@ -182,52 +167,6 @@ GoRouter buildAppRouter({
   );
 }
 
-/// Router khi chạy với BE thật: chuyển màn theo [AuthState] ([redirectFor]); chỉ shell phụ huynh,
-/// GV, bếp (BGH chờ BE — plan 16/11 quyết định 4); không Xem thử, không Quên mật khẩu (quyết định 5).
-GoRouter _buildSessionRouter(
-  GlobalKey<NavigatorState> rootKey, {
-  required Listenable? refresh,
-  required AuthState Function() readAuth,
-  required Future<void> Function()? onSignOut,
-  required Future<void> Function(AppMode mode)? onSwitchMode,
-}) {
-  // Ngữ cảnh con của người trước được xóa ở `app.dart` khi về Đăng nhập
-  final account = _AccountTab(
-    onLogout: () => onSignOut?.call(),
-    source: _SessionAccountSource(readAuth),
-    modeSwitches: () => _modeSwitches(readAuth(), onSwitchMode),
-  );
-
-  return GoRouter(
-    navigatorKey: rootKey,
-    initialLocation: RoutePaths.splash,
-    refreshListenable: refresh,
-    redirect: (context, state) =>
-        redirectFor(readAuth(), state.matchedLocation),
-    routes: [
-      GoRoute(
-        path: RoutePaths.splash,
-        builder: (context, state) => const SessionLoadingScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.login,
-        builder: (context, state) =>
-            SignInScreen(onActivate: () => context.push(RoutePaths.activate)),
-      ),
-      GoRoute(
-        path: RoutePaths.activate,
-        builder: (context, state) => const ActivationScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.blocked,
-        builder: (context, state) => const BlockedScreen(),
-      ),
-      ..._staffAndParentRoutes(rootKey, account: account),
-    ],
-    errorBuilder: (context, state) => const NotFoundScreen(),
-  );
-}
-
 /// Tab Tài khoản: bản giả để mọi giá trị null (hồ sơ giả, Đăng xuất về Đăng nhập).
 class _AccountTab {
   const _AccountTab({
@@ -243,39 +182,6 @@ class _AccountTab {
 
   /// Phiên thật của Tiền (PR #8): Thông tin cá nhân, Đổi mật khẩu chưa nối API ⇒ "Sắp có".
   final bool live;
-}
-
-/// Hồ sơ ở tab Tài khoản lấy từ `/accounts/me` của phiên hiện tại.
-class _SessionAccountSource implements AccountSource {
-  const _SessionAccountSource(this._readAuth);
-
-  final AuthState Function() _readAuth;
-
-  @override
-  Future<AccountProfile> loadProfile(AppRole role) async {
-    final state = _readAuth();
-    if (state is! AuthSignedIn) throw StateError('Chưa đăng nhập');
-    return AccountProfile(
-      fullName: state.user.fullName,
-      phone: state.user.username,
-      role: role,
-    );
-  }
-}
-
-List<AccountModeSwitch> _modeSwitches(
-  AuthState state,
-  Future<void> Function(AppMode mode)? onSwitchMode,
-) {
-  if (state is! AuthSignedIn || onSwitchMode == null) return const [];
-  return [
-    for (final mode in state.user.modes)
-      if (mode != state.mode)
-        AccountModeSwitch(
-          label: 'Chuyển sang chế độ ${_modeLabel(mode)}',
-          onTap: () => onSwitchMode(mode),
-        ),
-  ];
 }
 
 String _modeLabel(AppMode mode) => switch (mode) {
@@ -668,6 +574,7 @@ GoRouter _buildLiveRouter(
   required MobileApi api,
   required Future<void> Function() signIn,
   required Future<void> Function() signOut,
+  required Future<void> Function(String username) signInAs,
   required LastModeStore modeStore,
 }) {
   final modes = LiveModeController(session, modeStore);
@@ -699,7 +606,15 @@ GoRouter _buildLiveRouter(
       GoRoute(path: '/', redirect: (context, state) => RoutePaths.login),
       GoRoute(
         path: RoutePaths.login,
-        builder: (context, state) => LiveLoginScreen(signIn: signIn),
+        builder: (context, state) => LiveLoginScreen(
+          signIn: signIn,
+          onActivate: () => context.push(RoutePaths.activate),
+        ),
+      ),
+      GoRoute(
+        path: RoutePaths.activate,
+        builder: (context, state) =>
+            ActivationScreen(api: ActivationApi(api), signInAs: signInAs),
       ),
       GoRoute(
         path: RoutePaths.liveNotifications,
@@ -780,7 +695,7 @@ StatefulShellRoute _roleShell(
                   onOpenCampuses: role == AppRole.principal
                       ? () => context.push(RoutePaths.principalCampuses)
                       : null,
-                  // Bản thật: thu hồi phiên, router tự về Đăng nhập theo AuthState
+                  // Bản thật: thu hồi phiên, router tự về Đăng nhập theo phiên
                   onLogout:
                       account.onLogout ??
                       () {

@@ -66,4 +66,8 @@ void main() {
   test('signedIn_withMode_unsupportedPage_goesModeHome', () {
     expect(_go(RoutePaths.liveUnsupported), RoutePaths.teacherToday);
   });
+
+  test('signedIn_prefixLookalike_goesHome', () {
+    expect(_go('/teacherx'), RoutePaths.teacherToday);
+  });
 }
