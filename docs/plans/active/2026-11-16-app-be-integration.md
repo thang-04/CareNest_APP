@@ -437,3 +437,10 @@ Review sau mỗi task R0, R1–R2, R3–R5, R6–R7. Dừng chờ user review �
 - Đề xuất BE (Cần/thangnd): `MyAccountResponse` ghi "App bắt cập nhật hồ sơ trước khi dùng (PCK-02, user chốt 2026-10-31)" — lệch quyết định 13/11; nhánh BE `feature/TBD-1-BE-FEAT-0-bgh-mobile-view-only` (TBD-2) đặt `profileUpdateRequired` luôn `false`, chưa vào `dev`.
 - User 25/11: giữ mã `TBD-4` cho PR, không cần mã Jira thật (thay quyết định 11).
 - Verify: `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 379 fail 0 skip 0`.
+
+### 2026-11-25 — Task R7 (user cho phép chạy)
+- BE `origin/dev` `a58857f2` chạy từ worktree tạm `be-app-dev` (detached, chỉ để chạy) trên DB mới `carenest_appdev` (container `carenest-pgvector-test` :5433), script `D:\project_capstone\run-be-app-dev.ps1`: 195 migration tới v182, khởi động 70 giây. Keycloak dùng chung `carenest_be-devdb` :8180.
+- `node scripts/check-auth-contract.mjs` (tài khoản seed GV, bếp, phụ huynh, HT): 30 PASS, 2 FAIL chỉ do tôi truyền issuer `127.0.0.1` thay `localhost` (issuer thật `http://localhost:8180/realms/carenest`, đúng `env/local.example.json`). Xác nhận: PKCE + đổi code, `azp carenest-mobile`, refresh xoay vòng, logout 204, refresh rác/sau logout ⇒ `invalid_grant`, `POST /parent-activation` mã sai ⇒ 400/1006 không cần Bearer, phụ huynh seed có `childIds` 2.
+- Lỗi tìm được và đã sửa (`60b1299`): token App của HT ⇒ `/accounts/me` 403/1101, code `signIn` cũ ném `HttpException (403)` nên BGH không tới màn "dùng trên Web". Nay báo "Tài khoản này dùng trên Web CareNest, không dùng trên App." (1014 ⇒ "Tài khoản chưa dùng được…") và thu hồi phiên ở Keycloak. Test `signIn_webOnly1101_explainsAndRevokes`, `signIn_notProvisioned1014_asksToContactSchool` đỏ trước, xanh sau.
+- Emulator `Pixel_8_Pro`: chạy 6 phút vẫn `offline` (thiếu `opengl32sw`) ⇒ không chạy được checklist trên máy. Chưa kiểm trên thiết bị: AppAuth Android trả `invalid_grant`, `prompt=login`/`login_hint` trên trang Keycloak, push FCM.
+- Verify: `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 381 fail 0 skip 0`.
