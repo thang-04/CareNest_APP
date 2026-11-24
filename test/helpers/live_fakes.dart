@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -60,6 +62,7 @@ Future<GoRouter> pumpLiveApp(
   WidgetTester tester,
   FakeLiveSession session, {
   String location = '/live/notifications',
+  LastModeStore? modeStore,
 }) async {
   usePhoneSize(tester);
   final router = buildAppRouter(
@@ -68,7 +71,7 @@ Future<GoRouter> pumpLiveApp(
     api: EmptyFeedApi(session),
     signIn: () async {},
     signOut: session.signOut,
-    modeStore: LastModeStore(MemorySecureStore(), env: 'test'),
+    modeStore: modeStore ?? LastModeStore(MemorySecureStore(), env: 'test'),
   );
   addTearDown(router.dispose);
   await tester.pumpWidget(
@@ -80,4 +83,28 @@ Future<GoRouter> pumpLiveApp(
   await tester.pump(const Duration(seconds: 1));
   await tester.pumpAndSettle();
   return router;
+}
+
+/// Kho chế độ đọc chậm: `read` chờ tới khi test gọi [release].
+class SlowSecureStore implements SecureStore {
+  SlowSecureStore(this.values);
+
+  final Map<String, String> values;
+  final _gate = Completer<void>();
+
+  void release() => _gate.complete();
+
+  @override
+  Future<String?> read(String key) async {
+    // Giá trị lúc bắt đầu đọc, như kho thật trả về sau một lần ghi chồng lên
+    final value = values[key];
+    await _gate.future;
+    return value;
+  }
+
+  @override
+  Future<void> write(String key, String value) async => values[key] = value;
+
+  @override
+  Future<void> delete(String key) async => values.remove(key);
 }

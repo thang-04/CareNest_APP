@@ -599,12 +599,16 @@ GoRouter _buildLiveRouter(
     navigatorKey: rootKey,
     initialLocation: RoutePaths.login,
     refreshListenable: Listenable.merge([session, modes]),
-    redirect: (context, state) => liveRedirect(
-      signedIn: session.signedIn,
-      mode: readMode(),
-      photoRequired: session.profileUpdateRequired,
-      location: state.matchedLocation,
-    ),
+    // Chờ đọc chế độ cuối trước khi chọn màn (vd. mở từ push khi App đang tắt)
+    redirect: (context, state) async {
+      await modes.ready;
+      return liveRedirect(
+        signedIn: session.signedIn,
+        mode: readMode(),
+        photoRequired: session.profileUpdateRequired,
+        location: state.matchedLocation,
+      );
+    },
     routes: [
       GoRoute(path: '/', redirect: (context, state) => RoutePaths.login),
       GoRoute(
@@ -624,12 +628,17 @@ GoRouter _buildLiveRouter(
       ),
       GoRoute(
         path: RoutePaths.liveNotifications,
-        redirect: (context, state) => notificationsPath(readMode()!),
+        redirect: (context, state) async {
+          await modes.ready;
+          return notificationsPath(readMode()!);
+        },
       ),
       GoRoute(
         path: '${RoutePaths.liveNotifications}/:id',
-        redirect: (context, state) =>
-            '${notificationsPath(readMode()!)}/${state.pathParameters['id']}',
+        redirect: (context, state) async {
+          await modes.ready;
+          return '${notificationsPath(readMode()!)}/${state.pathParameters['id']}';
+        },
       ),
       GoRoute(
         path: RoutePaths.profilePhoto,

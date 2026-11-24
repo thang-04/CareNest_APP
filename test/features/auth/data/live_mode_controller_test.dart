@@ -84,6 +84,56 @@ void main() {
     );
   });
 
+  test('switchDuringRestore_userChoiceWins', () async {
+    final slow = SlowSecureStore({'carenest.test.last_mode.4': 'parent'});
+    final c = LiveModeController(
+      FakeLiveSession(['TEACHER', 'KITCHEN_STAFF', 'PARENT'], childIds: [9]),
+      LastModeStore(slow, env: 'test'),
+    );
+    addTearDown(c.dispose);
+
+    await c.switchTo(AppMode.kitchen);
+    slow.release();
+    await c.ready;
+
+    expect(c.mode, AppMode.kitchen);
+  });
+
+  test('ready_setBeforeFirstNotify', () async {
+    final slow = SlowSecureStore({'carenest.test.last_mode.4': 'parent'});
+    final session = FakeLiveSession(['TEACHER', 'PARENT'], childIds: [9]);
+    await session.signOut();
+    final c = LiveModeController(session, LastModeStore(slow, env: 'test'));
+    addTearDown(c.dispose);
+    Future<void>? seen;
+    c.addListener(() => seen ??= c.ready);
+
+    session.account = {
+      'userId': 4,
+      'roles': ['TEACHER', 'PARENT'],
+      'childIds': [9],
+    };
+    session.notifyListeners();
+    slow.release();
+    await seen;
+
+    expect(c.mode, AppMode.parent);
+  });
+
+  test('storeReadHangs_opensFirstModeAfterTimeout', () async {
+    final slow = SlowSecureStore({'carenest.test.last_mode.4': 'parent'});
+    final c = LiveModeController(
+      FakeLiveSession(['TEACHER', 'PARENT'], childIds: [9]),
+      LastModeStore(slow, env: 'test'),
+      readTimeout: const Duration(milliseconds: 20),
+    );
+    addTearDown(c.dispose);
+
+    await c.ready;
+
+    expect(c.mode, AppMode.teacher);
+  });
+
   test('signIn_principalOnly_modeNull', () async {
     final c = await start(FakeLiveSession(['PRINCIPAL']));
     expect(c.mode, isNull);

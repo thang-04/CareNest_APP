@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/core/storage/last_mode_store.dart';
 import 'package:carenest_app/features/auth/presentation/screens/activation_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_list_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
@@ -148,6 +149,27 @@ void main() {
       findsOneWidget,
     );
     await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('live_storedParentMode_pushLinkWaitsForMode', (tester) async {
+    final store = SlowSecureStore({'carenest.test.last_mode.4': 'parent'});
+    final router = await pumpLiveApp(
+      tester,
+      FakeLiveSession(['TEACHER', 'PARENT'], childIds: [1]),
+      location: '/live/notifications/7',
+      modeStore: LastModeStore(store, env: 'test'),
+    );
+
+    store.release();
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+
+    expect(
+      router.routerDelegate.currentConfiguration.uri.path,
+      '/parent/notifications/7',
+    );
+    expect(find.byType(NotificationDetailScreen), findsOneWidget);
   });
 
   testWidgets('live_parentNoChild_onlyTeacher_noSwitch', (tester) async {

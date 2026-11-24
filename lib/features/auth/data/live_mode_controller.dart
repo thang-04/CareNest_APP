@@ -9,7 +9,11 @@ import 'package:carenest_app/features/parent/parent_home/presentation/selected_c
 /// Chế độ dùng App của phiên thật (ADR-0022, user 14/11): mở chế độ nhân sự trước,
 /// chuyển sang phụ huynh ở Tài khoản, nhớ chế độ cuối theo tài khoản. Chế độ không gửi lên BE.
 class LiveModeController extends ChangeNotifier {
-  LiveModeController(this._session, this._store) {
+  LiveModeController(
+    this._session,
+    this._store, {
+    this.readTimeout = const Duration(seconds: 3),
+  }) {
     _session.addListener(_sync);
     _sync();
   }
@@ -17,10 +21,16 @@ class LiveModeController extends ChangeNotifier {
   final MobileSession _session;
   final LastModeStore _store;
 
+  /// Router chờ đọc chế độ cuối; kho treo quá hạn ⇒ dùng chế độ đầu, không kẹt App.
+  final Duration readTimeout;
+
   int? _userId;
   List<AppMode> _modes = const [];
   AppMode? _mode;
   Future<void> _ready = Future.value();
+
+  /// Người dùng đã tự chọn chế độ trong phiên này ⇒ không lấy chế độ đã lưu đè lên.
+  bool _switched = false;
 
   AppMode? get mode => _mode;
   List<AppMode> get modes => _modes;
@@ -47,8 +57,10 @@ class LiveModeController extends ChangeNotifier {
     }
     _modes = user.modes;
     _mode = _modes.isEmpty ? null : _modes.first;
-    notifyListeners();
+    _switched = false;
+    // Gán trước khi báo: router chờ `ready` rồi mới chọn màn, không nhảy qua chế độ tạm
     _ready = _restore(user.userId);
+    notifyListeners();
   }
 
   void _setModes(List<AppMode> modes) {
@@ -61,12 +73,12 @@ class LiveModeController extends ChangeNotifier {
   Future<void> _restore(int userId) async {
     String? stored;
     try {
-      stored = await _store.read(userId);
+      stored = await _store.read(userId).timeout(readTimeout);
     } catch (_) {
       // Không đọc được chế độ cuối ⇒ dùng chế độ đầu
       return;
     }
-    if (userId != _userId) return;
+    if (userId != _userId || _switched) return;
     final saved = _modes.where((m) => m.name == stored).firstOrNull;
     if (saved != null && saved != _mode) {
       _mode = saved;
@@ -77,6 +89,7 @@ class LiveModeController extends ChangeNotifier {
   Future<void> switchTo(AppMode mode) async {
     final userId = _userId;
     if (userId == null || !_modes.contains(mode) || mode == _mode) return;
+    _switched = true;
     _mode = mode;
     notifyListeners();
     try {

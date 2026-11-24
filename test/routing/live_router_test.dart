@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -57,6 +58,9 @@ Future<GoRouter> pumpLive(WidgetTester tester, List<String> roles) async {
 }
 
 void main() {
+  // Router phiên thật đọc chế độ cuối từ secure storage trước khi chọn màn
+  setUp(() => FlutterSecureStorage.setMockInitialValues({}));
+
   testWidgets(
     'phiên thật Giáo viên: Thông báo có thanh đáy 4 tab, Tài khoản thật',
     (tester) async {
