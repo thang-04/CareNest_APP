@@ -127,18 +127,20 @@ Mọi vai trò dùng chung tab Thông báo (`<tab>/:id` mở chi tiết) và Tà
 
 Đích thanh đáy khai báo một lần ở `lib/routing/navigation_destinations.dart`.
 
-### Phiên đăng nhập thật (`/live/...`, cập nhật 18/11/2026)
+### Phiên đăng nhập thật (cập nhật 25/11/2026)
 
-Sau đăng nhập Keycloak, App dùng cùng khung thanh đáy với bản xem thử, đường dẫn thêm tiền tố `/live` (vd. `/live/teacher/notifications`). Vai trò lấy từ `roles` của `/accounts/me`: `PARENT`, `TEACHER`, `KITCHEN_STAFF` ⇒ khung 4 tab tương ứng; vai trò khác (BGH, Admin — AUTH-21) ⇒ `/live/unsupported` báo dùng Web, có Đăng xuất.
+Router phiên thật (`_buildLiveRouter`, `lib/routing/app_router.dart`) dùng cùng shell và màn của bản xem thử, đường thường (`/parent/...`, `/teacher/...`, `/kitchen/...`). Chuyển màn ở `liveRedirect` (`lib/routing/live_access.dart`): chưa đăng nhập ⇒ `/login` (trừ `/activate`); không có chế độ App (BGH, Admin — AUTH-21) ⇒ `/live/unsupported`; phụ huynh chưa có ảnh ⇒ `/profile-photo` (PCK-02); đường của chế độ khác hoặc Xem thử ⇒ màn chính của chế độ hiện tại.
 
 | Route | Màn | Ghi chú |
 | --- | --- | --- |
-| `/live/notifications`, `/live/notifications/:id` | Lối vào cố định cho đăng nhập và push | Chuyển sang tab Thông báo (hoặc chi tiết) của đúng vai trò |
-| `/live/<vai trò>/notifications[/:id]` | Thông báo / chi tiết (dữ liệu `/me/notifications`, `/me/announcements`) | Chi tiết mở trên navigator gốc (ẩn thanh đáy), Back về danh sách |
-| `/live/<vai trò>/account` | Tài khoản từ `/accounts/me`, Đăng xuất thật | Thông tin cá nhân, Đổi mật khẩu: "Sắp có" |
-| Tab Trang chủ, Bé của tôi / Lớp học / Thực đơn | "Sắp có" | Chưa nối API ⇒ không hiện dữ liệu giả trong phiên thật |
+| `/login`, `/activate` | Đăng nhập Keycloak (PR #8) + link Kích hoạt tài khoản | Hết phiên ⇒ banner "Phiên đăng nhập đã hết…" |
+| `/live/notifications`, `/live/notifications/:id` | Lối vào cố định cho `app.dart` và push | Chuyển sang tab Thông báo (hoặc chi tiết) của chế độ hiện tại |
+| `/live/unsupported` | Tài khoản chỉ dùng Web | Có Đăng xuất |
+| `/profile-photo` | Cập nhật ảnh chân dung | Chụp / chọn ảnh, lưu ⇒ vào App |
+| Tab Thông báo, Tài khoản | Dữ liệu BE (`/me/notifications`, `/accounts/me`) | Thông tin cá nhân, Đổi mật khẩu: "Sắp có" |
+| Các tab và màn con khác | Màn của Giáp, **dữ liệu giả** tới khi nối API (Phase 3–5) | Quyết định 14 (user 24/11) |
 
-Tài khoản vừa là phụ huynh vừa là giáo viên: lấy vai trò hỗ trợ đầu tiên trong `roles` BE trả — **OPEN**, cần chốt cách chọn vai trò.
+Tài khoản vừa là giáo viên vừa là phụ huynh: mở chế độ GV, chuyển sang phụ huynh ở tab Tài khoản, nhớ chế độ cuối (user 14/11, ADR-0022; phụ huynh cần con đang học).
 
 ## Deep link (từ push)
 

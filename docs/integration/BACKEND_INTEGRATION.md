@@ -25,11 +25,11 @@ Mọi response (thành công và lỗi) có đúng dạng (`BE:docs/contracts/ER
 | --- | --- |
 | `code` | Integer, **luôn bằng HTTP status**; `code` ≠ status ⇒ `ContractFailure` (lỗi contract, ghi incident) |
 | `errorCode` | Mã lỗi nghiệp vụ 4 số; `null` khi thành công. Phân nhánh lỗi theo status + `errorCode` (hằng ở `ApiErrorCodes`), **không so `desc`** |
-| `desc` | Câu tiếng Việt hiển thị được cho người dùng (`AppFailure.message`) |
+| `desc` | Câu tiếng Việt hiển thị được cho người dùng (`ApiFailure.message`) |
 | `data` | Luôn có mặt; `null` khi không có dữ liệu. Lỗi 400 `9001`: mảng `[{field, message}]` (`ValidationFailure.fieldErrors`) |
 
 ## Client (`lib/core/network/`)
-- Mọi lời gọi qua `ApiClient` (`apiClientProvider`): trả `data` đã decode; lỗi ném `AppFailure` (`lib/core/errors/app_failure.dart`). DTO không khớp shape ⇒ `ContractFailure`.
+- Mọi lời gọi qua `MobileApi` (`lib/core/integration/mobile_api.dart`): `json` / `publicJson` (không Bearer) / `multipart` / `binary`; trả `data` đã decode; lỗi ném `ApiFailure(status, desc, errorCode)`; 401 ⇒ refresh 1 lần rồi gửi lại.
 - `AuthInterceptor` gắn Bearer + refresh khi 401 (`docs/integration/AUTH_FLOW.md`); request công khai dùng `skipAuth: true`.
 - Timeout: kết nối 10 s, nhận 20 s, gửi 30 s. Log debug: `METHOD /path-đã-che-id status ms`, không header/body/query.
 - Test: `test/helpers/fake_http_adapter.dart` trả envelope giả.

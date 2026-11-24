@@ -13,7 +13,7 @@ paths:
 > Auth: PKCE qua Keycloak (`flutter_appauth`); token: access trong bộ nhớ, refresh/id trong `flutter_secure_storage` (CONFIRMED — user 2026-11-13). Push: FCM, làm ở Phase 7. Xem `docs/integration/AUTH_FLOW.md`, `PUSH_NOTIFICATION.md`.
 
 ## Token
-- Token chỉ trong OS secure storage (Keychain/Keystore) qua `TokenStorage` (`lib/core/storage/`), không SharedPreferences, file thường hay state persist; access token chỉ trong bộ nhớ.
+- Token chỉ trong OS secure storage (Keychain/Keystore) qua `MobileSession` (`lib/core/integration/mobile_session.dart`, khóa `auth.refresh`), không SharedPreferences, file thường hay state persist; access token chỉ trong bộ nhớ.
 - Không log, không gửi token vào crash report/analytics; không đưa vào URL/query string.
 - Logout ⇒ xóa token, cache, offline queue, device push token đăng ký với BE (khi có endpoint).
 

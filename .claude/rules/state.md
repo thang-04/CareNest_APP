@@ -1,13 +1,12 @@
 ---
 paths:
-  - "lib/features/**/presentation/controllers/**/*.dart"
-  - "lib/features/**/presentation/providers/**/*.dart"
+  - "lib/features/**/data/live_*.dart"
   - "lib/features/**/presentation/screens/**/*.dart"
 ---
 
 # State & cache rules
 
-> Thư viện state/DI: `flutter_riverpod` (CONFIRMED — user 2026-11-13). Nguyên tắc: `docs/architecture/STATE_MANAGEMENT.md`.
+> State: `ChangeNotifier` + `StatefulWidget`, dependency truyền qua constructor/router (nền PR #8, user 2026-11-24; Riverpod gỡ 2026-11-25). Nguyên tắc: `docs/architecture/STATE_MANAGEMENT.md`.
 
 - **Server state** (dữ liệu từ BE) tách khỏi **UI state** (form đang nhập, tab đang chọn). BE là nguồn sự thật; client chỉ cache.
 - Cache key gồm đủ ngữ cảnh: user + role + childId/classId/campusId + ngày. Đổi user/role/con/lớp không được thấy dữ liệu cũ.
