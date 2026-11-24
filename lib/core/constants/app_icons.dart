@@ -70,4 +70,6 @@ abstract final class AppIcons {
   static const fish = Icons.set_meal_outlined;
   static const milk = Icons.local_drink_outlined;
   static const egg = Icons.egg_outlined;
+  static const attachment = Icons.attach_file_rounded;
+  static const download = Icons.download_rounded;
 }

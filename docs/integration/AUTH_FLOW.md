@@ -1,40 +1,17 @@
 # Auth Flow — Mobile
 
-Nguồn contract: `BE:docs/contracts/AUTH_CONTRACT.md` (BE `dev`). Plan: `docs/plans/active/2026-11-16-app-be-integration.md`. Code: `lib/features/auth/`, `lib/core/network/`, `lib/core/storage/`.
+> **Cập nhật 2026-11-16:** BE `docs/contracts/AUTH_CONTRACT.md` xác định Mobile dùng Keycloak authorization code + PKCE, client `carenest-mobile`, redirect `carenest://oauth/callback`. Tiền duyệt `flutter_appauth` và `flutter_secure_storage` cho spec 902. Tích hợp đang kiểm thử; chưa xác nhận trên Android thật.
 
-## Cơ chế (CONFIRMED — user 13/11, BE AUTH_CONTRACT)
-- OAuth2 Authorization Code + PKCE S256 với Keycloak realm `carenest`, client `carenest-mobile` (public, không password grant). Redirect `carenest://oauth/callback`.
-- App mở trang đăng nhập Keycloak bằng trình duyệt hệ thống (`flutter_appauth`); SĐT + mật khẩu nhập ở trang đó, App không giữ mật khẩu.
-- Mỗi lần đăng nhập gửi `prompt=login`: máy dùng chung (bếp — AUTH-22) luôn hỏi lại mật khẩu.
-- Scope `openid profile`. Phiên thường, không `offline_access` (user 16/11): phiên Keycloak hết sau ~30 phút không refresh, tối đa 10 giờ từ lúc đăng nhập. Đổi sang phiên dài ⇒ thêm `offline_access` vào `kOidcScopes` + task BE cho client.
-- Cấu hình: `--dart-define-from-file=env/local.json` (mẫu `env/local.example.json`): `USE_MOCK=false`, `API_BASE_URL` (gồm `/api`), `OIDC_ISSUER`; thiếu biến ⇒ màn lỗi cấu hình.
+## Đã biết (dùng được)
+- Quyền = Role × Permission ∩ Access scope, kiểm tra ở BE (`BE:docs/business/USER_ROLES.md`, AUTH-07). APP chỉ ẩn/hiện UI theo dữ liệu BE.
+- 401 / 403 trả envelope `{code, desc, data}` như mọi lỗi khác (`BACKEND_INTEGRATION.md`).
+- Refresh token trong OS secure storage; access token ở bộ nhớ. Đăng xuất xóa phiên cục bộ và cố gắng hủy đăng ký thiết bị bằng phiên cũ; ngoại tuyến không khẳng định server đã hủy.
 
-## Token
-- Access token (5 phút): chỉ trong bộ nhớ (`SessionManager`). Refresh token + id token: `flutter_secure_storage`, khóa `carenest.<APP_ENV>.refresh_token` / `.id_token`.
-- Bearer chỉ gửi tới host của `API_BASE_URL`; không log header/body (`SafeLogInterceptor`).
-- Còn < 30 giây thì refresh trước khi gửi request. 401 ⇒ refresh một lần (dùng chung cho mọi request đang chờ) rồi gửi lại một lần; body `FormData` không gửi lại.
-- Refresh bị Keycloak từ chối (`invalid_grant`) ⇒ xóa token, về Đăng nhập với "Phiên đăng nhập đã hết…". Mất mạng/Keycloak lỗi ⇒ `NetworkFailure`, giữ token, cho thử lại.
-- Android `allowBackup=false` chặn backup lên cloud/adb; chuyển máy trực tiếp (device-to-device, Android 12+) vẫn có thể mang file theo, nhưng không có khóa Keystore ⇒ đọc lỗi ⇒ xóa khóa hỏng, coi như chưa đăng nhập (plugin cũng tự xóa: `resetOnError`).
-
-## Sau đăng nhập
-- `GET /accounts/me` ⇒ `roles`, `permissions`, `assignments`, `childIds`. Gọi lại khi App quay lại foreground (tối đa 1 lần/60 giây); lần gọi lại này lỗi mạng/BE thì giữ nguyên màn đang dùng, lần quay lại sau thử tiếp. Kết quả đến sau khi đã đăng xuất/đăng nhập lại bị bỏ.
-- Chế độ (ADR-0022): `TEACHER` ⇒ GV, `KITCHEN_STAFF` ⇒ bếp, `PARENT` + `childIds` không rỗng ⇒ phụ huynh. Nhiều chế độ ⇒ mở chế độ nhân sự, chuyển ở màn Tài khoản, nhớ chế độ cuối theo `userId` (user 14/11). Chế độ không gửi lên BE.
-- 403 `1101` ở `/accounts/me` (token App không có role App — BGH, Admin) ⇒ "Tài khoản này dùng trên Web CareNest." BGH chỉ xem trên App: chờ nhánh BE TBD-1 (plan 16/11 quyết định 4).
-- 403 `1014` / `1015` ⇒ "Tài khoản chưa dùng được. Vui lòng liên hệ nhà trường." Không tự thử lại.
-- 503 `1013` hoặc mất mạng lúc mở App ⇒ màn "Thử lại" (giữ token) kèm "Đăng xuất"; lỗi khác (BE lỗi, Keycloak từ chối vì cấu hình) ⇒ cùng màn với câu "Máy chủ đang gặp lỗi…".
-
-## Kích hoạt tài khoản phụ huynh (AUTH-18, ADR-0026)
-- Màn "Kích hoạt tài khoản" (chưa đăng nhập): SĐT, mã SMS 6 số, mật khẩu mới 2 lần ⇒ `POST /parent-activation` (công khai, không Bearer) ⇒ `{ username }` ⇒ mở Keycloak với `login_hint` = username.
-- 400 `1006` ⇒ "Mã kích hoạt sai hoặc đã hết hạn. Liên hệ nhà trường để gửi lại mã."; 400 `1009` ⇒ lỗi mật khẩu theo `desc`.
-
-## Đăng xuất
-- Hộp xác nhận ⇒ xóa token trên máy, về Đăng nhập ngay (xóa back stack); POST `{issuer}/protocol/openid-connect/logout` với `client_id` + `refresh_token` chạy nền, lỗi mạng bỏ qua. Kiểm 16/11 trên BE local: logout 204, refresh token cũ sau đó bị từ chối (`invalid_grant`).
-- Mọi đường về Đăng nhập (đăng xuất ở Tài khoản, màn chặn, màn Thử lại; hết phiên; 401 ở `/accounts/me`) ⇒ xóa ngữ cảnh con đang chọn (`lib/app.dart`).
-
-## Kiểm với BE local
-- `CARENEST_SEED_PASSWORD=<mật khẩu seed> node scripts/check-auth-contract.mjs` (PowerShell: `$env:CARENEST_SEED_PASSWORD='<...>'; node scripts/check-auth-contract.mjs`): chạy luồng PKCE như AppAuth với tài khoản seed từng role, kiểm `/accounts/me`, refresh, logout, mã lỗi 1002 / 1006 / 1101. Cần BE + Keycloak local đang chạy; mật khẩu seed theo `BE:docs/TAI_KHOAN_DEV.md`. Không thay cho chạy trên máy thật (Custom Tabs, secure storage).
-
-## Chưa làm
-- Quên mật khẩu: chờ API SMS ở nhánh BE `feature/G94-87-BE-FEAT-0-app-rules-sms-reset` (plan 16/11 quyết định 5); bản thật ẩn lối vào.
-- Đăng ký/hủy device push token (`PUT|DELETE /me/devices`): Phase 7 (FCM).
-- Đổi mật khẩu khi đã đăng nhập (`PUT /me/password`): chưa nối.
+## Điền khi BE chốt
+- [ ] Đăng nhập: tài khoản do trường cấp? SĐT/OTP cho phụ huynh?
+- [ ] Endpoint login / refresh / logout / me (user + role + scope tóm tắt)
+- [ ] Thời hạn access/refresh token; xoay vòng refresh; thu hồi
+- [ ] Luồng 401: refresh 1 lần, hàng đợi request song song, thất bại ⇒ Login
+- [ ] User nhiều role (vd. GV đồng thời là phụ huynh) ⇒ chọn role thế nào
+- [ ] Đăng ký/hủy device push token gắn với phiên
+- [ ] Đổi/quên mật khẩu

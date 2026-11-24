@@ -5,6 +5,7 @@
   },
   "textStyle": {
     "lib/features/auth/presentation/screens/otp_verify_screen.dart": 2,
+    "lib/features/shared/notifications/presentation/screens/notifications_screen.dart": 1,
     "lib/features/teacher/class_leave_notices/presentation/screens/class_leave_screen.dart": 1,
     "lib/features/teacher/daily_review/presentation/screens/daily_review_list_screen.dart": 1,
     "lib/features/teacher/health_measure/presentation/screens/health_measure_detail_screen.dart": 1,
