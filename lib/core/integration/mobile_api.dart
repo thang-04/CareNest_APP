@@ -33,11 +33,44 @@ class MobileApi {
     return decoded['data'];
   }
 
+  /// Gửi một tệp dạng `multipart/form-data` (vd. ảnh chân dung, ảnh bữa); Bearer và refresh như [json].
+  Future<Object?> multipart(
+    String method,
+    String path, {
+    required String field,
+    required Uint8List bytes,
+    required String filename,
+    required String contentType,
+  }) async {
+    final boundary = 'carenest-${DateTime.now().microsecondsSinceEpoch}';
+    final head = utf8.encode(
+      '--$boundary\r\n'
+      'Content-Disposition: form-data; name="$field"; filename="$filename"\r\n'
+      'Content-Type: $contentType\r\n\r\n',
+    );
+    final tail = utf8.encode('\r\n--$boundary--\r\n');
+    final raw = await _request(
+      method,
+      path,
+      form: (
+        type: ContentType(
+          'multipart',
+          'form-data',
+          parameters: {'boundary': boundary},
+        ),
+        bytes: Uint8List.fromList([...head, ...bytes, ...tail]),
+      ),
+    );
+    final decoded = jsonDecode(utf8.decode(raw)) as Map<String, dynamic>;
+    return decoded['data'];
+  }
+
   Future<Uint8List> _request(
     String method,
     String path, {
     Object? body,
     bool auth = true,
+    ({ContentType type, Uint8List bytes})? form,
   }) async {
     final owner = session.userId;
     final generation = session.generation;
@@ -63,6 +96,10 @@ class MobileApi {
         if (body != null) {
           request.headers.contentType = ContentType.json;
           request.write(jsonEncode(body));
+        } else if (form != null) {
+          request.headers.contentType = form.type;
+          request.contentLength = form.bytes.length;
+          request.add(form.bytes);
         }
         final response = await request.close().timeout(
           const Duration(seconds: 15),
