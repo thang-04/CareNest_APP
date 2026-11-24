@@ -423,3 +423,11 @@ Review sau mỗi task R0, R1–R2, R3–R5, R6–R7. Dừng chờ user review �
   - Debug chưa cấu hình BE ⇒ Đăng nhập giả + Xem thử (trước đây `LiveLoginScreen` báo lỗi).
 - Task R7 Step 1–2 (chạy BE local + điện thoại, checklist 9 mục): **chưa chạy** — BE/Keycloak local không bật (8080, 8180 không trả lời 25/11). Cần user chạy.
 - Tiếp: review toàn nhánh; user chạy checklist R7; mã Jira thật trước PR.
+
+### 2026-11-25 — Review toàn nhánh Phase R + lượt sửa (chờ user chạy R7)
+- Reviewer mới (đọc code, không chạy máy): 0 Critical, 1 Important, 11 Minor; "ready with fixes".
+- Đã sửa (mỗi lỗi có test đỏ trước): I1 router chọn màn trước khi đọc chế độ cuối (`ce202df`, thêm giới hạn 3 giây khi đọc kho); tên tệp ảnh cố định `photo.<đuôi>` (`bbf9d98`); lỗi mở camera và lỗi tải lại tài khoản sau khi đã lưu ảnh (`178ec76`); lỗi đăng nhập sau kích hoạt (`e444695`). Test của Tiền `live_router_test` thêm `setUp` giả lập secure storage.
+- Verify: `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 394 fail 0 skip 0`.
+- Để sau (Minor): màn Đăng nhập không hiện "phiên đã hết" khi hết phiên lúc mở App; danh sách chuyển chế độ không tự cập nhật sau khi tải lại tài khoản; `LiveModeController` không dispose; tệp ảnh tạm còn trong cache App; HEIC gửi nhãn JPEG; commit `14eda67` không biên dịch riêng (sửa phải viết lại lịch sử — hỏi user); route `splash`/`blocked` thừa; vài dòng docs còn `API_BASE_URL`/`USE_MOCK`; `liveRoleOf` của Tiền không còn dùng; push mở lúc đang ở màn ảnh bị bỏ sau khi lưu.
+- Cần BE/user quyết: tài khoản có role PARENT nhưng không còn con đang học vẫn bị BE đòi ảnh (`profileUpdateRequired` không xét `childIds`); phụ huynh không còn con thấy "dùng trên Web".
+- Chỉ điện thoại thật xác nhận được: AppAuth Android trả `invalid_grant` ở `platformErrorDetails.error`; Keycloak nhận `prompt=login`, `login_hint`; Spring nhận multipart ảnh.
