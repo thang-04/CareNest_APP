@@ -18,6 +18,29 @@ class AppUser {
     required this.childIds,
   });
 
+  /// Từ `data` của `GET /accounts/me` mà `MobileSession` đã tải; khóa thiếu ⇒ rỗng.
+  factory AppUser.fromAccount(Map<String, dynamic> account) {
+    List<Object?> list(String key) => account[key] as List? ?? const [];
+    return AppUser(
+      userId: (account['userId'] as num?)?.toInt() ?? 0,
+      username: account['username']?.toString() ?? '',
+      fullName: account['fullName']?.toString() ?? '',
+      roles: {for (final role in list('roles')) role.toString()},
+      permissions: {for (final p in list('permissions')) p.toString()},
+      assignments: [
+        for (final a in list('assignments').whereType<Map>())
+          StaffAssignment(
+            staffRole: a['staffRole']?.toString() ?? '',
+            campusId: (a['campusId'] as num?)?.toInt(),
+            classroomId: (a['classroomId'] as num?)?.toInt(),
+          ),
+      ],
+      childIds: [
+        for (final id in list('childIds').whereType<num>()) id.toInt(),
+      ],
+    );
+  }
+
   final int userId;
 
   /// Tên đăng nhập; tài khoản mới là SĐT 10 số (BE AUTH-18).
