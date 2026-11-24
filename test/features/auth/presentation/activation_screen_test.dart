@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/integration/mobile_api.dart';
@@ -218,5 +219,41 @@ void main() {
       find.text('Không kết nối được máy chủ. Thử lại sau.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('activate_signInFails_showsBannerOnDoneView', (tester) async {
+    final setup = await _pump(
+      tester,
+      signInDone: () async => throw StateError('Keycloak không phản hồi'),
+    );
+    setup.activation.replies.add('0900000001');
+    await _fill(tester);
+
+    await _tapSubmit(tester);
+
+    expect(find.text('Tài khoản đã kích hoạt'), findsOneWidget);
+    expect(
+      find.text(
+        'Chưa mở được trang đăng nhập. Kiểm tra mạng rồi bấm Đăng nhập.',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('activate_signInCancelled_noError', (tester) async {
+    final setup = await _pump(
+      tester,
+      signInDone: () async => throw FlutterAppAuthUserCancelledException(
+        code: 'user_cancelled',
+        platformErrorDetails: FlutterAppAuthPlatformErrorDetails(),
+      ),
+    );
+    setup.activation.replies.add('0900000001');
+    await _fill(tester);
+
+    await _tapSubmit(tester);
+
+    expect(find.text('Tài khoản đã kích hoạt'), findsOneWidget);
+    expect(find.textContaining('Chưa mở được trang đăng nhập'), findsNothing);
   });
 }

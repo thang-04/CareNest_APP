@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_appauth/flutter_appauth.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
@@ -45,6 +46,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
   String? _banner;
   bool _submitting = false;
   bool _signingIn = false;
+  String? _signInError;
   String? _activatedUsername;
 
   @override
@@ -114,9 +116,21 @@ class _ActivationScreenState extends State<ActivationScreen> {
   Future<void> _signIn(String username) async {
     // Trang Keycloak đang mở ⇒ bỏ lượt bấm thêm (AppAuth Android từ chối 2 lượt cùng lúc)
     if (_signingIn) return;
-    setState(() => _signingIn = true);
+    setState(() {
+      _signingIn = true;
+      _signInError = null;
+    });
     try {
       await widget.signInAs(username);
+    } on FlutterAppAuthUserCancelledException {
+      // Người dùng tự đóng trang Keycloak ⇒ không báo lỗi
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _signInError =
+              'Chưa mở được trang đăng nhập. Kiểm tra mạng rồi bấm Đăng nhập.',
+        );
+      }
     } finally {
       if (mounted) setState(() => _signingIn = false);
     }
@@ -170,6 +184,10 @@ class _ActivationScreenState extends State<ActivationScreen> {
               color: AppColors.textSecondary,
             ),
           ),
+          if (_signInError != null) ...[
+            const SizedBox(height: AppSpacing.space4),
+            AppBanner(kind: AppBannerKind.danger, message: _signInError!),
+          ],
           const SizedBox(height: AppSpacing.space4),
           AppButton(
             label: 'Đăng nhập',
