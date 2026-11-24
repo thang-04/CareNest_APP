@@ -1,6 +1,5 @@
 {
-  "USE_MOCK": false,
   "APP_ENV": "development",
-  "API_BASE_URL": "http://localhost:8080/api",
-  "OIDC_ISSUER": "http://localhost:8180/realms/carenest"
+  "CARENEST_API_BASE_URL": "http://localhost:8080/api",
+  "CARENEST_OIDC_ISSUER": "http://localhost:8180/realms/carenest"
 }

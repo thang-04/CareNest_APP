@@ -3,11 +3,11 @@
 // PKCE của client carenest-mobile, /accounts/me theo role, refresh, logout, mã lỗi. Không in token, không in mật khẩu.
 // Cần BE + Keycloak local đang chạy; tài khoản seed và mật khẩu theo BE:docs/TAI_KHOAN_DEV.md (Node >= 20).
 // Dùng: CARENEST_SEED_PASSWORD=<mật khẩu seed local> node scripts/check-auth-contract.mjs
-//       (đổi đích: OIDC_ISSUER, API_BASE_URL — mặc định như env/local.example.json)
+//       (đổi đích: CARENEST_OIDC_ISSUER, CARENEST_API_BASE_URL — mặc định như env/local.example.json)
 import { createHash, randomBytes } from "node:crypto";
 
-const ISSUER = process.env.OIDC_ISSUER ?? "http://localhost:8180/realms/carenest";
-const API = process.env.API_BASE_URL ?? "http://localhost:8080/api";
+const ISSUER = process.env.CARENEST_OIDC_ISSUER ?? "http://localhost:8180/realms/carenest";
+const API = process.env.CARENEST_API_BASE_URL ?? "http://localhost:8080/api";
 const CLIENT = "carenest-mobile";
 const REDIRECT = "carenest://oauth/callback";
 const SCOPE = "openid profile";
@@ -123,7 +123,7 @@ const me = (bearer) =>
 // --- Không cần đăng nhập ---
 const discRes = await fetch(`${ISSUER}/.well-known/openid-configuration`);
 const disc = await json(discRes);
-check("discovery: issuer khớp OIDC_ISSUER của App", discRes.status === 200 && disc.issuer === ISSUER, disc.issuer);
+check("discovery: issuer khớp CARENEST_OIDC_ISSUER của App", discRes.status === 200 && disc.issuer === ISSUER, disc.issuer);
 check(
   "discovery: có end_session_endpoint .../protocol/openid-connect/logout",
   disc.end_session_endpoint === `${ISSUER}/protocol/openid-connect/logout`,
