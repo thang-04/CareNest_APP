@@ -7,7 +7,6 @@ import 'package:carenest_app/routing/route_paths.dart';
 String? liveRedirect({
   required bool signedIn,
   required AppMode? mode,
-  required bool photoRequired,
   required String location,
 }) {
   String? stayOr(String target) => location == target ? null : target;
@@ -16,8 +15,6 @@ String? liveRedirect({
     return location == RoutePaths.activate ? null : stayOr(RoutePaths.login);
   }
   if (mode == null) return stayOr(RoutePaths.liveUnsupported);
-  // PCK-02: phụ huynh chưa có ảnh chân dung phải cập nhật trước khi dùng App
-  if (photoRequired) return stayOr(RoutePaths.profilePhoto);
   // Lối vào /live/... tự chuyển sang tab của chế độ ở route riêng
   if (location.startsWith('/live/') && location != RoutePaths.liveUnsupported) {
     return null;

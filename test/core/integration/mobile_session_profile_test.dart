@@ -8,7 +8,7 @@ import 'package:carenest_app/core/integration/mobile_session.dart';
 
 import 'mobile_session_sign_in_test.dart' show RecordingAppAuth;
 
-/// BE giả: `/accounts/me` trả cờ ảnh theo biến `photoMissing` (đổi được giữa các lần gọi).
+/// BE giả: `/accounts/me` của phụ huynh chưa có ảnh chân dung (`profileUpdateRequired`).
 class _AccountServer {
   late HttpServer server;
   bool photoMissing = true;
@@ -58,7 +58,6 @@ void main() {
     final session = newSession();
     await session.signIn();
     expect(session.signedIn, isTrue);
-    expect(session.profileUpdateRequired, isTrue);
   });
 
   test('restore_profileUpdateRequired_keepsSession', () async {
@@ -66,19 +65,5 @@ void main() {
     final session = newSession();
     await session.restore();
     expect(session.signedIn, isTrue);
-    expect(session.profileUpdateRequired, isTrue);
-  });
-
-  test('reloadAccount_updatesFlagAndNotifies', () async {
-    final session = newSession();
-    await session.signIn();
-    var calls = 0;
-    session.addListener(() => calls++);
-
-    be.photoMissing = false;
-    await session.reloadAccount();
-
-    expect(session.profileUpdateRequired, isFalse);
-    expect(calls, 1);
   });
 }

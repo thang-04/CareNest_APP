@@ -36,11 +36,8 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
   @override
   int? get userId => account?['userId'] as int?;
 
-  /// BE `profileUpdateRequired`: phụ huynh chưa có ảnh chân dung (PCK-02).
   /// Phiên bị Keycloak kết thúc khi đang dùng; màn Đăng nhập báo lý do. Về false khi đăng nhập hoặc đăng xuất.
   bool expired = false;
-
-  bool get profileUpdateRequired => account?['profileUpdateRequired'] == true;
 
   /// `loginHint`: mở trang Keycloak có sẵn tên đăng nhập (sau kích hoạt tài khoản, AUTH-18).
   Future<void> signIn({String? loginHint}) async {
@@ -72,7 +69,7 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
     }
     await _storage.write(key: 'auth.refresh', value: _refresh);
     try {
-      // PCK-02: phụ huynh chưa có ảnh vẫn vào, router đưa tới màn cập nhật ảnh (quyết định 18)
+      // App không buộc cập nhật ảnh chân dung khi đăng nhập (user chốt 13/11) ⇒ bỏ qua `profileUpdateRequired`
       account = await _accountRequest(_access!);
       expired = false;
       notifyListeners();
@@ -142,15 +139,6 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
       _access = null;
       account = null;
     }
-  }
-
-  /// Tải lại `/accounts/me` (vd. sau khi lưu ảnh chân dung).
-  Future<void> reloadAccount() async {
-    final generation = _generation;
-    final response = await _accountRequest(await accessToken());
-    if (generation != _generation) return;
-    account = response;
-    notifyListeners();
   }
 
   Future<Map<String, dynamic>> _accountRequest(String token) async {

@@ -4,9 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/integration/mobile_session.dart';
-import 'package:carenest_app/core/media/photo_picker.dart';
-import 'package:carenest_app/features/shared/account/data/profile_photo_api.dart';
-import 'package:carenest_app/features/shared/account/presentation/screens/profile_photo_required_screen.dart';
 import 'package:carenest_app/core/config/env.dart';
 import 'package:carenest_app/core/storage/last_mode_store.dart';
 import 'package:carenest_app/core/storage/secure_store.dart';
@@ -605,7 +602,6 @@ GoRouter _buildLiveRouter(
       return liveRedirect(
         signedIn: session.signedIn,
         mode: readMode(),
-        photoRequired: session.profileUpdateRequired,
         location: state.matchedLocation,
       );
     },
@@ -639,15 +635,6 @@ GoRouter _buildLiveRouter(
           await modes.ready;
           return '${notificationsPath(readMode()!)}/${state.pathParameters['id']}';
         },
-      ),
-      GoRoute(
-        path: RoutePaths.profilePhoto,
-        builder: (context, state) => ProfilePhotoRequiredScreen(
-          api: ProfilePhotoApi(api),
-          picker: ImagePickerPhotoPicker(),
-          onSaved: session.reloadAccount,
-          onSignOut: logout,
-        ),
       ),
       GoRoute(
         path: RoutePaths.liveUnsupported,

@@ -7,10 +7,9 @@ abstract final class RoutePaths {
   static const activate = '/activate';
   static const blocked = '/blocked';
 
-  /// Phiên thật (PR #8): lối vào cố định cho đăng nhập và push, tài khoản chỉ dùng Web, ảnh chân dung.
+  /// Phiên thật (PR #8): lối vào cố định cho đăng nhập và push, tài khoản chỉ dùng Web.
   static const liveNotifications = '/live/notifications';
   static const liveUnsupported = '/live/unsupported';
-  static const profilePhoto = '/profile-photo';
 
   /// Luồng quên mật khẩu có ở cả bản release; chưa nối máy chủ thì màn tự báo.
   static const forgotPassword =
