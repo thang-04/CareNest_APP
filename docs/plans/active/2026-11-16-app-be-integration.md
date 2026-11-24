@@ -405,3 +405,21 @@ Review sau mỗi task R0, R1–R2, R3–R5, R6–R7. Dừng chờ user review �
   - Thư mục `linux/`, `macos/`, `windows/` (chỉ còn file sinh tự động, không theo dõi) xóa khỏi ổ đĩa.
 - Thêm vào code Tiền: chưa (R0 chỉ sửa import).
 - Tiếp: Task R1.
+
+### 2026-11-25 — Task R1–R7 (user: "làm hoàn thành luôn", không dừng ở mốc)
+- Verify cuối: `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 385 fail 0 skip 0`; `node scripts/check-ai-layer.mjs` → 0 lỗi; `flutter build apk --debug --dart-define-from-file=env/local.example.json` → `√ Built`. Số test giảm 502 → 363 khi gỡ test của nền Riverpod/Dio cũ (R3/R6), rồi tăng lại 385.
+- Commit: R1 `db27231`, `fb7a7a4` · R2 `5394168`, `dcc71e7`, `c09733f` · R3 `d76c34c`, `2d8e65e`, `14eda67` · gỡ nền cũ `6310b74`, `4b87b38` · R4 `dce9773`, `a77d126`, `81d6743`, `7beb88e` · R5 `0de3291`, `9c8db6d` · docs `0e2d473`.
+- Thêm vào code Tiền (đưa vào mô tả PR):
+  - `MobileApi`: `publicJson` (không Bearer), `multipart` (một tệp, refresh như `json`); `_request` thêm tham số tùy chọn `auth`, `form`.
+  - `MobileSession`: `signIn({loginHint})`, `profileUpdateRequired`, `reloadAccount()`, `expired`.
+  - `LiveLoginScreen`: `onActivate`, `notice`.
+  - `app.dart`: `_signIn({loginHint})`, truyền `signInAs` cho router.
+- Đổi hành vi code Tiền (user duyệt): `signIn`/`restore` giữ phiên khi `profileUpdateRequired` (quyết định 18); `signIn` luôn gửi `prompt=login` (Q9); refresh bị `invalid_grant` ⇒ xóa phiên, `expired` (Q10); router: tab khác Thông báo/Tài khoản là màn của Giáp (quyết định 14) — sửa 1 `expect` trong `test/routing/live_router_test.dart` của Tiền.
+- Khác plan:
+  - Router giữ `signIn: Future<void> Function()` (test của Tiền truyền `() async {}`), thêm `signInAs(String username)`.
+  - `ActivationScreen` dùng interface `ActivationGateway`; lỗi trường của BE (`data`) không map từng ô vì `ApiFailure` không có danh sách trường — banner hiện `desc`, 1009 vẫn dưới ô mật khẩu.
+  - Gỡ nền cũ (R6 Step 1–2) làm trong R3 vì router phiên cũ chặn chữ ký mới của `ActivationScreen`; commit `14eda67` đứng riêng không biên dịch, `6310b74` biên dịch lại.
+  - `buildAppRouter` thêm `modeStore` (test truyền kho bộ nhớ); `LiveModeController` bỏ qua mọi lỗi đọc/ghi kho chế độ.
+  - Debug chưa cấu hình BE ⇒ Đăng nhập giả + Xem thử (trước đây `LiveLoginScreen` báo lỗi).
+- Task R7 Step 1–2 (chạy BE local + điện thoại, checklist 9 mục): **chưa chạy** — BE/Keycloak local không bật (8080, 8180 không trả lời 25/11). Cần user chạy.
+- Tiếp: review toàn nhánh; user chạy checklist R7; mã Jira thật trước PR.
