@@ -37,6 +37,9 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
   int? get userId => account?['userId'] as int?;
 
   /// BE `profileUpdateRequired`: phụ huynh chưa có ảnh chân dung (PCK-02).
+  /// Phiên bị Keycloak kết thúc khi đang dùng; màn Đăng nhập báo lý do. Về false khi đăng nhập hoặc đăng xuất.
+  bool expired = false;
+
   bool get profileUpdateRequired => account?['profileUpdateRequired'] == true;
 
   /// `loginHint`: mở trang Keycloak có sẵn tên đăng nhập (sau kích hoạt tài khoản, AUTH-18).
@@ -71,6 +74,7 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
     try {
       // PCK-02: phụ huynh chưa có ảnh vẫn vào, router đưa tới màn cập nhật ảnh (quyết định 18)
       account = await _accountRequest(_access!);
+      expired = false;
       notifyListeners();
     } catch (_) {
       await clear();
@@ -93,15 +97,27 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
 
   Future<String> _renew() async {
     final generation = _generation;
-    final result = await _auth.token(
-      TokenRequest(
-        MobileConfig.clientId,
-        MobileConfig.redirectUri,
-        issuer: issuer,
-        refreshToken: _refresh,
-        allowInsecureConnections: kDebugMode,
-      ),
-    );
+    final TokenResponse result;
+    try {
+      result = await _auth.token(
+        TokenRequest(
+          MobileConfig.clientId,
+          MobileConfig.redirectUri,
+          issuer: issuer,
+          refreshToken: _refresh,
+          allowInsecureConnections: kDebugMode,
+        ),
+      );
+    } on FlutterAppAuthPlatformException catch (error) {
+      // Keycloak từ chối refresh token (hết phiên 30 phút / 10 giờ) ⇒ về Đăng nhập (Q10); lỗi mạng giữ phiên
+      if (error.platformErrorDetails.error ==
+              FlutterAppAuthOAuthError.invalidGrant &&
+          generation == _generation) {
+        expired = true;
+        await clear();
+      }
+      rethrow;
+    }
     if (generation != _generation || result.accessToken == null) {
       throw StateError('Phiên đăng nhập đã thay đổi.');
     }
@@ -170,6 +186,7 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
   }
 
   Future<void> signOut() async {
+    expired = false;
     final refresh = _refresh ?? await _storage.read(key: 'auth.refresh');
     if (refresh != null && issuer.isNotEmpty) {
       final client = HttpClient();
