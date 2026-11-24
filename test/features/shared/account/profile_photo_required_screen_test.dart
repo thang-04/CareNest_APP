@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/integration/mobile_api.dart';
@@ -15,10 +16,12 @@ import '../../../helpers/pump_app.dart';
 
 class _FakePicker implements PhotoPicker {
   PhotoSource? last;
+  Object? failure;
 
   @override
   Future<PickedPhoto?> pick(PhotoSource source) async {
     last = source;
+    if (failure != null) throw failure!;
     return PickedPhoto(
       bytes: Uint8List.fromList(_png),
       filename: 'a.png',
@@ -30,9 +33,11 @@ class _FakePicker implements PhotoPicker {
 class _FakeUpload implements ProfilePhotoGateway {
   Object? failure;
   PickedPhoto? uploaded;
+  var calls = 0;
 
   @override
   Future<void> upload(PickedPhoto photo) async {
+    calls++;
     if (failure != null) throw failure!;
     uploaded = photo;
   }
@@ -56,7 +61,10 @@ class _Setup {
   final List<String> events;
 }
 
-Future<_Setup> _pump(WidgetTester tester) async {
+Future<_Setup> _pump(
+  WidgetTester tester, {
+  Future<void> Function()? onSaved,
+}) async {
   usePhoneSize(tester);
   final picker = _FakePicker();
   final upload = _FakeUpload();
@@ -67,7 +75,10 @@ Future<_Setup> _pump(WidgetTester tester) async {
       home: ProfilePhotoRequiredScreen(
         api: upload,
         picker: picker,
-        onSaved: () async => events.add('saved'),
+        onSaved: () async {
+          events.add('saved');
+          await onSaved?.call();
+        },
         onSignOut: () async => events.add('signOut'),
       ),
     ),
@@ -144,5 +155,47 @@ void main() {
     await tester.tap(find.text('Đăng xuất'));
     await tester.pumpAndSettle();
     expect(setup.events, ['signOut']);
+  });
+
+  testWidgets('pick_cameraError_showsMessage', (tester) async {
+    final setup = await _pump(tester);
+    setup.picker.failure = PlatformException(code: 'no_available_camera');
+
+    await tester.tap(find.text('Chụp ảnh'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Không mở được camera hoặc thư viện ảnh. Thử lại.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('save_uploadOkReloadFails_retryReloadsOnly', (tester) async {
+    var reloadFails = true;
+    final setup = await _pump(
+      tester,
+      onSaved: () async {
+        if (reloadFails) throw const SocketException('offline');
+      },
+    );
+    await tester.tap(find.text('Chụp ảnh'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(_save);
+    await tester.tap(_save);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'Đã lưu ảnh. Chưa tải lại được tài khoản, bấm Lưu ảnh để thử lại.',
+      ),
+      findsOneWidget,
+    );
+
+    reloadFails = false;
+    await tester.tap(_save);
+    await tester.pumpAndSettle();
+
+    expect(setup.upload.calls, 1);
+    expect(setup.events, ['saved', 'saved']);
   });
 }

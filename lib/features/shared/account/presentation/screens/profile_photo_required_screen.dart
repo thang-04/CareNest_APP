@@ -41,11 +41,26 @@ class _ProfilePhotoRequiredScreenState
   String? _error;
   bool _saving = false;
 
+  /// Ảnh đã lên BE; chỉ còn tải lại tài khoản ⇒ bấm lại không gửi ảnh lần nữa.
+  bool _uploaded = false;
+
   Future<void> _pick(PhotoSource source) async {
-    final photo = await widget.picker.pick(source);
+    final PickedPhoto? photo;
+    try {
+      photo = await widget.picker.pick(source);
+    } catch (_) {
+      // vd. máy không có camera, picker đang mở
+      if (mounted) {
+        setState(
+          () => _error = 'Không mở được camera hoặc thư viện ảnh. Thử lại.',
+        );
+      }
+      return;
+    }
     if (photo == null || !mounted) return;
     setState(() {
       _photo = photo;
+      _uploaded = false;
       _error = null;
     });
   }
@@ -58,13 +73,18 @@ class _ProfilePhotoRequiredScreenState
       _error = null;
     });
     try {
-      await widget.api.upload(photo);
+      if (!_uploaded) {
+        await widget.api.upload(photo);
+        _uploaded = true;
+      }
       await widget.onSaved();
     } catch (error) {
       if (!mounted) return;
       setState(() {
         // 400 (vd. 1131 sai định dạng) ⇒ câu BE; còn lại coi như lỗi mạng
-        _error = error is ApiFailure && error.status == 400
+        _error = _uploaded
+            ? 'Đã lưu ảnh. Chưa tải lại được tài khoản, bấm Lưu ảnh để thử lại.'
+            : error is ApiFailure && error.status == 400
             ? error.message
             : 'Chưa lưu được ảnh. Kiểm tra mạng rồi thử lại.';
       });
