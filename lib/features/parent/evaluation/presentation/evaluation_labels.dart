@@ -4,12 +4,22 @@ import 'package:carenest_app/features/parent/evaluation/domain/evaluation.dart';
 /// Nhãn trang Đánh giá, cùng chữ với web (FE `dailyObservationOptions.js`, `assessmentConstants.js`).
 /// Mặt "cần chú ý" tô cam như ô khác thường ở bảng đánh giá ngày của web.
 abstract final class EvaluationLabels {
-  static String meal(MealSession session) => switch (session) {
-    // Cùng tên bữa với Web (CareNest_FE mealSessions.js)
-    MealSession.morning => 'Bữa phụ sáng',
-    MealSession.lunch => 'Bữa trưa',
-    MealSession.afternoon => 'Bữa chiều',
+  /// Tên bữa ngắn như Web (`MEAL_SESSION_SHORT`).
+  static String mealShort(MealSession session) => switch (session) {
+    MealSession.morning => 'Phụ sáng',
+    MealSession.lunch => 'Trưa',
+    MealSession.afternoon => 'Chiều (xế)',
   };
+
+  /// Ô "Ăn" gộp như Web (`mealsText`): mọi bữa ăn hết ⇒ "Ăn hết", không thì chỉ liệt kê bữa khác.
+  static String meals(Map<MealSession, EatingLevel> meals) {
+    final off = [
+      for (final session in MealSession.values)
+        if (meals[session] case final level? when level != EatingLevel.finished)
+          '${mealShort(session)}: ${eating(level).toLowerCase()}',
+    ];
+    return off.isEmpty ? eating(EatingLevel.finished) : off.join(', ');
+  }
 
   static String eating(EatingLevel level) => switch (level) {
     EatingLevel.finished => 'Ăn hết',

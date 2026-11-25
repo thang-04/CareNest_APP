@@ -125,13 +125,14 @@ class _DayDetail extends StatelessWidget {
           EvaluationLabels.emotion(emotion),
           attention: EvaluationLabels.emotionNeedsAttention(emotion),
         ),
-      for (final session in MealSession.values)
-        if (day.meals[session] case final level?)
-          _Fact(
-            EvaluationLabels.meal(session),
-            EvaluationLabels.eating(level),
-            attention: EvaluationLabels.eatingNeedsAttention(level),
+      if (day.meals.isNotEmpty)
+        _Fact(
+          'Ăn',
+          EvaluationLabels.meals(day.meals),
+          attention: day.meals.values.any(
+            EvaluationLabels.eatingNeedsAttention,
           ),
+        ),
       if (nap != null)
         _Fact(
           'Ngủ trưa',
