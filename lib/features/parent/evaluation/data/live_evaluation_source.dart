@@ -26,6 +26,8 @@ class LiveEvaluationSource implements EvaluationSource {
           '/children/$childId/daily-assessments'
               '?from=${apiDate(from)}&to=${apiDate(today)}',
         ),
+        // Ngoài năm học: không có đánh giá ngày, chủ đề / học kỳ / cuối năm vẫn hiện
+        outsideYear: () => const <Object>[],
       ),
       _api.json('GET', '/children/$childId/weekly-comments'),
       _api.json('GET', '/children/$childId/evaluations'),

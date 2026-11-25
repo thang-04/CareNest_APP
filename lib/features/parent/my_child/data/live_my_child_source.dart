@@ -41,6 +41,8 @@ class LiveMyChildSource implements MyChildSource {
           _api.json('GET', '/children/$childId/daily-health/parent?$query'),
         ]);
       },
+      // Ngoài năm học (hè): tháng không có ngày học
+      outsideYear: () => const [<String, Object?>{}, <Object>[]],
     );
     final data = results[0]! as Map;
     final totals = data['totals'] as Map? ?? const {};

@@ -129,6 +129,21 @@ void main() {
     expect(month.presentCount, 2);
   });
 
+  test('loadAttendance_outsideSchoolYear_emptyMonth', () async {
+    Never reject(Object? _) =>
+        throw ApiFailure(400, 'Chọn khoảng ngày trong một năm học', 4109);
+    final month = await source({
+      for (final from in ['11-01', '11-23', '11-25']) ...{
+        'GET /children/5/attendance?from=2026-$from&to=2026-11-25': reject,
+        'GET /children/5/daily-health/parent?from=2026-$from&to=2026-11-25':
+            reject,
+      },
+    }).loadAttendance('5');
+
+    expect(month.days, isEmpty);
+    expect(month.presentCount, 0);
+  });
+
   test('loadAttendance_otherError_notRetried', () async {
     final routes = attendanceRoutes();
     routes['GET /children/5/attendance?$range'] = (_) =>

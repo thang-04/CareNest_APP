@@ -17,7 +17,8 @@ class LiveRewardSource implements RewardSource {
     final now = _clock();
     final today = DateTime(now.year, now.month, now.day);
     late DateTime from;
-    // Đầu năm học: 8 tuần trước có thể trước khai giảng (BE 4109) ⇒ thu hẹp
+    // Đầu năm học: 8 tuần trước có thể trước khai giảng (BE 4109) ⇒ thu hẹp.
+    // Ngoài năm học (hè): BE từ chối mọi khoảng tới hôm nay ⇒ chưa có khen thưởng.
     final data =
         await loadFromNearestStart(recentStarts(today), (start) {
               from = start;
@@ -26,7 +27,7 @@ class LiveRewardSource implements RewardSource {
                 '/children/$childId/rewards'
                     '?from=${apiDate(start)}&to=${apiDate(today)}',
               );
-            })
+            }, outsideYear: () => const <String, Object?>{})
             as Map? ??
         const {};
     final tickets = _maps(data['tickets']).toList();

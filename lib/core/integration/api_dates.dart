@@ -27,17 +27,24 @@ List<DateTime> recentStarts(DateTime today) {
 
 /// API phụ huynh theo khoảng ngày từ chối khoảng lấn ra ngoài năm học (400/4109, ATT-15) mà App
 /// không biết ngày khai giảng ⇒ thử lần lượt các ngày bắt đầu [starts] (xa trước, gần sau).
+/// Mọi khoảng đều bị từ chối (hè: lớp năm cũ còn mở tới khi kích hoạt năm mới) ⇒ [outsideYear]
+/// nếu có (màn hiện rỗng thay vì lỗi mạng), không thì ném lỗi BE.
 Future<T> loadFromNearestStart<T>(
   List<DateTime> starts,
-  Future<T> Function(DateTime from) load,
-) async {
+  Future<T> Function(DateTime from) load, {
+  T Function()? outsideYear,
+}) async {
   for (final (i, from) in starts.indexed) {
     try {
       return await load(from);
     } on ApiFailure catch (failure) {
-      final outsideYear =
+      final rejected =
           failure.status == 400 && '${failure.errorCode}' == '4109';
-      if (!outsideYear || i == starts.length - 1) rethrow;
+      if (!rejected) rethrow;
+      if (i == starts.length - 1) {
+        if (outsideYear == null) rethrow;
+        return outsideYear();
+      }
     }
   }
   throw ArgumentError.value(starts, 'starts', 'rỗng');

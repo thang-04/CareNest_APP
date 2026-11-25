@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/features/parent/evaluation/data/live_evaluation_source.dart';
 import 'package:carenest_app/features/parent/evaluation/domain/evaluation.dart';
 
@@ -256,6 +257,27 @@ void main() {
       'Kể tên người thân',
       'Hát bài về gia đình',
     ]);
+  });
+
+  test('load_outsideSchoolYear_keepsThemesAndYearEnd', () async {
+    // Hè: lớp năm cũ còn mở tới khi kích hoạt năm mới ⇒ BE 4109 với mọi khoảng tới hôm nay
+    final r = routes(
+      evaluations: {
+        'themes': <Object>[],
+        'semesters': <Object>[],
+        'yearEnd': {'met': 20, 'notMet': 2, 'domains': <Object>[]},
+      },
+    );
+    for (final from in ['10-01', '10-05', '11-01', '11-23', '11-25']) {
+      r['GET /children/5/daily-assessments?from=2026-$from&to=2026-11-25'] =
+          (_) =>
+              throw ApiFailure(400, 'Chọn khoảng ngày trong một năm học', 4109);
+    }
+
+    final book = await load(r);
+
+    expect(book.weeks, isEmpty);
+    expect(book.yearEnd!.totalGoals, 22);
   });
 
   test('load_noYearEnd_null', () async {

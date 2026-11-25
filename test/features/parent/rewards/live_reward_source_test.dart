@@ -178,6 +178,22 @@ void main() {
     expect(book.months.single.month, DateTime(2026, 11));
   });
 
+  test('load_outsideSchoolYear_empty', () async {
+    Never reject(Object? _) =>
+        throw ApiFailure(400, 'Chọn khoảng ngày trong một năm học', 4109);
+    final book = await LiveRewardSource(
+      ScriptedApi(session, {
+        for (final from in ['10-01', '10-05', '11-01', '11-23', '11-25'])
+          'GET /children/5/rewards?from=2026-$from&to=2026-11-25': reject,
+      }),
+      clock: () => today,
+    ).load('5');
+
+    expect(book.weeks, isEmpty);
+    expect(book.months.single.month, DateTime(2026, 11));
+    expect(book.yearEnd, isNull);
+  });
+
   test('load_yearEndTitles', () async {
     final book = await load(
       titles: [
