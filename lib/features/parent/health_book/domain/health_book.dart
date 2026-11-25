@@ -87,7 +87,8 @@ class ExamVital {
 }
 
 /// Một đợt khám sức khỏe đã có kết luận: bác sĩ khám tại trường, giáo viên nhập phiếu (HLT-08).
-/// Phụ huynh xem đủ phiếu theo yêu cầu user 17/11; API phụ huynh hiện chỉ trả phần kết luận.
+/// Phụ huynh xem đủ phiếu theo yêu cầu user 17/11; API phụ huynh hiện chỉ trả phần kết luận ⇒ các mục
+/// khác rỗng, màn chỉ hiện mục có dữ liệu.
 @immutable
 class HealthExam {
   const HealthExam({
@@ -119,21 +120,21 @@ class HealthExam {
   final DateTime date;
   final int ageMonths;
 
-  /// Đơn vị khám, vd. "Trạm Y tế xã Thượng Hồng"
-  final String examiner;
+  /// Đơn vị khám, vd. "Trạm Y tế xã Thượng Hồng"; API phụ huynh chưa trả ⇒ null, màn ẩn.
+  final String? examiner;
 
-  /// "BS. Nguyễn Thị Hằng"
-  final String doctorName;
+  /// "BS. Nguyễn Thị Hằng"; bác sĩ không ghi tên ⇒ null.
+  final String? doctorName;
   final FollowUpLevel followUp;
 
   /// "Bình thường" | "Có vấn đề về sức khỏe" | "Có nguy cơ mắc lao (tiền sử tiếp xúc)"
   final String conclusion;
 
-  /// "Không cần tư vấn hay chuyển khám" | "Tư vấn" | "Chuyển khám chuyên khoa: Mắt"
-  final String action;
+  /// "Không cần tư vấn hay chuyển khám" | "Tư vấn" | "Chuyển khám chuyên khoa: Mắt"; null ⇒ màn ẩn.
+  final String? action;
 
-  /// Tình trạng dinh dưỡng bác sĩ chọn, vd. "Bình thường"
-  final String nutritionStatus;
+  /// Tình trạng dinh dưỡng bác sĩ chọn, vd. "Bình thường"; API phụ huynh chưa trả ⇒ null, màn ẩn.
+  final String? nutritionStatus;
 
   /// Vấn đề bác sĩ ghi, vd. "Sâu răng"
   final String? issueText;

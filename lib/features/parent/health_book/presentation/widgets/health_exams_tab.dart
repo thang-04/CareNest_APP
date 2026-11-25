@@ -74,7 +74,7 @@ class _ExamCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${DateLabels.date(exam.date)} · ${exam.doctorName}'),
+            Text([DateLabels.date(exam.date), ?exam.doctorName].join(' · ')),
             const SizedBox(height: AppSpacing.space2),
             Wrap(
               spacing: AppSpacing.space2,

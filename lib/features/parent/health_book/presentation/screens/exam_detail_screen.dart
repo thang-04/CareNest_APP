@@ -135,8 +135,10 @@ class _ExamDetail extends StatelessWidget {
                     value:
                         '${DateLabels.date(exam.date)} · ${HealthLabels.age(exam.ageMonths)}',
                   ),
-                  HealthDetailRow(label: 'Đơn vị khám', value: exam.examiner),
-                  HealthDetailRow(label: 'Bác sĩ khám', value: exam.doctorName),
+                  if (exam.examiner case final examiner?)
+                    HealthDetailRow(label: 'Đơn vị khám', value: examiner),
+                  if (exam.doctorName case final doctor?)
+                    HealthDetailRow(label: 'Bác sĩ khám', value: doctor),
                 ],
               ),
             ],
@@ -145,62 +147,77 @@ class _ExamDetail extends StatelessWidget {
         gap,
         _ConclusionCard(exam: exam),
         gap,
-        HealthDetailCard(title: 'Tiền sử', children: [_rows(exam.history)]),
-        gap,
-        HealthDetailCard(
-          title: 'Dấu hiệu sinh tồn',
-          children: [
-            const SizedBox(height: AppSpacing.space2),
-            HealthMetricRow(
-              metrics: [
-                for (final vital in exam.vitals)
-                  HealthMetric(
-                    vital.label,
-                    vital.value,
-                    unit: vital.unit,
-                    status: vital.status,
-                    abnormal: vital.abnormal,
-                  ),
-              ],
-            ),
-          ],
-        ),
-        gap,
-        HealthDetailCard(
-          title: 'Dinh dưỡng',
-          children: [_rows(exam.nutrition)],
-        ),
-        gap,
-        HealthDetailCard(
-          title: 'Phát triển tinh thần – vận động',
-          children: [_rows(exam.development)],
-        ),
-        gap,
-        HealthDetailCard(
-          title: 'Tiêm chủng',
-          children: [_rows(exam.immunization)],
-        ),
-        gap,
-        HealthDetailCard(
-          title: 'Khám lâm sàng',
-          children: [
-            Text(
-              findings.isEmpty
-                  ? '$clinicalCount mục khám, không có mục cần chú ý.'
-                  : '$clinicalCount mục khám · ${findings.length} mục cần chú ý: ${findings.join(', ')}.',
-              style: muted,
-            ),
-            for (final section in exam.clinical) ...[
-              const SizedBox(height: AppSpacing.space3),
-              Text(
-                section.title,
-                style: textTheme.labelLarge?.copyWith(color: AppColors.primary),
+        // API phụ huynh chỉ trả phần kết luận ⇒ phần nào không có dữ liệu thì không hiện khung trống
+        if (exam.history.isNotEmpty) ...[
+          HealthDetailCard(title: 'Tiền sử', children: [_rows(exam.history)]),
+          gap,
+        ],
+        if (exam.vitals.isNotEmpty) ...[
+          HealthDetailCard(
+            title: 'Dấu hiệu sinh tồn',
+            children: [
+              const SizedBox(height: AppSpacing.space2),
+              HealthMetricRow(
+                metrics: [
+                  for (final vital in exam.vitals)
+                    HealthMetric(
+                      vital.label,
+                      vital.value,
+                      unit: vital.unit,
+                      status: vital.status,
+                      abnormal: vital.abnormal,
+                    ),
+                ],
               ),
-              _rows(section.items),
             ],
-          ],
-        ),
-        gap,
+          ),
+          gap,
+        ],
+        if (exam.nutrition.isNotEmpty) ...[
+          HealthDetailCard(
+            title: 'Dinh dưỡng',
+            children: [_rows(exam.nutrition)],
+          ),
+          gap,
+        ],
+        if (exam.development.isNotEmpty) ...[
+          HealthDetailCard(
+            title: 'Phát triển tinh thần – vận động',
+            children: [_rows(exam.development)],
+          ),
+          gap,
+        ],
+        if (exam.immunization.isNotEmpty) ...[
+          HealthDetailCard(
+            title: 'Tiêm chủng',
+            children: [_rows(exam.immunization)],
+          ),
+          gap,
+        ],
+        if (exam.clinical.isNotEmpty) ...[
+          HealthDetailCard(
+            title: 'Khám lâm sàng',
+            children: [
+              Text(
+                findings.isEmpty
+                    ? '$clinicalCount mục khám, không có mục cần chú ý.'
+                    : '$clinicalCount mục khám · ${findings.length} mục cần chú ý: ${findings.join(', ')}.',
+                style: muted,
+              ),
+              for (final section in exam.clinical) ...[
+                const SizedBox(height: AppSpacing.space3),
+                Text(
+                  section.title,
+                  style: textTheme.labelLarge?.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
+                _rows(section.items),
+              ],
+            ],
+          ),
+          gap,
+        ],
         Text(
           'Đã công bố ${DateLabels.date(exam.date)}. Phiếu khám do bác sĩ thực hiện tại trường, giáo viên nhập lại; chỉ để theo dõi, không thay thế chẩn đoán y tế.',
           style: muted,
@@ -256,8 +273,10 @@ class _ConclusionCard extends StatelessWidget {
                 children: [
                   Text('Kết luận của bác sĩ', style: caption),
                   Text(conclusion, style: textTheme.titleSmall),
-                  const SizedBox(height: AppSpacing.space3),
-                  Text('Hướng xử lý · ${exam.action}', style: caption),
+                  if (exam.action case final action?) ...[
+                    const SizedBox(height: AppSpacing.space3),
+                    Text('Hướng xử lý · $action', style: caption),
+                  ],
                   if (exam.advice case final advice?)
                     Text(advice, style: textTheme.bodyLarge),
                 ],
@@ -268,11 +287,10 @@ class _ConclusionCard extends StatelessWidget {
             children: [
               if (exam.issueKind case final kind?)
                 HealthDetailRow(label: 'Loại vấn đề', value: kind),
-              HealthDetailRow(
-                label: 'Tình trạng dinh dưỡng',
-                value: exam.nutritionStatus,
-              ),
-              HealthDetailRow(label: 'Bác sĩ kết luận', value: exam.doctorName),
+              if (exam.nutritionStatus case final status?)
+                HealthDetailRow(label: 'Tình trạng dinh dưỡng', value: status),
+              if (exam.doctorName case final doctor?)
+                HealthDetailRow(label: 'Bác sĩ kết luận', value: doctor),
             ],
           ),
         ],

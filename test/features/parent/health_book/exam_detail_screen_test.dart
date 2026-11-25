@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/features/parent/health_book/data/fake_health_book_source.dart';
+import 'package:carenest_app/features/parent/health_book/domain/health_book.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/exam_detail_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 
@@ -12,6 +13,7 @@ Future<void> pumpExam(
   WidgetTester tester, {
   String examId = 'exam-2026',
   double textScale = 1,
+  HealthBookSource source = const FakeHealthBookSource(delay: Duration.zero),
 }) async {
   usePhoneSize(tester, textScale: textScale);
   await tester.pumpWidget(
@@ -20,14 +22,64 @@ Future<void> pumpExam(
       home: ExamDetailScreen(
         child: FakeParentHomeSource.childById('child-1'),
         examId: examId,
-        source: const FakeHealthBookSource(delay: Duration.zero),
+        source: source,
       ),
     ),
   );
   await tester.pumpAndSettle();
 }
 
+/// Đợt khám như API phụ huynh trả (25/11): chỉ phần kết luận.
+class _ConclusionOnlySource implements HealthBookSource {
+  const _ConclusionOnlySource();
+
+  @override
+  Future<HealthBook> load(String childId) async => HealthBook(
+    rounds: const [],
+    growth: const [],
+    exams: [
+      HealthExam(
+        id: '9',
+        name: 'Khám sức khỏe đầu năm',
+        date: DateTime(2026, 9, 20),
+        ageMonths: 49,
+        examiner: null,
+        doctorName: null,
+        followUp: FollowUpLevel.none,
+        conclusion: 'Bình thường',
+        action: null,
+        nutritionStatus: null,
+      ),
+    ],
+  );
+}
+
 void main() {
+  testWidgets('examDetail_live_onlyConclusion', (tester) async {
+    await pumpExam(tester, examId: '9', source: const _ConclusionOnlySource());
+    expect(find.text('Kết luận và tư vấn'), findsOneWidget);
+    expect(find.text('Bình thường'), findsWidgets);
+    // Mục không có dữ liệu không hiện khung trống
+    for (final title in [
+      'Đơn vị khám',
+      'Bác sĩ khám',
+      'Tiền sử',
+      'Dấu hiệu sinh tồn',
+      'Dinh dưỡng',
+      'Tiêm chủng',
+      'Khám lâm sàng',
+      'Tình trạng dinh dưỡng',
+    ]) {
+      expect(
+        find.text(title, skipOffstage: false),
+        findsNothing,
+        reason: title,
+      );
+    }
+    expect(find.textContaining('Hướng xử lý'), findsNothing);
+    expect(find.textContaining('null'), findsNothing);
+  });
+
   testWidgets('Chi tiết đợt khám: thông tin đợt, kết luận và lời dặn', (
     tester,
   ) async {
