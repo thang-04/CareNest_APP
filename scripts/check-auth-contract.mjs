@@ -4,13 +4,12 @@
 // Cần BE + Keycloak local đang chạy; tài khoản seed và mật khẩu theo BE:docs/TAI_KHOAN_DEV.md (Node >= 20).
 // Dùng: CARENEST_SEED_PASSWORD=<mật khẩu seed local> node scripts/check-auth-contract.mjs
 //       (đổi đích: CARENEST_OIDC_ISSUER, CARENEST_API_BASE_URL — mặc định như env/local.example.json)
-import { createHash, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
+
+import { authUrl, b64url, CLIENT, form, json, SCOPE, signIn } from "./lib/oidc-pkce.mjs";
 
 const ISSUER = process.env.CARENEST_OIDC_ISSUER ?? "http://localhost:8180/realms/carenest";
 const API = process.env.CARENEST_API_BASE_URL ?? "http://localhost:8080/api";
-const CLIENT = "carenest-mobile";
-const REDIRECT = "carenest://oauth/callback";
-const SCOPE = "openid profile";
 const PW = process.env.CARENEST_SEED_PASSWORD;
 if (!PW) {
   console.error("Thiếu CARENEST_SEED_PASSWORD (mật khẩu seed local, xem BE:docs/TAI_KHOAN_DEV.md).");
@@ -30,86 +29,7 @@ const check = (name, ok, detail = "") => {
   if (!ok) failures++;
   console.log(`${ok ? "PASS" : "FAIL"} ${name}${detail ? ` — ${detail}` : ""}`);
 };
-const b64url = (buf) => buf.toString("base64url");
 const claims = (jwt) => JSON.parse(Buffer.from(jwt.split(".")[1], "base64url").toString());
-const form = (fields) => ({
-  method: "POST",
-  headers: { "content-type": "application/x-www-form-urlencoded" },
-  body: new URLSearchParams(fields),
-});
-const json = async (res) => {
-  const text = await res.text();
-  try {
-    return JSON.parse(text);
-  } catch {
-    return { raw: text.slice(0, 80) };
-  }
-};
-
-class Jar {
-  cookies = new Map();
-  add(res) {
-    for (const line of res.headers.getSetCookie()) {
-      const [pair] = line.split(";");
-      const i = pair.indexOf("=");
-      this.cookies.set(pair.slice(0, i).trim(), pair.slice(i + 1));
-    }
-  }
-  header() {
-    return [...this.cookies].map(([k, v]) => `${k}=${v}`).join("; ");
-  }
-}
-
-function authUrl(disc, redirect, challenge) {
-  const url = new URL(disc.authorization_endpoint);
-  url.search = new URLSearchParams({
-    client_id: CLIENT,
-    redirect_uri: redirect,
-    response_type: "code",
-    scope: SCOPE,
-    code_challenge: challenge,
-    code_challenge_method: "S256",
-    state: b64url(randomBytes(8)),
-    prompt: "login",
-  }).toString();
-  return url;
-}
-
-// Giống AppAuth: mở trang đăng nhập, gửi form, bắt redirect carenest://, đổi code + code_verifier lấy token
-async function signIn(disc, username) {
-  const jar = new Jar();
-  const verifier = b64url(randomBytes(32));
-  const challenge = b64url(createHash("sha256").update(verifier).digest());
-  let res = await fetch(authUrl(disc, REDIRECT, challenge), { redirect: "manual" });
-  jar.add(res);
-  const page = await res.text();
-  const action = page.match(/<form[^>]*action="([^"]*login-actions\/authenticate[^"]*)"/)?.[1];
-  if (res.status !== 200 || !action) return { error: `trang đăng nhập ${res.status}` };
-  res = await fetch(action.replaceAll("&amp;", "&"), {
-    ...form({ username, password: PW, credentialId: "" }),
-    redirect: "manual",
-    headers: { "content-type": "application/x-www-form-urlencoded", cookie: jar.header() },
-  });
-  const location = res.headers.get("location") ?? "";
-  if (!location.startsWith(REDIRECT)) {
-    const body = await res.text();
-    const title = body.match(/<title>([^<]*)<\/title>/)?.[1]?.trim();
-    const error = body.match(/(?:input-error|kc-feedback-text)[^>]*>\s*([^<]+)/)?.[1]?.trim();
-    return { error: `không redirect về App (${res.status}) ${title ?? ""} ${error ?? ""}`.trim() };
-  }
-  const code = new URL(location).searchParams.get("code");
-  res = await fetch(
-    disc.token_endpoint,
-    form({
-      grant_type: "authorization_code",
-      client_id: CLIENT,
-      code,
-      redirect_uri: REDIRECT,
-      code_verifier: verifier,
-    }),
-  );
-  return { status: res.status, tokens: await json(res) };
-}
 
 const refresh = (disc, refreshToken) =>
   fetch(
@@ -181,7 +101,7 @@ if (discRes.status !== 200) {
 
 // --- Theo tài khoản seed (mỗi role) ---
 for (const [label, username, expected] of ACCOUNTS) {
-  const login = await signIn(disc, username);
+  const login = await signIn(disc, username, PW);
   if (login.error || login.status !== 200 || !login.tokens.access_token) {
     check(`${label}: đăng nhập PKCE + đổi code`, false, login.error ?? `token ${login.status} ${login.tokens?.error ?? ""}`);
     continue;
