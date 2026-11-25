@@ -63,12 +63,13 @@ Future<GoRouter> pumpLiveApp(
   FakeLiveSession session, {
   String location = '/live/notifications',
   LastModeStore? modeStore,
+  MobileApi? api,
 }) async {
   usePhoneSize(tester);
   final router = buildAppRouter(
     enablePreview: false,
     session: session,
-    api: EmptyFeedApi(session),
+    api: api ?? EmptyFeedApi(session),
     signIn: () async {},
     signOut: session.signOut,
     modeStore: modeStore ?? LastModeStore(MemorySecureStore(), env: 'test'),
@@ -108,3 +109,46 @@ class SlowSecureStore implements SecureStore {
   @override
   Future<void> delete(String key) async => values.remove(key);
 }
+
+/// API giả theo đường dẫn: `routes['GET /children/5/profile']` trả `data`; thiếu ⇒ 404. Ghi lại các lời gọi.
+class ScriptedApi extends MobileApi {
+  ScriptedApi(super.session, this.routes);
+
+  final Map<String, Object? Function(Object? body)> routes;
+  final calls = <String>[];
+
+  @override
+  Future<Object?> json(String method, String path, {Object? body}) async {
+    final key = '$method $path';
+    calls.add(key);
+    final route = routes[key];
+    if (route == null) throw ApiFailure(404, 'Không tìm thấy $key');
+    return route(body);
+  }
+
+  @override
+  Future<Object?> publicJson(String method, String path, {Object? body}) =>
+      json(method, path, body: body);
+}
+
+/// Hồ sơ trẻ như `GET /children/{id}/profile` của BE (dữ liệu giả).
+Map<String, Object?> profileJson(
+  int id,
+  String fullName, {
+  String className = 'Mầm 3A',
+}) => {
+  'child': {
+    'id': id,
+    'fullName': fullName,
+    'dateOfBirth': '2022-03-14',
+    'gender': 'FEMALE',
+    'className': className,
+    'campusId': 1,
+    'classId': 12,
+    'allergies': <String>[],
+    'guardians': <Object>[],
+  },
+  'cls': {'id': 12, 'name': className, 'campusId': 1, 'homeroomTeacherId': 7},
+  'declaration': null,
+  'placements': <Object>[],
+};
