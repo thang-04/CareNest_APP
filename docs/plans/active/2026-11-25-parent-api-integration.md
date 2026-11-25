@@ -149,3 +149,10 @@ Mỗi task: test map đỏ trước → code → `node scripts/verify.mjs` → c
 
 ### 2026-11-25 — Plan được duyệt
 - User: Q1 "Sắp có", Q2 ẩn quy tắc, duyệt plan, commit nhỏ từng phần, chạy Native tới khi xong.
+
+### 2026-11-25 — P0–P7 xong (chưa push)
+- Done: P0 nền phụ huynh, P1 Xin nghỉ, P2 Trang chủ ("Sắp có" thực đơn/hoạt động, nghỉ nửa buổi, badge dài không tràn), P3 Bé của tôi (hồ sơ, điểm danh tháng số nửa ngày, sức khỏe đầu ngày trong chi tiết ngày), P4 Đánh giá, P5 Khen thưởng (Q2 ẩn quy tắc), P6 Sổ sức khỏe (chỉ phần kết luận), P7 script `check-parent-api.mjs --sources` + `BE_API_INDEX` + VERIFICATION.
+- Khác plan: khoảng điểm danh tháng tới hôm nay (không tới cuối tháng); thêm `loadFromNearestStart` thu hẹp ngày bắt đầu khi BE trả 4109 (App không biết ngày khai giảng); trường BE chưa trả (đạt chủ đề, ngưỡng %, học kỳ của chủ đề, số lĩnh vực đạt, tên năm học, ngày duyệt, tổng năm, đơn vị khám, dinh dưỡng) để null và ẩn — App không tự đếm/suy.
+- Verify: `node scripts/verify.mjs` → PASS (tests 435 fail 0 skip 0 ở P6); `check-parent-api.mjs --sources` với BE `origin/dev` local → tất cả PASS.
+- Gap cho BE (gửi Cần/nhóm): khoảng ngày phụ huynh nên kẹp vào năm học thay vì 4109; thiếu tên năm học, ngưỡng khen thưởng, `passed`/`passPercent`/học kỳ của chủ đề, số đạt theo lĩnh vực, ngày duyệt danh hiệu, tổng cả năm, nhận xét học kỳ chưa có chỗ hiện ở App.
+- Tiếp: review toàn nhánh, sửa Critical/Important, push khi user cho phép, PR vào `dev`.

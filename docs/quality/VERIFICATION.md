@@ -55,3 +55,15 @@ Làn L:            ghi đủ vào Progress log của plan; chat chỉ tóm tắt
 - `node --test scripts/__tests__/*.test.mjs` → 61 pass, 0 fail.
 - `node scripts/check-auth-contract.mjs` (script nay trong repo): mật khẩu seed đúng → 30/30 PASS, exit 0; thiếu `CARENEST_SEED_PASSWORD` → exit 2; realm sai → FAIL discovery, exit 1; mật khẩu sai → 4 FAIL đăng nhập, exit 1.
 - Chưa kiểm: như mục trên (chạy trên điện thoại Android thật trước khi merge).
+
+## 2026-11-25 — Nối API phụ huynh (plan `docs/plans/active/2026-11-25-parent-api-integration.md`)
+- Môi trường: Windows 11, Flutter 3.47.6 qua PATH tiến trình; BE `origin/dev` `a58857f2` chạy local (`run-be-app-dev.ps1`, worktree `be-app-dev`, DB `carenest_appdev`), Keycloak docker `carenest_be-devdb-keycloak-1` :8180.
+- `node scripts/verify.mjs` sau từng phần (P0–P6) → PASS; lần P6: `VERIFY PASS full | format ok | design ok | analyze ok | tests 435 fail 0 skip 0`.
+- `CARENEST_SEED_PASSWORD=<seed local> node scripts/check-parent-api.mjs --sources` (phụ huynh 2 con `0335474254`) → tất cả PASS:
+  - 200 đúng hình dạng: `/accounts/me`, `/children/{id}/profile`, `/attendance/today`, `/me/notifications`, `/attendance?from&to` (từ ngày 1 tới hôm nay), `/daily-health/parent`, `/leave-requests/me`, `/daily-assessments` (8 tuần), `/weekly-comments`, `/evaluations`, `/rewards` (8 tuần), `/health/published`.
+  - `POST /leave-requests/preview` cho hôm nay → 400 `errorCode` 4021 (đã quá giờ xin nghỉ hôm nay; App hiện câu BE trả).
+  - Con không thuộc tài khoản → 403 `errorCode` 4108; khoảng > 62 ngày → 400 `errorCode` 4109.
+  - `--sources`: chạy `tool/parent_sources_live_check.dart` — 5 `Live…Source` (Bé của tôi, Xin nghỉ, Đánh giá, Khen thưởng, Sổ sức khỏe) đọc dữ liệu BE thật không lỗi (chỉ in số đếm).
+- `CARENEST_SEED_PASSWORD=<seed local> node scripts/check-auth-contract.mjs` sau khi tách `scripts/lib/oidc-pkce.mjs` → tất cả PASS.
+- `docs/integration/BE_API_INDEX.md` sinh lại từ `../be-app-dev` (430 endpoint).
+- Chưa kiểm: App thật trên thiết bị (emulator máy dev không khởi động được), thực đơn tuần / hoạt động trong ngày (BE chưa có API, App hiện "Sắp có"), tháng đầu năm học với BE thật (đường thu hẹp khoảng ngày khi BE trả 4109 chỉ có unit test).
