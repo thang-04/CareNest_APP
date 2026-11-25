@@ -5,7 +5,8 @@ import 'package:carenest_app/features/parent/evaluation/domain/evaluation.dart';
 /// Mặt "cần chú ý" tô cam như ô khác thường ở bảng đánh giá ngày của web.
 abstract final class EvaluationLabels {
   static String meal(MealSession session) => switch (session) {
-    MealSession.morning => 'Bữa sáng',
+    // Cùng tên bữa với Web (CareNest_FE mealSessions.js)
+    MealSession.morning => 'Bữa phụ sáng',
     MealSession.lunch => 'Bữa trưa',
     MealSession.afternoon => 'Bữa chiều',
   };

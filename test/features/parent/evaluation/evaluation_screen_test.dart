@@ -120,6 +120,9 @@ void main() {
     expect(find.text('Tuần 35'), findsOneWidget);
     expect(find.text('Bé được cờ ngày 28/05'), findsOneWidget);
     expect(find.bySemanticsLabel('Sức khỏe: Bình thường'), findsOneWidget);
+    // Tên bữa như Web (MEAL_SESSION_LABELS): Bữa phụ sáng · Bữa trưa · Bữa chiều
+    expect(find.bySemanticsLabel(RegExp('^Bữa phụ sáng: ')), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('^Bữa sáng: ')), findsNothing);
     expect(
       find.bySemanticsLabel('Bữa chiều: Ăn ít, cần chú ý'),
       findsOneWidget,
