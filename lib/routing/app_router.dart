@@ -53,6 +53,8 @@ import 'package:carenest_app/features/kitchen/kitchen_meals/presentation/screens
 import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
 import 'package:carenest_app/features/parent/evaluation/presentation/screens/evaluation_screen.dart';
 import 'package:carenest_app/features/parent/evaluation/presentation/screens/theme_result_screen.dart';
+import 'package:carenest_app/features/parent/rewards/data/fake_reward_source.dart';
+import 'package:carenest_app/features/parent/rewards/data/live_reward_source.dart';
 import 'package:carenest_app/features/parent/rewards/presentation/screens/rewards_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/exam_detail_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
@@ -383,6 +385,7 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
       RoutePaths.parentRewards,
       (context, state, child) => RewardsScreen(
         child: child,
+        source: parent.rewards ?? const FakeRewardSource(),
         onOpenDailyEvaluation: () => context.push<void>(
           RoutePaths.withChild(RoutePaths.parentEvaluation, child.id),
         ),
@@ -692,6 +695,7 @@ GoRouter _buildLiveRouter(
           leave: LiveLeaveNoticeSource(api),
           myChild: LiveMyChildSource(api),
           evaluation: LiveEvaluationSource(api),
+          rewards: LiveRewardSource(api),
         ),
       ),
     ],

@@ -170,6 +170,30 @@ void main() {
     expect(find.text('Chưa có đánh giá ngày'), findsOneWidget);
   });
 
+  testWidgets('live_parentRewards_usesBe', (tester) async {
+    final session = FakeLiveSession(['PARENT'], childIds: [5]);
+    final api = parentApi(session);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final from = today.subtract(Duration(days: today.weekday - 1 + 49));
+    String day(DateTime d) => d.toIso8601String().substring(0, 10);
+    api.routes['GET /children/5/rewards?from=${day(from)}&to=${day(today)}'] =
+        (_) => {
+          'flags': <Object>[],
+          'tickets': <Object>[],
+          'yearEndTitles': <Object>[],
+        };
+    await pumpLiveApp(
+      tester,
+      session,
+      api: api,
+      location: RoutePaths.withChild(RoutePaths.parentRewards, '5'),
+    );
+    // Q2: BE chưa trả ngưỡng ⇒ không có nút giải thích (bản giả có)
+    expect(find.text('Khen thưởng'), findsWidgets);
+    expect(find.byTooltip('Cách bé nhận khen thưởng'), findsNothing);
+  });
+
   testWidgets('live_otherRolePath_goesOwnHome', (tester) async {
     await pumpLiveApp(
       tester,

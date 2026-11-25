@@ -8,6 +8,7 @@ import 'package:carenest_app/features/parent/leave_notice/data/fake_leave_notice
 import 'package:carenest_app/features/parent/my_child/domain/my_child.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
+import 'package:carenest_app/features/parent/rewards/domain/rewards.dart';
 
 /// Nguồn dữ liệu các màn phụ huynh. Mặc định (Xem thử) mọi nguồn null ⇒ màn dùng bản giả;
 /// phiên thật truyền bản gọi BE (`Live…Source`) và `live: true`.
@@ -18,6 +19,7 @@ class ParentSources {
     this.leave,
     this.myChild,
     this.evaluation,
+    this.rewards,
   });
 
   /// Phiên thật: màn chưa có API ở BE hiện "Sắp có", không hiện dữ liệu giả (user 25/11, Q1).
@@ -26,6 +28,7 @@ class ParentSources {
   final LeaveNoticeSource? leave;
   final MyChildSource? myChild;
   final EvaluationSource? evaluation;
+  final RewardSource? rewards;
 
   /// Ngày mở lịch tháng (Điểm danh, Thực đơn): phiên thật = hôm nay; Xem thử = ngày của dữ liệu giả.
   DateTime get today {
