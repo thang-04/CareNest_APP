@@ -9,6 +9,7 @@ import 'package:carenest_app/features/parent/parent_home/presentation/screens/pa
 import 'package:carenest_app/features/parent/parent_home/presentation/selected_child.dart';
 import 'package:carenest_app/features/shared/notifications/presentation/screens/notification_detail_screen.dart';
 import 'package:carenest_app/features/teacher/teacher_home/presentation/screens/teacher_home_screen.dart';
+import 'package:carenest_app/routing/app_router.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
 import '../helpers/live_fakes.dart';
@@ -28,16 +29,52 @@ void main() {
     expect(find.byType(TeacherHomeScreen), findsOneWidget);
   });
 
+  /// Phụ huynh 1 con (ID 5) với API giả đủ cho Trang chủ, đơn nghỉ.
+  ScriptedApi parentApi(FakeLiveSession session) => ScriptedApi(session, {
+    'GET /children/5/profile': (_) => profileJson(5, 'Nguyễn Minh Anh'),
+    'GET /children/5/attendance/today': (_) => {
+      'date': '2026-11-25',
+      'status': 'NOT_RECORDED',
+      'classId': 12,
+      'className': 'Mầm 3A',
+    },
+    'GET /me/notifications': (_) => {'unreadCount': 0, 'items': <Object>[]},
+    'GET /leave-requests/me': (_) => <Object>[],
+  });
+
   testWidgets('live_parentChildRoute_opens', (tester) async {
+    final session = FakeLiveSession(['PARENT'], childIds: [5]);
     await pumpLiveApp(
       tester,
-      FakeLiveSession(['PARENT'], childIds: [1]),
-      location: RoutePaths.withChild(
-        RoutePaths.parentLeaveNotices,
-        FakeParentHomeSource.children.first.id,
-      ),
+      session,
+      api: parentApi(session),
+      location: RoutePaths.withChild(RoutePaths.parentLeaveNotices, '5'),
     );
     expect(find.byType(LeaveNoticeListScreen), findsOneWidget);
+  });
+
+  testWidgets('live_parentChildRoute_unknownChild_notFound', (tester) async {
+    final session = FakeLiveSession(['PARENT'], childIds: [5]);
+    await pumpLiveApp(
+      tester,
+      session,
+      api: parentApi(session),
+      location: RoutePaths.withChild(RoutePaths.parentLeaveNotices, '999'),
+    );
+    expect(find.byType(LeaveNoticeListScreen), findsNothing);
+    expect(find.byType(NotFoundScreen), findsOneWidget);
+  });
+
+  testWidgets('live_parentHome_showsRealChild', (tester) async {
+    final session = FakeLiveSession(['PARENT'], childIds: [5]);
+    await pumpLiveApp(
+      tester,
+      session,
+      api: parentApi(session),
+      location: RoutePaths.parentToday,
+    );
+    expect(find.textContaining('Minh Anh'), findsWidgets);
+    expect(find.textContaining('Cơ sở'), findsNothing);
   });
 
   testWidgets('live_otherRolePath_goesOwnHome', (tester) async {

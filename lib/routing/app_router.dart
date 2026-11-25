@@ -66,6 +66,7 @@ import 'package:carenest_app/features/shared/notifications/presentation/screens/
 import 'package:carenest_app/features/shared/notifications/presentation/screens/notifications_screen.dart';
 import 'package:carenest_app/features/management/nutrition_balance/presentation/screens/nutrition_balance_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
+import 'package:carenest_app/features/parent/parent_home/data/live_parent_home_source.dart';
 import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
 import 'package:carenest_app/features/parent/parent_home/presentation/screens/parent_home_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/presentation/selected_child.dart';
@@ -83,6 +84,7 @@ import 'package:carenest_app/features/management/vice_principal_home/presentatio
 import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/campus_menu_screen.dart';
 import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/vice_principal_home_screen.dart';
 import 'package:carenest_app/routing/live_access.dart';
+import 'package:carenest_app/routing/parent_sources.dart';
 import 'package:carenest_app/routing/navigation_destinations.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
@@ -195,19 +197,21 @@ List<RouteBase> _staffAndParentRoutes(
   GlobalKey<NavigatorState> rootKey, {
   _AccountTab account = const _AccountTab(),
   NotificationSource notifications = const FakeNotificationSource(),
+  ParentSources parent = const ParentSources(),
 }) => [
   _roleShell(
     rootKey,
     AppRole.parent,
     NavDestinations.parent,
     {
-      RoutePaths.parentToday: (context, state) => const ParentHomeScreen(),
+      RoutePaths.parentToday: (context, state) =>
+          ParentHomeScreen(source: parent.home),
       RoutePaths.parentChild: (context, state) => const MyChildScreen(),
     },
     account: account,
     notifications: notifications,
   ),
-  ..._parentChildRoutes(),
+  ..._parentChildRoutes(parent),
   _roleShell(
     rootKey,
     AppRole.teacher,
@@ -254,7 +258,7 @@ List<RouteBase> _staffAndParentRoutes(
 ];
 
 /// Màn con của Phụ huynh: route chỉ mang ID con; ID không thuộc danh sách con ⇒ 404.
-List<GoRoute> _parentChildRoutes() {
+List<GoRoute> _parentChildRoutes(ParentSources parent) {
   GoRoute route(
     String path,
     Widget Function(
@@ -268,6 +272,15 @@ List<GoRoute> _parentChildRoutes() {
       path: path,
       builder: (context, state) {
         final childId = state.uri.queryParameters['child'];
+        final home = parent.home;
+        if (home != null) {
+          return ParentChildGate(
+            childId: childId,
+            loadChildren: home.loadChildren,
+            builder: (child) => build(context, state, child),
+            notFound: const NotFoundScreen(),
+          );
+        }
         final child = FakeParentHomeSource.children
             .where((item) => item.id == childId)
             .firstOrNull;
@@ -656,6 +669,10 @@ GoRouter _buildLiveRouter(
           ],
         ),
         notifications: LiveNotificationSource(api),
+        parent: ParentSources(
+          live: true,
+          home: LiveParentHomeSource(api, session),
+        ),
       ),
     ],
     errorBuilder: (context, state) => const NotFoundScreen(),
