@@ -83,6 +83,9 @@ class AttendanceSheet {
     required this.kids,
     this.mealSessions = MealSession.values,
     this.lockAt,
+    this.canRecord = true,
+    this.locked = false,
+    this.schoolDay = true,
   });
 
   final ClassSummary classSummary;
@@ -94,4 +97,16 @@ class AttendanceSheet {
 
   /// Giờ khoá nhập BE trả (cut-off P-03 PENDING); APP chỉ hiển thị, không tự khoá theo giờ máy.
   final String? lockAt;
+
+  /// BE `ClassAttendanceResponse.canRecord` (quyền ATTENDANCE_RECORD, lớp được phân công).
+  final bool canRecord;
+
+  /// BE `DayInfoResponse.locked` — quá giờ khóa và chưa được PHT mở lại (ATT-06, ATT-08).
+  final bool locked;
+
+  /// BE `DayInfoResponse.schoolDay`.
+  final bool schoolDay;
+
+  /// Như Web: chỉ sửa khi có quyền, là ngày học và chưa khóa.
+  bool get editable => canRecord && schoolDay && !locked;
 }

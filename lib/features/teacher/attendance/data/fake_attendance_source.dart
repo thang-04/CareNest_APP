@@ -14,11 +14,13 @@ class FakeAttendanceSource implements AttendanceSource {
   FakeAttendanceSource({
     this.mode = FakeMode.data,
     this.failSave = false,
+    this.locked = false,
     this.delay = const Duration(milliseconds: 400),
   });
 
   final FakeMode mode;
   final bool failSave;
+  final bool locked;
   final Duration delay;
 
   static const classId = FakeClassRosterSource.classId;
@@ -61,6 +63,7 @@ class FakeAttendanceSource implements AttendanceSource {
       date: FakeParentHomeSource.today,
       kids: list,
       lockAt: '08:30',
+      locked: locked,
     );
   }
 

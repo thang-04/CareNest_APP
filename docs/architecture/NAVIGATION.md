@@ -141,7 +141,7 @@ Router phiên thật (`_buildLiveRouter`, `lib/routing/app_router.dart`) dùng c
 
 Không buộc cập nhật ảnh chân dung khi đăng nhập (user chốt 13/11): BE trả `profileUpdateRequired` vẫn vào App.
 
-Tài khoản vừa là giáo viên vừa là phụ huynh: mở chế độ GV, chuyển sang phụ huynh ở tab Tài khoản, nhớ chế độ cuối (user 14/11, ADR-0022; phụ huynh cần con đang học).
+Tài khoản vừa là giáo viên vừa là phụ huynh: mở chế độ GV, chuyển GV ↔ phụ huynh bằng nút ở Trang chủ (G94-385, Vy Anh 24/11), nhớ chế độ cuối (user 14/11, ADR-0022; phụ huynh cần con đang học).
 
 ## Deep link (từ push)
 

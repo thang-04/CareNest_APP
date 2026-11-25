@@ -129,6 +129,19 @@ void main() {
     expect(find.text('Thân nhiệt (°C)'), findsNothing);
   });
 
+  testWidgets('HLT-15: bé đã được trả thì không mở màn nhập', (tester) async {
+    await pumpDailyHealth(tester, fakeSource());
+    final row = find.textContaining('Đã trả trẻ lúc 10:15');
+    await tester.scrollUntilVisible(
+      row,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+    expect(find.text('Thân nhiệt (°C)'), findsNothing);
+  });
+
   testWidgets('Rỗng', (tester) async {
     await pumpDailyHealth(tester, fakeSource(mode: FakeMode.empty));
     expect(find.text('Chưa có bé có mặt'), findsOneWidget);

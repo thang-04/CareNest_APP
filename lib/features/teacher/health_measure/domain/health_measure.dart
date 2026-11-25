@@ -58,7 +58,7 @@ class MeasureResult {
 class MeasureMonth {
   const MeasureMonth({required this.title, required this.kids});
 
-  /// "Đo sức khỏe tháng 10"
+  /// "Kỳ cân đo quý IV" — tên kỳ do HT/PHT mở (HLT-01)
   final String title;
   final List<MeasureKid> kids;
 }

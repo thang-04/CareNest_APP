@@ -13,8 +13,10 @@ Future<void> pumpAttendance(
   WidgetTester tester, {
   FakeMode mode = FakeMode.data,
   bool failSave = false,
+  bool locked = false,
   double textScale = 1,
   VoidCallback? onSaved,
+  FakeAttendanceSource? source,
 }) async {
   usePhoneSize(tester, textScale: textScale);
   await tester.pumpWidget(
@@ -22,11 +24,14 @@ Future<void> pumpAttendance(
       theme: buildLightTheme(),
       home: AttendanceScreen(
         classId: FakeAttendanceSource.classId,
-        source: FakeAttendanceSource(
-          mode: mode,
-          failSave: failSave,
-          delay: Duration.zero,
-        ),
+        source:
+            source ??
+            FakeAttendanceSource(
+              mode: mode,
+              failSave: failSave,
+              locked: locked,
+              delay: Duration.zero,
+            ),
         onSaved: onSaved,
       ),
     ),
@@ -86,7 +91,7 @@ void main() {
     await tester.tap(find.text('Có mặt tất cả'));
     await tester.pump();
     expect(countOf('Có mặt'), '25');
-    expect(countOf('Vắng'), '1');
+    expect(countOf('Không phép'), '1');
     expect(countOf('Có phép'), '2');
     expect(countOf('Chưa ĐD'), '0');
   });
@@ -110,7 +115,7 @@ void main() {
     await tester.tap(find.text('Có mặt tất cả'));
     await tester.pump();
     expect(find.text('Suất ăn: 26/26 trẻ có mặt'), findsOneWidget);
-    await tester.tap(find.text('Chọn trẻ ăn (26/26)'));
+    await tester.tap(find.text('Tham gia ăn (26/26)'));
     await tester.pumpAndSettle();
     expect(find.text('Trẻ tham gia ăn'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('meal-child-1')));
@@ -132,6 +137,30 @@ void main() {
     expect(nam.meals.length, MealSession.values.length);
   });
 
+  testWidgets(
+    'ATT-04/09: chỉ gửi trẻ không có đơn nghỉ và đã điểm danh (như Web)',
+    (tester) async {
+      final source = FakeAttendanceSource(delay: Duration.zero);
+      await pumpAttendance(tester, source: source);
+      await tapLabel(tester, 'Nguyễn Minh Anh: có mặt');
+      await tapLabel(tester, 'Lê Hoàng Nam: vắng');
+      await tester.tap(find.text('Lưu và sang Sức khỏe đầu ngày'));
+      await tester.pumpAndSettle();
+      final saved = source.lastSaved!;
+      expect(saved.map((k) => k.childId), ['child-1', 'k-02']);
+      expect(saved.any((k) => k.hasLeaveNotice), isFalse);
+    },
+  );
+
+  testWidgets('ATT-06/08: đã khóa ⇒ chỉ xem, không có nút lưu', (tester) async {
+    await pumpAttendance(tester, locked: true);
+    expect(find.text('Đã khóa'), findsOneWidget);
+    expect(find.text('Lưu và sang Sức khỏe đầu ngày'), findsNothing);
+    await tapLabel(tester, 'Nguyễn Minh Anh: có mặt');
+    await scrollToTop(tester);
+    expect(countOf('Có mặt'), '0');
+  });
+
   testWidgets('Lưu lỗi ⇒ banner, giữ nguyên lựa chọn, nút Lưu lại', (
     tester,
   ) async {
@@ -143,7 +172,7 @@ void main() {
     await scrollToTop(tester);
     expect(find.text('Chưa lưu được điểm danh'), findsOneWidget);
     expect(find.text('Lưu lại'), findsOneWidget);
-    expect(countOf('Vắng'), '1');
+    expect(countOf('Không phép'), '1');
     expect(saved, isFalse);
   });
 

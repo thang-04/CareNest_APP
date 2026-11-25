@@ -1,8 +1,17 @@
 import 'package:flutter/foundation.dart';
 
 /// Loại việc trên Trang chủ Giáo viên ⇒ chọn icon và màn mở ra. Ba việc thao tác theo thứ tự
-/// attendance → dailyHealth → pickup; leave, review, health (cân đo) chỉ xem.
-enum TeacherTaskKind { attendance, dailyHealth, pickup, leave, review, health }
+/// attendance → dailyHealth → pickup; menu, leave, review, health chỉ xem.
+enum TeacherTaskKind {
+  attendance,
+  dailyHealth,
+  pickup,
+  menu,
+  rewards,
+  leave,
+  review,
+  health,
+}
 
 /// Mức nhấn của badge việc: cần làm ngay / có mới / thông tin.
 enum TaskBadgeLevel { todo, fresh, info }

@@ -268,17 +268,22 @@ void main() {
     await pumpLiveApp(
       tester,
       FakeLiveSession(['TEACHER', 'PARENT'], childIds: [1]),
-      location: RoutePaths.teacherAccount,
+      location: RoutePaths.teacherToday,
     );
-    expect(find.text('Chuyển sang chế độ phụ huynh'), findsOneWidget);
-
-    await tester.tap(find.text('Chuyển sang chế độ phụ huynh'));
+    // G94-385: nút đổi chế độ chỉ ở Trang chủ
+    await tester.tap(find.text('Phụ huynh').first);
     await tester.pumpAndSettle();
     await tester.pump(const Duration(seconds: 1));
     await tester.pumpAndSettle();
 
     expect(find.byType(ParentHomeScreen), findsOneWidget);
     expect(find.byType(TeacherHomeScreen), findsNothing);
+
+    await tester.tap(find.text('Giáo viên').first);
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(find.byType(TeacherHomeScreen), findsOneWidget);
   });
 
   testWidgets('liveLogin_activateLink_opensActivation', (tester) async {

@@ -8,11 +8,7 @@ import 'package:carenest_app/features/shared/account/presentation/screens/accoun
 
 import '../../../helpers/pump_app.dart';
 
-Future<void> _pump(
-  WidgetTester tester, {
-  List<AccountModeSwitch> modeSwitches = const [],
-  VoidCallback? onLogout,
-}) async {
+Future<void> _pump(WidgetTester tester, {VoidCallback? onLogout}) async {
   usePhoneSize(tester);
   await tester.pumpWidget(
     MaterialApp(
@@ -23,7 +19,6 @@ Future<void> _pump(
           onOpenProfile: () {},
           onChangePassword: () {},
           onLogout: onLogout ?? () {},
-          modeSwitches: modeSwitches,
         ),
       ),
     ),
@@ -32,30 +27,6 @@ Future<void> _pump(
 }
 
 void main() {
-  testWidgets('account_switchMode_onlyForMultiMode', (tester) async {
-    await _pump(tester);
-
-    expect(find.textContaining('Chuyển sang chế độ'), findsNothing);
-  });
-
-  testWidgets('account_switchMode_tapCallsSwitch', (tester) async {
-    var switched = false;
-    await _pump(
-      tester,
-      modeSwitches: [
-        AccountModeSwitch(
-          label: 'Chuyển sang chế độ phụ huynh',
-          onTap: () => switched = true,
-        ),
-      ],
-    );
-
-    await tester.tap(find.text('Chuyển sang chế độ phụ huynh'));
-    await tester.pump();
-
-    expect(switched, isTrue);
-  });
-
   testWidgets('account_logout_confirm_callsSignOut', (tester) async {
     var loggedOut = false;
     await _pump(tester, onLogout: () => loggedOut = true);

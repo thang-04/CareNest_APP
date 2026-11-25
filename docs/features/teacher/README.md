@@ -7,7 +7,7 @@ Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scop
 - Endpoint: chưa có
 
 ### Trang chủ giáo viên
-- Giao diện (user 16/11/2026, `DESIGN.md`): lời chào → thẻ lớp nổi bật → hạn điểm danh → `Cần làm` gồm tối đa 3 lối chính **Điểm danh / Sức khỏe / Trả trẻ** → `Xem nhanh` cho đơn nghỉ và đánh giá. Ít chữ, danh sách dọc, vùng chạm ≥48; sức khỏe gom kiểm tra đầu ngày và cân nặng/chiều cao.
+- Giao diện (user 16–17/11/2026, `DESIGN.md`): lời chào → thẻ lớp nổi bật → hạn điểm danh → `Cần làm` gồm tối đa 3 lối chính **Điểm danh / Sức khỏe / Trả trẻ** → `Xem nhanh` cho đơn nghỉ, đánh giá và thực đơn đã công bố. Ít chữ, danh sách dọc, vùng chạm ≥48; sức khỏe gom kiểm tra đầu ngày và cân nặng/chiều cao.
 - Vòng tiến độ cần **số bé đã điểm danh** do BE trả (`attendanceRecorded` ở `TeacherToday`, chưa có trong contract) ⇒ đề xuất khi viết endpoint trang chủ GV; APP không tự đếm. Không có số ⇒ không vẽ vòng.
 
 ### Điểm danh + nhiệt độ đầu ngày (nhập hàng loạt)
@@ -20,10 +20,12 @@ Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scop
 - Mockup T02 (user 2026-10-13): mỗi bé hai nút Có mặt / Vắng; bé có đơn nghỉ bấm "Vắng" vẫn là có phép (ATT-04); báo ăn mặc định "có ăn", bấm tên bé để đổi. Mockup có "Ăn 1 bữa · Trưa" (báo ăn theo từng bữa) — BE đã bỏ báo ăn riêng từ 28/10, xem Lệch BE bên dưới.
 - Lệch BE (16/11): BE ATT-02 vẫn suy ra Có mặt = ăn mọi bữa và bỏ qua `meals` client gửi. APP đã có UI chọn trẻ Có mặt nhưng không ăn theo yêu cầu mới, nhưng chỉ lưu được dữ liệu giả cho tới khi BE đổi contract; không được coi là đã nối API thật. Giờ khóa đã lấy từ field BE trả (`lockAt`), đúng ATT-06.
 
-### Đánh giá hằng ngày (nhập hàng loạt)
+### Đánh giá trẻ (chỉ xem)
 - BE: card `BE:docs/modules/learning-observation.md` · flow `BE:docs/business/flows/child-observation.md` · rule OBS-01, OBS-02, OBS-07, OBS-10, OBS-12, OBS-13
 - Endpoint: chưa có
 - PENDING: P-11 — tiêu chí + thang giá trị là **data từ BE**, không enum cứng trong APP.
+- App giáo viên có ba bộ lọc ngắn `Ngày / Tuần / Định kỳ`. Chạm trẻ ở tab nào thì màn chi tiết chỉ hiện đúng loại đó, không trộn nội dung tab khác. `Định kỳ` chỉ gồm cuối chủ đề, học kỳ và cuối năm khi BE có dữ liệu; không có đánh giá tháng. Danh sách và chi tiết chỉ xem, không có nút lưu hay sửa.
+- Chi tiết ngày hiện kết quả các mặt, nhận xét riêng, lưu ý sức khỏe/hành vi và `classComment` — nhận xét chung của lớp. Chi tiết tuần hiện `WeeklyCommentChildRow.content`; chi tiết định kỳ dùng cuối chủ đề `ThemeEvaluationResponse`, học kỳ `SemesterAssessmentResponse` và cuối năm. APP không tự suy diễn nhận xét.
 - Mockup T04 / T04.1: danh sách bé (đã / chưa đánh giá, bé vắng không cần), màn một bé với 3 tiêu chí + ghi chú cho phụ huynh + "Gắn cờ: Hành vi tốt" (phiếu bé ngoan OBS-10). Bỏ thẻ "Giáo án đã duyệt"; dòng hoạt động trong ngày lấy từ kế hoạch ngày (OBS-07).
 - Lệch BE (29/10): mock 3 tiêu chí; BE có 7 mặt, mức Đạt / Cần cố gắng / Chưa đạt, mọi trẻ có mặt mặc định "bình thường" (OBS-01, OBS-02); hết ngày thì khóa (OBS-12). Phiếu bé ngoan: GV tự chọn trẻ, hệ thống không gợi ý (OBS-10) — APP không tự đếm cờ, ngày đi học.
 
@@ -41,7 +43,15 @@ Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scop
 
 ### Nhận xét định kỳ — chỉ nếu được yêu cầu trên mobile
 - BE: card `BE:docs/modules/learning-observation.md` · rule OBS-04, OBS-05, OBS-06, AI-01..03, AI-07
-- AI draft hiển thị rõ là bản nháp; luồng phải chạy khi AI tắt. GV xác nhận là xong, không có bước BGH duyệt (OBS-05); kỳ tuần/tháng/học kỳ/năm, phụ huynh nhận mọi kỳ (OBS-06). Mẫu của trường: P-30.
+- AI draft hiển thị rõ là bản nháp; luồng phải chạy khi AI tắt. GV xác nhận là xong, không có bước BGH duyệt (OBS-05); App giáo viên chỉ xem tuần/cuối chủ đề/học kỳ/cuối năm, không hiển thị kỳ tháng. Mẫu của trường: P-30.
+
+### Thực đơn (chỉ xem)
+- Giáo viên mở từ `Xem nhanh` trên trang Hôm nay để xem các bữa và món đã công bố trong ngày; không có thao tác sửa/xác nhận trên App giáo viên.
+- Tái sử dụng màn thực đơn chung để giữ cùng giao diện và dữ liệu với FE/nhóm vai trò khác.
+
+### Khen thưởng (chỉ xem)
+- Mở từ `Xem nhanh`, gồm hai tab `Phiếu bé ngoan / Đề xuất`; hiển thị phiếu tuần, phiếu tháng và trạng thái/danh hiệu đề xuất theo từng trẻ.
+- Mapping theo BE `TicketBoardResponse`, `TicketSummaryResponse` và `RewardClassDetail`; thao tác phát phiếu, lập/gửi đề xuất vẫn thực hiện trên Web ở giai đoạn UI App hiện tại.
 
 ### Cân đo, sức khỏe trong ngày
 - BE: card `BE:docs/modules/health.md` · flow `BE:docs/business/flows/health-check.md` · rule HLT-01 (mặc định 3 lần/năm, BE cấu hình — không hard-code chu kỳ), HLT-09 (GV cân đo lớp mình), HLT-10 (BE phân loại theo WHO, GV chỉnh kèm lý do), HLT-11 (phụ huynh thấy sau công bố), HLT-13 (sửa số đo kèm lý do, có lịch sử), HLT-14 (sức khỏe trong ngày: triệu chứng, xử trí, báo phụ huynh ngay). Nhiệt độ đầu ngày không thuộc màn này (HLT-07, mục Điểm danh).
@@ -54,6 +64,7 @@ Giáo viên chỉ truy cập **lớp được phân công** (`BE:` AUTH-03, scop
 ### Đón trẻ + xác minh người đón
 - BE: card `BE:docs/modules/attendance.md` · flow pickup của BE (chưa merge nhánh chính BE) · rule PCK-01..04, ATT-10: màn đón hiện danh sách phụ huynh/người giám hộ; người lạ ⇒ gọi phụ huynh, ghi lý do; lưu người đón, giờ đón (cả đón muộn, về sớm); báo phụ huynh. Ảnh đối chiếu: P-33.
 - Mockup T05 / T06 (plan `docs/plans/completed/2026-10-13-ui-mockup-redesign.md` K4): danh sách chờ đón / đã đón, xác minh người đón đã đăng ký (ảnh, tên, SĐT), "Đúng – giao bé" ⇒ BE ghi giờ, người đón và báo phụ huynh; "Không khớp – gọi phụ huynh".
+- Màn chi tiết chỉ có **một** nút `Trả trẻ` cố định phía dưới. Giáo viên chạm chọn phụ huynh/người giám hộ, có thể gọi ngay trên thẻ; nút dưới chỉ bật khi người được chọn có ảnh đối chiếu. Người chưa có ảnh đi theo luồng gọi và ghi kết quả.
 - Lệch BE (29/10): mock xác minh theo người đón đã đăng ký (ảnh, tên, SĐT); BE không đăng ký trước người đón hộ (PCK-03), chỉ dùng danh sách phụ huynh/người giám hộ; người lạ phải ghi lý do trước khi xác nhận (PCK-02). Ảnh người đón chỉ tải qua URL có auth; bản giả dùng icon. Gọi điện cần plugin quay số (chưa thêm).
 
 ### Lớp học (danh sách bé)

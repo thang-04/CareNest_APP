@@ -40,6 +40,7 @@ class _DailyHealthEntryScreenState extends State<DailyHealthEntryScreen> {
   final Set<HealthAction> _actions = {};
   String? _temperatureError;
   String? _timeError;
+  String? _placeError;
   String? _notedError;
   bool _saving = false;
   String? _saveError;
@@ -74,9 +75,18 @@ class _DailyHealthEntryScreenState extends State<DailyHealthEntryScreen> {
       }
     }
     String? timeError;
+    String? placeError;
     final time = _time.text.trim();
-    if (_actions.contains(HealthAction.referral) &&
-        time.isNotEmpty &&
+    // Chuyển cơ sở y tế: bắt buộc nơi chuyển và giờ (BE DailyHealthServiceImpl, Web dailyHealthValidation)
+    final referral =
+        _observation == HealthObservation.noted &&
+        _actions.contains(HealthAction.referral);
+    if (referral && _place.text.trim().isEmpty) {
+      placeError = 'Nhập nơi chuyển.';
+    }
+    if (referral && time.isEmpty) {
+      timeError = 'Nhập giờ chuyển.';
+    } else if (referral &&
         !RegExp(r'^([01]\d|2[0-3]):[0-5]\d$').hasMatch(time)) {
       timeError = 'Nhập giờ dạng HH:mm, ví dụ 09:30.';
     }
@@ -90,9 +100,13 @@ class _DailyHealthEntryScreenState extends State<DailyHealthEntryScreen> {
     setState(() {
       _temperatureError = temperatureError;
       _timeError = timeError;
+      _placeError = placeError;
       _notedError = notedError;
     });
-    return temperatureError == null && timeError == null && notedError == null;
+    return temperatureError == null &&
+        timeError == null &&
+        placeError == null &&
+        notedError == null;
   }
 
   Future<void> _save() async {
@@ -193,6 +207,7 @@ class _DailyHealthEntryScreenState extends State<DailyHealthEntryScreen> {
               AppTextField(
                 label: 'Nơi chuyển',
                 controller: _place,
+                errorText: _placeError,
                 maxLength: 150,
                 enabled: !_saving,
               ),

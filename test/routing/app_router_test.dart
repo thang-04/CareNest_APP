@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
+import 'package:carenest_app/core/widgets/app_filter_chip.dart';
 import 'package:carenest_app/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/otp_verify_screen.dart';
@@ -14,6 +15,7 @@ import 'package:carenest_app/features/parent/evaluation/presentation/screens/the
 import 'package:carenest_app/features/parent/health_book/presentation/screens/exam_detail_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
 import 'package:carenest_app/features/parent/rewards/presentation/screens/rewards_screen.dart';
+import 'package:carenest_app/features/shared/app_mode/app_mode.dart';
 import 'package:carenest_app/routing/app_router.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
@@ -84,6 +86,44 @@ void main() {
     // Sức khỏe chuyển sang Sổ sức khỏe ở Trang chủ (user 17/11)
     expect(find.text('Sức khỏe'), findsNothing);
   });
+
+  testWidgets(
+    'GV kiêm phụ huynh: chuyển vai trò chỉ ở Trang chủ, Tài khoản không có lối chuyển',
+    (tester) async {
+      addTearDown(AppMode.reset);
+      final router = await pumpRouter(tester, enablePreview: true);
+      Finder chip(String label) => find.widgetWithText(AppFilterChip, label);
+
+      // Phụ huynh vào thẳng (một vai) ⇒ không có nút "Giáo viên"
+      router.go(RoutePaths.parentToday);
+      await tester.pumpAndSettle();
+      expect(chip('Giáo viên'), findsNothing);
+
+      router.go(RoutePaths.teacherToday);
+      await tester.pumpAndSettle();
+      await tester.tap(chip('Phụ huynh'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, RoutePaths.parentToday);
+
+      await tester.tap(chip('Giáo viên'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, RoutePaths.teacherToday);
+      expect(chip('Phụ huynh'), findsOneWidget);
+
+      for (final path in [
+        RoutePaths.teacherAccount,
+        RoutePaths.parentAccount,
+      ]) {
+        router.go(path);
+        await tester.pumpAndSettle();
+        expect(
+          find.textContaining('Chuyển sang chế độ'),
+          findsNothing,
+          reason: path,
+        );
+      }
+    },
+  );
 
   testWidgets('Bếp mở thẳng tab Thực đơn', (tester) async {
     final router = await pumpRouter(tester, enablePreview: true);

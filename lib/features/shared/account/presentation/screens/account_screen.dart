@@ -15,14 +15,6 @@ import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/features/shared/account/data/fake_account_source.dart';
 import 'package:carenest_app/features/shared/account/domain/account_profile.dart';
 
-/// Một lối chuyển chế độ (GV ↔ phụ huynh) ở màn Tài khoản (user 14/11, BE ADR-0022).
-class AccountModeSwitch {
-  const AccountModeSwitch({required this.label, required this.onTap});
-
-  final String label;
-  final VoidCallback onTap;
-}
-
 /// Tài khoản — mockup P14, dùng chung 5 vai trò (DESIGN.md §B6.2 Tài khoản).
 class AccountScreen extends StatefulWidget {
   const AccountScreen({
@@ -32,7 +24,6 @@ class AccountScreen extends StatefulWidget {
     required this.onChangePassword,
     required this.onLogout,
     this.onOpenCampuses,
-    this.modeSwitches = const [],
     this.source = const FakeAccountSource(),
   });
 
@@ -46,8 +37,6 @@ class AccountScreen extends StatefulWidget {
   /// Hiệu trưởng: mở "Cơ sở của trường" (mockup H08); vai trò khác để null.
   final VoidCallback? onOpenCampuses;
 
-  /// Rỗng khi tài khoản chỉ có một chế độ.
-  final List<AccountModeSwitch> modeSwitches;
   final AccountSource source;
 
   @override
@@ -166,13 +155,6 @@ class _AccountScreenState extends State<AccountScreen> {
                 flush: true,
                 child: AppDividedColumn(
                   children: [
-                    for (final modeSwitch in widget.modeSwitches)
-                      AppListRow(
-                        title: modeSwitch.label,
-                        leading: const Icon(AppIcons.account),
-                        showChevron: true,
-                        onTap: modeSwitch.onTap,
-                      ),
                     AppListRow(
                       title: 'Thông tin cá nhân',
                       leading: const Icon(AppIcons.person),

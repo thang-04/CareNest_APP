@@ -169,8 +169,10 @@ class _DailyHealthScreenState extends State<DailyHealthScreen> {
               title: kid.fullName,
               subtitle: Text(_subtitle(kid)),
               trailing: _badge(kid),
-              showChevron: sheet.canRecord,
-              onTap: sheet.canRecord ? () => _open(sheet, kid) : null,
+              showChevron: sheet.canRecord && !kid.pickedUp,
+              onTap: sheet.canRecord && !kid.pickedUp
+                  ? () => _open(sheet, kid)
+                  : null,
             ),
           ),
         );
@@ -179,6 +181,9 @@ class _DailyHealthScreenState extends State<DailyHealthScreen> {
   }
 
   static String _subtitle(DailyHealthKid kid) {
+    if (kid.handedOverAt case final at?) {
+      return 'Đã trả trẻ lúc ${DateLabels.time24(at)}';
+    }
     final latest = kid.latest;
     if (latest == null) return 'Chưa kiểm tra';
     return [

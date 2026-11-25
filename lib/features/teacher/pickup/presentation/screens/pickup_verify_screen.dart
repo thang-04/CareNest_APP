@@ -4,11 +4,13 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
+import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_bottom_sheet.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
+import 'package:carenest_app/core/widgets/app_list_row.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/core/widgets/app_text_field.dart';
@@ -46,6 +48,10 @@ class _PickupVerifyScreenState extends State<PickupVerifyScreen> {
   bool _saving = false;
   String? _saveError;
   String? _callError;
+  int? _selectedGuardianPosition;
+
+  /// Giờ trả GV chọn; null = giờ hiện tại (PCK-04: bắt buộc, không sau giờ hiện tại).
+  TimeOfDay? _pickedTime;
 
   @override
   void initState() {
@@ -57,15 +63,44 @@ class _PickupVerifyScreenState extends State<PickupVerifyScreen> {
     setState(() => _error = null);
     try {
       final child = await _source.loadChild(widget.childId);
-      if (mounted) setState(() => _child = child);
+      if (mounted) {
+        setState(() {
+          _child = child;
+          final guardiansWithPhoto = child.guardians
+              .where((guardian) => guardian.photoUrl != null)
+              .toList();
+          _selectedGuardianPosition = guardiansWithPhoto.length == 1
+              ? guardiansWithPhoto.single.position
+              : null;
+        });
+      }
     } catch (error) {
       if (mounted) setState(() => _error = error);
     }
   }
 
+  DateTime _now() => (widget.now ?? DateTime.now)();
+
   String _handoverTime() {
-    final now = (widget.now ?? DateTime.now)();
-    return DateLabels.time24(now);
+    final now = _now();
+    final picked = _pickedTime;
+    if (picked == null) return DateLabels.time24(now);
+    return DateLabels.time24(
+      DateTime(now.year, now.month, now.day, picked.hour, picked.minute),
+    );
+  }
+
+  Future<void> _chooseTime() async {
+    final now = _now();
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _pickedTime ?? TimeOfDay.fromDateTime(now),
+      helpText: 'Giờ trả trẻ',
+    );
+    if (picked == null || !mounted) return;
+    // Không cho giờ sau hiện tại (BE kiểm tra lại)
+    final late = picked.hour * 60 + picked.minute > now.hour * 60 + now.minute;
+    setState(() => _pickedTime = late ? TimeOfDay.fromDateTime(now) : picked);
   }
 
   Future<void> _submit(PickupRequest request) async {
@@ -131,8 +166,27 @@ class _PickupVerifyScreenState extends State<PickupVerifyScreen> {
   Widget build(BuildContext context) {
     final child = _child;
     final textTheme = Theme.of(context).textTheme;
+    final selectedGuardian = child?.guardians
+        .where((guardian) => guardian.position == _selectedGuardianPosition)
+        .firstOrNull;
     return Scaffold(
       appBar: AppBar(title: const Text('Trả trẻ')),
+      bottomNavigationBar:
+          child?.row.status == PickupStatus.waiting &&
+              child!.guardians.isNotEmpty
+          ? AppBottomDock(
+              children: [
+                AppButton(
+                  label: 'Trả trẻ',
+                  icon: AppIcons.walk,
+                  expand: true,
+                  onPressed: !_saving && selectedGuardian?.photoUrl != null
+                      ? () => _handOver(selectedGuardian!)
+                      : null,
+                ),
+              ],
+            )
+          : null,
       body: _error != null
           ? Center(
               child: AppErrorState(
@@ -183,6 +237,16 @@ class _PickupVerifyScreenState extends State<PickupVerifyScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(height: AppSpacing.space3),
+                AppCard(
+                  flush: true,
+                  child: AppListRow(
+                    leading: const Icon(AppIcons.clock),
+                    title: 'Giờ trả: ${_handoverTime()}',
+                    showChevron: true,
+                    onTap: _saving ? null : _chooseTime,
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.space4),
                 Text('Phụ huynh', style: textTheme.titleSmall),
                 const SizedBox(height: AppSpacing.space3),
@@ -196,7 +260,10 @@ class _PickupVerifyScreenState extends State<PickupVerifyScreen> {
                   _GuardianCard(
                     guardian: guardian,
                     enabled: !_saving,
-                    onHandOver: () => _handOver(guardian),
+                    selected: guardian.position == _selectedGuardianPosition,
+                    onSelect: () => setState(
+                      () => _selectedGuardianPosition = guardian.position,
+                    ),
                     onCall: () => _call(guardian),
                   ),
                   const SizedBox(height: AppSpacing.space3),
@@ -224,20 +291,38 @@ class _PickupVerifyScreenState extends State<PickupVerifyScreen> {
 
 /// Ảnh giữ chỗ: bản giả không dùng ảnh người thật; ảnh thật chỉ tải qua URL có auth.
 class _Photo extends StatelessWidget {
-  const _Photo({required this.size});
+  const _Photo({required this.size, this.url});
 
   final double size;
 
+  /// URL ảnh có hạn BE trả (`photoUrl`); null/lỗi tải ⇒ icon, GV phải gọi xác nhận (PCK-02).
+  final String? url;
+
   @override
   Widget build(BuildContext context) {
+    final placeholder = Icon(
+      AppIcons.person,
+      size: size * 0.55,
+      color: AppColors.primary,
+    );
+    final photoUrl = url;
     return Container(
       width: size,
       height: size,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: AppColors.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
-      child: Icon(AppIcons.person, size: size * 0.55, color: AppColors.primary),
+      // TODO(G94-385): gắn header Authorization khi có HTTP client (ảnh chỉ tải qua auth)
+      child: photoUrl == null || !photoUrl.startsWith('http')
+          ? placeholder
+          : Image.network(
+              photoUrl,
+              fit: BoxFit.cover,
+              gaplessPlayback: true,
+              errorBuilder: (_, _, _) => placeholder,
+            ),
     );
   }
 }
@@ -246,83 +331,82 @@ class _GuardianCard extends StatelessWidget {
   const _GuardianCard({
     required this.guardian,
     required this.enabled,
-    required this.onHandOver,
+    required this.selected,
+    required this.onSelect,
     required this.onCall,
   });
 
   final PickupGuardian guardian;
   final bool enabled;
-  final VoidCallback onHandOver;
+  final bool selected;
+  final VoidCallback onSelect;
   final VoidCallback onCall;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final hasPhoto = guardian.photoUrl != null;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
+    return Semantics(
+      button: true,
+      selected: selected,
+      label:
+          '${guardian.relationship.label} ${guardian.fullName}${selected ? ', đã chọn' : ''}',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: enabled ? onSelect : null,
+        child: AppCard(
+          borderColor: selected ? AppColors.primary : null,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const _Photo(size: 96),
-              const SizedBox(width: AppSpacing.space3),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${guardian.relationship.label} – ${guardian.fullName}',
-                      style: textTheme.titleSmall,
-                    ),
-                    Text(
-                      guardian.phone,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                    if (!hasPhoto)
-                      Text(
-                        'Chưa có ảnh',
-                        style: textTheme.labelMedium?.copyWith(
-                          color: AppColors.textMuted,
+              Row(
+                children: [
+                  _Photo(size: 96, url: guardian.photoUrl),
+                  const SizedBox(width: AppSpacing.space3),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${guardian.relationship.label} – ${guardian.fullName}',
+                          style: textTheme.titleSmall,
                         ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.space3),
-          Row(
-            children: [
-              Expanded(
-                child: AppButton(
-                  label: 'Gọi',
-                  icon: AppIcons.call,
-                  variant: AppButtonVariant.secondary,
-                  small: true,
-                  onPressed: enabled ? onCall : null,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.space2),
-              Expanded(
-                child: Semantics(
-                  label:
-                      'Trả trẻ cho ${guardian.relationship.label} ${guardian.fullName}',
-                  excludeSemantics: true,
-                  button: true,
-                  child: AppButton(
-                    label: 'Trả trẻ',
-                    small: true,
-                    // Chưa có ảnh thì không đối chiếu được ⇒ phải gọi (PCK-02)
-                    onPressed: enabled && hasPhoto ? onHandOver : null,
+                        Text(
+                          guardian.phone,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                        if (!hasPhoto)
+                          Text(
+                            'Chưa có ảnh',
+                            style: textTheme.labelMedium?.copyWith(
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
+                  if (selected)
+                    const Icon(
+                      AppIcons.checkCircle,
+                      color: AppColors.primary,
+                      size: AppSizes.iconInline,
+                    ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.space3),
+              AppButton(
+                label: 'Gọi',
+                icon: AppIcons.call,
+                variant: AppButtonVariant.secondary,
+                small: true,
+                expand: true,
+                onPressed: enabled ? onCall : null,
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

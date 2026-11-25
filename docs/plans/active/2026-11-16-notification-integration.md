@@ -1,14 +1,14 @@
 ---
 title: Tích hợp thông báo App — spec 902
-status: in-progress  # code vào dev qua PR #8 (17/11); còn chạy Android thật + Firebase (Tiền). Frontmatter thêm 25/11
+status: in-progress
 owner: Tiền
 jira: G94-288 / APP-FEAT-55
 branch: feature/G94-288-APP-FEAT-55-notification-client
-modules: [integration, features]
-rules: [AUTH-21]
+modules: []
+rules: [PAR-03, PAR-05, PAR-07, PAR-11, PAR-12, EDU-73, EDU-74]
 risk: high
 created: 2026-11-16
-updated: 2026-11-25
+updated: 2026-11-18
 ---
 # Tích hợp thông báo App — spec 902
 

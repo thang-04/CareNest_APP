@@ -13,6 +13,8 @@ Future<T?> showAppBottomSheet<T>({
 }) {
   return showModalBottomSheet<T>(
     context: context,
+    // Mở trên navigator gốc: sheet đè lên thanh tab đáy, không bị che mép dưới
+    useRootNavigator: true,
     isScrollControlled: true,
     useSafeArea: true,
     builder: (sheetContext) => Padding(

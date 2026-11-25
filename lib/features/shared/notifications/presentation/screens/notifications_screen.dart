@@ -261,11 +261,9 @@ class _NotificationCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 item.title,
-                                style: textTheme.bodyLarge?.copyWith(
-                                  fontWeight: unread
-                                      ? FontWeight.w700
-                                      : FontWeight.w400,
-                                ),
+                                style: unread
+                                    ? textTheme.titleSmall
+                                    : textTheme.bodyLarge,
                               ),
                             ),
                             if (unread) ...[

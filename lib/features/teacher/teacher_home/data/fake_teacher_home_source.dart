@@ -47,8 +47,9 @@ class FakeTeacherHomeSource implements TeacherHomeSource {
               const TeacherTask(
                 kind: TeacherTaskKind.pickup,
                 title: 'Trả trẻ',
-                subtitle: 'Từ 16:30',
-                badge: '16:30',
+                // PCK-04: không có giờ đón cố định
+                subtitle: 'Đối chiếu ảnh phụ huynh',
+                badge: 'Cuối ngày',
                 badgeLevel: TaskBadgeLevel.info,
               ),
               const TeacherTask(
@@ -60,8 +61,22 @@ class FakeTeacherHomeSource implements TeacherHomeSource {
               ),
               const TeacherTask(
                 kind: TeacherTaskKind.review,
-                title: 'Đánh giá hằng ngày',
-                subtitle: '8/25 bé',
+                title: 'Đánh giá trẻ',
+                subtitle: 'Ngày · tuần · định kỳ',
+                badge: 'Chỉ xem',
+                badgeLevel: TaskBadgeLevel.info,
+              ),
+              const TeacherTask(
+                kind: TeacherTaskKind.menu,
+                title: 'Thực đơn',
+                subtitle: 'Các bữa hôm nay',
+                badge: 'Đã công bố',
+                badgeLevel: TaskBadgeLevel.info,
+              ),
+              const TeacherTask(
+                kind: TeacherTaskKind.rewards,
+                title: 'Khen thưởng',
+                subtitle: 'Phiếu bé ngoan · đề xuất',
                 badge: 'Chỉ xem',
                 badgeLevel: TaskBadgeLevel.info,
               ),

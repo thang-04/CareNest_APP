@@ -1,7 +1,6 @@
-import 'package:flutter/widgets.dart';
-
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/routing/route_paths.dart';
+import 'package:flutter/widgets.dart';
 
 /// Vai trò của tab trong khung: thông báo và tài khoản dùng chung mọi nhóm.
 enum NavTab { home, primary, notifications, account }

@@ -27,6 +27,10 @@ class FakeDailyHealthSource implements DailyHealthSource {
           childId: kid.childId,
           fullName: kid.fullName,
           entryCount: kid.childId == 'k-02' ? 1 : 0,
+          // Bé về sớm do sức khỏe, đã trả lúc 10:15 ⇒ khóa ghi thêm
+          handedOverAt: kid.childId == 'k-20'
+              ? DateTime(2026, 10, 12, 10, 15)
+              : null,
           latest: kid.childId == 'k-02'
               ? DailyHealthEntry(
                   requestId: 'req-k02-1',
@@ -70,6 +74,7 @@ class FakeDailyHealthSource implements DailyHealthSource {
       fullName: kid.fullName,
       latest: entry,
       entryCount: kid.entryCount + 1,
+      handedOverAt: kid.handedOverAt,
     );
     return entry;
   }
