@@ -227,6 +227,37 @@ void main() {
     expect(yearEnd.confirmedAt, DateTime.utc(2027, 5, 25, 8).toLocal());
   });
 
+  test('load_unassessedGoals_notShownAsNotMet', () async {
+    final book = await load(
+      routes(
+        evaluations: {
+          'themes': [
+            {
+              'themeName': 'Gia đình',
+              'startDate': '2026-10-05',
+              'endDate': '2026-10-30',
+              'met': 1,
+              'notMet': 1,
+              'goals': [
+                {'goalNo': 1, 'text': 'Kể tên người thân', 'met': true},
+                {'goalNo': 2, 'text': 'Hát bài về gia đình', 'met': false},
+                // Cô chưa đánh giá MT này: BE không tính vào đạt / chưa đạt
+                {'goalNo': 3, 'text': 'Vẽ người thân', 'met': null},
+              ],
+            },
+          ],
+          'semesters': <Object>[],
+          'yearEnd': null,
+        },
+      ),
+    );
+
+    expect(book.themes.single.goals.map((g) => g.text), [
+      'Kể tên người thân',
+      'Hát bài về gia đình',
+    ]);
+  });
+
   test('load_noYearEnd_null', () async {
     final book = await load(routes());
 

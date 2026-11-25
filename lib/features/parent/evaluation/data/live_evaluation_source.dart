@@ -159,9 +159,11 @@ class LiveEvaluationSource implements EvaluationSource {
     sentAt: _instant(item['sentAt']) ?? _date(item['weekEnd']),
   );
 
+  /// MT cô chưa đánh giá (`met` null) bỏ qua: BE không tính vào đạt / chưa đạt.
   static List<GoalResult> _parentGoals(Object? goals) => [
     for (final goal in _maps(goals))
-      GoalResult(goal['text']?.toString() ?? '', met: goal['met'] == true),
+      if (goal['met'] case final bool met)
+        GoalResult(goal['text']?.toString() ?? '', met: met),
   ];
 
   static DomainResult _domain(Map<Object?, Object?> item) => DomainResult(
