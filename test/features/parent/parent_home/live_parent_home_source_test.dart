@@ -6,6 +6,16 @@ import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dar
 
 import '../../../helpers/live_fakes.dart';
 
+/// Phiên đăng nhập lại cùng người dùng: `generation` tăng như MobileSession.signIn.
+class _ReSignInSession extends FakeLiveSession {
+  _ReSignInSession() : super(['PARENT'], childIds: [5]);
+
+  var gen = 1;
+
+  @override
+  int get generation => gen;
+}
+
 void main() {
   late FakeLiveSession session;
   late ScriptedApi api;
@@ -92,6 +102,51 @@ void main() {
 
     await expectLater(
       LiveParentHomeSource(api, session).loadToday('5'),
+      throwsA(isA<ApiFailure>().having((e) => e.status, 'status', 403)),
+    );
+  });
+
+  test('loadChildren_newSignInSameUser_refetches', () async {
+    // Đăng xuất rồi đăng nhập lại: danh sách con có thể đã đổi (thêm bé, bé nghỉ học)
+    final reSignIn = _ReSignInSession();
+    final scripted = ScriptedApi(reSignIn, {
+      'GET /children/5/profile': (_) => profileJson(5, 'Nguyễn Minh Anh'),
+      'GET /children/7/profile': (_) => profileJson(7, 'Nguyễn Gia Huy'),
+    });
+    final source = LiveParentHomeSource(scripted, reSignIn);
+    await source.loadChildren();
+
+    reSignIn.account!['childIds'] = [5, 7];
+    reSignIn.gen = 2;
+    final children = await source.loadChildren();
+
+    expect(children.map((c) => c.id), ['5', '7']);
+  });
+
+  test('loadToday_childMissingFromCache_refetchesChildren', () async {
+    api.routes['GET /children/7/profile'] = (_) =>
+        profileJson(7, 'Nguyễn Gia Huy');
+    api.routes['GET /children/7/attendance/today'] = (_) => {
+      'date': '2026-11-25',
+      'status': 'NOT_RECORDED',
+    };
+    final source = LiveParentHomeSource(api, session);
+    await source.loadChildren();
+    session.account!['childIds'] = [5, 3, 7];
+
+    final today = await source.loadToday('7');
+
+    expect(today.child.fullName, 'Nguyễn Gia Huy');
+  });
+
+  test('loadToday_childNotOnAccount_403', () async {
+    api.routes['GET /children/9/attendance/today'] = (_) => {
+      'date': '2026-11-25',
+      'status': 'NOT_RECORDED',
+    };
+
+    await expectLater(
+      LiveParentHomeSource(api, session).loadToday('9'),
       throwsA(isA<ApiFailure>().having((e) => e.status, 'status', 403)),
     );
   });

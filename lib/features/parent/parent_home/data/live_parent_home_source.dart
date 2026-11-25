@@ -11,19 +11,22 @@ class LiveParentHomeSource implements ParentHomeSource {
   final MobileApi _api;
   final MobileSession _session;
 
-  // Danh sách con tải một lần mỗi phiên; đổi người dùng ⇒ tải lại
+  // Danh sách con tải một lần mỗi lần đăng nhập (người dùng + generation): đăng nhập lại ⇒ tải lại,
+  // vì con của tài khoản có thể đã đổi (thêm bé, bé nghỉ học)
   Future<List<ChildSummary>>? _children;
-  int? _childrenOwner;
+  (int?, int)? _childrenOwner;
 
   @override
   Future<List<ChildSummary>> loadChildren() {
-    final owner = _session.userId;
+    final owner = (_session.userId, _session.generation);
     if (_children == null || owner != _childrenOwner) {
       _childrenOwner = owner;
-      _children = _fetchChildren().catchError((Object error) {
-        // Lỗi không giữ lại: lần sau thử tải lại
-        _children = null;
-        throw error;
+      final children = _fetchChildren();
+      _children = children;
+      children.catchError((Object _) {
+        // Lỗi không giữ lại: lần sau thử tải lại (chỉ xóa đúng lần tải này)
+        if (identical(_children, children)) _children = null;
+        return const <ChildSummary>[];
       });
     }
     return _children!;
@@ -51,11 +54,20 @@ class LiveParentHomeSource implements ParentHomeSource {
     ]);
     final today = results[0]! as Map;
     final feed = results[1]! as Map;
-    final children = results[2]! as List<ChildSummary>;
+    var children = results[2]! as List<ChildSummary>;
+    // Bé mới có trên tài khoản sau lần tải danh sách ⇒ tải lại một lần
+    if (!children.any((child) => child.id == childId)) {
+      _children = null;
+      children = await loadChildren();
+    }
+    final child = children.where((child) => child.id == childId).firstOrNull;
+    if (child == null) {
+      throw ApiFailure(403, 'Bạn chỉ xem được thông tin của con mình.', 4108);
+    }
     return ParentToday(
       greetingName: _session.account?['fullName']?.toString() ?? '',
       date: DateTime.parse(today['date'] as String),
-      child: children.firstWhere((child) => child.id == childId),
+      child: child,
       attendance: _status(today['status'] as String?),
       arrivedAt: switch (today['arrivedAt']) {
         final String at => DateTime.parse(at).toLocal(),
