@@ -139,7 +139,7 @@ class LiveRewardSource implements RewardSource {
     ) {
       final ticket = monthly[month];
       final weeksInMonth = weekly.keys.where(
-        (monday) => monday.year == month.year && monday.month == month.month,
+        (monday) => _inMonth(monday, month),
       );
       months.add(
         RewardMonth(
@@ -152,9 +152,8 @@ class LiveRewardSource implements RewardSource {
               ? const []
               : [
                   for (
-                    var monday = _firstMonday(month);
-                    monday.month == month.month &&
-                        !monday.isAfter(currentMonday);
+                    var monday = _firstWeek(month);
+                    _inMonth(monday, month) && !monday.isAfter(currentMonday);
                     monday = DateTime(monday.year, monday.month, monday.day + 7)
                   )
                     WeekTicketSlot(
@@ -174,9 +173,19 @@ class LiveRewardSource implements RewardSource {
     return months;
   }
 
-  static DateTime _firstMonday(DateTime month) => DateTime(
-    month.year,
-    month.month,
-    1 + (DateTime.monday - month.weekday + 7) % 7,
-  );
+  // OBS-10 (Cần 18/11): tuần thuộc tháng chứa thứ Sáu của tuần, như BE xét phiếu tháng
+  static bool _inMonth(DateTime monday, DateTime month) {
+    final friday = DateTime(monday.year, monday.month, monday.day + 4);
+    return friday.year == month.year && friday.month == month.month;
+  }
+
+  /// Thứ Hai của tuần đầu tiên thuộc tháng (thứ Sáu đầu tiên của tháng − 4 ngày).
+  static DateTime _firstWeek(DateTime month) {
+    final firstFriday = DateTime(
+      month.year,
+      month.month,
+      1 + (DateTime.friday - month.weekday + 7) % 7,
+    );
+    return DateTime(firstFriday.year, firstFriday.month, firstFriday.day - 4);
+  }
 }

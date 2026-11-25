@@ -109,6 +109,32 @@ void main() {
     expect(book.months.single.ticket, isNull);
   });
 
+  test('load_weekBelongsToMonthOfItsFriday', () async {
+    // OBS-10 (Cần 18/11): tuần T2 28/9 – T6 2/10 thuộc tháng 10
+    final october = DateTime(2026, 10, 7);
+    final book = await LiveRewardSource(
+      ScriptedApi(session, {
+        'GET /children/5/rewards?from=2026-08-17&to=2026-10-07': (_) => {
+          'flags': <Object>[],
+          'tickets': [weekly('2026-09-28', '2026-10-02')],
+          'yearEndTitles': <Object>[],
+        },
+      }),
+      clock: () => october,
+    ).load('5');
+
+    expect(book.months.first.month, DateTime(2026, 10));
+    expect(book.months.first.weeklyTickets, 1);
+    expect(
+      book.months.first.weeks.map(
+        (w) => '${w.from.month}/${w.from.day}:${w.status.name}',
+      ),
+      ['9/28:issued', '10/5:ongoing'],
+    );
+    expect(book.months[1].month, DateTime(2026, 9));
+    expect(book.months[1].weeklyTickets, 0);
+  });
+
   test('load_yearEndTitles', () async {
     final book = await load(
       titles: [
