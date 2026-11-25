@@ -144,6 +144,32 @@ void main() {
     expect(find.bySemanticsLabel('Có mặt: 2,5'), findsOneWidget);
   });
 
+  testWidgets('live_parentEvaluation_usesBe', (tester) async {
+    final session = FakeLiveSession(['PARENT'], childIds: [5]);
+    final api = parentApi(session);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final from = today.subtract(Duration(days: today.weekday - 1 + 49));
+    String day(DateTime d) => d.toIso8601String().substring(0, 10);
+    api.routes['GET /children/5/daily-assessments'
+        '?from=${day(from)}&to=${day(today)}'] = (_) =>
+        <Object>[];
+    api.routes['GET /children/5/weekly-comments'] = (_) => <Object>[];
+    api.routes['GET /children/5/evaluations'] = (_) => {
+      'themes': <Object>[],
+      'semesters': <Object>[],
+      'yearEnd': null,
+    };
+    await pumpLiveApp(
+      tester,
+      session,
+      api: api,
+      location: RoutePaths.withChild(RoutePaths.parentEvaluation, '5'),
+    );
+    // Bản giả có đánh giá ngày; BE trả rỗng ⇒ trạng thái trống
+    expect(find.text('Chưa có đánh giá ngày'), findsOneWidget);
+  });
+
   testWidgets('live_otherRolePath_goesOwnHome', (tester) async {
     await pumpLiveApp(
       tester,

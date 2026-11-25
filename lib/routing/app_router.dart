@@ -56,6 +56,8 @@ import 'package:carenest_app/features/parent/evaluation/presentation/screens/the
 import 'package:carenest_app/features/parent/rewards/presentation/screens/rewards_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/exam_detail_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
+import 'package:carenest_app/features/parent/evaluation/data/fake_evaluation_source.dart';
+import 'package:carenest_app/features/parent/evaluation/data/live_evaluation_source.dart';
 import 'package:carenest_app/features/parent/leave_notice/data/live_leave_notice_source.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_form_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_list_screen.dart';
@@ -363,6 +365,7 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
       RoutePaths.parentEvaluation,
       (context, state, child) => EvaluationScreen(
         child: child,
+        source: parent.evaluation ?? const FakeEvaluationSource(),
         onOpenTheme: (themeId) => context.push<void>(
           RoutePaths.parentEvaluationTheme(themeId, childId: child.id),
         ),
@@ -373,6 +376,7 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
       (context, state, child) => ThemeResultScreen(
         child: child,
         themeId: state.pathParameters['themeId']!,
+        source: parent.evaluation ?? const FakeEvaluationSource(),
       ),
     ),
     route(
@@ -687,6 +691,7 @@ GoRouter _buildLiveRouter(
           home: LiveParentHomeSource(api, session),
           leave: LiveLeaveNoticeSource(api),
           myChild: LiveMyChildSource(api),
+          evaluation: LiveEvaluationSource(api),
         ),
       ),
     ],
