@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
+import 'package:carenest_app/features/parent/school_year/presentation/parent_selected_year.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/integration/load_failure.dart';
@@ -40,6 +42,7 @@ class ChildAttendanceScreen extends StatefulWidget {
   const ChildAttendanceScreen({
     super.key,
     required this.childId,
+    this.year,
     required this.initialDay,
     this.source = const FakeMyChildSource(),
   });
@@ -48,6 +51,9 @@ class ChildAttendanceScreen extends StatefulWidget {
   final DateTime initialDay;
   final MyChildSource source;
 
+  /// Năm học đang chọn (ô Năm học); null ⇒ tháng hiện tại như trước (Xem thử).
+  final ChildSchoolYear? year;
+
   @override
   State<ChildAttendanceScreen> createState() => _ChildAttendanceScreenState();
 }
@@ -55,6 +61,7 @@ class ChildAttendanceScreen extends StatefulWidget {
 class _ChildAttendanceScreenState extends State<ChildAttendanceScreen> {
   late Future<AttendanceMonth> _month = widget.source.loadAttendance(
     widget.childId,
+    year: widget.year,
   );
   late DateTime _selected = widget.initialDay;
 
@@ -72,7 +79,10 @@ class _ChildAttendanceScreenState extends State<ChildAttendanceScreen> {
                 title: 'Chưa tải được điểm danh',
                 message: loadFailureMessage(snapshot.error),
                 onRetry: () => setState(
-                  () => _month = widget.source.loadAttendance(widget.childId),
+                  () => _month = widget.source.loadAttendance(
+                    widget.childId,
+                    year: widget.year,
+                  ),
                 ),
               ),
             );
@@ -90,6 +100,8 @@ class _ChildAttendanceScreenState extends State<ChildAttendanceScreen> {
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.pagePadding),
             children: [
+              const ParentYearChip(),
+              const SizedBox(height: AppSpacing.space3),
               AppCard(
                 dense: true,
                 child: Text(

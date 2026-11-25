@@ -8,6 +8,7 @@ import 'package:carenest_app/features/parent/leave_notice/data/fake_leave_notice
 import 'package:carenest_app/features/parent/my_child/domain/my_child.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/features/parent/rewards/domain/rewards.dart';
 import 'package:flutter/material.dart';
 
@@ -22,6 +23,7 @@ class ParentSources {
     this.evaluation,
     this.rewards,
     this.healthBook,
+    this.schoolYears,
   });
 
   /// Phiên thật: màn chưa có API ở BE hiện "Sắp có", không hiện dữ liệu giả (user 25/11, Q1).
@@ -32,6 +34,9 @@ class ParentSources {
   final EvaluationSource? evaluation;
   final RewardSource? rewards;
   final HealthBookSource? healthBook;
+
+  /// Năm học của bé cho ô Năm học; null (Xem thử) ⇒ năm giả.
+  final ChildSchoolYearSource? schoolYears;
 
   /// Ngày mở lịch tháng (Điểm danh, Thực đơn): phiên thật = hôm nay; Xem thử = ngày của dữ liệu giả.
   DateTime get today {

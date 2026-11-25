@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
+import 'package:carenest_app/features/parent/school_year/presentation/parent_selected_year.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/motion.dart';
@@ -29,6 +31,7 @@ class HealthBookScreen extends StatefulWidget {
   const HealthBookScreen({
     super.key,
     required this.child,
+    this.year,
     required this.onOpenExam,
     this.initialTab = HealthBookTab.rounds,
     this.source = const FakeHealthBookSource(),
@@ -41,17 +44,23 @@ class HealthBookScreen extends StatefulWidget {
   final HealthBookTab initialTab;
   final HealthBookSource source;
 
+  /// Năm học đang chọn (ô Năm học); null ⇒ khoảng gần đây như trước (Xem thử).
+  final ChildSchoolYear? year;
+
   @override
   State<HealthBookScreen> createState() => _HealthBookScreenState();
 }
 
 class _HealthBookScreenState extends State<HealthBookScreen> {
-  late Future<HealthBook> _book = widget.source.load(widget.child.id);
+  late Future<HealthBook> _book = widget.source.load(
+    widget.child.id,
+    year: widget.year,
+  );
   late HealthBookTab _tab = widget.initialTab;
 
   void _retry() {
     setState(() {
-      _book = widget.source.load(widget.child.id);
+      _book = widget.source.load(widget.child.id, year: widget.year);
     });
   }
 
@@ -88,6 +97,8 @@ class _HealthBookScreenState extends State<HealthBookScreen> {
             padding: const EdgeInsets.all(AppSpacing.pagePadding),
             children: [
               _ChildLine(child: widget.child),
+              const SizedBox(height: AppSpacing.space3),
+              const ParentYearChip(),
               const SizedBox(height: AppSpacing.space4),
               AppSegmented<HealthBookTab>(
                 segments: const [

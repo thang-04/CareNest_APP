@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/parent/my_child/data/fake_my_child_source.dart';
@@ -64,22 +65,24 @@ class _LiveShapeSource extends FakeMyChildSource {
   const _LiveShapeSource();
 
   @override
-  Future<AttendanceMonth> loadAttendance(String childId) async =>
-      AttendanceMonth(
-        month: DateTime(2026, 10),
-        presentCount: 8.5,
-        excusedCount: 0.5,
-        absentCount: 0,
-        days: [
-          AttendanceDay(
-            date: DateTime(2026, 10, 12),
-            status: AttendanceDayStatus.present,
-            absentPart: AbsentPart.morning,
-            healthLine: '37,8 °C · Sốt',
-            healthNote: 'Cô đã báo mẹ',
-          ),
-        ],
-      );
+  Future<AttendanceMonth> loadAttendance(
+    String childId, {
+    ChildSchoolYear? year,
+  }) async => AttendanceMonth(
+    month: DateTime(2026, 10),
+    presentCount: 8.5,
+    excusedCount: 0.5,
+    absentCount: 0,
+    days: [
+      AttendanceDay(
+        date: DateTime(2026, 10, 12),
+        status: AttendanceDayStatus.present,
+        absentPart: AbsentPart.morning,
+        healthLine: '37,8 °C · Sốt',
+        healthNote: 'Cô đã báo mẹ',
+      ),
+    ],
+  );
 
   @override
   Future<ChildProfile> loadProfile(String childId) async => const ChildProfile(
@@ -124,7 +127,8 @@ void main() {
       expect(find.text('Bé của tôi'), findsOneWidget);
       expect(find.text('Nguyễn Minh Anh'), findsOneWidget);
       expect(find.text('Mầm 3A · 4 tuổi'), findsOneWidget);
-      expect(find.text('Năm học 2026–2027'), findsOneWidget);
+      // Năm học ở hồ sơ và ở ô Năm học (năm đang chạy)
+      expect(find.text('Năm học 2026–2027'), findsNWidgets(2));
       // User 18/11: không thanh chọn bé, không nút Gọi cô / Hồ sơ của bé, bỏ hành trình năm học
       expect(find.text('Bảo Ngọc'), findsNothing);
       expect(find.text('Gọi cô'), findsNothing);
@@ -274,7 +278,10 @@ void main() {
     SelectedChild.notifier.value = 'c-1';
     await pumpScreen(
       tester,
-      const MyChildScreen(source: _LiveShapeSource()),
+      const MyChildScreen(
+        source: _LiveShapeSource(),
+        yearSource: _NoYearSource(),
+      ),
       inScaffold: true,
     );
     expect(find.textContaining('Năm học'), findsNothing);
@@ -332,4 +339,12 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+}
+
+/// Bé chưa có năm học ⇒ không có ô Năm học (để kiểm hồ sơ không tự ghi năm học).
+class _NoYearSource implements ChildSchoolYearSource {
+  const _NoYearSource();
+
+  @override
+  Future<List<ChildSchoolYear>> loadYears(String childId) async => const [];
 }

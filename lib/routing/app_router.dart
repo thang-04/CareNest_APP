@@ -59,6 +59,10 @@ import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dar
 import 'package:carenest_app/features/parent/parent_home/presentation/screens/parent_home_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/presentation/selected_child.dart';
 import 'package:carenest_app/features/parent/parent_menu/presentation/screens/weekly_menu_screen.dart';
+import 'package:carenest_app/features/parent/school_year/data/fake_child_school_year_source.dart';
+import 'package:carenest_app/features/parent/school_year/data/live_child_school_year_source.dart';
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
+import 'package:carenest_app/features/parent/school_year/presentation/parent_selected_year.dart';
 import 'package:carenest_app/features/parent/rewards/data/fake_reward_source.dart';
 import 'package:carenest_app/features/parent/rewards/data/live_reward_source.dart';
 import 'package:carenest_app/features/parent/rewards/presentation/screens/rewards_screen.dart';
@@ -241,8 +245,10 @@ List<RouteBase> _staffAndParentRoutes(
         live: parent.live,
         onSwitchToTeacher: _homeSwitch(context, account, AppMode.teacher),
       ),
-      RoutePaths.parentChild: (context, state) =>
-          MyChildScreen(source: parent.myChild ?? const FakeMyChildSource()),
+      RoutePaths.parentChild: (context, state) => MyChildScreen(
+        source: parent.myChild ?? const FakeMyChildSource(),
+        yearSource: parent.schoolYears ?? const FakeChildSchoolYearSource(),
+      ),
     },
     account: account,
     notifications: notifications,
@@ -328,16 +334,34 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
     );
   }
 
+  // Ô Năm học (user 25/11): màn theo năm dựng sau khi tải năm học của bé; đổi năm ⇒ tải lại
+  final yearSource = parent.schoolYears ?? const FakeChildSchoolYearSource();
+  Widget inYear(
+    ChildSummary child,
+    String title,
+    Widget Function(ChildSchoolYear year) build,
+  ) => ParentYearGate(
+    childId: child.id,
+    source: yearSource,
+    title: title,
+    builder: build,
+  );
+
   final today = parent.today;
   return [
     route(
       RoutePaths.parentLeaveNotices,
-      (context, state, child) => LeaveNoticeListScreen(
-        childId: child.id,
-        source: parent.leave,
-        onCreate: () => context.push<void>(
-          RoutePaths.withChild(RoutePaths.parentLeaveNew, child.id),
-          extra: true,
+      (context, state, child) => inYear(
+        child,
+        'Đơn xin nghỉ',
+        (year) => LeaveNoticeListScreen(
+          childId: child.id,
+          year: year,
+          source: parent.leave,
+          onCreate: () => context.push<void>(
+            RoutePaths.withChild(RoutePaths.parentLeaveNew, child.id),
+            extra: true,
+          ),
         ),
       ),
     ),
@@ -371,19 +395,29 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
     ),
     route(
       RoutePaths.parentAttendance,
-      (context, state, child) => ChildAttendanceScreen(
-        childId: child.id,
-        initialDay: today,
-        source: parent.myChild ?? const FakeMyChildSource(),
+      (context, state, child) => inYear(
+        child,
+        'Điểm danh & bữa ăn',
+        (year) => ChildAttendanceScreen(
+          childId: child.id,
+          year: year,
+          initialDay: today,
+          source: parent.myChild ?? const FakeMyChildSource(),
+        ),
       ),
     ),
     route(
       RoutePaths.parentHealthBook,
-      (context, state, child) => HealthBookScreen(
-        child: child,
-        source: parent.healthBook ?? const FakeHealthBookSource(),
-        onOpenExam: (examId) => context.push<void>(
-          RoutePaths.parentHealthExam(examId, childId: child.id),
+      (context, state, child) => inYear(
+        child,
+        'Sổ sức khỏe',
+        (year) => HealthBookScreen(
+          child: child,
+          year: year,
+          source: parent.healthBook ?? const FakeHealthBookSource(),
+          onOpenExam: (examId) => context.push<void>(
+            RoutePaths.parentHealthExam(examId, childId: child.id),
+          ),
         ),
       ),
     ),
@@ -397,11 +431,16 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
     ),
     route(
       RoutePaths.parentEvaluation,
-      (context, state, child) => EvaluationScreen(
-        child: child,
-        source: parent.evaluation ?? const FakeEvaluationSource(),
-        onOpenTheme: (themeId) => context.push<void>(
-          RoutePaths.parentEvaluationTheme(themeId, childId: child.id),
+      (context, state, child) => inYear(
+        child,
+        'Đánh giá',
+        (year) => EvaluationScreen(
+          child: child,
+          year: year,
+          source: parent.evaluation ?? const FakeEvaluationSource(),
+          onOpenTheme: (themeId) => context.push<void>(
+            RoutePaths.parentEvaluationTheme(themeId, childId: child.id),
+          ),
         ),
       ),
     ),
@@ -415,11 +454,16 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
     ),
     route(
       RoutePaths.parentRewards,
-      (context, state, child) => RewardsScreen(
-        child: child,
-        source: parent.rewards ?? const FakeRewardSource(),
-        onOpenDailyEvaluation: () => context.push<void>(
-          RoutePaths.withChild(RoutePaths.parentEvaluation, child.id),
+      (context, state, child) => inYear(
+        child,
+        'Khen thưởng',
+        (year) => RewardsScreen(
+          child: child,
+          year: year,
+          source: parent.rewards ?? const FakeRewardSource(),
+          onOpenDailyEvaluation: () => context.push<void>(
+            RoutePaths.withChild(RoutePaths.parentEvaluation, child.id),
+          ),
         ),
       ),
     ),
@@ -702,6 +746,7 @@ GoRouter _buildLiveRouter(
     // AUTH-22: máy dùng chung ⇒ người sau không thấy con của người trước
     SelectedChild.reset();
     SelectedSchoolYear.reset();
+    ParentSelectedYear.reset();
     await signOut();
   }
 
@@ -773,6 +818,7 @@ GoRouter _buildLiveRouter(
           evaluation: LiveEvaluationSource(api),
           rewards: LiveRewardSource(api),
           healthBook: LiveHealthBookSource(api),
+          schoolYears: LiveChildSchoolYearSource(api),
         ),
       ),
     ],
@@ -830,6 +876,7 @@ StatefulShellRoute _roleShell(
                       () {
                         SelectedChild.reset();
                         SelectedSchoolYear.reset();
+                        ParentSelectedYear.reset();
                         preview_mode.AppMode.reset();
                         context.go(RoutePaths.login);
                       },

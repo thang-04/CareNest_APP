@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/features/parent/school_year/presentation/parent_selected_year.dart';
 import 'package:carenest_app/core/storage/last_mode_store.dart';
 import 'package:carenest_app/core/widgets/app_coming_soon.dart';
 import 'package:carenest_app/features/auth/presentation/screens/activation_screen.dart';
@@ -41,6 +42,21 @@ void main() {
     },
     'GET /me/notifications': (_) => {'unreadCount': 0, 'items': <Object>[]},
     'GET /leave-requests/me': (_) => <Object>[],
+    // Năm đang chạy phủ hôm nay (giờ máy) ⇒ khoảng ngày như trước khi có ô Năm học
+    'GET /children/5/school-years': (_) {
+      final now = DateTime.now();
+      String day(DateTime d) => d.toIso8601String().substring(0, 10);
+      return [
+        {
+          'schoolYearId': 3,
+          'name': '2026-2027',
+          'startDate': day(now.subtract(const Duration(days: 400))),
+          'endDate': day(now.add(const Duration(days: 200))),
+          'status': 'ACTIVE',
+          'className': 'Mầm 3A',
+        },
+      ];
+    },
   });
 
   /// Điểm danh tháng hiện tại của bé 5: khoảng từ ngày 1 tới hôm nay (giờ máy).
@@ -127,8 +143,15 @@ void main() {
       location: RoutePaths.parentChild,
     );
     expect(find.text('Nguyễn Minh Anh'), findsOneWidget);
-    // Hồ sơ giả có "Năm học 2026–2027"; BE chưa trả tên năm học
-    expect(find.textContaining('Năm học'), findsNothing);
+    // Năm học chỉ ở ô Năm học (từ BE); hồ sơ không tự ghi năm học như bản giả
+    expect(find.textContaining('Năm học'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(ParentYearChip),
+        matching: find.text('Năm học 2026–2027'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('live_parentAttendance_showsBeTotals', (tester) async {
@@ -158,8 +181,9 @@ void main() {
     api.routes['GET /children/5/daily-assessments'
         '?from=${day(from)}&to=${day(today)}'] = (_) =>
         <Object>[];
-    api.routes['GET /children/5/weekly-comments'] = (_) => <Object>[];
-    api.routes['GET /children/5/evaluations'] = (_) => {
+    api.routes['GET /children/5/weekly-comments?schoolYearId=3'] = (_) =>
+        <Object>[];
+    api.routes['GET /children/5/evaluations?schoolYearId=3'] = (_) => {
       'themes': <Object>[],
       'semesters': <Object>[],
       'yearEnd': null,
@@ -205,7 +229,7 @@ void main() {
   testWidgets('live_parentHealthBook_usesBe', (tester) async {
     final session = FakeLiveSession(['PARENT'], childIds: [5]);
     final api = parentApi(session);
-    api.routes['GET /children/5/health/published'] = (_) => {
+    api.routes['GET /children/5/health/published?schoolYearId=3'] = (_) => {
       'results': <Object>[],
       'growth': <Object>[],
       'interpretation': null,
@@ -216,7 +240,10 @@ void main() {
       api: api,
       location: RoutePaths.withChild(RoutePaths.parentHealthBook, '5'),
     );
-    expect(api.calls, contains('GET /children/5/health/published'));
+    expect(
+      api.calls,
+      contains('GET /children/5/health/published?schoolYearId=3'),
+    );
   });
 
   testWidgets('live_otherRolePath_goesOwnHome', (tester) async {

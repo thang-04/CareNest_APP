@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
+import 'package:carenest_app/features/parent/school_year/presentation/parent_selected_year.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
@@ -24,6 +26,7 @@ class RewardsScreen extends StatefulWidget {
   const RewardsScreen({
     super.key,
     required this.child,
+    this.year,
     required this.onOpenDailyEvaluation,
     this.initialTab = RewardsTab.week,
     this.source = const FakeRewardSource(),
@@ -36,17 +39,23 @@ class RewardsScreen extends StatefulWidget {
   final RewardsTab initialTab;
   final RewardSource source;
 
+  /// Năm học đang chọn (ô Năm học); null ⇒ khoảng gần đây như trước (Xem thử).
+  final ChildSchoolYear? year;
+
   @override
   State<RewardsScreen> createState() => _RewardsScreenState();
 }
 
 class _RewardsScreenState extends State<RewardsScreen> {
-  late Future<RewardBook> _book = widget.source.load(widget.child.id);
+  late Future<RewardBook> _book = widget.source.load(
+    widget.child.id,
+    year: widget.year,
+  );
   late RewardsTab _tab = widget.initialTab;
 
   void _retry() {
     setState(() {
-      _book = widget.source.load(widget.child.id);
+      _book = widget.source.load(widget.child.id, year: widget.year);
     });
   }
 
@@ -92,6 +101,8 @@ class _RewardsScreenState extends State<RewardsScreen> {
       padding: const EdgeInsets.all(AppSpacing.pagePadding),
       children: [
         _ChildLine(child: widget.child),
+        const SizedBox(height: AppSpacing.space3),
+        const ParentYearChip(),
         const SizedBox(height: AppSpacing.space4),
         AppSegmented<RewardsTab>(
           segments: const [

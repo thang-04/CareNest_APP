@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/features/parent/school_year/data/fake_child_school_year_source.dart';
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
+import 'package:carenest_app/features/parent/school_year/presentation/parent_selected_year.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
@@ -18,9 +21,16 @@ import 'package:carenest_app/features/parent/parent_home/presentation/selected_c
 /// Tab "Bé của tôi" (user 18/11, canvas "Bé của tôi gộp Hồ sơ"): hồ sơ của bé đang chọn
 /// ở Trang chủ. Chỉ xem; thông tin do nhà trường quản lý (AUTH-04, CHD-05).
 class MyChildScreen extends StatelessWidget {
-  const MyChildScreen({super.key, this.source = const FakeMyChildSource()});
+  const MyChildScreen({
+    super.key,
+    this.source = const FakeMyChildSource(),
+    this.yearSource = const FakeChildSchoolYearSource(),
+  });
 
   final MyChildSource source;
+
+  /// Ô Năm học: năm chọn ở đây áp dụng cho Điểm danh, Đơn nghỉ, Đánh giá, Khen thưởng, Sổ sức khỏe.
+  final ChildSchoolYearSource yearSource;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +47,8 @@ class MyChildScreen extends StatelessWidget {
               header: true,
               child: Text('Bé của tôi', style: textTheme.headlineSmall),
             ),
+            const SizedBox(height: AppSpacing.space3),
+            ParentYearPicker(childId: childId, source: yearSource),
             const SizedBox(height: AppSpacing.space4),
             _ProfileLoader(
               key: ValueKey(childId),

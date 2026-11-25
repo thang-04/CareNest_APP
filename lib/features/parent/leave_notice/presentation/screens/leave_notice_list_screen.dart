@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
+import 'package:carenest_app/features/parent/school_year/presentation/parent_selected_year.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
@@ -21,6 +23,7 @@ class LeaveNoticeListScreen extends StatefulWidget {
     required this.childId,
     required this.onCreate,
     this.source,
+    this.year,
   });
 
   final String childId;
@@ -28,6 +31,9 @@ class LeaveNoticeListScreen extends StatefulWidget {
   /// Mở form tạo đơn; trả về khi form đóng để tải lại danh sách.
   final Future<void> Function() onCreate;
   final LeaveNoticeSource? source;
+
+  /// Năm học đang chọn: chỉ đơn có ngày trong năm; năm không đang chạy chỉ xem (AUTH-03). Null ⇒ mọi đơn.
+  final ChildSchoolYear? year;
 
   @override
   State<LeaveNoticeListScreen> createState() => _LeaveNoticeListScreenState();
@@ -48,7 +54,14 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
   Future<void> _load() async {
     setState(() => _error = null);
     try {
-      final notices = await _source.loadNotices(widget.childId);
+      final year = widget.year;
+      final notices = [
+        for (final notice in await _source.loadNotices(widget.childId))
+          if (year == null ||
+              (!notice.to.isBefore(year.startDate) &&
+                  !notice.from.isAfter(year.endDate)))
+            notice,
+      ];
       if (mounted) setState(() => _notices = notices);
     } catch (error) {
       if (mounted) setState(() => _error = error);
@@ -71,6 +84,8 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.pagePadding),
           children: [
+            const ParentYearChip(),
+            const SizedBox(height: AppSpacing.space3),
             if (_error != null)
               AppErrorState(
                 title: 'Chưa tải được đơn xin nghỉ',
@@ -138,15 +153,17 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: AppBottomDock(
-        children: [
-          AppButton(
-            label: 'Tạo đơn xin nghỉ mới',
-            expand: true,
-            onPressed: _error != null ? null : _create,
-          ),
-        ],
-      ),
+      bottomNavigationBar: widget.year?.readOnly ?? false
+          ? null
+          : AppBottomDock(
+              children: [
+                AppButton(
+                  label: 'Tạo đơn xin nghỉ mới',
+                  expand: true,
+                  onPressed: _error != null ? null : _create,
+                ),
+              ],
+            ),
     );
   }
 }
