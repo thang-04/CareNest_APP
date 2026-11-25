@@ -38,6 +38,37 @@ class _ChildrenSource implements ParentHomeSource {
   }
 }
 
+/// Hôm nay cố định (phiên thật): bé chỉ có tên, lớp — BE chưa trả điểm trường, tuổi, GV.
+class _TodaySource implements ParentHomeSource {
+  _TodaySource({
+    this.attendance = ParentAttendanceStatus.notRecorded,
+    this.absentPart,
+  });
+
+  final ParentAttendanceStatus attendance;
+  final AbsentPart? absentPart;
+
+  static const child = ChildSummary(
+    id: 'c-1',
+    fullName: 'Trần Bảo Ngọc',
+    shortName: 'Bảo Ngọc',
+    className: 'Mẫu giáo 3A',
+  );
+
+  @override
+  Future<List<ChildSummary>> loadChildren() async => const [child];
+
+  @override
+  Future<ParentToday> loadToday(String childId) async => ParentToday(
+    greetingName: 'Phụ huynh',
+    date: DateTime(2026, 11, 25),
+    child: child,
+    attendance: attendance,
+    absentPart: absentPart,
+    unreadNotifications: 0,
+  );
+}
+
 const _thirdChild = ChildSummary(
   id: 'child-3',
   fullName: 'Nguyễn Gia Khang',
@@ -155,6 +186,32 @@ void main() {
     expect(find.bySemanticsLabel('Điểm danh: Chưa điểm danh'), findsOneWidget);
     expect(find.bySemanticsLabel('Thực đơn: Chưa công bố'), findsOneWidget);
     expect(find.bySemanticsLabel('Hoạt động: Chưa có'), findsOneWidget);
+  });
+
+  testWidgets('parentHome_noSchool_showsLabel', (tester) async {
+    SelectedChild.notifier.value = 'c-1';
+    await pumpParentHome(
+      tester,
+      FakeMode.data,
+      source: _TodaySource(attendance: ParentAttendanceStatus.noSchool),
+    );
+    expect(
+      find.bySemanticsLabel('Điểm danh: Không phải ngày học'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('parentHome_halfDay_showsAbsentPart', (tester) async {
+    SelectedChild.notifier.value = 'c-1';
+    await pumpParentHome(
+      tester,
+      FakeMode.data,
+      source: _TodaySource(
+        attendance: ParentAttendanceStatus.present,
+        absentPart: AbsentPart.morning,
+      ),
+    );
+    expect(find.text('Nghỉ buổi sáng theo đơn'), findsOneWidget);
   });
 
   testWidgets('Lỗi tải ⇒ trạng thái lỗi có Thử lại', (tester) async {

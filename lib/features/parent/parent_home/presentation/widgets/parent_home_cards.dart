@@ -54,14 +54,19 @@ class ChildWalletCard extends StatelessWidget {
                         color: AppColors.textMuted,
                       ),
                     ),
+                    if (today.absentPart case final part?)
+                      Text(part.label, style: textTheme.bodyMedium),
                   ],
                 ),
               ),
               const SizedBox(width: AppSpacing.space2),
-              AppStatusBadge(
-                label: status.label,
-                tone: status.tone,
-                icon: status.icon,
+              // Nhãn dài ("Không phải ngày học") xuống dòng trong badge, không tràn hàng
+              Flexible(
+                child: AppStatusBadge(
+                  label: status.label,
+                  tone: status.tone,
+                  icon: status.icon,
+                ),
               ),
             ],
           ),

@@ -29,3 +29,11 @@ extension ParentAttendanceStatusView on ParentAttendanceStatus {
     _ => null,
   };
 }
+
+/// Nghỉ một buổi theo đơn (ATT-13): badge là trạng thái buổi còn lại, dòng này nói buổi nghỉ.
+extension AbsentPartView on AbsentPart {
+  String get label => switch (this) {
+    AbsentPart.morning => 'Nghỉ buổi sáng theo đơn',
+    AbsentPart.afternoon => 'Nghỉ buổi chiều theo đơn',
+  };
+}
