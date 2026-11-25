@@ -26,6 +26,12 @@ class LiveLeaveNoticeSource implements LeaveNoticeSource {
   }
 
   @override
+  Future<LeaveNotice> cancel(String noticeId) async {
+    final data = await _api.json('PATCH', '/leave-requests/$noticeId/cancel');
+    return _notice(data! as Map);
+  }
+
+  @override
   Future<LeaveNotice> submit(LeaveNoticeDraft draft) async {
     final data = await _api.json(
       'POST',

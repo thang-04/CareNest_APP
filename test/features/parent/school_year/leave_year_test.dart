@@ -62,4 +62,38 @@ void main() {
     expect(find.text('13/10/2026 · Cả ngày'), findsOneWidget);
     expect(find.text('Tạo đơn xin nghỉ mới'), findsOneWidget);
   });
+
+  testWidgets(
+    'AC-3 (ATT-05): đơn còn hiệu lực có nút Huỷ đơn, xác nhận rồi mới huỷ',
+    (tester) async {
+      usePhoneSize(tester);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildLightTheme(),
+          home: LeaveNoticeListScreen(
+            childId: 'child-1',
+            source: FakeLeaveNoticeSource(delay: Duration.zero),
+            onCreate: () async {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      // Chỉ đơn 13/10 còn ngày chưa qua (hôm nay giả 12/10); đơn cũ không huỷ được
+      expect(find.text('Huỷ đơn'), findsOneWidget);
+
+      await tester.tap(find.text('Huỷ đơn'));
+      await tester.pumpAndSettle();
+      expect(find.text('Huỷ đơn xin nghỉ?'), findsOneWidget);
+      await tester.tap(find.text('Giữ đơn'));
+      await tester.pumpAndSettle();
+      expect(find.text('Huỷ đơn'), findsOneWidget);
+
+      await tester.tap(find.text('Huỷ đơn'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Huỷ đơn nghỉ'));
+      await tester.pumpAndSettle();
+      expect(find.text('Huỷ đơn'), findsNothing);
+      expect(find.text('Đã huỷ'), findsWidgets);
+    },
+  );
 }

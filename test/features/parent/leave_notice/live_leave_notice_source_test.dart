@@ -164,4 +164,12 @@ void main() {
       throwsA(isA<ApiFailure>().having((e) => e.errorCode, 'code', 4031)),
     );
   });
+
+  test('cancel_patchesAndMapsCancelled (ATT-05)', () async {
+    api.routes['PATCH /leave-requests/9/cancel'] = (_) =>
+        _leave(id: 9, status: 'CANCELLED');
+    final notice = await source.cancel('9');
+    expect(api.calls, contains('PATCH /leave-requests/9/cancel'));
+    expect(notice.status, LeaveNoticeStatus.cancelled);
+  });
 }

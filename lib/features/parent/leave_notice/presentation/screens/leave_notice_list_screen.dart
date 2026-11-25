@@ -7,6 +7,7 @@ import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/integration/load_failure.dart';
 import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
+import 'package:carenest_app/core/widgets/app_bottom_sheet.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
@@ -71,6 +72,65 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
   Future<void> _create() async {
     await widget.onCreate();
     if (mounted) _load();
+  }
+
+  /// Đơn đang huỷ (khoá nút) và lỗi huỷ theo đơn (câu BE).
+  final Set<String> _cancelling = {};
+  final Map<String, String> _cancelErrors = {};
+
+  /// Đơn chưa huỷ còn ngày chưa qua; năm học đã đóng chỉ xem. BE quyết định phần nào huỷ được
+  /// (giờ chốt do HT cấu hình — ATT-06).
+  bool _cancellable(LeaveNotice notice) =>
+      notice.status == LeaveNoticeStatus.submitted &&
+      !notice.to.isBefore(_source.today) &&
+      !(widget.year?.readOnly ?? false);
+
+  Future<void> _cancel(LeaveNotice notice) async {
+    final confirmed = await showAppBottomSheet<bool>(
+      context: context,
+      title: 'Huỷ đơn xin nghỉ?',
+      builder: (sheetContext) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Các ngày chưa qua giờ chốt sẽ được huỷ và bé được tính đi học lại; ngày đã qua giờ chốt vẫn là vắng có phép.',
+            style: Theme.of(
+              sheetContext,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: AppSpacing.space4),
+          AppButton(
+            label: 'Huỷ đơn nghỉ',
+            expand: true,
+            onPressed: () => Navigator.of(sheetContext).pop(true),
+          ),
+          const SizedBox(height: AppSpacing.space2),
+          AppButton(
+            label: 'Giữ đơn',
+            variant: AppButtonVariant.text,
+            expand: true,
+            onPressed: () => Navigator.of(sheetContext).pop(false),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() {
+      _cancelling.add(notice.id);
+      _cancelErrors.remove(notice.id);
+    });
+    try {
+      await _source.cancel(notice.id);
+      if (!mounted) return;
+      setState(() => _cancelling.remove(notice.id));
+      await _load();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _cancelling.remove(notice.id);
+        _cancelErrors[notice.id] = loadFailureMessage(error);
+      });
+    }
   }
 
   @override
@@ -140,6 +200,26 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
                     ],
                   ),
                 ),
+                if (_cancelErrors[notice.id] case final error?) ...[
+                  const SizedBox(height: AppSpacing.space2),
+                  Text(
+                    error,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppColors.dangerText,
+                    ),
+                  ),
+                ],
+                if (_cancellable(notice)) ...[
+                  const SizedBox(height: AppSpacing.space2),
+                  AppButton(
+                    label: 'Huỷ đơn',
+                    variant: AppButtonVariant.secondary,
+                    small: true,
+                    isLoading: _cancelling.contains(notice.id),
+                    loadingLabel: 'Đang huỷ…',
+                    onPressed: () => _cancel(notice),
+                  ),
+                ],
                 const SizedBox(height: AppSpacing.space3),
               ],
               Text(

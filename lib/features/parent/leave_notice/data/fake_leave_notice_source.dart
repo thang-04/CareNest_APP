@@ -7,6 +7,10 @@ abstract interface class LeaveNoticeSource {
   Future<List<LeaveNotice>> loadNotices(String childId);
   Future<LeaveNotice> submit(LeaveNoticeDraft draft);
 
+  /// Huỷ đơn (BE `PATCH /leave-requests/{id}/cancel`): BE huỷ phần ngày còn huỷ được, ngày đã qua
+  /// giờ chốt giữ "Vắng có phép" (user chốt 14/11); trả đơn sau khi huỷ.
+  Future<LeaveNotice> cancel(String noticeId);
+
   /// Bữa bị huỷ / bữa còn học của ngày nghỉ nửa buổi. BE chưa có API trả bữa nhóm tuổi trước
   /// khi gửi đơn (chỉ có `eatsMeals` sau khi tạo) ⇒ bản thật cần BE bổ sung.
   Future<LeaveMealPlan> loadMealPlan(
@@ -108,6 +112,27 @@ class FakeLeaveNoticeSource implements LeaveNoticeSource {
         keptMeals: morning,
       ),
     };
+  }
+
+  @override
+  Future<LeaveNotice> cancel(String noticeId) async {
+    await Future<void>.delayed(delay);
+    final index = _notices.indexWhere((notice) => notice.id == noticeId);
+    final old = _notices[index];
+    final cancelled = LeaveNotice(
+      id: old.id,
+      childId: old.childId,
+      from: old.from,
+      to: old.to,
+      session: old.session,
+      reason: old.reason,
+      status: LeaveNoticeStatus.cancelled,
+      seenByTeacher: old.seenByTeacher,
+      eats: old.eats,
+      eatsMeals: old.eatsMeals,
+    );
+    _notices[index] = cancelled;
+    return cancelled;
   }
 
   @override
