@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/features/parent/health_book/data/live_health_book_source.dart';
 import 'package:carenest_app/features/parent/health_book/domain/health_book.dart';
 
@@ -158,5 +159,98 @@ void main() {
     });
 
     expect(book.exams, isEmpty);
+  });
+
+  test('loadExam_mapsFormLikeWeb', () async {
+    final source = LiveHealthBookSource(
+      ScriptedApi(session, {
+        'GET /children/5/health/published/exams/9': (_) => {
+          'resultId': 9,
+          'campaignName': 'Khám sức khỏe đầu năm',
+          'examiner': 'Trạm Y tế (giả)',
+          'date': '2026-09-20',
+          'ageMonths': 49,
+          'heightCm': 101.5,
+          'weightKg': 16,
+          'headCircumferenceCm': 49.5,
+          'followUpLevel': 'WATCH',
+          'conclusionCategory': 'ISSUE',
+          'history': {
+            'self': 'YES',
+            'selfText': 'Hen phế quản',
+            'family': 'NO',
+            'tbContact': '',
+          },
+          'vitals': {
+            'temperatureC': 37.8,
+            'temperatureStatus': 'FEVER',
+            'pulse': 110,
+            'pulseStatus': 'NORMAL',
+          },
+          'nutrition': {
+            'lengthForAgeSd': 0.1,
+            'headStatus': 'NORMAL',
+            'statuses': ['NORMAL'],
+          },
+          'development': {'mental': 'YES', 'motor': 'NO', 'autismRisk': ''},
+          'immunization': {'bcg': 'YES'},
+          'clinical': {'skinColor': 'PINK', 'dentalIssue': 'YES', 'gait': ''},
+          'conclusion': {
+            'healthIssue': true,
+            'doctorName': 'BS. Lê Hằng',
+            'issueText': 'Sâu răng',
+            'action': 'ADVICE',
+            'adviceText': 'Đánh răng 2 lần mỗi ngày',
+            'parentOpinion': 'Gia đình sẽ cho bé đi khám răng',
+          },
+        },
+      }),
+    );
+
+    final exam = (await source.loadExam('5', '9'))!;
+
+    expect(exam.examiner, 'Trạm Y tế (giả)');
+    expect(exam.conclusion, 'Có vấn đề, tư vấn');
+    expect(exam.action, 'Tư vấn');
+    expect(exam.parentOpinion, 'Gia đình sẽ cho bé đi khám răng');
+    // Nhãn, mục bất thường như phiếu Web (healthExamForm.js); ô chưa chọn bỏ qua
+    expect(exam.history.map((i) => '${i.label}|${i.value}|${i.abnormal}'), [
+      'Tiền sử bản thân|Có · Hen phế quản|true',
+      'Tiền sử gia đình|Không|false',
+    ]);
+    expect(
+      exam.vitals.map(
+        (v) => '${v.label}|${v.value}|${v.unit}|${v.status}|${v.abnormal}',
+      ),
+      ['Nhiệt độ|37,8|°C|Sốt|true', 'Mạch|110|lần/phút|Bình thường|false'],
+    );
+    expect(exam.nutrition.map((i) => '${i.label}|${i.value}'), [
+      'Chiều cao|101,5 cm',
+      'Cân nặng|16 kg',
+      'Vòng đầu|49,5 cm · Bình thường',
+      'Chiều cao theo tuổi|0,1 SD',
+    ]);
+    expect(exam.nutritionStatus, 'Bình thường');
+    expect(exam.development.map((i) => '${i.value}|${i.abnormal}'), [
+      'Có|false',
+      'Không|true',
+    ]);
+    expect(exam.immunization.single.label, 'Lao (sơ sinh)');
+    expect(exam.clinical.map((s) => s.title), [
+      '1. Toàn trạng',
+      '2.5. Khám miệng, răng',
+    ]);
+    expect(exam.clinical.last.items.single.abnormal, isTrue);
+  });
+
+  test('loadExam_notConcluded_null', () async {
+    final source = LiveHealthBookSource(
+      ScriptedApi(session, {
+        'GET /children/5/health/published/exams/7': (_) =>
+            throw ApiFailure(404, 'Không tìm thấy phiếu khám', 5027),
+      }),
+    );
+
+    expect(await source.loadExam('5', '7'), isNull);
   });
 }

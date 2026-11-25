@@ -105,6 +105,7 @@ class HealthExam {
     this.issueText,
     this.issueKind,
     this.advice,
+    this.parentOpinion,
     this.history = const [],
     this.vitals = const [],
     this.nutrition = const [],
@@ -144,6 +145,9 @@ class HealthExam {
 
   /// Lời dặn của bác sĩ
   final String? advice;
+
+  /// Ý kiến phụ huynh ghi trên phiếu (user 25/11: phụ huynh xem được).
+  final String? parentOpinion;
   final List<ExamItem> history;
   final List<ExamVital> vitals;
   final List<ExamItem> nutrition;
@@ -216,6 +220,14 @@ class HealthBook {
   final TrendInterpretation? interpretation;
 }
 
-abstract interface class HealthBookSource {
+abstract class HealthBookSource {
+  const HealthBookSource();
+
   Future<HealthBook> load(String childId);
+
+  /// Phiếu khám đầy đủ của một đợt (màn chi tiết); null ⇒ không có hoặc chưa kết luận.
+  Future<HealthExam?> loadExam(String childId, String examId) async =>
+      (await load(
+        childId,
+      )).exams.where((exam) => exam.id == examId).firstOrNull;
 }

@@ -10,7 +10,7 @@ import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_s
 import '../../../helpers/pump_app.dart';
 
 /// Sổ dựng sẵn cho các trường hợp dữ liệu giả không có.
-class _BookSource implements HealthBookSource {
+class _BookSource extends HealthBookSource {
   const _BookSource(this.book);
 
   final HealthBook book;

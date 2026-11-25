@@ -37,11 +37,14 @@ class ExamDetailScreen extends StatefulWidget {
 }
 
 class _ExamDetailScreenState extends State<ExamDetailScreen> {
-  late Future<HealthBook> _book = widget.source.load(widget.child.id);
+  late Future<HealthExam?> _exam = _load();
+
+  Future<HealthExam?> _load() =>
+      widget.source.loadExam(widget.child.id, widget.examId);
 
   void _retry() {
     setState(() {
-      _book = widget.source.load(widget.child.id);
+      _exam = _load();
     });
   }
 
@@ -49,8 +52,8 @@ class _ExamDetailScreenState extends State<ExamDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Chi tiết đợt khám')),
-      body: FutureBuilder<HealthBook>(
-        future: _book,
+      body: FutureBuilder<HealthExam?>(
+        future: _exam,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
@@ -61,16 +64,13 @@ class _ExamDetailScreenState extends State<ExamDetailScreen> {
               ),
             );
           }
-          final book = snapshot.data;
-          if (book == null) {
+          if (snapshot.connectionState != ConnectionState.done) {
             return const Padding(
               padding: EdgeInsets.all(AppSpacing.pagePadding),
               child: AppSkeletonList(rows: 5),
             );
           }
-          final exam = book.exams
-              .where((item) => item.id == widget.examId)
-              .firstOrNull;
+          final exam = snapshot.data;
           if (exam == null) {
             return const Center(
               child: AppEmptyState(
@@ -292,6 +292,8 @@ class _ConclusionCard extends StatelessWidget {
                 HealthDetailRow(label: 'Tình trạng dinh dưỡng', value: status),
               if (exam.doctorName case final doctor?)
                 HealthDetailRow(label: 'Bác sĩ kết luận', value: doctor),
+              if (exam.parentOpinion case final opinion?)
+                HealthDetailRow(label: 'Ý kiến phụ huynh', value: opinion),
             ],
           ),
         ],

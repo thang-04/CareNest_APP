@@ -30,7 +30,7 @@ Future<void> pumpExam(
 }
 
 /// Đợt khám như API phụ huynh trả (25/11): chỉ phần kết luận.
-class _ConclusionOnlySource implements HealthBookSource {
+class _ConclusionOnlySource extends HealthBookSource {
   const _ConclusionOnlySource();
 
   @override
@@ -49,6 +49,7 @@ class _ConclusionOnlySource implements HealthBookSource {
         conclusion: 'Bình thường',
         action: null,
         nutritionStatus: null,
+        parentOpinion: 'Gia đình đồng ý',
       ),
     ],
   );
@@ -77,6 +78,8 @@ void main() {
       );
     }
     expect(find.textContaining('Hướng xử lý'), findsNothing);
+    // User 25/11: phụ huynh xem được ý kiến phụ huynh trên phiếu
+    expect(find.text('Ý kiến phụ huynh', skipOffstage: false), findsOneWidget);
     expect(find.textContaining('null'), findsNothing);
   });
 

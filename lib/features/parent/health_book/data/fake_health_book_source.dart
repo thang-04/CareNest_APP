@@ -4,7 +4,7 @@ import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_s
 /// Sổ sức khỏe giả (user 17/11: dựng mock, tạm bỏ qua BE). Nhãn phiếu khám theo Phụ lục II của FE
 /// (`healthExamForm.js`); tên đợt, bác sĩ, lời dặn theo dữ liệu mẫu của BE. Minh Anh có đủ ba phần;
 /// Bảo Ngọc chưa có nhận định xu hướng.
-class FakeHealthBookSource implements HealthBookSource {
+class FakeHealthBookSource extends HealthBookSource {
   const FakeHealthBookSource({
     this.mode = FakeMode.data,
     this.delay = const Duration(milliseconds: 300),
