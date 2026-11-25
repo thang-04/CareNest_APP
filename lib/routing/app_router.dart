@@ -17,6 +17,17 @@ import 'package:carenest_app/features/auth/presentation/screens/login_screen.dar
 import 'package:carenest_app/features/auth/presentation/screens/new_password_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/otp_verify_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/unsupported_role_screen.dart';
+import 'package:carenest_app/features/kitchen/kitchen_menu/presentation/screens/kitchen_menu_screen.dart';
+import 'package:carenest_app/features/kitchen/kitchen_menu/data/live_kitchen_menu_source.dart';
+import 'package:carenest_app/features/kitchen/kitchen_menu/data/fake_kitchen_menu_source.dart';
+import 'package:carenest_app/features/kitchen/food_samples/domain/food_samples.dart';
+import 'package:carenest_app/features/kitchen/kitchen_home/domain/kitchen_tasks.dart';
+import 'package:carenest_app/features/kitchen/meal_photos/domain/kitchen_meal_photos.dart';
+import 'package:carenest_app/features/kitchen/meal_photos/data/live_kitchen_photo_source.dart';
+import 'package:carenest_app/features/kitchen/food_quantities/data/live_food_quantity_source.dart';
+import 'package:carenest_app/features/kitchen/food_samples/data/live_food_sample_source.dart';
+import 'package:carenest_app/features/kitchen/kitchen_home/data/live_kitchen_home_source.dart';
+import 'package:carenest_app/features/kitchen/kitchen_meals/data/live_kitchen_meals_source.dart';
 import 'package:carenest_app/features/kitchen/food_quantities/presentation/screens/food_quantities_screen.dart';
 import 'package:carenest_app/features/kitchen/food_samples/presentation/screens/food_samples_screen.dart';
 import 'package:carenest_app/features/kitchen/kitchen_home/presentation/screens/kitchen_home_screen.dart';
@@ -100,6 +111,8 @@ import 'package:carenest_app/features/teacher/school_year/presentation/selected_
 import 'package:carenest_app/features/teacher/teacher_home/presentation/screens/teacher_home_screen.dart';
 import 'package:carenest_app/routing/live_access.dart';
 import 'package:carenest_app/routing/navigation_destinations.dart';
+import 'package:carenest_app/routing/kitchen_sources.dart';
+import 'package:carenest_app/routing/notification_targets.dart';
 import 'package:carenest_app/routing/parent_sources.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 import 'package:flutter/foundation.dart';
@@ -234,6 +247,7 @@ List<RouteBase> _staffAndParentRoutes(
   _AccountTab account = const _AccountTab(),
   NotificationSource notifications = const FakeNotificationSource(),
   ParentSources parent = const ParentSources(),
+  KitchenSources kitchen = const KitchenSources(),
 }) => [
   _roleShell(
     rootKey,
@@ -287,18 +301,16 @@ List<RouteBase> _staffAndParentRoutes(
     AppRole.kitchen,
     NavDestinations.kitchen,
     {
-      RoutePaths.kitchenHome: (context, state) => const KitchenHomeScreen(),
-      RoutePaths.kitchenMenu: (context, state) => SchoolMenuScreen(
-        asTab: true,
-        initialDay: FakeParentHomeSource.today,
-        footerNote:
-            'Chỉ xem. Thực đơn mẫu theo nhóm tuổi do Phó hiệu trưởng lập và công bố trên web.',
+      RoutePaths.kitchenHome: (context, state) =>
+          KitchenHomeScreen(source: kitchen.home),
+      RoutePaths.kitchenMenu: (context, state) => KitchenMenuScreen(
+        source: kitchen.menu ?? const FakeKitchenMenuSource(),
       ),
     },
     account: account,
     notifications: notifications,
   ),
-  ..._kitchenRoutes(),
+  ..._kitchenRoutes(kitchen),
 ];
 
 /// Màn con của Phụ huynh: route chỉ mang ID con; ID không thuộc danh sách con ⇒ 404.
@@ -571,22 +583,23 @@ List<GoRoute> _teacherRoutes() {
 }
 
 /// Màn con của Bếp.
-List<GoRoute> _kitchenRoutes() => [
+List<GoRoute> _kitchenRoutes(KitchenSources kitchen) => [
   GoRoute(
     path: RoutePaths.kitchenMeals,
-    builder: (context, state) => const KitchenMealsScreen(),
+    builder: (context, state) => KitchenMealsScreen(source: kitchen.meals),
   ),
   GoRoute(
     path: RoutePaths.kitchenQuantities,
-    builder: (context, state) => const FoodQuantitiesScreen(),
+    builder: (context, state) =>
+        FoodQuantitiesScreen(source: kitchen.quantities),
   ),
   GoRoute(
     path: RoutePaths.kitchenPhotos,
-    builder: (context, state) => const MealSamplePhotosScreen(),
+    builder: (context, state) => MealSamplePhotosScreen(source: kitchen.photos),
   ),
   GoRoute(
     path: RoutePaths.kitchenSamples,
-    builder: (context, state) => const FoodSamplesScreen(),
+    builder: (context, state) => FoodSamplesScreen(source: kitchen.samples),
   ),
 ];
 
@@ -820,6 +833,7 @@ GoRouter _buildLiveRouter(
           healthBook: LiveHealthBookSource(api),
           schoolYears: LiveChildSchoolYearSource(api),
         ),
+        kitchen: _liveKitchen(api),
       ),
     ],
     errorBuilder: (context, state) => const NotFoundScreen(),
@@ -857,16 +871,12 @@ StatefulShellRoute _roleShell(
                 ),
                 NavTab.account => AccountScreen(
                   role: role,
-                  onOpenProfile: live
-                      ? () => openComingSoon(context, 'Thông tin cá nhân')
-                      : () => context.push(
-                          '${destination.path}/${RoutePaths.profileSegment}',
-                        ),
-                  onChangePassword: live
-                      ? () => openComingSoon(context, 'Đổi mật khẩu')
-                      : () => context.push(
-                          '${destination.path}/${RoutePaths.passwordSegment}',
-                        ),
+                  onOpenProfile: () => context.push(
+                    '${destination.path}/${RoutePaths.profileSegment}',
+                  ),
+                  // Mọi vai App không tự đổi mật khẩu: gửi yêu cầu lên HT/PHT (user 25/11) — chờ BE
+                  onChangePassword: () =>
+                      openComingSoon(context, 'Yêu cầu cấp lại mật khẩu'),
                   onOpenCampuses: role == AppRole.principal
                       ? () => context.push(RoutePaths.principalCampuses)
                       : null,
@@ -895,10 +905,24 @@ StatefulShellRoute _roleShell(
                       role: role,
                       id: state.pathParameters['id']!,
                       source: notifications,
+                      // Phụ huynh phiên thật: nút mở màn của bé theo loại thông báo (PAR-07)
+                      actionFor: live && role == AppRole.parent
+                          ? (item) {
+                              final target = parentNotificationTarget(
+                                item.type,
+                                item.childId,
+                              );
+                              return target == null
+                                  ? null
+                                  : (
+                                      label: target.label,
+                                      open: () => context.push(target.path),
+                                    );
+                            }
+                          : null,
                     ),
                   ),
                 ],
-                NavTab.account when live => const <RouteBase>[],
                 NavTab.account => [
                   GoRoute(
                     path: RoutePaths.profileSegment,
@@ -906,6 +930,7 @@ StatefulShellRoute _roleShell(
                     builder: (context, state) => PersonalInfoScreen(
                       role: role,
                       source: account.source ?? const FakeAccountSource(),
+                      readOnly: live,
                     ),
                   ),
                   GoRoute(
@@ -954,5 +979,31 @@ class _ComingSoonPage extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: Text(title)),
     body: AppComingSoon(title: title),
+  );
+}
+
+/// Nguồn bếp phiên thật; "Việc hôm nay" ghép từ ảnh mẫu + sổ lưu mẫu BE trả (user 25/11).
+KitchenSources _liveKitchen(MobileApi api) {
+  final photos = LiveKitchenPhotoSource(api);
+  final samples = LiveFoodSampleSource(api);
+  return KitchenSources(
+    home: LiveKitchenHomeSource(
+      api,
+      tasks: () async {
+        final results = await Future.wait([
+          photos.loadToday(),
+          samples.loadToday(),
+        ]);
+        return kitchenTasks(
+          results[0] as KitchenPhotoDay,
+          results[1] as FoodSampleDay,
+        );
+      },
+    ),
+    meals: LiveKitchenMealsSource(api),
+    quantities: LiveFoodQuantitySource(api),
+    samples: samples,
+    photos: photos,
+    menu: LiveKitchenMenuSource(api),
   );
 }

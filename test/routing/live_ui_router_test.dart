@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/features/parent/school_year/presentation/parent_selected_year.dart';
+import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/storage/last_mode_store.dart';
 import 'package:carenest_app/core/widgets/app_coming_soon.dart';
 import 'package:carenest_app/features/auth/presentation/screens/activation_screen.dart';
@@ -246,6 +247,76 @@ void main() {
     );
   });
 
+  testWidgets('live_kitchenHome_usesBeCounts', (tester) async {
+    final session = FakeLiveSession(['KITCHEN_STAFF']);
+    final api = ScriptedApi(session, {
+      'GET /nutrition/kitchen/day': (_) => {
+        'date': '2026-11-25',
+        'dayOff': false,
+        'countStatus': 'CONFIRMED',
+        'confirmedAt': '2026-11-25T01:30:00Z',
+        'menu': <Object>[],
+        'servings': <Object>[],
+        'foods': <Object>[],
+      },
+      'GET /meal-counts': (_) => {
+        'today': '2026-11-25',
+        'counts': [
+          {
+            'session': 'LUNCH',
+            'status': 'CONFIRMED',
+            'needsReconfirmation': false,
+            'totals': {'normal': 135, 'substitute': 4},
+          },
+        ],
+      },
+      'GET /nutrition/meal-photo-windows': (_) => <Object>[],
+      'GET /nutrition/meal-photos?date=2026-11-25': (_) => <Object>[],
+      'GET /nutrition/food-samples?from=2026-10-26&to=2026-11-25': (_) =>
+          <Object>[],
+      'GET /me/notifications': (_) => {'unreadCount': 0, 'items': <Object>[]},
+    });
+    await pumpLiveApp(
+      tester,
+      session,
+      api: api,
+      location: RoutePaths.kitchenHome,
+    );
+    expect(api.calls, contains('GET /nutrition/kitchen/day'));
+    // Bản giả có bữa trưa 182 suất; BE trả 139 (135 thường + 4 thay thế)
+    expect(find.text('139'), findsOneWidget);
+    expect(find.text('182'), findsNothing);
+  });
+
+  testWidgets('live_kitchenMeals_forbidden_showsError', (tester) async {
+    final session = FakeLiveSession(['KITCHEN_STAFF']);
+    await pumpLiveApp(
+      tester,
+      session,
+      api: ScriptedApi(session, {
+        'GET /nutrition/kitchen/day': (_) =>
+            throw ApiFailure(403, 'Tài khoản chưa được phân công bếp', 6063),
+        'GET /meal-counts': (_) => const <String, Object?>{},
+      }),
+      location: RoutePaths.kitchenMeals,
+    );
+    expect(find.text('Tài khoản chưa được phân công bếp'), findsOneWidget);
+  });
+
+  testWidgets('live_accountProfile_readOnly_passwordIsRequestLater', (
+    tester,
+  ) async {
+    final session = FakeLiveSession(['KITCHEN_STAFF']);
+    await pumpLiveApp(tester, session, location: RoutePaths.kitchenAccount);
+    expect(find.text('Yêu cầu cấp lại mật khẩu'), findsOneWidget);
+
+    await tester.tap(find.text('Thông tin cá nhân'));
+    await tester.pumpAndSettle();
+    expect(find.text('Tên đăng nhập'), findsOneWidget);
+    expect(find.text('Người Dùng Thử'), findsOneWidget);
+    expect(find.text('Lưu thay đổi'), findsNothing);
+  });
+
   testWidgets('live_otherRolePath_goesOwnHome', (tester) async {
     await pumpLiveApp(
       tester,
@@ -266,6 +337,40 @@ void main() {
       location: '/live/notifications/7',
     );
     expect(find.byType(NotificationDetailScreen), findsOneWidget);
+  });
+
+  testWidgets('live_parentNotification_actionOpensChildScreen (PAR-07)', (
+    tester,
+  ) async {
+    final session = FakeLiveSession(['PARENT'], childIds: [5]);
+    final api = parentApi(session);
+    api.routes['POST /me/notifications/7/read'] = (_) => null;
+    api.routes['GET /me/notifications/7'] = (_) => {
+      'id': 7,
+      'type': 'HEALTH_RESULT_PUBLISHED',
+      'typeLabel': 'Sức khỏe',
+      'title': 'Có kết quả cân đo mới',
+      'childId': 5,
+      'createdAt': '2026-11-25T02:00:00Z',
+      'readAt': '2026-11-25T02:00:00Z',
+    };
+    api.routes['GET /children/5/health/published?schoolYearId=3'] = (_) => {
+      'results': <Object>[],
+      'growth': <Object>[],
+    };
+    await pumpLiveApp(
+      tester,
+      session,
+      api: api,
+      location: '${RoutePaths.parentNotifications}/7',
+    );
+    expect(find.text('Xem sổ sức khỏe'), findsOneWidget);
+    await tester.tap(find.text('Xem sổ sức khỏe'));
+    await tester.pumpAndSettle();
+    expect(
+      api.calls,
+      contains('GET /children/5/health/published?schoolYearId=3'),
+    );
   });
 
   testWidgets('live_signOut_resetsSelectedChild', (tester) async {
