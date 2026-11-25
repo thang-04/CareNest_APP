@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/storage/last_mode_store.dart';
+import 'package:carenest_app/core/widgets/app_coming_soon.dart';
 import 'package:carenest_app/features/auth/presentation/screens/activation_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_list_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
@@ -76,6 +77,31 @@ void main() {
     expect(find.textContaining('Minh Anh'), findsWidgets);
     expect(find.textContaining('Cơ sở'), findsNothing);
   });
+
+  testWidgets('live_parentHome_menuAndActivityComingSoon', (tester) async {
+    final session = FakeLiveSession(['PARENT'], childIds: [5]);
+    await pumpLiveApp(
+      tester,
+      session,
+      api: parentApi(session),
+      location: RoutePaths.parentToday,
+    );
+    expect(find.bySemanticsLabel('Thực đơn: Sắp có'), findsOneWidget);
+  });
+
+  for (final path in [RoutePaths.parentMenu, RoutePaths.parentActivities]) {
+    testWidgets('live_parentNoApiRoute_showsComingSoon $path', (tester) async {
+      final session = FakeLiveSession(['PARENT'], childIds: [5]);
+      await pumpLiveApp(
+        tester,
+        session,
+        api: parentApi(session),
+        location: RoutePaths.withChild(path, '5'),
+      );
+      // Q1: chưa có API ở BE ⇒ không hiện thực đơn/hoạt động giả
+      expect(find.byType(AppComingSoon), findsOneWidget);
+    });
+  }
 
   testWidgets('live_otherRolePath_goesOwnHome', (tester) async {
     await pumpLiveApp(

@@ -19,9 +19,12 @@ import 'package:carenest_app/routing/route_paths.dart';
 
 /// Phụ huynh · Trang chủ — bố cục H (thẻ ví xếp chồng các bé): lời chào → thẻ bé đang chọn + bé khác ló ra → Việc nhanh.
 class ParentHomeScreen extends StatefulWidget {
-  const ParentHomeScreen({super.key, this.source});
+  const ParentHomeScreen({super.key, this.source, this.live = false});
 
   final ParentHomeSource? source;
+
+  /// Phiên thật: thực đơn tuần, hoạt động trong ngày chưa có API ở BE ⇒ "Sắp có" (user 25/11, Q1).
+  final bool live;
 
   @override
   State<ParentHomeScreen> createState() => _ParentHomeScreenState();
@@ -252,6 +255,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
       onOpenActivities: () => _push(RoutePaths.parentActivities),
       // Hồ sơ của bé nằm ở tab Bé của tôi (user 18/11) ⇒ chuyển tab, không mở màn con
       onOpenProfile: () => context.go(RoutePaths.parentChild),
+      menuAndActivityComingSoon: widget.live,
     );
     if (others.isEmpty) return card;
     // Bé khác nằm dưới thẻ đang chọn: vẽ trước, kéo lên, thẻ đang chọn đè lên mép trên

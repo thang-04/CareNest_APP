@@ -84,6 +84,7 @@ Future<void> pumpParentHome(
   FakeMode mode, {
   double textScale = 1,
   ParentHomeSource? source,
+  bool live = false,
 }) async {
   usePhoneSize(tester, textScale: textScale);
   await tester.pumpWidget(
@@ -93,6 +94,7 @@ Future<void> pumpParentHome(
         body: ParentHomeScreen(
           source:
               source ?? FakeParentHomeSource(mode: mode, delay: Duration.zero),
+          live: live,
         ),
       ),
     ),
@@ -199,6 +201,31 @@ void main() {
       find.bySemanticsLabel('Điểm danh: Không phải ngày học'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('parentHome_live_hidesCampusAndAge', (tester) async {
+    SelectedChild.notifier.value = 'c-1';
+    await pumpParentHome(
+      tester,
+      FakeMode.data,
+      source: _TodaySource(),
+      live: true,
+    );
+    // BE chưa trả tuổi ⇒ chỉ tên lớp, không có " · " thừa
+    expect(find.text('Mẫu giáo 3A'), findsOneWidget);
+  });
+
+  testWidgets('parentHome_live_menuAndActivityComingSoon', (tester) async {
+    SelectedChild.notifier.value = 'c-1';
+    await pumpParentHome(
+      tester,
+      FakeMode.data,
+      source: _TodaySource(),
+      live: true,
+    );
+    // Q1: BE chưa có API thực đơn tuần, hoạt động trong ngày ⇒ không hiện "Chưa công bố" giả
+    expect(find.bySemanticsLabel('Thực đơn: Sắp có'), findsOneWidget);
+    expect(find.bySemanticsLabel('Hoạt động: Sắp có'), findsOneWidget);
   });
 
   testWidgets('parentHome_halfDay_showsAbsentPart', (tester) async {

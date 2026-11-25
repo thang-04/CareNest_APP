@@ -206,7 +206,7 @@ List<RouteBase> _staffAndParentRoutes(
     NavDestinations.parent,
     {
       RoutePaths.parentToday: (context, state) =>
-          ParentHomeScreen(source: parent.home),
+          ParentHomeScreen(source: parent.home, live: parent.live),
       RoutePaths.parentChild: (context, state) => const MyChildScreen(),
     },
     account: account,
@@ -319,14 +319,18 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
         onSubmitted: openList,
       );
     }),
+    // Q1 (user 25/11): BE chưa có API thực đơn tuần, hoạt động trong ngày ⇒ phiên thật hiện "Sắp có"
     route(
       RoutePaths.parentMenu,
-      (context, state, child) =>
-          WeeklyMenuScreen(childId: child.id, initialDay: today),
+      (context, state, child) => parent.live
+          ? const _ComingSoonPage('Thực đơn tuần')
+          : WeeklyMenuScreen(childId: child.id, initialDay: today),
     ),
     route(
       RoutePaths.parentActivities,
-      (context, state, child) => ChildActivitiesScreen(childId: child.id),
+      (context, state, child) => parent.live
+          ? const _ComingSoonPage('Hoạt động trong ngày')
+          : ChildActivitiesScreen(childId: child.id),
     ),
     route(
       RoutePaths.parentAttendance,
@@ -797,4 +801,17 @@ class NotFoundScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Màn con chưa có API ở BE (phiên thật): thanh tiêu đề + "Sắp có".
+class _ComingSoonPage extends StatelessWidget {
+  const _ComingSoonPage(this.title);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(title)),
+    body: AppComingSoon(title: title),
+  );
 }

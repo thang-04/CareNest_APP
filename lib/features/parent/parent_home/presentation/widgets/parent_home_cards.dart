@@ -21,9 +21,13 @@ class ChildWalletCard extends StatelessWidget {
     required this.onOpenMenu,
     required this.onOpenActivities,
     required this.onOpenProfile,
+    this.menuAndActivityComingSoon = false,
   });
 
   final ParentToday today;
+
+  /// BE chưa có API thực đơn tuần, hoạt động trong ngày ⇒ hai ô ghi "Sắp có" (Q1).
+  final bool menuAndActivityComingSoon;
   final VoidCallback onOpenAttendance;
   final VoidCallback onOpenMenu;
   final VoidCallback onOpenActivities;
@@ -82,12 +86,18 @@ class ChildWalletCard extends StatelessWidget {
               ),
               _StripCell(
                 label: 'Thực đơn',
-                value: today.menuPublished ? 'Đã công bố' : 'Chưa công bố',
+                value: menuAndActivityComingSoon
+                    ? 'Sắp có'
+                    : today.menuPublished
+                    ? 'Đã công bố'
+                    : 'Chưa công bố',
                 onTap: onOpenMenu,
               ),
               _StripCell(
                 label: 'Hoạt động',
-                value: today.activityTitle ?? 'Chưa có',
+                value: menuAndActivityComingSoon
+                    ? 'Sắp có'
+                    : today.activityTitle ?? 'Chưa có',
                 onTap: onOpenActivities,
               ),
             ],
