@@ -60,6 +60,8 @@ import 'package:carenest_app/features/parent/leave_notice/data/live_leave_notice
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_form_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_list_screen.dart';
 import 'package:carenest_app/features/management/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
+import 'package:carenest_app/features/parent/my_child/data/fake_my_child_source.dart';
+import 'package:carenest_app/features/parent/my_child/data/live_my_child_source.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/child_activities_screen.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/child_attendance_screen.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/my_child_screen.dart';
@@ -207,7 +209,8 @@ List<RouteBase> _staffAndParentRoutes(
     {
       RoutePaths.parentToday: (context, state) =>
           ParentHomeScreen(source: parent.home, live: parent.live),
-      RoutePaths.parentChild: (context, state) => const MyChildScreen(),
+      RoutePaths.parentChild: (context, state) =>
+          MyChildScreen(source: parent.myChild ?? const FakeMyChildSource()),
     },
     account: account,
     notifications: notifications,
@@ -291,7 +294,7 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
     );
   }
 
-  final today = FakeParentHomeSource.today;
+  final today = parent.today;
   return [
     route(
       RoutePaths.parentLeaveNotices,
@@ -334,8 +337,11 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
     ),
     route(
       RoutePaths.parentAttendance,
-      (context, state, child) =>
-          ChildAttendanceScreen(childId: child.id, initialDay: today),
+      (context, state, child) => ChildAttendanceScreen(
+        childId: child.id,
+        initialDay: today,
+        source: parent.myChild ?? const FakeMyChildSource(),
+      ),
     ),
     route(
       RoutePaths.parentHealthBook,
@@ -680,6 +686,7 @@ GoRouter _buildLiveRouter(
           live: true,
           home: LiveParentHomeSource(api, session),
           leave: LiveLeaveNoticeSource(api),
+          myChild: LiveMyChildSource(api),
         ),
       ),
     ],

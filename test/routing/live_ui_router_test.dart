@@ -43,6 +43,21 @@ void main() {
     'GET /leave-requests/me': (_) => <Object>[],
   });
 
+  /// Điểm danh tháng hiện tại của bé 5: khoảng từ ngày 1 tới hôm nay (giờ máy).
+  void addAttendance(ScriptedApi api) {
+    final now = DateTime.now();
+    String two(int v) => v.toString().padLeft(2, '0');
+    final range =
+        'from=${now.year}-${two(now.month)}-01'
+        '&to=${now.year}-${two(now.month)}-${two(now.day)}';
+    api.routes['GET /children/5/attendance?$range'] = (_) => {
+      'days': <Object>[],
+      'totals': {'schoolDays': 3, 'present': 2.5, 'excused': 0.5, 'absent': 0},
+    };
+    api.routes['GET /children/5/daily-health/parent?$range'] = (_) =>
+        <Object>[];
+  }
+
   testWidgets('live_parentChildRoute_opens', (tester) async {
     final session = FakeLiveSession(['PARENT'], childIds: [5]);
     await pumpLiveApp(
@@ -102,6 +117,32 @@ void main() {
       expect(find.byType(AppComingSoon), findsOneWidget);
     });
   }
+
+  testWidgets('live_myChildTab_showsBeProfile', (tester) async {
+    final session = FakeLiveSession(['PARENT'], childIds: [5]);
+    await pumpLiveApp(
+      tester,
+      session,
+      api: parentApi(session),
+      location: RoutePaths.parentChild,
+    );
+    expect(find.text('Nguyễn Minh Anh'), findsOneWidget);
+    // Hồ sơ giả có "Năm học 2026–2027"; BE chưa trả tên năm học
+    expect(find.textContaining('Năm học'), findsNothing);
+  });
+
+  testWidgets('live_parentAttendance_showsBeTotals', (tester) async {
+    final session = FakeLiveSession(['PARENT'], childIds: [5]);
+    final api = parentApi(session);
+    addAttendance(api);
+    await pumpLiveApp(
+      tester,
+      session,
+      api: api,
+      location: RoutePaths.withChild(RoutePaths.parentAttendance, '5'),
+    );
+    expect(find.bySemanticsLabel('Có mặt: 2,5'), findsOneWidget);
+  });
 
   testWidgets('live_otherRolePath_goesOwnHome', (tester) async {
     await pumpLiveApp(
