@@ -1,3 +1,4 @@
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/core/integration/api_dates.dart';
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
@@ -21,9 +22,31 @@ class LiveMyChildSource implements MyChildSource {
       Future.error(UnsupportedError('Hoạt động trong ngày chưa có API'));
 
   @override
-  Future<AttendanceMonth> loadAttendance(String childId) async {
+  Future<AttendanceMonth> loadAttendance(
+    String childId, {
+    ChildSchoolYear? year,
+  }) async {
     final now = _clock();
     final today = DateTime(now.year, now.month, now.day);
+    if (year != null) {
+      // Năm đang chọn: tháng hôm nay (năm đang chạy) hoặc tháng cuối năm; năm chưa bắt đầu ⇒ trống
+      final range = year.monthRange(today);
+      if (range == null) {
+        return AttendanceMonth(
+          month: DateTime(today.year, today.month),
+          presentCount: 0,
+          excusedCount: 0,
+          absentCount: 0,
+          days: const [],
+        );
+      }
+      final query = 'from=${apiDate(range.from)}&to=${apiDate(range.to)}';
+      final results = await Future.wait([
+        _api.json('GET', '/children/$childId/attendance?$query'),
+        _api.json('GET', '/children/$childId/daily-health/parent?$query'),
+      ]);
+      return _month(DateTime(range.to.year, range.to.month), results);
+    }
     final month = DateTime(now.year, now.month);
     final monday = mondayOf(today);
     // Tới hôm nay, không tới cuối tháng: BE từ chối khoảng vượt cuối năm học (4109).
@@ -44,7 +67,11 @@ class LiveMyChildSource implements MyChildSource {
       // Ngoài năm học (hè): tháng không có ngày học
       outsideYear: () => const [<String, Object?>{}, <Object>[]],
     );
-    final data = results[0]! as Map;
+    return _month(month, results);
+  }
+
+  AttendanceMonth _month(DateTime month, List<Object?> results) {
+    final data = results[0] as Map? ?? const {};
     final totals = data['totals'] as Map? ?? const {};
     // BE xếp mới nhất trước ⇒ giữ lần ghi đầu tiên của mỗi ngày
     final health = <String, Map>{};

@@ -1,3 +1,5 @@
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
+
 /// Cờ của một ngày học: cô cắm trong đánh giá ngày, chỉ ngày bé có mặt, mỗi ngày tối đa 1 cờ (OBS-10).
 enum FlagDayStatus { flagged, noFlag, absent, pending }
 
@@ -138,5 +140,5 @@ class RewardBook {
 }
 
 abstract interface class RewardSource {
-  Future<RewardBook> load(String childId);
+  Future<RewardBook> load(String childId, {ChildSchoolYear? year});
 }

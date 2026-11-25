@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
@@ -17,7 +18,8 @@ class _BookSource implements RewardSource {
   final RewardBook book;
 
   @override
-  Future<RewardBook> load(String childId) async => book;
+  Future<RewardBook> load(String childId, {ChildSchoolYear? year}) async =>
+      book;
 }
 
 /// Sổ khen thưởng như BE phụ huynh trả (25/11): không ngưỡng, tên năm học, ngày duyệt, tổng năm.
@@ -46,9 +48,10 @@ class _ForbiddenSource implements RewardSource {
   const _ForbiddenSource();
 
   @override
-  Future<RewardBook> load(String childId) => Future.error(
-    ApiFailure(403, 'Bạn chỉ xem được thông tin của con mình', 4108),
-  );
+  Future<RewardBook> load(String childId, {ChildSchoolYear? year}) =>
+      Future.error(
+        ApiFailure(403, 'Bạn chỉ xem được thông tin của con mình', 4108),
+      );
 }
 
 class _Opened {

@@ -1,3 +1,4 @@
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/core/integration/api_dates.dart';
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
@@ -14,23 +15,35 @@ class LiveEvaluationSource implements EvaluationSource {
   final DateTime Function() _clock;
 
   @override
-  Future<EvaluationBook> load(String childId) async {
+  Future<EvaluationBook> load(String childId, {ChildSchoolYear? year}) async {
     final now = _clock();
     final today = DateTime(now.year, now.month, now.day);
+    final range = year?.recentRange(today);
+    final ofYear = year == null ? '' : '?schoolYearId=${year.id}';
     final results = await Future.wait([
-      // Đầu năm học: 8 tuần trước có thể trước khai giảng (BE 4109) ⇒ thu hẹp
-      loadFromNearestStart(
-        recentStarts(today),
-        (from) => _api.json(
+      if (year == null)
+        // Đầu năm học: 8 tuần trước có thể trước khai giảng (BE 4109) ⇒ thu hẹp
+        loadFromNearestStart(
+          recentStarts(today),
+          (from) => _api.json(
+            'GET',
+            '/children/$childId/daily-assessments'
+                '?from=${apiDate(from)}&to=${apiDate(today)}',
+          ),
+          // Ngoài năm học: không có đánh giá ngày, chủ đề / học kỳ / cuối năm vẫn hiện
+          outsideYear: () => const <Object>[],
+        )
+      else if (range == null)
+        // Năm chưa bắt đầu: chưa có đánh giá ngày
+        Future<Object?>.value(const <Object>[])
+      else
+        _api.json(
           'GET',
           '/children/$childId/daily-assessments'
-              '?from=${apiDate(from)}&to=${apiDate(today)}',
+              '?from=${apiDate(range.from)}&to=${apiDate(range.to)}',
         ),
-        // Ngoài năm học: không có đánh giá ngày, chủ đề / học kỳ / cuối năm vẫn hiện
-        outsideYear: () => const <Object>[],
-      ),
-      _api.json('GET', '/children/$childId/weekly-comments'),
-      _api.json('GET', '/children/$childId/evaluations'),
+      _api.json('GET', '/children/$childId/weekly-comments$ofYear'),
+      _api.json('GET', '/children/$childId/evaluations$ofYear'),
     ]);
     final comments = [for (final item in _maps(results[1])) _comment(item)]
       ..sort((a, b) => b.from.compareTo(a.from));

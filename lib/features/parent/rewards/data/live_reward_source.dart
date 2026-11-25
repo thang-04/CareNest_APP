@@ -1,3 +1,4 @@
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/core/integration/api_dates.dart';
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/features/parent/rewards/domain/rewards.dart';
@@ -13,23 +14,41 @@ class LiveRewardSource implements RewardSource {
   final DateTime Function() _clock;
 
   @override
-  Future<RewardBook> load(String childId) async {
+  Future<RewardBook> load(String childId, {ChildSchoolYear? year}) async {
     final now = _clock();
     final today = DateTime(now.year, now.month, now.day);
     late DateTime from;
-    // Đầu năm học: 8 tuần trước có thể trước khai giảng (BE 4109) ⇒ thu hẹp.
-    // Ngoài năm học (hè): BE từ chối mọi khoảng tới hôm nay ⇒ chưa có khen thưởng.
-    final data =
-        await loadFromNearestStart(recentStarts(today), (start) {
-              from = start;
-              return _api.json(
-                'GET',
-                '/children/$childId/rewards'
-                    '?from=${apiDate(start)}&to=${apiDate(today)}',
-              );
-            }, outsideYear: () => const <String, Object?>{})
-            as Map? ??
-        const {};
+    var end = today;
+    final Map data;
+    if (year != null) {
+      // Năm đang chọn: khoảng trong năm (ATT-15); năm chưa bắt đầu ⇒ chưa có khen thưởng
+      final range = year.recentRange(today);
+      from = range?.from ?? today;
+      end = range?.to ?? today;
+      data = range == null
+          ? const {}
+          : await _api.json(
+                      'GET',
+                      '/children/$childId/rewards'
+                          '?from=${apiDate(from)}&to=${apiDate(end)}',
+                    )
+                    as Map? ??
+                const {};
+    } else {
+      // Đầu năm học: 8 tuần trước có thể trước khai giảng (BE 4109) ⇒ thu hẹp.
+      // Ngoài năm học (hè): BE từ chối mọi khoảng tới hôm nay ⇒ chưa có khen thưởng.
+      data =
+          await loadFromNearestStart(recentStarts(today), (start) {
+                from = start;
+                return _api.json(
+                  'GET',
+                  '/children/$childId/rewards'
+                      '?from=${apiDate(start)}&to=${apiDate(today)}',
+                );
+              }, outsideYear: () => const <String, Object?>{})
+              as Map? ??
+          const {};
+    }
     final tickets = _maps(data['tickets']).toList();
     final weekly = {
       for (final t in tickets)
@@ -40,8 +59,8 @@ class LiveRewardSource implements RewardSource {
         if (t['type'] == 'MONTHLY') _date(t['periodStart']): t,
     };
     return RewardBook(
-      weeks: _weeksOf(_maps(data['flags']), weekly, today),
-      months: _monthsOf(from, today, weekly, monthly),
+      weeks: _weeksOf(_maps(data['flags']), weekly, end),
+      months: _monthsOf(from, end, weekly, monthly),
       yearEnd: switch (_maps(data['yearEndTitles']).lastOrNull) {
         final Map item => YearEndReward(
           titles: [

@@ -1,3 +1,4 @@
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/features/parent/health_book/domain/health_book.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 
@@ -305,7 +306,7 @@ class FakeHealthBookSource extends HealthBookSource {
   );
 
   @override
-  Future<HealthBook> load(String childId) async {
+  Future<HealthBook> load(String childId, {ChildSchoolYear? year}) async {
     await Future<void>.delayed(delay);
     if (mode == FakeMode.error) throw StateError('Không tải được dữ liệu giả');
     if (mode == FakeMode.empty) {

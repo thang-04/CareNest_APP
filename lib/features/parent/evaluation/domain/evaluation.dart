@@ -1,3 +1,4 @@
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:flutter/foundation.dart';
 
 /// Bữa trong ngày theo nhóm tuổi (BE `MealSession`).
@@ -294,5 +295,5 @@ class EvaluationBook {
 
 /// Nguồn dữ liệu trang Đánh giá; BE mới có API nhận xét tuần cho phụ huynh.
 abstract interface class EvaluationSource {
-  Future<EvaluationBook> load(String childId);
+  Future<EvaluationBook> load(String childId, {ChildSchoolYear? year});
 }

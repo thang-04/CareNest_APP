@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/features/parent/health_book/data/fake_health_book_source.dart';
 import 'package:carenest_app/features/parent/health_book/domain/health_book.dart';
@@ -34,25 +35,26 @@ class _ConclusionOnlySource extends HealthBookSource {
   const _ConclusionOnlySource();
 
   @override
-  Future<HealthBook> load(String childId) async => HealthBook(
-    rounds: const [],
-    growth: const [],
-    exams: [
-      HealthExam(
-        id: '9',
-        name: 'Khám sức khỏe đầu năm',
-        date: DateTime(2026, 9, 20),
-        ageMonths: 49,
-        examiner: null,
-        doctorName: null,
-        followUp: FollowUpLevel.none,
-        conclusion: 'Bình thường',
-        action: null,
-        nutritionStatus: null,
-        parentOpinion: 'Gia đình đồng ý',
-      ),
-    ],
-  );
+  Future<HealthBook> load(String childId, {ChildSchoolYear? year}) async =>
+      HealthBook(
+        rounds: const [],
+        growth: const [],
+        exams: [
+          HealthExam(
+            id: '9',
+            name: 'Khám sức khỏe đầu năm',
+            date: DateTime(2026, 9, 20),
+            ageMonths: 49,
+            examiner: null,
+            doctorName: null,
+            followUp: FollowUpLevel.none,
+            conclusion: 'Bình thường',
+            action: null,
+            nutritionStatus: null,
+            parentOpinion: 'Gia đình đồng ý',
+          ),
+        ],
+      );
 }
 
 void main() {

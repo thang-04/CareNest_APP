@@ -1,3 +1,4 @@
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 import 'package:carenest_app/features/parent/rewards/domain/rewards.dart';
 
@@ -13,7 +14,7 @@ class FakeRewardSource implements RewardSource {
   final Duration delay;
 
   @override
-  Future<RewardBook> load(String childId) async {
+  Future<RewardBook> load(String childId, {ChildSchoolYear? year}) async {
     await Future<void>.delayed(delay);
     if (mode == FakeMode.error) throw StateError('Không tải được dữ liệu giả');
     if (mode == FakeMode.empty) {

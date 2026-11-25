@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/features/parent/health_book/data/fake_health_book_source.dart';
 import 'package:carenest_app/features/parent/health_book/domain/health_book.dart';
@@ -16,7 +17,8 @@ class _BookSource extends HealthBookSource {
   final HealthBook book;
 
   @override
-  Future<HealthBook> load(String childId) async => book;
+  Future<HealthBook> load(String childId, {ChildSchoolYear? year}) async =>
+      book;
 }
 
 Future<void> pumpTrend(

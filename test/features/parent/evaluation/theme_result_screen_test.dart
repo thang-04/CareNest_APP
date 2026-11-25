@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/features/parent/evaluation/data/fake_evaluation_source.dart';
 import 'package:carenest_app/features/parent/evaluation/domain/evaluation.dart';
@@ -36,24 +37,25 @@ class _LiveShapeSource implements EvaluationSource {
   const _LiveShapeSource();
 
   @override
-  Future<EvaluationBook> load(String childId) async => EvaluationBook(
-    themes: [
-      ThemeResult(
-        id: 'theme-1',
-        name: 'Gia đình',
-        semester: null,
-        from: DateTime(2026, 10, 5),
-        to: DateTime(2026, 10, 30),
-        metGoals: 1,
-        totalGoals: 2,
-        passPercent: null,
-        goals: const [
-          GoalResult('Kể tên người thân', met: true),
-          GoalResult('Hát bài về gia đình', met: false),
+  Future<EvaluationBook> load(String childId, {ChildSchoolYear? year}) async =>
+      EvaluationBook(
+        themes: [
+          ThemeResult(
+            id: 'theme-1',
+            name: 'Gia đình',
+            semester: null,
+            from: DateTime(2026, 10, 5),
+            to: DateTime(2026, 10, 30),
+            metGoals: 1,
+            totalGoals: 2,
+            passPercent: null,
+            goals: const [
+              GoalResult('Kể tên người thân', met: true),
+              GoalResult('Hát bài về gia đình', met: false),
+            ],
+          ),
         ],
-      ),
-    ],
-  );
+      );
 }
 
 void main() {

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
 
 /// Mọi nhãn/đánh giá dưới đây là giá trị BE trả (đã công bố cho phụ huynh — PAR-02, P-13b);
@@ -213,6 +214,9 @@ class ChildProfile {
 
 abstract interface class MyChildSource {
   Future<ActivityDay> loadActivities(String childId);
-  Future<AttendanceMonth> loadAttendance(String childId);
+  Future<AttendanceMonth> loadAttendance(
+    String childId, {
+    ChildSchoolYear? year,
+  });
   Future<ChildProfile> loadProfile(String childId);
 }

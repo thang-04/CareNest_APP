@@ -1,3 +1,4 @@
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/features/parent/my_child/domain/my_child.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 
@@ -63,7 +64,10 @@ class FakeMyChildSource implements MyChildSource {
   );
 
   @override
-  Future<AttendanceMonth> loadAttendance(String childId) async {
+  Future<AttendanceMonth> loadAttendance(
+    String childId, {
+    ChildSchoolYear? year,
+  }) async {
     AttendanceDay present(int day, int arriveMinute) => AttendanceDay(
       date: DateTime(2026, 10, day),
       status: AttendanceDayStatus.present,

@@ -1,3 +1,4 @@
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:flutter/foundation.dart';
 
 /// Sổ sức khỏe của một bé (user 17/11, canvas "Sổ sức khỏe"). BE dự kiến một API
@@ -223,7 +224,7 @@ class HealthBook {
 abstract class HealthBookSource {
   const HealthBookSource();
 
-  Future<HealthBook> load(String childId);
+  Future<HealthBook> load(String childId, {ChildSchoolYear? year});
 
   /// Phiếu khám đầy đủ của một đợt (màn chi tiết); null ⇒ không có hoặc chưa kết luận.
   Future<HealthExam?> loadExam(String childId, String examId) async =>

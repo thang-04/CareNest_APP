@@ -1,3 +1,4 @@
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/features/parent/health_book/data/exam_form_labels.dart';
@@ -12,9 +13,11 @@ class LiveHealthBookSource extends HealthBookSource {
   final MobileApi _api;
 
   @override
-  Future<HealthBook> load(String childId) async {
+  Future<HealthBook> load(String childId, {ChildSchoolYear? year}) async {
+    final ofYear = year == null ? '' : '?schoolYearId=${year.id}';
     final data =
-        await _api.json('GET', '/children/$childId/health/published') as Map;
+        await _api.json('GET', '/children/$childId/health/published$ofYear')
+            as Map;
     final results = _maps(data['results']).toList();
     final examIds = {
       for (final r in results)
