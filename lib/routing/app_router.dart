@@ -56,6 +56,7 @@ import 'package:carenest_app/features/parent/evaluation/presentation/screens/the
 import 'package:carenest_app/features/parent/rewards/presentation/screens/rewards_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/exam_detail_screen.dart';
 import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
+import 'package:carenest_app/features/parent/leave_notice/data/live_leave_notice_source.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_form_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_list_screen.dart';
 import 'package:carenest_app/features/management/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
@@ -296,6 +297,7 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
       RoutePaths.parentLeaveNotices,
       (context, state, child) => LeaveNoticeListScreen(
         childId: child.id,
+        source: parent.leave,
         onCreate: () => context.push<void>(
           RoutePaths.withChild(RoutePaths.parentLeaveNew, child.id),
           extra: true,
@@ -312,6 +314,7 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
             );
       return LeaveNoticeFormScreen(
         child: child,
+        source: parent.leave,
         onOpenSent: openList,
         onSubmitted: openList,
       );
@@ -672,6 +675,7 @@ GoRouter _buildLiveRouter(
         parent: ParentSources(
           live: true,
           home: LiveParentHomeSource(api, session),
+          leave: LiveLeaveNoticeSource(api),
         ),
       ),
     ],
