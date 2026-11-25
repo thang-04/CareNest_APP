@@ -40,7 +40,10 @@ class EvaluationYearEndTab extends StatelessWidget {
         AppCard(
           child: EvaluationResultSummary(
             eyebrow: 'Phiếu đánh giá sự phát triển',
-            title: 'Năm học ${result.schoolYear}',
+            title: switch (result.schoolYear) {
+              final year? => 'Năm học $year',
+              null => null,
+            },
             meta: result.ageGroup,
             met: result.metGoals,
             total: result.totalGoals,

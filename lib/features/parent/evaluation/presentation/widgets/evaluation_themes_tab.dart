@@ -34,15 +34,19 @@ class EvaluationThemesTab extends StatelessWidget {
         message: 'Kết quả có sau khi chủ đề kết thúc và cô xác nhận.',
       );
     }
+    // BE phụ huynh chưa trả học kỳ của chủ đề (null) ⇒ một nhóm, không tiêu đề
     final semesters = {for (final theme in themes) theme.semester}.toList()
-      ..sort((a, b) => b.compareTo(a));
+      ..sort((a, b) => (b ?? 0).compareTo(a ?? 0));
+    final passPercent = themes.first.passPercent;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (var i = 0; i < semesters.length; i++) ...[
           if (i > 0) const SizedBox(height: AppSpacing.sectionGap),
-          EvaluationSectionTitle(EvaluationLabels.semester(semesters[i])),
-          const SizedBox(height: AppSpacing.space3),
+          if (semesters[i] case final semester?) ...[
+            EvaluationSectionTitle(EvaluationLabels.semester(semester)),
+            const SizedBox(height: AppSpacing.space3),
+          ],
           AppCard(
             flush: true,
             child: AppDividedColumn(
@@ -57,14 +61,16 @@ class EvaluationThemesTab extends StatelessWidget {
             ),
           ),
         ],
-        const SizedBox(height: AppSpacing.space4),
-        Text(
-          'Bé đạt chủ đề khi đạt từ ${themes.first.passPercent}% số mục tiêu.',
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
-        ),
+        if (passPercent != null) ...[
+          const SizedBox(height: AppSpacing.space4),
+          Text(
+            'Bé đạt chủ đề khi đạt từ $passPercent% số mục tiêu.',
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+          ),
+        ],
       ],
     );
   }
@@ -93,7 +99,11 @@ class _ThemeRow extends StatelessWidget {
     return AppListRow(
       title: theme.name,
       subtitle: Text('$dates · ${theme.metGoals}/${theme.totalGoals} mục tiêu'),
-      trailing: ResultMark(met: theme.passed ?? false),
+      // Đạt chủ đề do BE tính; chưa có ⇒ không hiện dấu
+      trailing: switch (theme.passed) {
+        final passed? => ResultMark(met: passed),
+        null => null,
+      },
       showChevron: true,
       onTap: onOpen,
     );

@@ -3,10 +3,71 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/features/parent/evaluation/data/fake_evaluation_source.dart';
+import 'package:carenest_app/features/parent/evaluation/domain/evaluation.dart';
 import 'package:carenest_app/features/parent/evaluation/presentation/screens/evaluation_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 
 import '../../../helpers/pump_app.dart';
+
+/// Sổ đánh giá như BE phụ huynh trả (25/11): không có học kỳ của chủ đề, đạt chủ đề, ngưỡng %,
+/// số lĩnh vực đạt, số MT theo lĩnh vực, tên năm học, nhóm tuổi.
+class _LiveShapeSource implements EvaluationSource {
+  const _LiveShapeSource();
+
+  static const _goals = [
+    GoalResult('Kể tên người thân', met: true),
+    GoalResult('Hát bài về gia đình', met: false),
+  ];
+
+  @override
+  Future<EvaluationBook> load(String childId) async => EvaluationBook(
+    themes: [
+      ThemeResult(
+        id: 'theme-1',
+        name: 'Gia đình',
+        semester: null,
+        from: DateTime(2026, 10, 5),
+        to: DateTime(2026, 10, 30),
+        metGoals: 3,
+        totalGoals: 4,
+        passPercent: null,
+        goals: _goals,
+      ),
+    ],
+    semesters: [
+      SemesterResult(
+        semester: 1,
+        schoolYear: null,
+        from: DateTime(2026, 9, 5),
+        to: DateTime(2027, 1, 15),
+        domainsMet: null,
+        domainsTotal: null,
+        domains: const [
+          DomainResult(
+            name: 'Phát triển thể chất',
+            metGoals: null,
+            totalGoals: null,
+            goals: _goals,
+          ),
+        ],
+      ),
+    ],
+    yearEnd: const YearEndResult(
+      schoolYear: null,
+      ageGroup: null,
+      metGoals: 20,
+      totalGoals: 22,
+      domains: [
+        DomainResult(
+          name: 'Phát triển ngôn ngữ',
+          metGoals: null,
+          totalGoals: null,
+          goals: _goals,
+        ),
+      ],
+    ),
+  );
+}
 
 class _Opened {
   final themes = <String>[];
@@ -18,6 +79,7 @@ Future<_Opened> _pumpEvaluation(
   double textScale = 1,
   EvaluationTab tab = EvaluationTab.day,
   FakeMode mode = FakeMode.data,
+  EvaluationSource? source,
 }) async {
   final opened = _Opened();
   usePhoneSize(tester, textScale: textScale);
@@ -29,7 +91,8 @@ Future<_Opened> _pumpEvaluation(
         key: UniqueKey(),
         child: FakeParentHomeSource.childById(childId),
         initialTab: tab,
-        source: FakeEvaluationSource(mode: mode, delay: Duration.zero),
+        source:
+            source ?? FakeEvaluationSource(mode: mode, delay: Duration.zero),
         onOpenTheme: opened.themes.add,
       ),
     ),
@@ -129,6 +192,44 @@ void main() {
 
     await _tapVisible(tester, find.text('Bé vui hè'));
     expect(opened.themes, ['theme-mam-7']);
+  });
+
+  testWidgets('themes_live_hidesMissingSemesterAndPassMark', (tester) async {
+    final opened = await _pumpEvaluation(
+      tester,
+      tab: EvaluationTab.theme,
+      source: const _LiveShapeSource(),
+    );
+    expect(find.text('05/10 – 30/10 · 3/4 mục tiêu'), findsOneWidget);
+    // BE chưa trả học kỳ, đạt chủ đề, ngưỡng ⇒ không tự suy "Chưa đạt"
+    expect(find.textContaining(RegExp('^Học kỳ I')), findsNothing);
+    expect(find.text('Chưa đạt'), findsNothing);
+    expect(find.textContaining('Bé đạt chủ đề khi'), findsNothing);
+    await _tapVisible(tester, find.text('Gia đình'));
+    expect(opened.themes, ['theme-1']);
+  });
+
+  testWidgets('semester_live_hidesMissingCounts', (tester) async {
+    await _pumpEvaluation(
+      tester,
+      tab: EvaluationTab.semester,
+      source: const _LiveShapeSource(),
+    );
+    expect(find.text('Phát triển thể chất'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('lĩnh vực đạt')), findsNothing);
+    expect(find.textContaining('mục tiêu đạt'), findsNothing);
+    expect(find.textContaining('null'), findsNothing);
+  });
+
+  testWidgets('yearEnd_live_hidesYearAndAgeGroup', (tester) async {
+    await _pumpEvaluation(
+      tester,
+      tab: EvaluationTab.yearEnd,
+      source: const _LiveShapeSource(),
+    );
+    expect(find.bySemanticsLabel('20 trên 22 mục tiêu đạt'), findsOneWidget);
+    expect(find.textContaining('Năm học'), findsNothing);
+    expect(find.textContaining('null'), findsNothing);
   });
 
   testWidgets('Mục Chủ đề: chủ đề đang học chưa có kết quả, không mở được', (

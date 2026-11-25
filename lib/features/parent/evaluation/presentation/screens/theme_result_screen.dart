@@ -113,8 +113,11 @@ class _ThemeResultView extends StatelessWidget {
                     tone: passed ? AppStatusTone.green : AppStatusTone.red,
                     icon: passed ? AppIcons.check : AppIcons.minus,
                   ),
-            caption:
-                'Bé đạt chủ đề khi đạt từ ${theme.passPercent}% số mục tiêu.',
+            caption: switch (theme.passPercent) {
+              final percent? =>
+                'Bé đạt chủ đề khi đạt từ $percent% số mục tiêu.',
+              null => null,
+            },
           ),
         ),
         if (notMet.isNotEmpty) ...[

@@ -351,12 +351,16 @@ class _DomainTileState extends State<DomainTile> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(domain.name, style: textTheme.titleSmall),
-                      Text(
-                        '${domain.metGoals}/${domain.totalGoals} mục tiêu đạt',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textMuted,
+                      if ((domain.metGoals, domain.totalGoals) case (
+                        final met?,
+                        final total?,
+                      ))
+                        Text(
+                          '$met/$total mục tiêu đạt',
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textMuted,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),

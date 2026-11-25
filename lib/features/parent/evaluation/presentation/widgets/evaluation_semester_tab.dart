@@ -62,16 +62,22 @@ class _EvaluationSemesterTabState extends State<EvaluationSemesterTab> {
             message: 'Kết quả có sau khi học kỳ kết thúc và cô xác nhận.',
           )
         else ...[
-          AppCard(
-            child: EvaluationResultSummary(
-              met: semester.domainsMet,
-              total: semester.domainsTotal,
-              unit: 'lĩnh vực đạt',
-              caption:
-                  'Kết quả mỗi mục tiêu lấy từ các chủ đề bé đã học trong học kỳ.',
+          // BE phụ huynh chưa trả số lĩnh vực đạt ⇒ không có thẻ tổng
+          if ((semester.domainsMet, semester.domainsTotal) case (
+            final met?,
+            final total?,
+          )) ...[
+            AppCard(
+              child: EvaluationResultSummary(
+                met: met,
+                total: total,
+                unit: 'lĩnh vực đạt',
+                caption:
+                    'Kết quả mỗi mục tiêu lấy từ các chủ đề bé đã học trong học kỳ.',
+              ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.cardGap),
+            const SizedBox(height: AppSpacing.cardGap),
+          ],
           AppCard(
             flush: true,
             child: AppDividedColumn(

@@ -152,17 +152,19 @@ class ThemeResult {
   final String id;
   final String name;
 
-  /// 1 hoặc 2
-  final int semester;
+  /// 1 hoặc 2; BE phụ huynh chưa trả ⇒ null, màn không chia theo học kỳ.
+  final int? semester;
   final DateTime from;
   final DateTime to;
   final PeriodStatus status;
   final int metGoals;
   final int totalGoals;
+
+  /// Đạt chủ đề do BE tính; BE phụ huynh chưa trả ⇒ null, màn không hiện dấu đạt.
   final bool? passed;
 
-  /// Ngưỡng đạt chủ đề BE trả (`passPercent`).
-  final int passPercent;
+  /// Ngưỡng đạt chủ đề BE trả (`passPercent`); null ⇒ màn ẩn câu ngưỡng.
+  final int? passPercent;
   final List<GoalResult> goals;
   final String? confirmedBy;
   final DateTime? confirmedAt;
@@ -181,8 +183,10 @@ class DomainResult {
   });
 
   final String name;
-  final int metGoals;
-  final int totalGoals;
+
+  /// Số MT đạt / tổng của lĩnh vực; BE phụ huynh chưa trả ⇒ null, màn ẩn (không tự đếm).
+  final int? metGoals;
+  final int? totalGoals;
   final List<GoalResult> goals;
 
   /// Học kỳ: lĩnh vực Đạt / Chưa đạt; phiếu cuối năm không có (null).
@@ -211,13 +215,15 @@ class SemesterResult {
   /// 1 hoặc 2
   final int semester;
 
-  /// "2026–2027"
-  final String schoolYear;
+  /// "2026–2027"; BE phụ huynh chưa trả tên năm học ⇒ null.
+  final String? schoolYear;
   final DateTime from;
   final DateTime to;
   final PeriodStatus status;
-  final int domainsMet;
-  final int domainsTotal;
+
+  /// Số lĩnh vực đạt / tổng; BE phụ huynh chưa trả ⇒ null, màn ẩn.
+  final int? domainsMet;
+  final int? domainsTotal;
   final List<DomainResult> domains;
   final String? confirmedBy;
   final DateTime? confirmedAt;
@@ -243,10 +249,11 @@ class YearEndResult {
     this.confirmedAt,
   });
 
-  final String schoolYear;
+  /// BE phụ huynh chưa trả tên năm học, nhóm tuổi ⇒ null, màn ẩn.
+  final String? schoolYear;
 
   /// "Nhóm 5–6 tuổi"
-  final String ageGroup;
+  final String? ageGroup;
   final PeriodStatus status;
   final int metGoals;
   final int totalGoals;

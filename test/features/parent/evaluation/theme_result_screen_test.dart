@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/features/parent/evaluation/data/fake_evaluation_source.dart';
+import 'package:carenest_app/features/parent/evaluation/domain/evaluation.dart';
 import 'package:carenest_app/features/parent/evaluation/presentation/screens/theme_result_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 
@@ -13,6 +14,7 @@ Future<void> _pumpTheme(
   String themeId, {
   String childId = 'child-1',
   double textScale = 1,
+  EvaluationSource source = const FakeEvaluationSource(delay: Duration.zero),
 }) async {
   usePhoneSize(tester, textScale: textScale);
   await tester.pumpWidget(
@@ -22,14 +24,46 @@ Future<void> _pumpTheme(
         key: UniqueKey(),
         child: FakeParentHomeSource.childById(childId),
         themeId: themeId,
-        source: const FakeEvaluationSource(delay: Duration.zero),
+        source: source,
       ),
     ),
   );
   await tester.pumpAndSettle();
 }
 
+/// Chủ đề như BE phụ huynh trả: không có đạt chủ đề, ngưỡng %, người xác nhận.
+class _LiveShapeSource implements EvaluationSource {
+  const _LiveShapeSource();
+
+  @override
+  Future<EvaluationBook> load(String childId) async => EvaluationBook(
+    themes: [
+      ThemeResult(
+        id: 'theme-1',
+        name: 'Gia đình',
+        semester: null,
+        from: DateTime(2026, 10, 5),
+        to: DateTime(2026, 10, 30),
+        metGoals: 1,
+        totalGoals: 2,
+        passPercent: null,
+        goals: const [
+          GoalResult('Kể tên người thân', met: true),
+          GoalResult('Hát bài về gia đình', met: false),
+        ],
+      ),
+    ],
+  );
+}
+
 void main() {
+  testWidgets('themeResult_live_hidesPassRule', (tester) async {
+    await _pumpTheme(tester, 'theme-1', source: const _LiveShapeSource());
+    expect(find.bySemanticsLabel('1 trên 2 mục tiêu đạt'), findsOneWidget);
+    expect(find.textContaining('đạt chủ đề'), findsNothing);
+    expect(find.textContaining('null'), findsNothing);
+  });
+
   testWidgets('Chủ đề chưa đạt: số đạt, nhóm Chưa đạt trước, người xác nhận', (
     tester,
   ) async {
