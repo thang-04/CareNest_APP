@@ -134,6 +134,18 @@ void main() {
     expect(c.mode, AppMode.teacher);
   });
 
+  test('signIn_parent_selectsFirstRealChild', () async {
+    SelectedChild.notifier.value = FakeParentHomeSource.children.first.id;
+    await start(FakeLiveSession(['PARENT'], childIds: [5, 3]));
+    expect(SelectedChild.notifier.value, '5');
+  });
+
+  test('signIn_parent_keepsSelectedChildInList', () async {
+    SelectedChild.notifier.value = '3';
+    await start(FakeLiveSession(['PARENT'], childIds: [5, 3]));
+    expect(SelectedChild.notifier.value, '3');
+  });
+
   test('signIn_principalOnly_modeNull', () async {
     final c = await start(FakeLiveSession(['PRINCIPAL']));
     expect(c.mode, isNull);

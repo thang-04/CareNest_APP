@@ -58,6 +58,12 @@ class LiveModeController extends ChangeNotifier {
     _modes = user.modes;
     _mode = _modes.isEmpty ? null : _modes.first;
     _switched = false;
+    // Con đang xem phải là con của tài khoản này (AUTH-04): mặc định con đầu trong `childIds`
+    final childIds = [for (final id in user.childIds) '$id'];
+    if (childIds.isNotEmpty &&
+        !childIds.contains(SelectedChild.notifier.value)) {
+      SelectedChild.notifier.value = childIds.first;
+    }
     // Gán trước khi báo: router chờ `ready` rồi mới chọn màn, không nhảy qua chế độ tạm
     _ready = _restore(user.userId);
     notifyListeners();
