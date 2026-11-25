@@ -71,12 +71,14 @@ class RewardMonth {
 class YearEndReward {
   const YearEndReward({
     required this.titles,
-    required this.approvedAt,
+    this.approvedAt,
     this.teacherNote,
   });
 
   final List<String> titles;
-  final DateTime approvedAt;
+
+  /// BE phụ huynh chưa trả ngày duyệt ⇒ null, màn ẩn dòng duyệt.
+  final DateTime? approvedAt;
 
   /// Ghi chú của cô trong danh sách khen thưởng; phụ huynh xem được (user 18/11).
   final String? teacherNote;
@@ -110,17 +112,19 @@ class RewardRules {
 
 class RewardBook {
   const RewardBook({
-    required this.schoolYear,
-    required this.rules,
+    this.schoolYear,
+    this.rules,
     this.weeks = const [],
     this.months = const [],
     this.yearEnd,
     this.totals,
   });
 
-  /// "2026–2027"
-  final String schoolYear;
-  final RewardRules rules;
+  /// "2026–2027"; BE phụ huynh chưa trả ⇒ null, màn ẩn.
+  final String? schoolYear;
+
+  /// BE phụ huynh chưa trả ngưỡng ⇒ null, màn ẩn câu quy tắc và nút giải thích (user 25/11, Q2).
+  final RewardRules? rules;
 
   /// Mới nhất trước
   final List<RewardWeek> weeks;

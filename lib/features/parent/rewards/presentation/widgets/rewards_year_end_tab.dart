@@ -14,12 +14,12 @@ import 'package:carenest_app/features/parent/rewards/presentation/widgets/reward
 class RewardsYearEndTab extends StatelessWidget {
   const RewardsYearEndTab({
     super.key,
-    required this.schoolYear,
+    this.schoolYear,
     this.yearEnd,
     this.totals,
   });
 
-  final String schoolYear;
+  final String? schoolYear;
   final YearEndReward? yearEnd;
   final RewardTotals? totals;
 
@@ -64,7 +64,7 @@ class RewardsYearEndTab extends StatelessWidget {
 class _TitlesCard extends StatelessWidget {
   const _TitlesCard({required this.schoolYear, required this.yearEnd});
 
-  final String schoolYear;
+  final String? schoolYear;
   final YearEndReward yearEnd;
 
   @override
@@ -75,11 +75,13 @@ class _TitlesCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Năm học $schoolYear'.toUpperCase(),
-            style: textTheme.labelSmall?.copyWith(color: AppColors.textMuted),
-          ),
-          const SizedBox(height: AppSpacing.space1),
+          if (schoolYear case final year?) ...[
+            Text(
+              'Năm học $year'.toUpperCase(),
+              style: textTheme.labelSmall?.copyWith(color: AppColors.textMuted),
+            ),
+            const SizedBox(height: AppSpacing.space1),
+          ],
           Semantics(
             header: true,
             child: Text('Danh hiệu của bé', style: textTheme.headlineSmall),
@@ -97,11 +99,13 @@ class _TitlesCard extends StatelessWidget {
               ],
             ),
           ],
-          const Divider(height: AppSpacing.space8),
-          if (note != null)
-            _TeacherNote(note: note, approvedAt: yearEnd.approvedAt)
-          else
-            _ApprovedLine(approvedAt: yearEnd.approvedAt),
+          if (note != null) ...[
+            const Divider(height: AppSpacing.space8),
+            _TeacherNote(note: note, approvedAt: yearEnd.approvedAt),
+          ] else if (yearEnd.approvedAt case final approvedAt?) ...[
+            const Divider(height: AppSpacing.space8),
+            _ApprovedLine(approvedAt: approvedAt),
+          ],
         ],
       ),
     );
@@ -113,7 +117,7 @@ class _TeacherNote extends StatelessWidget {
   const _TeacherNote({required this.note, required this.approvedAt});
 
   final String note;
-  final DateTime approvedAt;
+  final DateTime? approvedAt;
 
   @override
   Widget build(BuildContext context) {
@@ -124,8 +128,10 @@ class _TeacherNote extends StatelessWidget {
         Text('Lời cô', style: textTheme.titleSmall),
         const SizedBox(height: AppSpacing.space1),
         Text(note, style: textTheme.bodyLarge),
-        const SizedBox(height: AppSpacing.space4),
-        _ApprovedLine(approvedAt: approvedAt),
+        if (approvedAt case final approvedAt?) ...[
+          const SizedBox(height: AppSpacing.space4),
+          _ApprovedLine(approvedAt: approvedAt),
+        ],
       ],
     );
   }

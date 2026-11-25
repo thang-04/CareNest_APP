@@ -19,6 +19,27 @@ class _BookSource implements RewardSource {
   Future<RewardBook> load(String childId) async => book;
 }
 
+/// Sổ khen thưởng như BE phụ huynh trả (25/11): không ngưỡng, tên năm học, ngày duyệt, tổng năm.
+final _liveShapeBook = RewardBook(
+  weeks: [
+    RewardWeek(
+      from: DateTime(2026, 11, 23),
+      to: DateTime(2026, 11, 27),
+      flags: 2,
+      ongoing: true,
+      days: [
+        FlagDay(date: DateTime(2026, 11, 23), status: FlagDayStatus.flagged),
+        FlagDay(date: DateTime(2026, 11, 24), status: FlagDayStatus.flagged),
+      ],
+    ),
+  ],
+  months: [RewardMonth(month: DateTime(2026, 11), weeklyTickets: 1)],
+  yearEnd: const YearEndReward(
+    titles: ['Bé chăm ngoan'],
+    teacherNote: 'Con rất lễ phép.',
+  ),
+);
+
 class _Opened {
   var daily = 0;
 }
@@ -99,6 +120,29 @@ void main() {
       expect(find.text('Xem các tuần trước'), findsNothing);
     },
   );
+
+  testWidgets('rewards_live_hidesRulesAndGuide', (tester) async {
+    await _pumpRewards(tester, source: _BookSource(_liveShapeBook));
+    // Q2 (user 25/11): BE chưa trả ngưỡng ⇒ ẩn câu quy tắc và nút giải thích
+    expect(find.textContaining('cô xét phiếu'), findsNothing);
+    expect(find.byTooltip('Cách bé nhận khen thưởng'), findsNothing);
+    expect(find.textContaining('null'), findsNothing);
+
+    await _tapVisible(tester, find.text('Tháng'));
+    expect(find.textContaining('cô xét phiếu'), findsNothing);
+  });
+
+  testWidgets('rewards_live_yearEnd_hidesYearAndApproval', (tester) async {
+    await _pumpRewards(
+      tester,
+      tab: RewardsTab.yearEnd,
+      source: _BookSource(_liveShapeBook),
+    );
+    expect(find.text('Bé chăm ngoan'), findsOneWidget);
+    expect(find.text('Con rất lễ phép.'), findsOneWidget);
+    expect(find.textContaining('NĂM HỌC'), findsNothing);
+    expect(find.textContaining('Hiệu trưởng duyệt ngày'), findsNothing);
+  });
 
   testWidgets('"Xem đánh giá từng ngày" mở trang Đánh giá', (tester) async {
     final opened = await _pumpRewards(tester);

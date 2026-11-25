@@ -59,10 +59,10 @@ class _RewardsScreenState extends State<RewardsScreen> {
           appBar: AppBar(
             title: const Text('Khen thưởng'),
             actions: [
-              if (book != null)
+              if (book?.rules case final rules?)
                 IconButton(
                   tooltip: 'Cách bé nhận khen thưởng',
-                  onPressed: () => showRewardsGuide(context, book.rules),
+                  onPressed: () => showRewardsGuide(context, rules),
                   icon: const Icon(AppIcons.help),
                 ),
             ],

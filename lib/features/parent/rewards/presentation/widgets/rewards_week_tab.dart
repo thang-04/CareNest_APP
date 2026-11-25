@@ -23,7 +23,9 @@ class RewardsWeekTab extends StatefulWidget {
 
   /// Mới nhất trước
   final List<RewardWeek> weeks;
-  final RewardRules rules;
+
+  /// null: BE chưa trả ngưỡng ⇒ không có câu quy tắc (Q2).
+  final RewardRules? rules;
   final VoidCallback onOpenDailyEvaluation;
 
   @override
@@ -126,7 +128,9 @@ class _LatestWeekCard extends StatelessWidget {
   });
 
   final RewardWeek week;
-  final RewardRules rules;
+
+  /// null: BE chưa trả ngưỡng ⇒ không có câu quy tắc (Q2).
+  final RewardRules? rules;
   final VoidCallback onOpenDailyEvaluation;
 
   @override
@@ -153,7 +157,7 @@ class _LatestWeekCard extends StatelessWidget {
               title: 'Bé nhận phiếu ${RewardsStatus.weeklyTicket}',
               ticket: ticket,
             )
-          else
+          else if (rules case final rules?)
             RewardRuleHint(
               'Từ ${rules.weekMinFlags} cờ trong tuần, cô xét phiếu '
               '${RewardsStatus.weeklyTicket} khi hết tuần.',

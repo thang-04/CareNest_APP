@@ -16,7 +16,9 @@ class RewardsMonthTab extends StatelessWidget {
 
   /// Mới nhất trước
   final List<RewardMonth> months;
-  final RewardRules rules;
+
+  /// null: BE chưa trả ngưỡng ⇒ không có câu quy tắc (Q2).
+  final RewardRules? rules;
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +74,9 @@ class _LatestMonthCard extends StatelessWidget {
   const _LatestMonthCard({required this.month, required this.rules});
 
   final RewardMonth month;
-  final RewardRules rules;
+
+  /// null: BE chưa trả ngưỡng ⇒ không có câu quy tắc (Q2).
+  final RewardRules? rules;
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +102,7 @@ class _LatestMonthCard extends StatelessWidget {
               title: 'Bé nhận phiếu ${RewardsStatus.monthlyTicket}',
               ticket: ticket,
             )
-          else
+          else if (rules case final rules?)
             RewardRuleHint(
               'Từ ${rules.monthMinWeeklyTickets} phiếu '
               '${RewardsStatus.weeklyTicket} trong tháng, cô xét phiếu '
