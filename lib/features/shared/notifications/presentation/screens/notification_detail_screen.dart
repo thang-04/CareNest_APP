@@ -24,11 +24,16 @@ class NotificationDetailScreen extends StatefulWidget {
     required this.role,
     required this.id,
     this.source = const FakeNotificationSource(),
+    this.actionFor,
   });
 
   final AppRole role;
   final String id;
   final NotificationSource source;
+
+  /// Nút mở màn liên quan theo loại + bé (phiên thật); null ⇒ dùng `actionLabel` của dữ liệu giả.
+  final ({String label, VoidCallback open})? Function(AppNotification item)?
+  actionFor;
 
   @override
   State<NotificationDetailScreen> createState() =>
@@ -73,7 +78,11 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
               ),
             );
           }
-          return _DetailBody(item: item, source: widget.source);
+          return _DetailBody(
+            item: item,
+            source: widget.source,
+            action: widget.actionFor?.call(item),
+          );
         },
       ),
     );
@@ -81,10 +90,11 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
 }
 
 class _DetailBody extends StatefulWidget {
-  const _DetailBody({required this.item, required this.source});
+  const _DetailBody({required this.item, required this.source, this.action});
 
   final AppNotification item;
   final NotificationSource source;
+  final ({String label, VoidCallback open})? action;
 
   @override
   State<_DetailBody> createState() => _DetailBodyState();
@@ -227,7 +237,15 @@ class _DetailBodyState extends State<_DetailBody> {
             ),
           ),
         ],
-        if (item.actionLabel != null) ...[
+        if (widget.action case final action?) ...[
+          const SizedBox(height: AppSpacing.space4),
+          AppButton(
+            label: action.label,
+            variant: AppButtonVariant.secondary,
+            expand: true,
+            onPressed: action.open,
+          ),
+        ] else if (item.actionLabel != null) ...[
           const SizedBox(height: AppSpacing.space4),
           AppButton(
             label: item.actionLabel!,

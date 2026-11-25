@@ -43,6 +43,7 @@ class AppNotification {
     this.attachments = const [],
     this.unread = false,
     this.type,
+    this.childId,
   });
 
   final String id;
@@ -69,6 +70,9 @@ class AppNotification {
   /// Mã BE `NotificationType` (vd. `LEAVE_REQUEST_CHANGED`) để mở đúng màn; null với dữ liệu giả cũ.
   final String? type;
 
+  /// Bé của thông báo (BE `childId`) để mở màn của bé; null với thông báo chung.
+  final String? childId;
+
   AppNotification markRead() => AppNotification(
     id: id,
     kind: kind,
@@ -82,6 +86,7 @@ class AppNotification {
     actionLabel: actionLabel,
     attachments: attachments,
     type: type,
+    childId: childId,
   );
 }
 

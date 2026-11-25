@@ -55,6 +55,8 @@ class LiveNotificationSource implements NotificationSource {
   static AppNotification _fromJson(Map json) => AppNotification(
     id: '${json['id']}',
     kind: _kindOf(json['type']?.toString()),
+    type: json['type']?.toString(),
+    childId: json['childId']?.toString(),
     title: json['title']?.toString() ?? '',
     body: json['body']?.toString(),
     typeLabel: json['typeLabel']?.toString(),
