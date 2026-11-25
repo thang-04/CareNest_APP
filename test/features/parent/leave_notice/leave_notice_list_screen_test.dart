@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/core/widgets/app_month_calendar.dart';
 import 'package:carenest_app/core/widgets/app_text_field.dart';
 import 'package:carenest_app/features/parent/leave_notice/data/fake_leave_notice_source.dart';
+import 'package:carenest_app/features/parent/leave_notice/domain/leave_notice.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_form_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_list_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
@@ -390,4 +392,27 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('submit_beRejects_showsBeMessage', (tester) async {
+    await pumpForm(tester, _RejectingSource());
+    await tester.scrollUntilVisible(
+      find.byType(TextField),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.enterText(find.byType(TextField), 'Bé đi khám');
+    await tester.tap(find.text('Gửi đơn xin nghỉ'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Đã có đơn nghỉ trùng ngày 13/10/2026'), findsOneWidget);
+  });
+}
+
+/// Nguồn giả: BE từ chối đơn (vd. 4022 trùng ngày).
+class _RejectingSource extends FakeLeaveNoticeSource {
+  _RejectingSource() : super(delay: Duration.zero);
+
+  @override
+  Future<LeaveNotice> submit(LeaveNoticeDraft draft) async =>
+      throw ApiFailure(409, 'Đã có đơn nghỉ trùng ngày 13/10/2026', 4022);
 }

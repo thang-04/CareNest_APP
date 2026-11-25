@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
+import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
@@ -229,11 +230,14 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
       if (!mounted) return;
       setState(() => _submitting = false);
       widget.onSubmitted();
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
         setState(() {
           _submitting = false;
-          _submitError = 'Chưa gửi được đơn. Kiểm tra mạng rồi gửi lại.';
+          // BE từ chối (trùng ngày, qua giờ chốt, quá dài…) ⇒ câu BE; còn lại coi như lỗi mạng
+          _submitError = error is ApiFailure && error.status < 500
+              ? error.message
+              : 'Chưa gửi được đơn. Kiểm tra mạng rồi gửi lại.';
         });
       }
     }
