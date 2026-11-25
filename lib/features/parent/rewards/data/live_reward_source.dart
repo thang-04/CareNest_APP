@@ -12,36 +12,21 @@ class LiveRewardSource implements RewardSource {
   final MobileApi _api;
   final DateTime Function() _clock;
 
-  /// 8 tuần: 56 ngày, trong giới hạn 62 ngày của BE.
-  static const _weeks = 8;
-
   @override
   Future<RewardBook> load(String childId) async {
     final now = _clock();
     final today = DateTime(now.year, now.month, now.day);
-    final monday = mondayOf(today);
     late DateTime from;
     // Đầu năm học: 8 tuần trước có thể trước khai giảng (BE 4109) ⇒ thu hẹp
     final data =
-        await loadFromNearestStart(
-              [
-                DateTime(
-                  monday.year,
-                  monday.month,
-                  monday.day - 7 * (_weeks - 1),
-                ),
-                monday,
-                if (today.isAfter(monday)) today,
-              ],
-              (start) {
-                from = start;
-                return _api.json(
-                  'GET',
-                  '/children/$childId/rewards'
-                      '?from=${apiDate(start)}&to=${apiDate(today)}',
-                );
-              },
-            )
+        await loadFromNearestStart(recentStarts(today), (start) {
+              from = start;
+              return _api.json(
+                'GET',
+                '/children/$childId/rewards'
+                    '?from=${apiDate(start)}&to=${apiDate(today)}',
+              );
+            })
             as Map? ??
         const {};
     final tickets = _maps(data['tickets']).toList();
@@ -123,7 +108,8 @@ class LiveRewardSource implements RewardSource {
     ];
   }
 
-  /// Tháng bắt đầu trong khoảng tải (đủ phiếu của tháng); mới nhất trước, chỉ tháng mới nhất có ô từng tuần.
+  /// Tháng này luôn có; tháng trước khi khoảng tải bắt đầu từ ngày 1 của nó (đủ phiếu); mới nhất trước,
+  /// chỉ tháng mới nhất có ô từng tuần.
   static List<RewardMonth> _monthsOf(
     DateTime from,
     DateTime today,
@@ -132,9 +118,10 @@ class LiveRewardSource implements RewardSource {
   ) {
     final currentMonday = mondayOf(today);
     final months = <RewardMonth>[];
+    final current = DateTime(today.year, today.month);
     for (
-      var month = DateTime(today.year, today.month);
-      !month.isBefore(from);
+      var month = current;
+      month == current || !month.isBefore(from);
       month = DateTime(month.year, month.month - 1)
     ) {
       final ticket = monthly[month];

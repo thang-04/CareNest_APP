@@ -7,10 +7,10 @@ import '../../../helpers/live_fakes.dart';
 
 void main() {
   late FakeLiveSession session;
-  // Thứ Tư; 8 tuần gần nhất tính từ thứ Hai 7 tuần trước
+  // Thứ Tư; 8 tuần gần nhất, lùi tới ngày 1 tháng trước (cùng khoảng với Khen thưởng)
   final today = DateTime(2026, 11, 25);
   const days =
-      'GET /children/5/daily-assessments?from=2026-10-05&to=2026-11-25';
+      'GET /children/5/daily-assessments?from=2026-10-01&to=2026-11-25';
 
   setUp(() => session = FakeLiveSession(['PARENT'], childIds: [5]));
 

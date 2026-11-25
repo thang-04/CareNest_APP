@@ -13,22 +13,14 @@ class LiveEvaluationSource implements EvaluationSource {
   final MobileApi _api;
   final DateTime Function() _clock;
 
-  /// 8 tuần: 56 ngày, trong giới hạn 62 ngày của BE.
-  static const _weeks = 8;
-
   @override
   Future<EvaluationBook> load(String childId) async {
     final now = _clock();
     final today = DateTime(now.year, now.month, now.day);
-    final monday = mondayOf(today);
     final results = await Future.wait([
       // Đầu năm học: 8 tuần trước có thể trước khai giảng (BE 4109) ⇒ thu hẹp
       loadFromNearestStart(
-        [
-          DateTime(monday.year, monday.month, monday.day - 7 * (_weeks - 1)),
-          monday,
-          if (today.isAfter(monday)) today,
-        ],
+        recentStarts(today),
         (from) => _api.json(
           'GET',
           '/children/$childId/daily-assessments'

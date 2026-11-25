@@ -68,7 +68,11 @@ const callRange = async (path, starts) => {
     }
   }
 };
-const recentStarts = [eightWeeks, monday, today];
+// Như recentStarts của App: 8 tuần lùi tới ngày 1 tháng trước, rồi ngày 1 tháng này, thứ Hai, hôm nay
+const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+const recentStarts = [eightWeeks, previousMonth, monthStart, monday, today]
+  .sort((a, b) => a - b)
+  .filter((d, i, all) => i === 0 || d > all[i - 1]);
 const monthStarts = [monthStart, monday, today].filter((d, i, all) => i === 0 || d > all[i - 1]);
 const keys = (obj) => Object.keys(obj ?? {}).sort().join(",");
 const len = (v) => (Array.isArray(v) ? v.length : "—");

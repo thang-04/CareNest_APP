@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/features/parent/rewards/data/live_reward_source.dart';
 import 'package:carenest_app/features/parent/rewards/domain/rewards.dart';
 
@@ -7,9 +8,9 @@ import '../../../helpers/live_fakes.dart';
 
 void main() {
   late FakeLiveSession session;
-  // Thứ Tư; 8 tuần gần nhất tính từ thứ Hai 7 tuần trước
+  // Thứ Tư; 8 tuần gần nhất, lùi tới ngày 1 tháng trước để có phiếu tháng trước
   final today = DateTime(2026, 11, 25);
-  const path = 'GET /children/5/rewards?from=2026-10-05&to=2026-11-25';
+  const path = 'GET /children/5/rewards?from=2026-10-01&to=2026-11-25';
 
   setUp(() => session = FakeLiveSession(['PARENT'], childIds: [5]));
 
@@ -88,8 +89,7 @@ void main() {
       ],
     );
 
-    // Tháng 10 bắt đầu trước khoảng tải (05/10) ⇒ không đủ phiếu, không hiện
-    final month = book.months.single;
+    final month = book.months.first;
     expect(month.month, DateTime(2026, 11));
     expect(month.ongoing, isTrue);
     expect(month.weeklyTickets, 3);
@@ -105,8 +105,8 @@ void main() {
   test('load_monthWithoutTicket_countsWeeklyTickets', () async {
     final book = await load(tickets: [weekly('2026-11-16', '2026-11-20')]);
 
-    expect(book.months.single.weeklyTickets, 1);
-    expect(book.months.single.ticket, isNull);
+    expect(book.months.first.weeklyTickets, 1);
+    expect(book.months.first.ticket, isNull);
   });
 
   test('load_weekBelongsToMonthOfItsFriday', () async {
@@ -133,6 +133,49 @@ void main() {
     );
     expect(book.months[1].month, DateTime(2026, 9));
     expect(book.months[1].weeklyTickets, 0);
+  });
+
+  test('load_previousMonthTicketShown', () async {
+    final book = await load(
+      tickets: [
+        {
+          'type': 'MONTHLY',
+          'periodStart': '2026-10-01',
+          'periodEnd': '2026-10-31',
+          'weeklyTickets': 4,
+          'issuedByName': 'Cô Hà',
+          'issuedAt': '2026-11-03T09:00:00Z',
+        },
+      ],
+    );
+
+    expect(book.months.map((m) => m.month), [
+      DateTime(2026, 11),
+      DateTime(2026, 10),
+    ]);
+    expect(book.months.last.weeklyTickets, 4);
+    expect(book.months.last.ticket!.issuedBy, 'Cô Hà');
+  });
+
+  test('load_yearStartFallback_keepsCurrentMonth', () async {
+    // Đầu năm học: khoảng dài lấn trước khai giảng ⇒ BE 4109, App lùi dần về tuần này
+    Never reject(Object? _) =>
+        throw ApiFailure(400, 'Chọn khoảng ngày trong một năm học', 4109);
+    final book = await LiveRewardSource(
+      ScriptedApi(session, {
+        path: reject,
+        'GET /children/5/rewards?from=2026-10-05&to=2026-11-25': reject,
+        'GET /children/5/rewards?from=2026-11-01&to=2026-11-25': reject,
+        'GET /children/5/rewards?from=2026-11-23&to=2026-11-25': (_) => {
+          'flags': <Object>[],
+          'tickets': <Object>[],
+          'yearEndTitles': <Object>[],
+        },
+      }),
+      clock: () => today,
+    ).load('5');
+
+    expect(book.months.single.month, DateTime(2026, 11));
   });
 
   test('load_yearEndTitles', () async {

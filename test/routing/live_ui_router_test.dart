@@ -149,7 +149,11 @@ void main() {
     final api = parentApi(session);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final from = today.subtract(Duration(days: today.weekday - 1 + 49));
+    final eightWeeks = today.subtract(Duration(days: today.weekday - 1 + 49));
+    final previousMonth = DateTime(today.year, today.month - 1);
+    final from = previousMonth.isBefore(eightWeeks)
+        ? previousMonth
+        : eightWeeks;
     String day(DateTime d) => d.toIso8601String().substring(0, 10);
     api.routes['GET /children/5/daily-assessments'
         '?from=${day(from)}&to=${day(today)}'] = (_) =>
@@ -175,7 +179,11 @@ void main() {
     final api = parentApi(session);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final from = today.subtract(Duration(days: today.weekday - 1 + 49));
+    final eightWeeks = today.subtract(Duration(days: today.weekday - 1 + 49));
+    final previousMonth = DateTime(today.year, today.month - 1);
+    final from = previousMonth.isBefore(eightWeeks)
+        ? previousMonth
+        : eightWeeks;
     String day(DateTime d) => d.toIso8601String().substring(0, 10);
     api.routes['GET /children/5/rewards?from=${day(from)}&to=${day(today)}'] =
         (_) => {
