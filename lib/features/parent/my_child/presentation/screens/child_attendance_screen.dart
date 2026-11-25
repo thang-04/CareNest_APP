@@ -13,6 +13,7 @@ import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/parent/my_child/data/fake_my_child_source.dart';
 import 'package:carenest_app/features/parent/my_child/domain/my_child.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/widgets/my_child_widgets.dart';
+import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
 
 extension on AttendanceDayStatus {
   String get label => switch (this) {
@@ -27,6 +28,11 @@ extension on AttendanceDayStatus {
     AttendanceDayStatus.absent => AppStatusTone.red,
   };
 }
+
+/// Số ngày BE trả, nửa buổi 0,5 (ATT-14): "8" hoặc "8,5".
+String _count(double value) => value == value.roundToDouble()
+    ? '${value.toInt()}'
+    : '$value'.replaceAll('.', ',');
 
 /// Điểm danh & bữa ăn theo tháng — mockup P10. Số đếm là BE trả (ATT-01, ATT-04).
 class ChildAttendanceScreen extends StatefulWidget {
@@ -95,25 +101,26 @@ class _ChildAttendanceScreenState extends State<ChildAttendanceScreen> {
               AppStatRow(
                 tiles: [
                   AppStatTile(
-                    value: '${month.presentCount}',
+                    value: _count(month.presentCount),
                     label: 'Có mặt',
                     tone: AppStatusTone.green,
                   ),
                   AppStatTile(
-                    value: '${month.excusedCount}',
+                    value: _count(month.excusedCount),
                     label: 'Có phép',
                     tone: AppStatusTone.blue,
                   ),
                   AppStatTile(
-                    value: '${month.absentCount}',
+                    value: _count(month.absentCount),
                     label: 'Vắng',
                     tone: AppStatusTone.red,
                   ),
-                  AppStatTile(
-                    value: '${month.cancelledMealCount}',
-                    label: 'Suất huỷ',
-                    tone: AppStatusTone.gray,
-                  ),
+                  if (month.cancelledMealCount case final cancelled?)
+                    AppStatTile(
+                      value: '$cancelled',
+                      label: 'Suất huỷ',
+                      tone: AppStatusTone.gray,
+                    ),
                 ],
               ),
               const SizedBox(height: AppSpacing.space3),
@@ -216,8 +223,17 @@ class _DayDetail extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.space2),
+        if (day.absentPart case final part?)
+          InfoLine(
+            label: 'Nghỉ theo đơn',
+            value: part == AbsentPart.morning ? 'Buổi sáng' : 'Buổi chiều',
+          ),
         if (day.arrivedAt case final arrived?)
           InfoLine(label: 'Đến lớp', value: DateLabels.time24(arrived)),
+        if (day.healthLine case final health?)
+          InfoLine(label: 'Đầu ngày', value: health),
+        if (day.healthNote case final note?)
+          InfoLine(label: 'Cô ghi', value: note),
         if (day.mealsLine case final meals?)
           InfoLine(label: 'Bữa', value: meals),
         if (day.pickupLine case final pickup?)

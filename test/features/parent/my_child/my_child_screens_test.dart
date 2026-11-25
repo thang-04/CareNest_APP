@@ -8,6 +8,7 @@ import 'package:carenest_app/features/parent/my_child/domain/my_child.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/child_activities_screen.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/child_attendance_screen.dart';
 import 'package:carenest_app/features/parent/my_child/presentation/screens/my_child_screen.dart';
+import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
 import 'package:carenest_app/features/parent/parent_home/presentation/selected_child.dart';
 import 'package:carenest_app/features/parent/parent_menu/presentation/screens/weekly_menu_screen.dart';
 
@@ -56,6 +57,44 @@ class _NotProvidedSource extends FakeMyChildSource {
       guardians: base.guardians,
     );
   }
+}
+
+/// Dữ liệu như phiên thật (BE 25/11): số nửa ngày, chưa có tổng suất huỷ, tên năm học, SĐT.
+class _LiveShapeSource extends FakeMyChildSource {
+  const _LiveShapeSource();
+
+  @override
+  Future<AttendanceMonth> loadAttendance(String childId) async =>
+      AttendanceMonth(
+        month: DateTime(2026, 10),
+        presentCount: 8.5,
+        excusedCount: 0.5,
+        absentCount: 0,
+        days: [
+          AttendanceDay(
+            date: DateTime(2026, 10, 12),
+            status: AttendanceDayStatus.present,
+            absentPart: AbsentPart.morning,
+            healthLine: '37,8 °C · Sốt',
+            healthNote: 'Cô đã báo mẹ',
+          ),
+        ],
+      );
+
+  @override
+  Future<ChildProfile> loadProfile(String childId) async => const ChildProfile(
+    fullName: 'Trần Bảo Ngọc',
+    className: 'Mẫu giáo 3A',
+    birthDate: '14/03/2022',
+    gender: 'Nữ',
+    health: DeclaredHealth(
+      allergyState: DeclarationState.notProvided,
+      diet: DeclaredItem.notProvided(),
+      selfHistory: DeclaredItem.notProvided(),
+      familyHistory: DeclaredItem.notProvided(),
+    ),
+    guardians: [Guardian(relation: 'Mẹ', name: 'Thu Lan')],
+  );
 }
 
 Future<void> pumpScreen(
@@ -195,6 +234,52 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('attendance_live_halfDayCountsAndDailyHealth', (tester) async {
+    await pumpScreen(
+      tester,
+      ChildAttendanceScreen(
+        childId: 'child-1',
+        initialDay: today,
+        source: const _LiveShapeSource(),
+      ),
+    );
+    // ATT-14: nửa buổi = 0,5 ngày; BE chưa trả tổng suất huỷ ⇒ không có ô
+    expect(find.bySemanticsLabel('Có mặt: 8,5'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('^Suất huỷ')), findsNothing);
+    expect(
+      find.textContaining('Buổi sáng', findRichText: true, skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining(
+        '37,8 °C · Sốt',
+        findRichText: true,
+        skipOffstage: false,
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining(
+        'Cô đã báo mẹ',
+        findRichText: true,
+        skipOffstage: false,
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('profile_live_hidesSchoolYearAndMissingPhone', (tester) async {
+    SelectedChild.notifier.value = 'c-1';
+    await pumpScreen(
+      tester,
+      const MyChildScreen(source: _LiveShapeSource()),
+      inScaffold: true,
+    );
+    expect(find.textContaining('Năm học'), findsNothing);
+    await tester.scrollUntilVisible(find.text('Mẹ – Thu Lan'), 200);
+    expect(find.textContaining('null'), findsNothing);
   });
 
   testWidgets(

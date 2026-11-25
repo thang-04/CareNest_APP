@@ -1,0 +1,191 @@
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:carenest_app/features/parent/my_child/data/live_my_child_source.dart';
+import 'package:carenest_app/features/parent/my_child/domain/my_child.dart';
+import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
+
+import '../../../helpers/live_fakes.dart';
+
+void main() {
+  late FakeLiveSession session;
+  final today = DateTime(2026, 11, 25);
+  const range = 'from=2026-11-01&to=2026-11-25';
+
+  setUp(() => session = FakeLiveSession(['PARENT'], childIds: [5]));
+
+  LiveMyChildSource source(Map<String, Object? Function(Object?)> routes) =>
+      LiveMyChildSource(ScriptedApi(session, routes), clock: () => today);
+
+  test('loadProfile_mapsDeclarationAndGuardians', () async {
+    final profile = profileJson(5, 'Nguyễn Minh Anh');
+    final child = profile['child']! as Map<String, Object?>;
+    child['gender'] = 'MALE';
+    child['guardians'] = [
+      {
+        'fullName': 'Trần Thu Lan',
+        'relation': 'MOTHER',
+        'phone': '0900000001',
+        'idNumber': '000000000001',
+      },
+      {'fullName': 'Nguyễn Văn Hùng', 'relation': 'FATHER', 'phone': null},
+    ];
+    profile['declaration'] = {
+      'allergies': {
+        'state': 'REPORTED',
+        'items': ['Hải sản'],
+      },
+      'diet': {'state': 'NONE_REPORTED', 'text': null},
+      'medicalHistory': {
+        'self': {'state': 'REPORTED', 'text': 'Hen phế quản'},
+        'family': {'state': 'NOT_PROVIDED', 'text': null},
+      },
+    };
+
+    final result = await source({
+      'GET /children/5/profile': (_) => profile,
+    }).loadProfile('5');
+
+    expect(result.fullName, 'Nguyễn Minh Anh');
+    expect(result.className, 'Mầm 3A');
+    expect(result.birthDate, '14/03/2022');
+    expect(result.gender, 'Nam');
+    // BE chưa trả tên năm học, điểm trường, GV, tuổi ⇒ ẩn (user 25/11)
+    expect(result.schoolYear, isNull);
+    expect(result.campus, isNull);
+    expect(result.teachers, isNull);
+    expect(result.ageLabel, isNull);
+    expect(result.health.allergyState, DeclarationState.reported);
+    expect(result.health.allergies, ['Hải sản']);
+    expect(result.health.diet.state, DeclarationState.noneReported);
+    expect(result.health.selfHistory.text, 'Hen phế quản');
+    expect(result.health.familyHistory.state, DeclarationState.notProvided);
+    expect(result.guardians.map((g) => '${g.relation}|${g.name}|${g.phone}'), [
+      'Mẹ|Trần Thu Lan|0900000001',
+      'Bố|Nguyễn Văn Hùng|null',
+    ]);
+  });
+
+  test('loadProfile_noDeclaration_allNotProvided', () async {
+    final result = await source({
+      'GET /children/5/profile': (_) => profileJson(5, 'Nguyễn Minh Anh'),
+    }).loadProfile('5');
+
+    expect(result.health.allergyState, DeclarationState.notProvided);
+    expect(result.health.diet.state, DeclarationState.notProvided);
+    expect(result.health.selfHistory.state, DeclarationState.notProvided);
+    expect(result.health.familyHistory.state, DeclarationState.notProvided);
+  });
+
+  Map<String, Object? Function(Object?)> attendanceRoutes({
+    List<Object> days = const [],
+    Map<String, Object?> totals = const {
+      'schoolDays': 0,
+      'present': 0,
+      'excused': 0,
+      'absent': 0,
+    },
+    List<Object> health = const [],
+  }) => {
+    'GET /children/5/attendance?$range': (_) => {
+      'childId': 5,
+      'from': '2026-11-01',
+      'to': '2026-11-25',
+      'days': days,
+      'totals': totals,
+    },
+    'GET /children/5/daily-health/parent?$range': (_) => health,
+  };
+
+  test('loadAttendance_requestsCalendarMonth', () async {
+    final routes = attendanceRoutes();
+    final api = ScriptedApi(session, routes);
+    final month = await LiveMyChildSource(
+      api,
+      clock: () => today,
+    ).loadAttendance('5');
+
+    // Từ ngày 1 tới hôm nay: BE từ chối khoảng vượt cuối năm học (4109)
+    expect(api.calls, unorderedEquals(routes.keys));
+    expect(month.month, DateTime(2026, 11));
+  });
+
+  test('loadAttendance_countsHalfDays', () async {
+    final month = await source(
+      attendanceRoutes(
+        days: [
+          {
+            'date': '2026-11-23',
+            'status': 'NO_SCHOOL',
+            'mealsEaten': <String>[],
+            'cancelledMeals': <String>[],
+          },
+          {
+            'date': '2026-11-24',
+            'status': 'PRESENT',
+            'absentPart': 'MORNING',
+            'arrivedAt': '2026-11-24T06:05:00Z',
+            'mealsEaten': ['LUNCH', 'AFTERNOON'],
+            'cancelledMeals': ['MORNING'],
+          },
+          {
+            'date': '2026-11-25',
+            'status': 'NOT_RECORDED',
+            'mealsEaten': <String>[],
+            'cancelledMeals': <String>[],
+          },
+        ],
+        totals: {'schoolDays': 9, 'present': 8.5, 'excused': 0.5, 'absent': 0},
+      ),
+    ).loadAttendance('5');
+
+    expect(month.presentCount, 8.5);
+    expect(month.excusedCount, 0.5);
+    expect(month.absentCount, 0);
+    // BE chưa trả tổng suất huỷ ⇒ không tự đếm trên máy
+    expect(month.cancelledMealCount, isNull);
+    // Ngày không phải ngày học / chưa điểm danh không có dấu trên lịch
+    expect(month.days, hasLength(1));
+    final day = month.days.single;
+    expect(day.date, DateTime(2026, 11, 24));
+    expect(day.status, AttendanceDayStatus.present);
+    expect(day.absentPart, AbsentPart.morning);
+    expect(day.arrivedAt, DateTime.utc(2026, 11, 24, 6, 5).toLocal());
+    expect(day.mealsLine, 'đã ăn trưa · chiều');
+    expect(day.mealCancelled, isTrue);
+    expect(day.pickupLine, isNull);
+  });
+
+  test('loadAttendance_attachesDailyHealth', () async {
+    final month = await source(
+      attendanceRoutes(
+        days: [
+          {
+            'date': '2026-11-24',
+            'status': 'PRESENT',
+            'mealsEaten': <String>[],
+            'cancelledMeals': <String>[],
+          },
+        ],
+        health: [
+          {
+            'date': '2026-11-24',
+            'temperature': 37.8,
+            'symptoms': ['FEVER', 'COUGH'],
+            'note': 'Cô đã báo mẹ',
+          },
+          {
+            'date': '2026-11-24',
+            'temperature': 36.6,
+            'symptoms': <String>[],
+            'note': null,
+          },
+        ],
+      ),
+    ).loadAttendance('5');
+
+    final day = month.days.single;
+    // BE xếp mới nhất trước ⇒ lấy lần ghi đầu tiên của ngày
+    expect(day.healthLine, '37,8 °C · Sốt, Ho');
+    expect(day.healthNote, 'Cô đã báo mẹ');
+  });
+}

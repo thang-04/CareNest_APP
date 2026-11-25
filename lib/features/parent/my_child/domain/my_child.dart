@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
+
 /// Mọi nhãn/đánh giá dưới đây là giá trị BE trả (đã công bố cho phụ huynh — PAR-02, P-13b);
 /// APP không tự xếp loại, không tự tính.
 
@@ -69,6 +71,9 @@ class AttendanceDay {
     this.mealsLine,
     this.pickupLine,
     this.mealCancelled = false,
+    this.absentPart,
+    this.healthLine,
+    this.healthNote,
   });
 
   final DateTime date;
@@ -81,9 +86,19 @@ class AttendanceDay {
   /// "16:45 · Mẹ"
   final String? pickupLine;
   final bool mealCancelled;
+
+  /// Nghỉ một buổi theo đơn; [status] là của buổi còn lại (ATT-13).
+  final AbsentPart? absentPart;
+
+  /// Sức khỏe đầu ngày GV ghi: "37,8 °C · Sốt, Ho" (ATT-15).
+  final String? healthLine;
+
+  /// Ghi chú GV gửi phụ huynh kèm lần ghi sức khỏe đầu ngày.
+  final String? healthNote;
 }
 
 /// Một tháng điểm danh; các số đếm là BE trả, không đếm từ danh sách ngày trên máy.
+/// Ngày học quy đổi nửa buổi 0,5 (ATT-14) ⇒ số đếm là số thực.
 @immutable
 class AttendanceMonth {
   const AttendanceMonth({
@@ -91,29 +106,29 @@ class AttendanceMonth {
     required this.presentCount,
     required this.excusedCount,
     required this.absentCount,
-    required this.cancelledMealCount,
+    this.cancelledMealCount,
     required this.days,
   });
 
   final DateTime month;
-  final int presentCount;
-  final int excusedCount;
-  final int absentCount;
-  final int cancelledMealCount;
+  final double presentCount;
+  final double excusedCount;
+  final double absentCount;
+
+  /// BE chưa trả tổng suất huỷ ⇒ null, màn ẩn ô (không tự đếm trên máy).
+  final int? cancelledMealCount;
   final List<AttendanceDay> days;
 }
 
 @immutable
 class Guardian {
-  const Guardian({
-    required this.relation,
-    required this.name,
-    required this.phone,
-  });
+  const Guardian({required this.relation, required this.name, this.phone});
 
   final String relation;
   final String name;
-  final String phone;
+
+  /// BE không bắt buộc số điện thoại ⇒ null, màn ẩn.
+  final String? phone;
 }
 
 /// Trạng thái một mục khai báo sức khỏe khi tiếp nhận: BE `REPORTED` / `NONE_REPORTED` /
@@ -163,7 +178,7 @@ class ChildProfile {
     required this.fullName,
     required this.className,
     this.ageLabel,
-    required this.schoolYear,
+    this.schoolYear,
     required this.birthDate,
     required this.gender,
     this.campus,
@@ -180,8 +195,8 @@ class ChildProfile {
   /// "4 tuổi"; BE chưa trả ⇒ null, màn ẩn (user 25/11).
   final String? ageLabel;
 
-  /// "2026–2027"
-  final String schoolYear;
+  /// "2026–2027"; BE chưa trả tên năm học ⇒ null, màn ẩn.
+  final String? schoolYear;
 
   /// "14/03/2022 (4 tuổi)"
   final String birthDate;

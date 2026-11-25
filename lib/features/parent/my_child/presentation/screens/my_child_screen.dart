@@ -161,6 +161,8 @@ class _ProfileContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (profile.guardians.isEmpty)
+                Text('Nhà trường chưa ghi người đưa đón.', style: muted),
               for (final (i, guardian) in profile.guardians.indexed) ...[
                 if (i > 0) const Divider(height: AppSpacing.space6),
                 MergeSemantics(
@@ -179,7 +181,8 @@ class _ProfileContent extends StatelessWidget {
                               '${guardian.relation} – ${guardian.name}',
                               style: textTheme.titleSmall,
                             ),
-                            Text(guardian.phone, style: muted),
+                            if (guardian.phone case final phone?)
+                              Text(phone, style: muted),
                           ],
                         ),
                       ),
@@ -288,13 +291,14 @@ class _ProfileCard extends StatelessWidget {
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    Text(
-                      'Năm học ${profile.schoolYear}',
-                      textAlign: TextAlign.center,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textMuted,
+                    if (profile.schoolYear case final year?)
+                      Text(
+                        'Năm học $year',
+                        textAlign: TextAlign.center,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textMuted,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
