@@ -23,13 +23,25 @@ class LiveMyChildSource implements MyChildSource {
   @override
   Future<AttendanceMonth> loadAttendance(String childId) async {
     final now = _clock();
-    final from = DateTime(now.year, now.month);
-    // Tới hôm nay, không tới cuối tháng: BE từ chối khoảng vượt cuối năm học (4109)
-    final query = 'from=${apiDate(from)}&to=${apiDate(now)}';
-    final results = await Future.wait([
-      _api.json('GET', '/children/$childId/attendance?$query'),
-      _api.json('GET', '/children/$childId/daily-health/parent?$query'),
-    ]);
+    final today = DateTime(now.year, now.month, now.day);
+    final month = DateTime(now.year, now.month);
+    final monday = mondayOf(today);
+    // Tới hôm nay, không tới cuối tháng: BE từ chối khoảng vượt cuối năm học (4109).
+    // Tháng khai giảng: ngày 1 có thể trước năm học ⇒ thu hẹp về tuần này, rồi hôm nay.
+    final results = await loadFromNearestStart(
+      [
+        month,
+        if (monday.isAfter(month)) monday,
+        if (today.isAfter(monday) && today.isAfter(month)) today,
+      ],
+      (from) {
+        final query = 'from=${apiDate(from)}&to=${apiDate(today)}';
+        return Future.wait([
+          _api.json('GET', '/children/$childId/attendance?$query'),
+          _api.json('GET', '/children/$childId/daily-health/parent?$query'),
+        ]);
+      },
+    );
     final data = results[0]! as Map;
     final totals = data['totals'] as Map? ?? const {};
     // BE xếp mới nhất trước ⇒ giữ lần ghi đầu tiên của mỗi ngày
@@ -38,7 +50,7 @@ class LiveMyChildSource implements MyChildSource {
       health.putIfAbsent('${entry['date']}', () => entry);
     }
     return AttendanceMonth(
-      month: from,
+      month: month,
       presentCount: _count(totals['present']),
       excusedCount: _count(totals['excused']),
       absentCount: _count(totals['absent']),

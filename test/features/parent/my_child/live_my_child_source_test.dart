@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/features/parent/my_child/data/live_my_child_source.dart';
 import 'package:carenest_app/features/parent/my_child/domain/my_child.dart';
 import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
@@ -107,6 +108,36 @@ void main() {
     // Từ ngày 1 tới hôm nay: BE từ chối khoảng vượt cuối năm học (4109)
     expect(api.calls, unorderedEquals(routes.keys));
     expect(month.month, DateTime(2026, 11));
+  });
+
+  test('loadAttendance_rangeBeforeYearStart_retriesFromThisWeek', () async {
+    // Tháng đầu năm học: ngày 1 trước ngày khai giảng ⇒ BE 4109; thử lại từ thứ Hai tuần này
+    final routes = attendanceRoutes();
+    Never reject(Object? _) =>
+        throw ApiFailure(400, 'Chọn khoảng ngày trong một năm học', 4109);
+    routes['GET /children/5/attendance?$range'] = reject;
+    routes['GET /children/5/daily-health/parent?$range'] = reject;
+    const week = 'from=2026-11-23&to=2026-11-25';
+    routes['GET /children/5/attendance?$week'] = (_) => {
+      'days': <Object>[],
+      'totals': {'present': 2},
+    };
+    routes['GET /children/5/daily-health/parent?$week'] = (_) => <Object>[];
+
+    final month = await source(routes).loadAttendance('5');
+
+    expect(month.presentCount, 2);
+  });
+
+  test('loadAttendance_otherError_notRetried', () async {
+    final routes = attendanceRoutes();
+    routes['GET /children/5/attendance?$range'] = (_) =>
+        throw ApiFailure(403, 'Bạn chỉ xem được thông tin của con mình', 4108);
+
+    await expectLater(
+      source(routes).loadAttendance('5'),
+      throwsA(isA<ApiFailure>().having((f) => f.status, 'status', 403)),
+    );
   });
 
   test('loadAttendance_countsHalfDays', () async {
