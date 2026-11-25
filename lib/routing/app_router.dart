@@ -60,6 +60,8 @@ import 'package:carenest_app/features/parent/health_book/presentation/screens/ex
 import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
 import 'package:carenest_app/features/parent/evaluation/data/fake_evaluation_source.dart';
 import 'package:carenest_app/features/parent/evaluation/data/live_evaluation_source.dart';
+import 'package:carenest_app/features/parent/health_book/data/fake_health_book_source.dart';
+import 'package:carenest_app/features/parent/health_book/data/live_health_book_source.dart';
 import 'package:carenest_app/features/parent/leave_notice/data/live_leave_notice_source.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_form_screen.dart';
 import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_list_screen.dart';
@@ -351,6 +353,7 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
       RoutePaths.parentHealthBook,
       (context, state, child) => HealthBookScreen(
         child: child,
+        source: parent.healthBook ?? const FakeHealthBookSource(),
         onOpenExam: (examId) => context.push<void>(
           RoutePaths.parentHealthExam(examId, childId: child.id),
         ),
@@ -361,6 +364,7 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
       (context, state, child) => ExamDetailScreen(
         child: child,
         examId: state.pathParameters['examId']!,
+        source: parent.healthBook ?? const FakeHealthBookSource(),
       ),
     ),
     route(
@@ -696,6 +700,7 @@ GoRouter _buildLiveRouter(
           myChild: LiveMyChildSource(api),
           evaluation: LiveEvaluationSource(api),
           rewards: LiveRewardSource(api),
+          healthBook: LiveHealthBookSource(api),
         ),
       ),
     ],

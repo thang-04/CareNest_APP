@@ -194,6 +194,23 @@ void main() {
     expect(find.byTooltip('Cách bé nhận khen thưởng'), findsNothing);
   });
 
+  testWidgets('live_parentHealthBook_usesBe', (tester) async {
+    final session = FakeLiveSession(['PARENT'], childIds: [5]);
+    final api = parentApi(session);
+    api.routes['GET /children/5/health/published'] = (_) => {
+      'results': <Object>[],
+      'growth': <Object>[],
+      'interpretation': null,
+    };
+    await pumpLiveApp(
+      tester,
+      session,
+      api: api,
+      location: RoutePaths.withChild(RoutePaths.parentHealthBook, '5'),
+    );
+    expect(api.calls, contains('GET /children/5/health/published'));
+  });
+
   testWidgets('live_otherRolePath_goesOwnHome', (tester) async {
     await pumpLiveApp(
       tester,

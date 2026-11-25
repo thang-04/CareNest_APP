@@ -4,6 +4,7 @@ import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/features/parent/evaluation/domain/evaluation.dart';
+import 'package:carenest_app/features/parent/health_book/domain/health_book.dart';
 import 'package:carenest_app/features/parent/leave_notice/data/fake_leave_notice_source.dart';
 import 'package:carenest_app/features/parent/my_child/domain/my_child.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
@@ -20,6 +21,7 @@ class ParentSources {
     this.myChild,
     this.evaluation,
     this.rewards,
+    this.healthBook,
   });
 
   /// Phiên thật: màn chưa có API ở BE hiện "Sắp có", không hiện dữ liệu giả (user 25/11, Q1).
@@ -29,6 +31,7 @@ class ParentSources {
   final MyChildSource? myChild;
   final EvaluationSource? evaluation;
   final RewardSource? rewards;
+  final HealthBookSource? healthBook;
 
   /// Ngày mở lịch tháng (Điểm danh, Thực đơn): phiên thật = hôm nay; Xem thử = ngày của dữ liệu giả.
   DateTime get today {
