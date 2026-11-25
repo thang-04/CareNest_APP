@@ -3,9 +3,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/theme/app_theme.dart';
+import 'package:carenest_app/core/widgets/app_button.dart';
+import 'package:carenest_app/core/widgets/app_filter_chip.dart';
 import 'package:carenest_app/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/otp_verify_screen.dart';
+import 'package:carenest_app/features/kitchen/food_samples/presentation/screens/food_samples_screen.dart';
+import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
+import 'package:carenest_app/features/parent/evaluation/presentation/screens/evaluation_screen.dart';
+import 'package:carenest_app/features/parent/evaluation/presentation/screens/theme_result_screen.dart';
+import 'package:carenest_app/features/parent/health_book/presentation/screens/exam_detail_screen.dart';
+import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
+import 'package:carenest_app/features/parent/rewards/presentation/screens/rewards_screen.dart';
+import 'package:carenest_app/features/shared/app_mode/app_mode.dart';
 import 'package:carenest_app/routing/app_router.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 
@@ -70,9 +80,50 @@ void main() {
       find.descendant(of: bar, matching: find.text('Bé của tôi')),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Hôm nay'), findsOneWidget);
-    expect(find.text('Sức khỏe'), findsOneWidget);
+    // User 18/11: Bé của tôi là hồ sơ của bé, một trang, không chia tab
+    expect(find.text('Thông tin chung'), findsOneWidget);
+    expect(find.text('Hôm nay'), findsNothing);
+    // Sức khỏe chuyển sang Sổ sức khỏe ở Trang chủ (user 17/11)
+    expect(find.text('Sức khỏe'), findsNothing);
   });
+
+  testWidgets(
+    'GV kiêm phụ huynh: chuyển vai trò chỉ ở Trang chủ, Tài khoản không có lối chuyển',
+    (tester) async {
+      addTearDown(AppMode.reset);
+      final router = await pumpRouter(tester, enablePreview: true);
+      Finder chip(String label) => find.widgetWithText(AppFilterChip, label);
+
+      // Phụ huynh vào thẳng (một vai) ⇒ không có nút "Giáo viên"
+      router.go(RoutePaths.parentToday);
+      await tester.pumpAndSettle();
+      expect(chip('Giáo viên'), findsNothing);
+
+      router.go(RoutePaths.teacherToday);
+      await tester.pumpAndSettle();
+      await tester.tap(chip('Phụ huynh'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, RoutePaths.parentToday);
+
+      await tester.tap(chip('Giáo viên'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, RoutePaths.teacherToday);
+      expect(chip('Phụ huynh'), findsOneWidget);
+
+      for (final path in [
+        RoutePaths.teacherAccount,
+        RoutePaths.parentAccount,
+      ]) {
+        router.go(path);
+        await tester.pumpAndSettle();
+        expect(
+          find.textContaining('Chuyển sang chế độ'),
+          findsNothing,
+          reason: path,
+        );
+      }
+    },
+  );
 
   testWidgets('Bếp mở thẳng tab Thực đơn', (tester) async {
     final router = await pumpRouter(tester, enablePreview: true);
@@ -80,6 +131,216 @@ void main() {
     await tester.pumpAndSettle();
     final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(bar.selectedIndex, 1);
+  });
+
+  testWidgets(
+    'Phụ huynh: "Xem hồ sơ của …" ở Trang chủ chuyển sang tab Bé của tôi; '
+    'link cũ có tab vẫn mở Bé của tôi',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      router.go(RoutePaths.parentToday);
+      await tester.pumpAndSettle();
+      final link = find.text('Xem hồ sơ của Minh Anh ›');
+      await tester.ensureVisible(link);
+      await tester.pumpAndSettle();
+      await tester.tap(link);
+      await tester.pumpAndSettle();
+      expect(find.text('Thông tin chung'), findsOneWidget);
+      final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+      expect(bar.selectedIndex, 1);
+
+      router.go('/parent/child?tab=development&section=rewards');
+      await tester.pumpAndSettle();
+      expect(find.text('Thông tin chung'), findsOneWidget);
+    },
+  );
+
+  testWidgets('Phụ huynh: Việc nhanh › Khen thưởng mở trang Khen thưởng, '
+      '"Xem đánh giá từng ngày" mở Đánh giá', (tester) async {
+    final router = await pumpRouter(tester, enablePreview: true);
+    router.go(RoutePaths.parentToday);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Khen thưởng'), 200);
+    // Vẽ lại sau lần cuộn cuối, không thì tap đọc vị trí cũ (ngoài màn)
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Khen thưởng'));
+    await tester.pumpAndSettle();
+    expect(find.byType(RewardsScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.text('TUẦN NÀY'), findsOneWidget);
+
+    final daily = find.text('Xem đánh giá từng ngày');
+    await tester.ensureVisible(daily);
+    await tester.pumpAndSettle();
+    await tester.tap(daily);
+    await tester.pumpAndSettle();
+    expect(find.byType(EvaluationScreen), findsOneWidget);
+  });
+
+  testWidgets(
+    'Phụ huynh: trang Khen thưởng mở theo bé trên đường dẫn, bé lạ ⇒ 404',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      router.go(RoutePaths.withChild(RoutePaths.parentRewards, 'child-2'));
+      await tester.pumpAndSettle();
+      expect(find.text('Nguyễn Hoàng Bảo Ngọc'), findsOneWidget);
+
+      router.go(RoutePaths.withChild(RoutePaths.parentRewards, 'khong-co'));
+      await tester.pumpAndSettle();
+      expect(find.text('Không tìm thấy trang'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Phụ huynh: Việc nhanh › Đánh giá mở trang Đánh giá, chạm chủ đề mở kết quả',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      Future<void> tapVisible(Finder finder) async {
+        await tester.ensureVisible(finder);
+        await tester.pumpAndSettle();
+        await tester.tap(finder);
+        await tester.pumpAndSettle();
+      }
+
+      router.go(RoutePaths.parentToday);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Đánh giá'), 200);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Đánh giá'));
+      await tester.pumpAndSettle();
+      expect(find.byType(EvaluationScreen), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.text('Tuần 35'), findsOneWidget);
+
+      await tapVisible(find.text('Chủ đề'));
+      await tapVisible(find.text('Bé vui hè'));
+      expect(find.byType(ThemeResultScreen), findsOneWidget);
+      expect(find.bySemanticsLabel('4 trên 5 mục tiêu đạt'), findsOneWidget);
+
+      // Quay lại trang Đánh giá, vẫn ở mục Chủ đề
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(find.text('Học kỳ I'), findsOneWidget);
+
+      // Danh sách còn cuộn ở chỗ chủ đề vừa chạm ⇒ cuộn lên tới thanh mục
+      await tester.scrollUntilVisible(find.text('Cuối năm'), -200);
+      await tapVisible(find.text('Cuối năm'));
+      expect(find.text('PHIẾU ĐÁNH GIÁ SỰ PHÁT TRIỂN'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Phụ huynh: trang Đánh giá mở theo bé trên đường dẫn, bé lạ ⇒ 404',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      router.go(RoutePaths.withChild(RoutePaths.parentEvaluation, 'child-2'));
+      await tester.pumpAndSettle();
+      expect(find.text('Nguyễn Hoàng Bảo Ngọc'), findsOneWidget);
+
+      router.go(
+        RoutePaths.parentEvaluationTheme('theme-la-5', childId: 'child-2'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Trường tiểu học'), findsOneWidget);
+
+      for (final path in [
+        RoutePaths.withChild(RoutePaths.parentEvaluation, 'khong-co'),
+        RoutePaths.parentEvaluationTheme('theme-la-5', childId: 'khong-co'),
+      ]) {
+        router.go(path);
+        await tester.pumpAndSettle();
+        expect(find.text('Không tìm thấy trang'), findsOneWidget, reason: path);
+      }
+    },
+  );
+
+  testWidgets(
+    'Phụ huynh: Việc nhanh › Sổ sức khỏe mở sổ, chạm đợt khám mở chi tiết',
+    (tester) async {
+      final router = await pumpRouter(tester, enablePreview: true);
+      router.go(RoutePaths.parentToday);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Sổ sức khỏe'), 200);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sổ sức khỏe'));
+      await tester.pumpAndSettle();
+      expect(find.byType(HealthBookScreen), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.text('Cân đo định kỳ tháng 10/2026'), findsOneWidget);
+
+      await tester.tap(find.text('Đợt khám'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Khám sức khỏe đầu năm học 2026-2027'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ExamDetailScreen), findsOneWidget);
+      expect(find.text('BS. Nguyễn Thị Hằng'), findsWidgets);
+
+      // Quay lại sổ, vẫn ở tab Đợt khám
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(find.text('Đợt khám sức khỏe'), findsOneWidget);
+    },
+  );
+
+  testWidgets('Phụ huynh: Sổ sức khỏe mở theo bé trên đường dẫn, bé lạ ⇒ 404', (
+    tester,
+  ) async {
+    final router = await pumpRouter(tester, enablePreview: true);
+    router.go(RoutePaths.withChild(RoutePaths.parentHealthBook, 'child-2'));
+    await tester.pumpAndSettle();
+    expect(find.text('Nguyễn Hoàng Bảo Ngọc'), findsOneWidget);
+
+    router.go(RoutePaths.parentHealthExam('exam2-2026', childId: 'child-2'));
+    await tester.pumpAndSettle();
+    expect(find.text('BS. Phạm Văn Đức'), findsWidgets);
+
+    for (final path in [
+      RoutePaths.withChild(RoutePaths.parentHealthBook, 'khong-co'),
+      RoutePaths.parentHealthExam('exam-2026', childId: 'khong-co'),
+    ]) {
+      router.go(path);
+      await tester.pumpAndSettle();
+      expect(find.text('Không tìm thấy trang'), findsOneWidget, reason: path);
+    }
+  });
+
+  testWidgets('Bếp: Trang chủ mở Ảnh mẫu bữa ăn, màn con ẩn thanh đáy', (
+    tester,
+  ) async {
+    final router = await pumpRouter(tester, enablePreview: true);
+    router.go(RoutePaths.kitchenHome);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Ảnh mẫu bữa ăn'), 200);
+    await tester.tap(find.text('Ảnh mẫu bữa ăn'));
+    await tester.pumpAndSettle();
+    expect(find.byType(MealSamplePhotosScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+  });
+
+  testWidgets('Bếp: Trang chủ mở Sổ lưu mẫu; màn BE đã bỏ không còn route', (
+    tester,
+  ) async {
+    final router = await pumpRouter(tester, enablePreview: true);
+    router.go(RoutePaths.kitchenHome);
+    await tester.pumpAndSettle();
+    // Cuộn tới Xem nhanh để việc Sổ lưu mẫu không nằm dưới thanh đáy
+    await tester.scrollUntilVisible(find.text('Xem nhanh'), 200);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sổ lưu mẫu'));
+    await tester.pumpAndSettle();
+    expect(find.byType(FoodSamplesScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+
+    // Nhận nguyên liệu, Báo thiếu, Trạng thái nấu (NUT-11, NUT-12, NUT-14, NUT-22)
+    for (final path in [
+      '/kitchen/receipts',
+      '/kitchen/receipts/shortage',
+      '/kitchen/cooking',
+    ]) {
+      router.go(path);
+      await tester.pumpAndSettle();
+      expect(find.text('Không tìm thấy trang'), findsOneWidget, reason: path);
+    }
   });
 
   testWidgets('Phó HT: màn con ẩn thanh đáy, ngữ cảnh lấy từ query', (
@@ -265,6 +526,8 @@ void main() {
 
       await tester.ensureVisible(find.text('Đăng xuất'));
       await tester.tap(find.text('Đăng xuất'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(AppButton, 'Đăng xuất').last);
       await tester.pumpAndSettle();
       expect(find.byType(LoginScreen), findsOneWidget);
     },

@@ -103,6 +103,24 @@ void main() {
     expect(find.text('Sai mật khẩu'), findsOneWidget);
   });
 
+  testWidgets('AppDateField có dấu bắt buộc, chạm ô thì mở bộ chọn', (
+    tester,
+  ) async {
+    var taps = 0;
+    await pumpWithTheme(
+      tester,
+      AppDateField(
+        label: 'Từ ngày',
+        labelSuffix: '*',
+        value: '13/10/2026',
+        onTap: () => taps++,
+      ),
+    );
+    expect(find.text('Từ ngày *'), findsOneWidget);
+    await tester.tap(find.text('13/10/2026'));
+    expect(taps, 1);
+  });
+
   testWidgets('showAppBottomSheet mở và đóng bằng lựa chọn', (tester) async {
     await pumpWithTheme(
       tester,

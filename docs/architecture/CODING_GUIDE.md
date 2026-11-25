@@ -6,6 +6,7 @@
 | Giao diện | **Không ở đây** — xem `DESIGN.md` (Phần A: Design System chung web + app; Phần B: riêng App) |
 | Nguồn | Tách nguyên văn từ `DESIGN.md` guide mobile 2.0 (mục 1–2, 10–12, 15–16, phần code của 17, 18) ngày 2026-11-15; số mục đổi theo bảng `DESIGN.md` §B10 |
 | Trạng thái | Lựa chọn kỹ thuật/API là **PROPOSED** tới khi team và BE xác nhận; **OPEN** là điểm cần chốt |
+| Nền đã chốt (25/11) | Phiên/API/push = code PR #8 của Tiền (`lib/core/integration/`: `MobileSession`, `MobileApi`, `PushCoordinator`); state `ChangeNotifier` + constructor. Chỗ guide còn nói `dio`, Riverpod, `AppFailure`, `TokenStorage`, `USE_MOCK` là đề xuất cũ — theo `docs/architecture/MOBILE_ARCHITECTURE.md` |
 
 Nghiệp vụ, quyền, field, endpoint thuộc `CareNest_BE`. Tham chiếu `[Sx]` ở mục "Tài liệu tham chiếu" cuối file.
 
@@ -37,7 +38,7 @@ Chạy trong thư mục dự án Flutter đã khởi tạo:
 flutter doctor
 flutter pub get
 flutter devices
-flutter run --dart-define=USE_MOCK=true
+flutter run
 flutter analyze
 dart format lib test
 flutter test
@@ -52,14 +53,14 @@ dart format --output=none --set-exit-if-changed lib test
 Chạy API thật, thay URL mẫu bằng backend thực tế:
 
 ```bash
-flutter run --dart-define=USE_MOCK=false --dart-define=API_BASE_URL=https://api.example.com/api
+flutter run --dart-define-from-file=env/local.json
 ```
 
 Build cho nền tảng được hỗ trợ với **cùng cấu hình môi trường** đã xác nhận:
 
 ```bash
-flutter build apk --release --dart-define=USE_MOCK=false --dart-define=API_BASE_URL=https://api.example.com/api
-flutter build appbundle --release --dart-define=USE_MOCK=false --dart-define=API_BASE_URL=https://api.example.com/api
+flutter build apk --release --dart-define=CARENEST_API_BASE_URL=https://api.example.com/api --dart-define=CARENEST_OIDC_ISSUER=https://sso.example.com/realms/carenest
+flutter build appbundle --release --dart-define=CARENEST_API_BASE_URL=https://api.example.com/api --dart-define=CARENEST_OIDC_ISSUER=https://sso.example.com/realms/carenest
 ```
 
 Các URL trên chỉ là ví dụ. Không chạy release với mock hoặc thiếu URL thật. Quy trình ký/phân phối bản iOS do pipeline dự án quy định.
@@ -68,9 +69,13 @@ Các URL trên chỉ là ví dụ. Không chạy release với mock hoặc thi�
 
 | Biến | Vai trò | Nơi đọc |
 |---|---|---|
-| `API_BASE_URL` | Base URL của API | `core/config/env.dart` |
-| `USE_MOCK` | Chọn repository mock hay thật | Điểm ghép dependency |
-| `APP_ENV` | `development`, `staging`, `production` nếu dự án cần | `core/config/env.dart` |
+| `CARENEST_API_BASE_URL` | Base URL của API (đã gồm `/api`) | `core/integration/mobile_config.dart` |
+| `CARENEST_OIDC_ISSUER` | Issuer Keycloak, vd. `http://localhost:8180/realms/carenest` | `core/integration/mobile_config.dart` |
+| `APP_ENV` | `development`, `staging`, `production` (khóa lưu chế độ cuối) | `core/config/env.dart` |
+
+Client id `carenest-mobile` và redirect `carenest://oauth/callback` cố định trong `MobileConfig`.
+
+Chạy với BE thật: `flutter run --dart-define-from-file=env/local.json` (chép từ `env/local.example.json`; `env/*.json` khác mẫu không commit). Bản debug thiếu 2 biến trên ⇒ Đăng nhập giả + Xem thử theo vai trò; bản release thiếu ⇒ bấm Đăng nhập báo "Chưa cấu hình địa chỉ API và Keycloak cho App."
 
 Dùng `String.fromEnvironment` / `bool.fromEnvironment` tập trung trong `env.dart`. Thiếu cấu hình bắt buộc phải được phát hiện khi bootstrap. `--dart-define` không phải nơi cất bí mật; không nhúng mật khẩu, signing key hoặc token cố định vào app.
 
@@ -78,8 +83,8 @@ Dùng `String.fromEnvironment` / `bool.fromEnvironment` tập trung trong `env.d
 
 | Nhu cầu | Package/cơ chế | Quy tắc |
 |---|---|---|
-| HTTP | `dio` | Một cấu hình client dùng chung, phân biệt client upload/refresh khi cần |
-| State và dependency injection | `flutter_riverpod` | Dùng nhất quán; không thêm Bloc/Provider cho cùng trách nhiệm nếu chưa thống nhất |
+| HTTP | `MobileApi` (`dart:io` `HttpClient`, PR #8) | Một client dùng chung: `json`, `publicJson`, `multipart`, `binary` |
+| State và dependency injection | `ChangeNotifier` + constructor | Dùng nhất quán; không thêm Bloc/Provider/Riverpod nếu chưa thống nhất |
 | Điều hướng | `go_router` | Cấu hình ở `routing/`; xử lý phiên qua redirect |
 | Token lưu bền | `flutter_secure_storage` | Chỉ lớp storage/auth được truy cập |
 | Ngày, số, tiền | `intl` | Tập trung helper, thống nhất locale |
@@ -337,7 +342,9 @@ Ví dụ đường dẫn `features/feature_name/` chỉ minh họa tổ chức, 
 <a id="section-5"></a>
 ## 5. Đăng nhập, phiên và lưu token
 
-Mục này mô tả xác thực. Khung vai trò/điều hướng ở DESIGN.md §B5.2; quy tắc kế thừa nghiệp vụ ở mục 9. API và OTP dưới đây là PROPOSED/OPEN cho tới khi backend và SRS chốt. DESIGN.md §15 còn mở form app/web hay Keycloak: chốt phương án trước khi tích hợp. Mẫu UI đăng nhập ở DESIGN.md §B5–B6 không tự xác nhận cơ chế auth.
+Mục này mô tả xác thực. Khung vai trò/điều hướng ở DESIGN.md §B5.2; quy tắc kế thừa nghiệp vụ ở mục 9.
+
+**Đã chốt (user 2026-11-13, BE `AUTH_CONTRACT`):** App dùng OAuth2 Authorization Code + PKCE qua trang Keycloak (client `carenest-mobile`, không password grant), không dùng form mật khẩu của App hay endpoint `/mobile/auth/*` ở §5.2. Chi tiết đang chạy: `docs/integration/AUTH_FLOW.md`; code `lib/features/auth/` (`AppAuthOidcClient`, `SessionManager`, `AuthController`). Các mục 5.2 và 5.7 dưới đây giữ làm tham khảo, không áp dụng; 5.3–5.6 vẫn đúng, với thay đổi: refresh token luôn lưu secure storage (không có tùy chọn "ghi nhớ"), tài khoản lấy từ `GET /accounts/me`.
 
 ### 5.1 Chọn cơ chế cho native
 

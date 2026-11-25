@@ -6,7 +6,7 @@ import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/routing/app_router.dart';
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/integration/mobile_session.dart';
-import 'package:carenest_app/features/notifications/data/push_coordinator.dart';
+import 'package:carenest_app/features/shared/notifications/data/push_coordinator.dart';
 
 class CareNestApp extends StatefulWidget {
   const CareNestApp({super.key});
@@ -24,6 +24,7 @@ class _CareNestAppState extends State<CareNestApp> {
     api: _api,
     signIn: _signIn,
     signOut: _signOut,
+    signInAs: (username) => _signIn(loginHint: username),
   );
   final _messengerKey = GlobalKey<ScaffoldMessengerState>();
   late final PushCoordinator _push = PushCoordinator(
@@ -59,8 +60,8 @@ class _CareNestAppState extends State<CareNestApp> {
     }
   }
 
-  Future<void> _signIn() async {
-    await _session.signIn();
+  Future<void> _signIn({String? loginHint}) async {
+    await _session.signIn(loginHint: loginHint);
     _router.go('/live/notifications');
     try {
       await _push.startSession();

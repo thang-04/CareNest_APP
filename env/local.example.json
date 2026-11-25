@@ -1,0 +1,5 @@
+{
+  "APP_ENV": "development",
+  "CARENEST_API_BASE_URL": "http://localhost:8080/api",
+  "CARENEST_OIDC_ISSUER": "http://localhost:8180/realms/carenest"
+}

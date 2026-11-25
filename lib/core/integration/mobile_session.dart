@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'mobile_api.dart';
 import 'mobile_config.dart';
 
 abstract interface class MobileCredentials {
@@ -36,7 +37,11 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
   @override
   int? get userId => account?['userId'] as int?;
 
-  Future<void> signIn() async {
+  /// Phiên bị Keycloak kết thúc khi đang dùng; màn Đăng nhập báo lý do. Về false khi đăng nhập hoặc đăng xuất.
+  bool expired = false;
+
+  /// `loginHint`: mở trang Keycloak có sẵn tên đăng nhập (sau kích hoạt tài khoản, AUTH-18).
+  Future<void> signIn({String? loginHint}) async {
     if (apiBaseUrl.isEmpty || issuer.isEmpty) {
       throw StateError('Chưa cấu hình địa chỉ API và Keycloak cho App.');
     }
@@ -47,6 +52,9 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
         MobileConfig.redirectUri,
         issuer: issuer,
         scopes: ['openid', 'profile'],
+        loginHint: loginHint,
+        // Máy dùng chung (AUTH-22): luôn hỏi mật khẩu, không vào bằng phiên cũ của trình duyệt
+        promptValues: const ['login'],
         // Chỉ bản debug cho Keycloak local qua http; release vẫn bắt buộc https.
         allowInsecureConnections: kDebugMode,
       ),
@@ -62,16 +70,17 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
     }
     await _storage.write(key: 'auth.refresh', value: _refresh);
     try {
-      final response = await _accountRequest(_access!);
-      if (response['profileUpdateRequired'] == true) {
-        throw StateError(
-          'Bạn cần cập nhật hồ sơ theo yêu cầu của nhà trường trước khi sử dụng.',
-        );
-      }
-      account = response;
+      // App không buộc cập nhật ảnh chân dung khi đăng nhập (user chốt 13/11) ⇒ bỏ qua `profileUpdateRequired`
+      account = await _accountRequest(_access!);
+      expired = false;
       notifyListeners();
-    } catch (_) {
-      await clear();
+    } catch (error) {
+      // Bị BE từ chối ⇒ thu hồi phiên ở Keycloak luôn, người sau không vào lại được bằng phiên này
+      if (error is ApiFailure && error.status == 403) {
+        await signOut();
+      } else {
+        await clear();
+      }
       rethrow;
     }
   }
@@ -91,15 +100,27 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
 
   Future<String> _renew() async {
     final generation = _generation;
-    final result = await _auth.token(
-      TokenRequest(
-        MobileConfig.clientId,
-        MobileConfig.redirectUri,
-        issuer: issuer,
-        refreshToken: _refresh,
-        allowInsecureConnections: kDebugMode,
-      ),
-    );
+    final TokenResponse result;
+    try {
+      result = await _auth.token(
+        TokenRequest(
+          MobileConfig.clientId,
+          MobileConfig.redirectUri,
+          issuer: issuer,
+          refreshToken: _refresh,
+          allowInsecureConnections: kDebugMode,
+        ),
+      );
+    } on FlutterAppAuthPlatformException catch (error) {
+      // Keycloak từ chối refresh token (hết phiên 30 phút / 10 giờ) ⇒ về Đăng nhập (Q10); lỗi mạng giữ phiên
+      if (error.platformErrorDetails.error ==
+              FlutterAppAuthOAuthError.invalidGrant &&
+          generation == _generation) {
+        expired = true;
+        await clear();
+      }
+      rethrow;
+    }
     if (generation != _generation || result.accessToken == null) {
       throw StateError('Phiên đăng nhập đã thay đổi.');
     }
@@ -118,12 +139,7 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
     }
     try {
       final token = await accessToken();
-      final response = await _accountRequest(token);
-      if (response['profileUpdateRequired'] == true) {
-        await clear();
-        return;
-      }
-      account = response;
+      account = await _accountRequest(token);
       notifyListeners();
     } catch (_) {
       _access = null;
@@ -143,9 +159,13 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
           jsonDecode(await utf8.decoder.bind(response).join())
               as Map<String, dynamic>;
       if (response.statusCode != 200) {
-        throw HttpException(
-          'Không thể xác minh tài khoản (${response.statusCode}).',
-        );
+        final code = body['errorCode'];
+        // 1101: token App của BGH/Admin (ADR-0022); 1014: tài khoản chưa được cấp quyền
+        throw ApiFailure(response.statusCode, switch (code) {
+          1101 => 'Tài khoản này dùng trên Web CareNest, không dùng trên App.',
+          1014 => 'Tài khoản chưa dùng được. Vui lòng liên hệ nhà trường.',
+          _ => 'Không thể xác minh tài khoản (${response.statusCode}).',
+        }, code);
       }
       return body['data'] as Map<String, dynamic>;
     } finally {
@@ -164,6 +184,7 @@ class MobileSession extends ChangeNotifier implements MobileCredentials {
   }
 
   Future<void> signOut() async {
+    expired = false;
     final refresh = _refresh ?? await _storage.read(key: 'auth.refresh');
     if (refresh != null && issuer.isNotEmpty) {
       final client = HttpClient();

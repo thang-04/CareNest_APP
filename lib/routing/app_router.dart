@@ -1,91 +1,159 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:carenest_app/core/config/env.dart';
+import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/integration/mobile_session.dart';
-import 'package:carenest_app/features/account/data/live_account_source.dart';
-import 'package:carenest_app/features/auth/presentation/screens/live_login_screen.dart';
-import 'package:carenest_app/features/auth/presentation/screens/unsupported_role_screen.dart';
-import 'package:carenest_app/features/notifications/data/fake_notification_source.dart';
-import 'package:carenest_app/features/notifications/data/live_notification_source.dart';
-import 'package:carenest_app/features/notifications/domain/app_notification.dart';
-import 'package:go_router/go_router.dart';
-
-import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/layouts/app_shell.dart';
+import 'package:carenest_app/core/storage/last_mode_store.dart';
+import 'package:carenest_app/core/storage/secure_store.dart';
 import 'package:carenest_app/core/widgets/app_coming_soon.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
-import 'package:carenest_app/features/account/domain/account_profile.dart';
-import 'package:carenest_app/features/account/presentation/screens/account_screen.dart';
-import 'package:carenest_app/features/account/presentation/screens/personal_info_screen.dart';
-import 'package:carenest_app/features/activity_schedule/presentation/screens/activity_schedule_screen.dart';
-import 'package:carenest_app/features/approvals/presentation/screens/approvals_screen.dart';
-import 'package:carenest_app/features/approvals/presentation/screens/meal_adjustment_screen.dart';
-import 'package:carenest_app/features/approvals/presentation/screens/principal_approvals_screen.dart';
-import 'package:carenest_app/features/attendance/data/fake_attendance_source.dart';
-import 'package:carenest_app/features/attendance/presentation/screens/attendance_screen.dart';
+import 'package:carenest_app/features/auth/data/activation_api.dart';
+import 'package:carenest_app/features/auth/data/live_mode_controller.dart';
+import 'package:carenest_app/features/auth/domain/entities/app_mode.dart';
+import 'package:carenest_app/features/auth/presentation/screens/activation_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/forgot_password_screen.dart';
+import 'package:carenest_app/features/auth/presentation/screens/live_login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/new_password_screen.dart';
 import 'package:carenest_app/features/auth/presentation/screens/otp_verify_screen.dart';
-import 'package:carenest_app/features/campus_children/data/fake_campus_children_source.dart';
-import 'package:carenest_app/features/campus_children/presentation/screens/campus_children_screen.dart';
-import 'package:carenest_app/features/campuses/presentation/screens/campuses_screen.dart';
-import 'package:carenest_app/features/class_leave_notices/presentation/screens/class_leave_screen.dart';
-import 'package:carenest_app/features/class_roster/presentation/screens/class_roster_screen.dart';
-import 'package:carenest_app/features/cooking_status/presentation/screens/cooking_status_screen.dart';
-import 'package:carenest_app/features/daily_review/presentation/screens/daily_review_detail_screen.dart';
-import 'package:carenest_app/features/daily_review/presentation/screens/daily_review_list_screen.dart';
-import 'package:carenest_app/features/dev_preview/presentation/screens/role_preview_screen.dart';
-import 'package:carenest_app/features/food_quantities/presentation/screens/food_quantities_screen.dart';
-import 'package:carenest_app/features/health_measure/presentation/screens/health_measure_detail_screen.dart';
-import 'package:carenest_app/features/health_measure/presentation/screens/health_measure_list_screen.dart';
-import 'package:carenest_app/features/ingredient_receipt/presentation/screens/ingredient_receipt_screen.dart';
-import 'package:carenest_app/features/ingredient_receipt/presentation/screens/shortage_report_screen.dart';
-import 'package:carenest_app/features/kitchen_home/presentation/screens/kitchen_home_screen.dart';
-import 'package:carenest_app/features/kitchen_meals/presentation/screens/kitchen_meals_screen.dart';
-import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_form_screen.dart';
-import 'package:carenest_app/features/leave_notice/presentation/screens/leave_notice_list_screen.dart';
-import 'package:carenest_app/features/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
-import 'package:carenest_app/features/meal_photos/domain/meal_photos.dart';
-import 'package:carenest_app/features/meal_photos/presentation/screens/meal_photo_capture_screen.dart';
-import 'package:carenest_app/features/meal_photos/presentation/screens/meal_photo_send_screen.dart';
-import 'package:carenest_app/features/my_child/presentation/screens/child_activities_screen.dart';
-import 'package:carenest_app/features/my_child/presentation/screens/child_attendance_screen.dart';
-import 'package:carenest_app/features/my_child/presentation/screens/child_profile_screen.dart';
-import 'package:carenest_app/features/my_child/presentation/screens/my_child_screen.dart';
-import 'package:carenest_app/features/notifications/presentation/screens/notification_detail_screen.dart';
-import 'package:carenest_app/features/notifications/presentation/screens/notifications_screen.dart';
-import 'package:carenest_app/features/nutrition_balance/presentation/screens/nutrition_balance_screen.dart';
-import 'package:carenest_app/features/parent_home/data/fake_parent_home_source.dart';
-import 'package:carenest_app/features/parent_home/domain/parent_today.dart';
-import 'package:carenest_app/features/parent_home/presentation/screens/parent_home_screen.dart';
-import 'package:carenest_app/features/parent_home/presentation/selected_child.dart';
-import 'package:carenest_app/features/parent_menu/presentation/screens/weekly_menu_screen.dart';
-import 'package:carenest_app/features/pickup/presentation/screens/pickup_list_screen.dart';
-import 'package:carenest_app/features/pickup/presentation/screens/pickup_verify_screen.dart';
-import 'package:carenest_app/features/principal_overview/presentation/screens/principal_overview_screen.dart';
-import 'package:carenest_app/features/reward_proposals/presentation/screens/reward_batch_screen.dart';
-import 'package:carenest_app/features/reward_proposals/presentation/screens/reward_proposals_screen.dart';
-import 'package:carenest_app/features/school_children/presentation/screens/school_children_screen.dart';
-import 'package:carenest_app/features/school_menu/presentation/screens/school_menu_overview_screen.dart';
-import 'package:carenest_app/features/school_menu/presentation/screens/school_menu_screen.dart';
-import 'package:carenest_app/features/teacher_home/presentation/screens/teacher_home_screen.dart';
-import 'package:carenest_app/features/vice_principal_home/presentation/screens/campus_kitchen_screen.dart';
-import 'package:carenest_app/features/vice_principal_home/presentation/screens/campus_menu_screen.dart';
-import 'package:carenest_app/features/vice_principal_home/presentation/screens/vice_principal_home_screen.dart';
+import 'package:carenest_app/features/auth/presentation/screens/unsupported_role_screen.dart';
+import 'package:carenest_app/features/kitchen/kitchen_menu/presentation/screens/kitchen_menu_screen.dart';
+import 'package:carenest_app/features/kitchen/kitchen_menu/data/live_kitchen_menu_source.dart';
+import 'package:carenest_app/features/kitchen/kitchen_menu/data/fake_kitchen_menu_source.dart';
+import 'package:carenest_app/features/kitchen/food_samples/domain/food_samples.dart';
+import 'package:carenest_app/features/kitchen/kitchen_home/domain/kitchen_tasks.dart';
+import 'package:carenest_app/features/kitchen/meal_photos/domain/kitchen_meal_photos.dart';
+import 'package:carenest_app/features/kitchen/meal_photos/data/live_kitchen_photo_source.dart';
+import 'package:carenest_app/features/kitchen/food_quantities/data/live_food_quantity_source.dart';
+import 'package:carenest_app/features/kitchen/food_samples/data/live_food_sample_source.dart';
+import 'package:carenest_app/features/kitchen/kitchen_home/data/live_kitchen_home_source.dart';
+import 'package:carenest_app/features/kitchen/kitchen_meals/data/live_kitchen_meals_source.dart';
+import 'package:carenest_app/features/kitchen/food_quantities/presentation/screens/food_quantities_screen.dart';
+import 'package:carenest_app/features/kitchen/food_samples/presentation/screens/food_samples_screen.dart';
+import 'package:carenest_app/features/kitchen/kitchen_home/presentation/screens/kitchen_home_screen.dart';
+import 'package:carenest_app/features/kitchen/kitchen_meals/presentation/screens/kitchen_meals_screen.dart';
+import 'package:carenest_app/features/kitchen/meal_photos/presentation/screens/meal_sample_photos_screen.dart';
+import 'package:carenest_app/features/management/approvals/presentation/screens/approvals_screen.dart';
+import 'package:carenest_app/features/management/approvals/presentation/screens/meal_adjustment_screen.dart';
+import 'package:carenest_app/features/management/approvals/presentation/screens/principal_approvals_screen.dart';
+import 'package:carenest_app/features/management/campus_children/data/fake_campus_children_source.dart';
+import 'package:carenest_app/features/management/campus_children/presentation/screens/campus_children_screen.dart';
+import 'package:carenest_app/features/management/campuses/presentation/screens/campuses_screen.dart';
+import 'package:carenest_app/features/management/meal_count_confirm/presentation/screens/meal_count_confirm_screen.dart';
+import 'package:carenest_app/features/management/nutrition_balance/presentation/screens/nutrition_balance_screen.dart';
+import 'package:carenest_app/features/management/principal_overview/presentation/screens/principal_overview_screen.dart';
+import 'package:carenest_app/features/management/reward_proposals/presentation/screens/reward_batch_screen.dart';
+import 'package:carenest_app/features/management/reward_proposals/presentation/screens/reward_proposals_screen.dart';
+import 'package:carenest_app/features/management/school_children/presentation/screens/school_children_screen.dart';
+import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/campus_kitchen_screen.dart';
+import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/campus_menu_screen.dart';
+import 'package:carenest_app/features/management/vice_principal_home/presentation/screens/vice_principal_home_screen.dart';
+import 'package:carenest_app/features/parent/evaluation/data/fake_evaluation_source.dart';
+import 'package:carenest_app/features/parent/evaluation/data/live_evaluation_source.dart';
+import 'package:carenest_app/features/parent/evaluation/presentation/screens/evaluation_screen.dart';
+import 'package:carenest_app/features/parent/evaluation/presentation/screens/theme_result_screen.dart';
+import 'package:carenest_app/features/parent/health_book/data/fake_health_book_source.dart';
+import 'package:carenest_app/features/parent/health_book/data/live_health_book_source.dart';
+import 'package:carenest_app/features/parent/health_book/presentation/screens/exam_detail_screen.dart';
+import 'package:carenest_app/features/parent/health_book/presentation/screens/health_book_screen.dart';
+import 'package:carenest_app/features/parent/leave_notice/data/live_leave_notice_source.dart';
+import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_form_screen.dart';
+import 'package:carenest_app/features/parent/leave_notice/presentation/screens/leave_notice_list_screen.dart';
+import 'package:carenest_app/features/parent/my_child/data/fake_my_child_source.dart';
+import 'package:carenest_app/features/parent/my_child/data/live_my_child_source.dart';
+import 'package:carenest_app/features/parent/my_child/presentation/screens/child_activities_screen.dart';
+import 'package:carenest_app/features/parent/my_child/presentation/screens/child_attendance_screen.dart';
+import 'package:carenest_app/features/parent/my_child/presentation/screens/my_child_screen.dart';
+import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
+import 'package:carenest_app/features/parent/parent_home/data/live_parent_home_source.dart';
+import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
+import 'package:carenest_app/features/parent/parent_home/presentation/screens/parent_home_screen.dart';
+import 'package:carenest_app/features/parent/parent_home/presentation/selected_child.dart';
+import 'package:carenest_app/features/parent/parent_menu/presentation/screens/weekly_menu_screen.dart';
+import 'package:carenest_app/features/parent/school_year/data/fake_child_school_year_source.dart';
+import 'package:carenest_app/features/parent/school_year/data/live_child_school_year_source.dart';
+import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
+import 'package:carenest_app/features/parent/school_year/presentation/parent_selected_year.dart';
+import 'package:carenest_app/features/parent/rewards/data/fake_reward_source.dart';
+import 'package:carenest_app/features/parent/rewards/data/live_reward_source.dart';
+import 'package:carenest_app/features/parent/rewards/presentation/screens/rewards_screen.dart';
+import 'package:carenest_app/features/shared/account/data/fake_account_source.dart';
+import 'package:carenest_app/features/shared/account/data/live_account_source.dart';
+import 'package:carenest_app/features/shared/account/domain/account_profile.dart';
+import 'package:carenest_app/features/shared/account/presentation/screens/account_screen.dart';
+import 'package:carenest_app/features/shared/account/presentation/screens/personal_info_screen.dart';
+import 'package:carenest_app/features/shared/app_mode/app_mode.dart'
+    as preview_mode;
+import 'package:carenest_app/features/shared/dev_preview/presentation/screens/role_preview_screen.dart';
+import 'package:carenest_app/features/shared/notifications/data/fake_notification_source.dart';
+import 'package:carenest_app/features/shared/notifications/data/live_notification_source.dart';
+import 'package:carenest_app/features/shared/notifications/domain/app_notification.dart';
+import 'package:carenest_app/features/shared/notifications/presentation/screens/notification_detail_screen.dart';
+import 'package:carenest_app/features/shared/notifications/presentation/screens/notifications_screen.dart';
+import 'package:carenest_app/features/shared/school_menu/presentation/screens/school_menu_overview_screen.dart';
+import 'package:carenest_app/features/shared/school_menu/presentation/screens/school_menu_screen.dart';
+import 'package:carenest_app/features/teacher/activity_schedule/presentation/screens/activity_schedule_screen.dart';
+import 'package:carenest_app/features/teacher/attendance/data/fake_attendance_source.dart';
+import 'package:carenest_app/features/teacher/attendance/presentation/screens/attendance_screen.dart';
+import 'package:carenest_app/features/teacher/class_leave_notices/presentation/screens/class_leave_screen.dart';
+import 'package:carenest_app/features/teacher/class_roster/data/fake_class_roster_source.dart';
+import 'package:carenest_app/features/teacher/class_roster/domain/class_roster.dart';
+import 'package:carenest_app/features/teacher/class_roster/presentation/screens/class_roster_screen.dart';
+import 'package:carenest_app/features/teacher/daily_health/presentation/screens/daily_health_screen.dart';
+import 'package:carenest_app/features/teacher/daily_review/presentation/screens/daily_review_list_screen.dart';
+import 'package:carenest_app/features/teacher/daily_review/presentation/screens/kid_evaluation_screen.dart';
+import 'package:carenest_app/features/teacher/health_measure/presentation/screens/health_measure_detail_screen.dart';
+import 'package:carenest_app/features/teacher/health_measure/presentation/screens/health_measure_list_screen.dart';
+import 'package:carenest_app/features/teacher/pickup/presentation/screens/pickup_list_screen.dart';
+import 'package:carenest_app/features/teacher/pickup/presentation/screens/pickup_verify_screen.dart';
+import 'package:carenest_app/features/teacher/rewards/presentation/screens/teacher_rewards_screen.dart';
+import 'package:carenest_app/features/teacher/school_year/presentation/selected_school_year.dart';
+import 'package:carenest_app/features/teacher/teacher_home/presentation/screens/teacher_home_screen.dart';
+import 'package:carenest_app/routing/live_access.dart';
 import 'package:carenest_app/routing/navigation_destinations.dart';
+import 'package:carenest_app/routing/kitchen_sources.dart';
+import 'package:carenest_app/routing/notification_targets.dart';
+import 'package:carenest_app/routing/parent_sources.dart';
 import 'package:carenest_app/routing/route_paths.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 /// `enablePreview` mặc định theo debug: màn theo vai trò còn phụ thuộc PENDING và chưa có auth
 /// ⇒ bản release chỉ có Đăng nhập và luồng quên mật khẩu (docs/architecture/NAVIGATION.md).
+/// Có `session`, `api`, `signIn`, `signOut` (`app.dart`, PR #8) ⇒ router phiên thật [_buildLiveRouter].
 GoRouter buildAppRouter({
   bool enablePreview = kDebugMode,
   MobileSession? session,
   MobileApi? api,
   Future<void> Function()? signIn,
   Future<void> Function()? signOut,
+  Future<void> Function(String username)? signInAs,
+  LastModeStore? modeStore,
 }) {
   final rootKey = GlobalKey<NavigatorState>();
+  // Debug chưa cấu hình BE ⇒ giữ Đăng nhập giả + Xem thử; release luôn dùng phiên thật
+  final configured =
+      session != null &&
+      session.apiBaseUrl.isNotEmpty &&
+      session.issuer.isNotEmpty;
+  if (session != null &&
+      api != null &&
+      signIn != null &&
+      signOut != null &&
+      (!enablePreview || configured)) {
+    return _buildLiveRouter(
+      rootKey,
+      session: session,
+      api: api,
+      signIn: signIn,
+      signOut: signOut,
+      signInAs: signInAs ?? (_) => signIn(),
+      modeStore:
+          modeStore ??
+          LastModeStore(const FlutterSecureStore(), env: Env.appEnv),
+    );
+  }
   return GoRouter(
     navigatorKey: rootKey,
     initialLocation: RoutePaths.login,
@@ -93,60 +161,20 @@ GoRouter buildAppRouter({
       GoRoute(path: '/', redirect: (context, state) => RoutePaths.login),
       GoRoute(
         path: RoutePaths.login,
-        builder: (context, state) => session != null && signIn != null
-            ? LiveLoginScreen(
-                signIn: signIn,
-                onPreview: enablePreview
-                    ? () => context.push(RoutePaths.preview)
-                    : null,
-              )
-            : LoginScreen(
-                onForgotPassword: () => context.push(RoutePaths.forgotPassword),
-                onOpenPreview: enablePreview
-                    ? () => context.push(RoutePaths.preview)
-                    : null,
-              ),
+        builder: (context, state) => LoginScreen(
+          onForgotPassword: () => context.push(RoutePaths.forgotPassword),
+          onOpenPreview: enablePreview
+              ? () => context.push(RoutePaths.preview)
+              : null,
+        ),
       ),
-      if (session != null && api != null && signOut != null)
-        ..._liveRoutes(rootKey, session, api, signOut),
       _forgotPasswordRoute(enablePreview: enablePreview),
       if (enablePreview) ...[
         GoRoute(
           path: RoutePaths.preview,
           builder: (context, state) => const RolePreviewScreen(),
         ),
-        _roleShell(rootKey, AppRole.parent, NavDestinations.parent, {
-          RoutePaths.parentToday: (context, state) => const ParentHomeScreen(),
-          RoutePaths.parentChild: (context, state) => MyChildScreen(
-            initialTab: state.uri.queryParameters['tab'] == 'health'
-                ? MyChildTab.health
-                : MyChildTab.today,
-          ),
-        }),
-        ..._parentChildRoutes(),
-        _roleShell(rootKey, AppRole.teacher, NavDestinations.teacher, {
-          RoutePaths.teacherToday: (context, state) =>
-              const TeacherHomeScreen(),
-          RoutePaths.teacherClass: (context, state) =>
-              const ClassRosterScreen(),
-        }),
-        ..._teacherRoutes(),
-        GoRoute(
-          path: RoutePaths.teacherAttendance,
-          // Lớp đang chọn là state; bản dữ liệu giả chỉ có một lớp
-          builder: (context, state) =>
-              const AttendanceScreen(classId: FakeAttendanceSource.classId),
-        ),
-        _roleShell(rootKey, AppRole.kitchen, NavDestinations.kitchen, {
-          RoutePaths.kitchenHome: (context, state) => const KitchenHomeScreen(),
-          RoutePaths.kitchenMenu: (context, state) => SchoolMenuScreen(
-            asTab: true,
-            initialDay: FakeParentHomeSource.today,
-            footerNote:
-                'Chỉ xem. Thực đơn mẫu theo nhóm tuổi do Phó hiệu trưởng lập và công bố trên web.',
-          ),
-        }),
-        ..._kitchenRoutes(),
+        ..._staffAndParentRoutes(rootKey),
         _roleShell(
           rootKey,
           AppRole.vicePrincipal,
@@ -172,8 +200,121 @@ GoRouter buildAppRouter({
   );
 }
 
+/// Tab Tài khoản: bản giả để mọi giá trị null (hồ sơ giả, Đăng xuất về Đăng nhập).
+class _AccountTab {
+  const _AccountTab({
+    this.onLogout,
+    this.source,
+    this.switchMode,
+    this.live = false,
+  });
+
+  final VoidCallback? onLogout;
+  final AccountSource? source;
+
+  /// Phiên thật: nút đổi chế độ ở Trang chủ (G94-385: chỉ ở Trang chủ) — callback khi tài khoản có
+  /// chế độ [AppMode] đó và đang ở chế độ khác, null ⇒ ẩn nút.
+  final VoidCallback? Function(AppMode target)? switchMode;
+
+  /// Phiên thật của Tiền (PR #8): Thông tin cá nhân, Đổi mật khẩu chưa nối API ⇒ "Sắp có".
+  final bool live;
+}
+
+/// Nút đổi chế độ GV ↔ phụ huynh ở Trang chủ (AUTH-21). Phiên thật theo [LiveModeController];
+/// Xem thử: cô Hà kiêm phụ huynh, nút "Giáo viên" chỉ khi đến từ chế độ GV (G94-385).
+VoidCallback? _homeSwitch(
+  BuildContext context,
+  _AccountTab account,
+  AppMode target,
+) {
+  if (account.switchMode case final live?) return live(target);
+  return switch (target) {
+    AppMode.parent => () {
+      preview_mode.AppMode.dualRole.value = true;
+      context.go(RoutePaths.parentToday);
+    },
+    AppMode.teacher =>
+      preview_mode.AppMode.dualRole.value
+          ? () => context.go(RoutePaths.teacherToday)
+          : null,
+    AppMode.kitchen => null,
+  };
+}
+
+/// Shell + màn con của phụ huynh, GV, bếp; dùng chung cho bản giả và bản thật.
+List<RouteBase> _staffAndParentRoutes(
+  GlobalKey<NavigatorState> rootKey, {
+  _AccountTab account = const _AccountTab(),
+  NotificationSource notifications = const FakeNotificationSource(),
+  ParentSources parent = const ParentSources(),
+  KitchenSources kitchen = const KitchenSources(),
+}) => [
+  _roleShell(
+    rootKey,
+    AppRole.parent,
+    NavDestinations.parent,
+    {
+      RoutePaths.parentToday: (context, state) => ParentHomeScreen(
+        source: parent.home,
+        live: parent.live,
+        onSwitchToTeacher: _homeSwitch(context, account, AppMode.teacher),
+      ),
+      RoutePaths.parentChild: (context, state) => MyChildScreen(
+        source: parent.myChild ?? const FakeMyChildSource(),
+        yearSource: parent.schoolYears ?? const FakeChildSchoolYearSource(),
+      ),
+    },
+    account: account,
+    notifications: notifications,
+  ),
+  ..._parentChildRoutes(parent),
+  _roleShell(
+    rootKey,
+    AppRole.teacher,
+    NavDestinations.teacher,
+    {
+      RoutePaths.teacherToday: (context, state) => TeacherHomeScreen(
+        onSwitchToParent: _homeSwitch(context, account, AppMode.parent),
+      ),
+      RoutePaths.teacherClass: (context, state) => const ClassRosterScreen(),
+    },
+    account: account,
+    notifications: notifications,
+  ),
+  ..._teacherRoutes(),
+  GoRoute(
+    path: RoutePaths.teacherAttendance,
+    // Lớp đang chọn là state; bản dữ liệu giả chỉ có một lớp
+    builder: (context, state) => AttendanceScreen(
+      classId: FakeAttendanceSource.classId,
+      // Lưu điểm danh xong đi thẳng sang Sức khỏe đầu ngày (HLT-07)
+      onSaved: () => context.pushReplacement(RoutePaths.teacherDailyHealth),
+    ),
+  ),
+  GoRoute(
+    path: RoutePaths.teacherDailyHealth,
+    builder: (context, state) =>
+        const DailyHealthScreen(classId: FakeAttendanceSource.classId),
+  ),
+  _roleShell(
+    rootKey,
+    AppRole.kitchen,
+    NavDestinations.kitchen,
+    {
+      RoutePaths.kitchenHome: (context, state) =>
+          KitchenHomeScreen(source: kitchen.home),
+      RoutePaths.kitchenMenu: (context, state) => KitchenMenuScreen(
+        source: kitchen.menu ?? const FakeKitchenMenuSource(),
+      ),
+    },
+    account: account,
+    notifications: notifications,
+  ),
+  ..._kitchenRoutes(kitchen),
+];
+
 /// Màn con của Phụ huynh: route chỉ mang ID con; ID không thuộc danh sách con ⇒ 404.
-List<GoRoute> _parentChildRoutes() {
+List<GoRoute> _parentChildRoutes(ParentSources parent) {
   GoRoute route(
     String path,
     Widget Function(
@@ -187,6 +328,15 @@ List<GoRoute> _parentChildRoutes() {
       path: path,
       builder: (context, state) {
         final childId = state.uri.queryParameters['child'];
+        final home = parent.home;
+        if (home != null) {
+          return ParentChildGate(
+            childId: childId,
+            loadChildren: home.loadChildren,
+            builder: (child) => build(context, state, child),
+            notFound: const NotFoundScreen(),
+          );
+        }
         final child = FakeParentHomeSource.children
             .where((item) => item.id == childId)
             .firstOrNull;
@@ -196,15 +346,34 @@ List<GoRoute> _parentChildRoutes() {
     );
   }
 
-  final today = FakeParentHomeSource.today;
+  // Ô Năm học (user 25/11): màn theo năm dựng sau khi tải năm học của bé; đổi năm ⇒ tải lại
+  final yearSource = parent.schoolYears ?? const FakeChildSchoolYearSource();
+  Widget inYear(
+    ChildSummary child,
+    String title,
+    Widget Function(ChildSchoolYear year) build,
+  ) => ParentYearGate(
+    childId: child.id,
+    source: yearSource,
+    title: title,
+    builder: build,
+  );
+
+  final today = parent.today;
   return [
     route(
       RoutePaths.parentLeaveNotices,
-      (context, state, child) => LeaveNoticeListScreen(
-        childId: child.id,
-        onCreate: () => context.push<void>(
-          RoutePaths.withChild(RoutePaths.parentLeaveNew, child.id),
-          extra: true,
+      (context, state, child) => inYear(
+        child,
+        'Đơn xin nghỉ',
+        (year) => LeaveNoticeListScreen(
+          childId: child.id,
+          year: year,
+          source: parent.leave,
+          onCreate: () => context.push<void>(
+            RoutePaths.withChild(RoutePaths.parentLeaveNew, child.id),
+            extra: true,
+          ),
         ),
       ),
     ),
@@ -218,27 +387,97 @@ List<GoRoute> _parentChildRoutes() {
             );
       return LeaveNoticeFormScreen(
         child: child,
+        source: parent.leave,
         onOpenSent: openList,
         onSubmitted: openList,
       );
     }),
+    // Q1 (user 25/11): BE chưa có API thực đơn tuần, hoạt động trong ngày ⇒ phiên thật hiện "Sắp có"
     route(
       RoutePaths.parentMenu,
-      (context, state, child) =>
-          WeeklyMenuScreen(childId: child.id, initialDay: today),
+      (context, state, child) => parent.live
+          ? const _ComingSoonPage('Thực đơn tuần')
+          : WeeklyMenuScreen(childId: child.id, initialDay: today),
     ),
     route(
       RoutePaths.parentActivities,
-      (context, state, child) => ChildActivitiesScreen(childId: child.id),
+      (context, state, child) => parent.live
+          ? const _ComingSoonPage('Hoạt động trong ngày')
+          : ChildActivitiesScreen(childId: child.id),
     ),
     route(
       RoutePaths.parentAttendance,
-      (context, state, child) =>
-          ChildAttendanceScreen(childId: child.id, initialDay: today),
+      (context, state, child) => inYear(
+        child,
+        'Điểm danh & bữa ăn',
+        (year) => ChildAttendanceScreen(
+          childId: child.id,
+          year: year,
+          initialDay: today,
+          source: parent.myChild ?? const FakeMyChildSource(),
+        ),
+      ),
     ),
     route(
-      RoutePaths.parentChildProfile,
-      (context, state, child) => ChildProfileScreen(childId: child.id),
+      RoutePaths.parentHealthBook,
+      (context, state, child) => inYear(
+        child,
+        'Sổ sức khỏe',
+        (year) => HealthBookScreen(
+          child: child,
+          year: year,
+          source: parent.healthBook ?? const FakeHealthBookSource(),
+          onOpenExam: (examId) => context.push<void>(
+            RoutePaths.parentHealthExam(examId, childId: child.id),
+          ),
+        ),
+      ),
+    ),
+    route(
+      '${RoutePaths.parentHealthExams}/:examId',
+      (context, state, child) => ExamDetailScreen(
+        child: child,
+        examId: state.pathParameters['examId']!,
+        source: parent.healthBook ?? const FakeHealthBookSource(),
+      ),
+    ),
+    route(
+      RoutePaths.parentEvaluation,
+      (context, state, child) => inYear(
+        child,
+        'Đánh giá',
+        (year) => EvaluationScreen(
+          child: child,
+          year: year,
+          source: parent.evaluation ?? const FakeEvaluationSource(),
+          onOpenTheme: (themeId) => context.push<void>(
+            RoutePaths.parentEvaluationTheme(themeId, childId: child.id),
+          ),
+        ),
+      ),
+    ),
+    route(
+      '${RoutePaths.parentEvaluationThemes}/:themeId',
+      (context, state, child) => ThemeResultScreen(
+        child: child,
+        themeId: state.pathParameters['themeId']!,
+        source: parent.evaluation ?? const FakeEvaluationSource(),
+      ),
+    ),
+    route(
+      RoutePaths.parentRewards,
+      (context, state, child) => inYear(
+        child,
+        'Khen thưởng',
+        (year) => RewardsScreen(
+          child: child,
+          year: year,
+          source: parent.rewards ?? const FakeRewardSource(),
+          onOpenDailyEvaluation: () => context.push<void>(
+            RoutePaths.withChild(RoutePaths.parentEvaluation, child.id),
+          ),
+        ),
+      ),
     ),
   ];
 }
@@ -272,11 +511,57 @@ List<GoRoute> _teacherRoutes() {
       path: RoutePaths.teacherLeaveNotices,
       builder: (context, state) => const ClassLeaveScreen(),
     ),
-    listWithDetail(
-      RoutePaths.teacherReviews,
-      (context, open) => DailyReviewListScreen(onOpenKid: open),
-      (context, id) =>
-          DailyReviewDetailScreen(childId: id, onSaved: () => context.pop()),
+    GoRoute(
+      path: RoutePaths.teacherReviews,
+      builder: (context, state) => DailyReviewListScreen(
+        onOpenKid: (id) => context.push<void>(
+          RoutePaths.kidDetail(RoutePaths.teacherReviews, id),
+        ),
+      ),
+      routes: [
+        GoRoute(
+          path: ':childId',
+          builder: (context, state) => KidEvaluationScreen(
+            childId: state.pathParameters['childId']!,
+            onOpenTheme: (childId, themeId) => context.push<void>(
+              '${RoutePaths.kidDetail(RoutePaths.teacherReviews, childId)}/themes/$themeId',
+            ),
+          ),
+          routes: [
+            GoRoute(
+              path: 'themes/:themeId',
+              builder: (context, state) {
+                final kid = FakeClassRosterSource.kidById(
+                  state.pathParameters['childId']!,
+                );
+                return ThemeResultScreen(
+                  child: KidEvaluationScreen.summaryOf(
+                    kid,
+                    ClassRoster(
+                      classId: FakeClassRosterSource.classId,
+                      className: FakeClassRosterSource.className,
+                      campusName: FakeClassRosterSource.campusName,
+                      kids: const [],
+                    ),
+                  ),
+                  themeId: state.pathParameters['themeId']!,
+                );
+              },
+            ),
+          ],
+        ),
+      ],
+    ),
+    GoRoute(
+      path: RoutePaths.teacherMenu,
+      builder: (context, state) => SchoolMenuScreen(
+        initialDay: FakeParentHomeSource.today,
+        footerNote: 'Chỉ xem thực đơn đã công bố.',
+      ),
+    ),
+    GoRoute(
+      path: RoutePaths.teacherRewards,
+      builder: (context, state) => const TeacherRewardsScreen(),
     ),
     listWithDetail(
       RoutePaths.teacherPickup,
@@ -287,69 +572,34 @@ List<GoRoute> _teacherRoutes() {
     listWithDetail(
       RoutePaths.teacherHealth,
       (context, open) => HealthMeasureListScreen(onOpenKid: open),
-      (context, id) =>
-          HealthMeasureDetailScreen(childId: id, onSaved: () => context.pop()),
+      (context, id) => HealthMeasureDetailScreen(childId: id),
     ),
     GoRoute(
       path: RoutePaths.teacherSchedule,
-      builder: (context, state) => ActivityScheduleScreen(
-        initialDay: FakeParentHomeSource.today,
-        onReviewToday: () => context.pushReplacement(RoutePaths.teacherReviews),
-      ),
-    ),
-    GoRoute(
-      path: RoutePaths.teacherMealPhotos,
-      builder: (context, state) => MealPhotoCaptureScreen(
-        onNext: (slot) => context.push(
-          Uri(
-            path: RoutePaths.teacherMealPhotosSend,
-            queryParameters: {'slot': slot.name},
-          ).toString(),
-        ),
-      ),
-    ),
-    GoRoute(
-      path: RoutePaths.teacherMealPhotosSend,
-      builder: (context, state) {
-        final slot = MealSlot.values
-            .where((item) => item.name == state.uri.queryParameters['slot'])
-            .firstOrNull;
-        if (slot == null) return const NotFoundScreen();
-        // Gửi xong ⇒ về Trang chủ, bỏ hai màn chụp/gửi khỏi back stack
-        return MealPhotoSendScreen(
-          slot: slot,
-          onSent: () => context.go(RoutePaths.teacherToday),
-        );
-      },
+      builder: (context, state) =>
+          ActivityScheduleScreen(initialDay: FakeParentHomeSource.today),
     ),
   ];
 }
 
 /// Màn con của Bếp.
-List<GoRoute> _kitchenRoutes() => [
+List<GoRoute> _kitchenRoutes(KitchenSources kitchen) => [
   GoRoute(
     path: RoutePaths.kitchenMeals,
-    builder: (context, state) => const KitchenMealsScreen(),
+    builder: (context, state) => KitchenMealsScreen(source: kitchen.meals),
   ),
   GoRoute(
     path: RoutePaths.kitchenQuantities,
-    builder: (context, state) => const FoodQuantitiesScreen(),
-  ),
-  GoRoute(
-    path: RoutePaths.kitchenReceipts,
-    builder: (context, state) => IngredientReceiptScreen(
-      onReportShortage: () => context.push(RoutePaths.kitchenShortage),
-      onConfirmed: () => context.pop(),
-    ),
-  ),
-  GoRoute(
-    path: RoutePaths.kitchenShortage,
     builder: (context, state) =>
-        ShortageReportScreen(onSent: () => context.pop()),
+        FoodQuantitiesScreen(source: kitchen.quantities),
   ),
   GoRoute(
-    path: RoutePaths.kitchenCooking,
-    builder: (context, state) => const CookingStatusScreen(),
+    path: RoutePaths.kitchenPhotos,
+    builder: (context, state) => MealSamplePhotosScreen(source: kitchen.photos),
+  ),
+  GoRoute(
+    path: RoutePaths.kitchenSamples,
+    builder: (context, state) => FoodSamplesScreen(source: kitchen.samples),
   ),
 ];
 
@@ -485,85 +735,124 @@ String _maskPhone(String phone) {
   return '${digits.substring(0, 3)}$hidden${digits.substring(digits.length - 3)}';
 }
 
-/// Phiên đăng nhập thật: cùng khung thanh đáy như bản xem thử, dưới `/live/...`.
-/// Thông báo và Tài khoản đọc dữ liệu thật; tab chưa nối API hiện "Sắp có", không dùng dữ liệu giả.
-List<RouteBase> _liveRoutes(
-  GlobalKey<NavigatorState> rootKey,
-  MobileSession session,
-  MobileApi api,
-  Future<void> Function() signOut,
-) {
-  List<NavDestination> destinationsOf(AppRole role) => [
-    for (final d in switch (role) {
-      AppRole.parent => NavDestinations.parent,
-      AppRole.teacher => NavDestinations.teacher,
-      _ => NavDestinations.kitchen,
-    })
-      NavDestination(d.label, d.icon, '/live${d.path}', d.tab),
-  ];
-  String? notificationsPath() {
-    final role = liveRoleOf(session);
-    return role == null
-        ? null
-        : destinationsOf(
-            role,
-          ).firstWhere((d) => d.tab == NavTab.notifications).path;
+/// Router khi chạy với BE thật (nền PR #8 của Tiền): shell và màn của từng vai trò,
+/// tab Thông báo và Tài khoản đọc dữ liệu thật; lối vào `/live/...` giữ cho `app.dart` và push.
+GoRouter _buildLiveRouter(
+  GlobalKey<NavigatorState> rootKey, {
+  required MobileSession session,
+  required MobileApi api,
+  required Future<void> Function() signIn,
+  required Future<void> Function() signOut,
+  required Future<void> Function(String username) signInAs,
+  required LastModeStore modeStore,
+}) {
+  final modes = LiveModeController(session, modeStore);
+  AppMode? readMode() => modes.mode;
+
+  String notificationsPath(AppMode mode) => switch (mode) {
+    AppMode.teacher => RoutePaths.teacherNotifications,
+    AppMode.kitchen => RoutePaths.kitchenNotifications,
+    AppMode.parent => RoutePaths.parentNotifications,
+  };
+
+  Future<void> logout() async {
+    // AUTH-22: máy dùng chung ⇒ người sau không thấy con của người trước
+    SelectedChild.reset();
+    SelectedSchoolYear.reset();
+    ParentSelectedYear.reset();
+    await signOut();
   }
 
-  String? guard() {
-    if (!session.signedIn) return RoutePaths.login;
-    return liveRoleOf(session) == null ? '/live/unsupported' : null;
-  }
-
-  final notifications = LiveNotificationSource(api);
-  final account = LiveAccountSource(session);
-  return [
-    // Lối vào cố định cho đăng nhập và push; chuyển sang tab Thông báo của vai trò
-    GoRoute(
-      path: '/live/notifications',
-      redirect: (_, _) => guard() ?? notificationsPath(),
-    ),
-    GoRoute(
-      path: '/live/notifications/:id',
-      redirect: (_, state) =>
-          guard() ?? '${notificationsPath()}/${state.pathParameters['id']}',
-    ),
-    GoRoute(
-      path: '/live/unsupported',
-      redirect: (_, _) => session.signedIn ? null : RoutePaths.login,
-      builder: (_, _) => UnsupportedRoleScreen(onSignOut: signOut),
-    ),
-    for (final role in [AppRole.parent, AppRole.teacher, AppRole.kitchen])
-      _roleShell(
-        rootKey,
-        role,
-        destinationsOf(role),
-        const {},
-        notifications: notifications,
-        account: account,
-        onLogout: signOut,
-        // Vào nhầm nhánh vai trò khác ⇒ về Thông báo của đúng vai trò
-        redirect: () =>
-            guard() ??
-            (liveRoleOf(session) == role ? null : notificationsPath()),
+  return GoRouter(
+    navigatorKey: rootKey,
+    initialLocation: RoutePaths.login,
+    refreshListenable: Listenable.merge([session, modes]),
+    // Chờ đọc chế độ cuối trước khi chọn màn (vd. mở từ push khi App đang tắt)
+    redirect: (context, state) async {
+      await modes.ready;
+      return liveRedirect(
+        signedIn: session.signedIn,
+        mode: readMode(),
+        location: state.matchedLocation,
+      );
+    },
+    routes: [
+      GoRoute(path: '/', redirect: (context, state) => RoutePaths.login),
+      GoRoute(
+        path: RoutePaths.login,
+        builder: (context, state) => LiveLoginScreen(
+          signIn: signIn,
+          onActivate: () => context.push(RoutePaths.activate),
+          notice: session.expired
+              ? 'Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.'
+              : null,
+        ),
       ),
-  ];
+      GoRoute(
+        path: RoutePaths.activate,
+        builder: (context, state) =>
+            ActivationScreen(api: ActivationApi(api), signInAs: signInAs),
+      ),
+      GoRoute(
+        path: RoutePaths.liveNotifications,
+        redirect: (context, state) async {
+          await modes.ready;
+          return notificationsPath(readMode()!);
+        },
+      ),
+      GoRoute(
+        path: '${RoutePaths.liveNotifications}/:id',
+        redirect: (context, state) async {
+          await modes.ready;
+          return '${notificationsPath(readMode()!)}/${state.pathParameters['id']}';
+        },
+      ),
+      GoRoute(
+        path: RoutePaths.liveUnsupported,
+        builder: (context, state) => UnsupportedRoleScreen(onSignOut: logout),
+      ),
+      ..._staffAndParentRoutes(
+        rootKey,
+        account: _AccountTab(
+          live: true,
+          source: LiveAccountSource(session),
+          onLogout: logout,
+          switchMode: (target) =>
+              modes.modes.contains(target) && modes.mode != target
+              ? () => modes.switchTo(target)
+              : null,
+        ),
+        notifications: LiveNotificationSource(api),
+        parent: ParentSources(
+          live: true,
+          home: LiveParentHomeSource(api, session),
+          leave: LiveLeaveNoticeSource(api),
+          myChild: LiveMyChildSource(api),
+          evaluation: LiveEvaluationSource(api),
+          rewards: LiveRewardSource(api),
+          healthBook: LiveHealthBookSource(api),
+          schoolYears: LiveChildSchoolYearSource(api),
+        ),
+        kitchen: _liveKitchen(api),
+      ),
+    ],
+    errorBuilder: (context, state) => const NotFoundScreen(),
+  );
 }
 
 /// Một nhánh tab cho mỗi đích; Thông báo và Tài khoản dùng chung mọi vai trò,
 /// đích chưa có màn thì hiện "Sắp có". Màn con mở trên navigator gốc (ẩn thanh đáy).
-/// Truyền `account`/`onLogout` ⇒ phiên thật: tài khoản thật, mục chưa nối API mở "Sắp có".
+/// `account` mặc định (bản giả) ⇒ hồ sơ giả, Đăng xuất chỉ về màn Đăng nhập.
 StatefulShellRoute _roleShell(
   GlobalKey<NavigatorState> rootKey,
   AppRole role,
   List<NavDestination> destinations,
   Map<String, GoRouterWidgetBuilder> screens, {
+  _AccountTab account = const _AccountTab(),
   NotificationSource notifications = const FakeNotificationSource(),
-  AccountSource? account,
-  Future<void> Function()? onLogout,
   String? Function()? redirect,
 }) {
-  final live = account != null;
+  final live = account.live;
   return StatefulShellRoute.indexedStack(
     redirect: redirect == null ? null : (_, _) => redirect(),
     builder: (context, state, navigationShell) =>
@@ -580,31 +869,28 @@ StatefulShellRoute _roleShell(
                   source: notifications,
                   onOpen: (id) => context.push('${destination.path}/$id'),
                 ),
-                NavTab.account when live => AccountScreen(
-                  role: role,
-                  source: account,
-                  onOpenProfile: () =>
-                      openComingSoon(context, 'Thông tin cá nhân'),
-                  onChangePassword: () =>
-                      openComingSoon(context, 'Đổi mật khẩu'),
-                  onLogout: () => onLogout?.call(),
-                ),
                 NavTab.account => AccountScreen(
                   role: role,
                   onOpenProfile: () => context.push(
                     '${destination.path}/${RoutePaths.profileSegment}',
                   ),
-                  onChangePassword: () => context.push(
-                    '${destination.path}/${RoutePaths.passwordSegment}',
-                  ),
+                  // Mọi vai App không tự đổi mật khẩu: gửi yêu cầu lên HT/PHT (user 25/11) — chờ BE
+                  onChangePassword: () =>
+                      openComingSoon(context, 'Yêu cầu cấp lại mật khẩu'),
                   onOpenCampuses: role == AppRole.principal
                       ? () => context.push(RoutePaths.principalCampuses)
                       : null,
-                  // Chưa có phiên thật ⇒ đăng xuất chỉ về Đăng nhập, xoá back stack
-                  onLogout: () {
-                    SelectedChild.reset();
-                    context.go(RoutePaths.login);
-                  },
+                  // Bản thật: thu hồi phiên, router tự về Đăng nhập theo phiên
+                  onLogout:
+                      account.onLogout ??
+                      () {
+                        SelectedChild.reset();
+                        SelectedSchoolYear.reset();
+                        ParentSelectedYear.reset();
+                        preview_mode.AppMode.reset();
+                        context.go(RoutePaths.login);
+                      },
+                  source: account.source ?? const FakeAccountSource(),
                 ),
                 _ =>
                   screens[destination.path]?.call(context, state) ??
@@ -619,15 +905,33 @@ StatefulShellRoute _roleShell(
                       role: role,
                       id: state.pathParameters['id']!,
                       source: notifications,
+                      // Phụ huynh phiên thật: nút mở màn của bé theo loại thông báo (PAR-07)
+                      actionFor: live && role == AppRole.parent
+                          ? (item) {
+                              final target = parentNotificationTarget(
+                                item.type,
+                                item.childId,
+                              );
+                              return target == null
+                                  ? null
+                                  : (
+                                      label: target.label,
+                                      open: () => context.push(target.path),
+                                    );
+                            }
+                          : null,
                     ),
                   ),
                 ],
-                NavTab.account when live => const <RouteBase>[],
                 NavTab.account => [
                   GoRoute(
                     path: RoutePaths.profileSegment,
                     parentNavigatorKey: rootKey,
-                    builder: (context, state) => PersonalInfoScreen(role: role),
+                    builder: (context, state) => PersonalInfoScreen(
+                      role: role,
+                      source: account.source ?? const FakeAccountSource(),
+                      readOnly: live,
+                    ),
                   ),
                   GoRoute(
                     path: RoutePaths.passwordSegment,
@@ -663,4 +967,43 @@ class NotFoundScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Màn con chưa có API ở BE (phiên thật): thanh tiêu đề + "Sắp có".
+class _ComingSoonPage extends StatelessWidget {
+  const _ComingSoonPage(this.title);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(title)),
+    body: AppComingSoon(title: title),
+  );
+}
+
+/// Nguồn bếp phiên thật; "Việc hôm nay" ghép từ ảnh mẫu + sổ lưu mẫu BE trả (user 25/11).
+KitchenSources _liveKitchen(MobileApi api) {
+  final photos = LiveKitchenPhotoSource(api);
+  final samples = LiveFoodSampleSource(api);
+  return KitchenSources(
+    home: LiveKitchenHomeSource(
+      api,
+      tasks: () async {
+        final results = await Future.wait([
+          photos.loadToday(),
+          samples.loadToday(),
+        ]);
+        return kitchenTasks(
+          results[0] as KitchenPhotoDay,
+          results[1] as FoodSampleDay,
+        );
+      },
+    ),
+    meals: LiveKitchenMealsSource(api),
+    quantities: LiveFoodQuantitySource(api),
+    samples: samples,
+    photos: photos,
+    menu: LiveKitchenMenuSource(api),
+  );
 }

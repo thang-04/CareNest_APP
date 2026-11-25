@@ -23,6 +23,7 @@ abstract final class AppIcons {
   static const lock = Icons.lock_outline_rounded;
   static const phone = Icons.smartphone_rounded;
   static const info = Icons.info_outline_rounded;
+  static const help = Icons.help_outline_rounded;
   static const alertCircle = Icons.error_outline_rounded;
   static const alertTriangle = Icons.warning_amber_rounded;
   static const cloudOff = Icons.cloud_off_rounded;
@@ -59,6 +60,9 @@ abstract final class AppIcons {
   static const flagOutline = Icons.outlined_flag_rounded;
   static const walk = Icons.directions_walk_rounded;
   static const trophy = Icons.emoji_events_outlined;
+  static const ticket = Icons.confirmation_number_outlined;
+  static const medal = Icons.military_tech_outlined;
+  static const star = Icons.star_outline_rounded;
   static const call = Icons.call_outlined;
   static const building = Icons.apartment_rounded;
   static const sick = Icons.thermostat_rounded;

@@ -1,3 +1,15 @@
+---
+title: Tích hợp thông báo App — spec 902
+status: in-progress
+owner: Tiền
+jira: G94-288 / APP-FEAT-55
+branch: feature/G94-288-APP-FEAT-55-notification-client
+modules: []
+rules: [PAR-03, PAR-05, PAR-07, PAR-11, PAR-12, EDU-73, EDU-74]
+risk: high
+created: 2026-11-16
+updated: 2026-11-18
+---
 # Tích hợp thông báo App — spec 902
 
 ## Phạm vi và quyết định

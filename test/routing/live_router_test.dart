@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/integration/mobile_session.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
+import 'package:carenest_app/features/teacher/class_roster/presentation/screens/class_roster_screen.dart';
 import 'package:carenest_app/routing/app_router.dart';
 
 import '../helpers/pump_app.dart';
@@ -56,6 +58,9 @@ Future<GoRouter> pumpLive(WidgetTester tester, List<String> roles) async {
 }
 
 void main() {
+  // Router phiên thật đọc chế độ cuối từ secure storage trước khi chọn màn
+  setUp(() => FlutterSecureStorage.setMockInitialValues({}));
+
   testWidgets(
     'phiên thật Giáo viên: Thông báo có thanh đáy 4 tab, Tài khoản thật',
     (tester) async {
@@ -71,10 +76,11 @@ void main() {
       expect(find.text('Giáo viên Thử'), findsOneWidget);
       expect(find.text('Đăng xuất'), findsOneWidget);
 
-      // Tab chưa nối API: báo "Sắp có", không hiện dữ liệu giả
+      // Quyết định 14 (user 24/11): tab khác Thông báo/Tài khoản dùng màn của Giáp
       await tester.tap(find.text('Lớp học').last);
       await tester.pumpAndSettle();
-      expect(find.text('Tính năng này sẽ có trong bản sau.'), findsOneWidget);
+      expect(find.byType(ClassRosterScreen), findsOneWidget);
+      await tester.pump(const Duration(seconds: 1));
     },
   );
 
