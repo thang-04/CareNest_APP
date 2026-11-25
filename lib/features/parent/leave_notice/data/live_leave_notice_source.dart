@@ -1,3 +1,4 @@
+import 'package:carenest_app/core/integration/api_dates.dart';
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/features/parent/leave_notice/data/fake_leave_notice_source.dart';
 import 'package:carenest_app/features/parent/leave_notice/domain/leave_notice.dart';
@@ -67,14 +68,9 @@ class LiveLeaveNoticeSource implements LeaveNoticeSource {
     DateTime to,
   ) => {
     'childId': int.parse(childId),
-    'fromDate': _date(from),
-    'toDate': _date(to),
+    'fromDate': apiDate(from),
+    'toDate': apiDate(to),
   };
-
-  static String _date(DateTime day) =>
-      '${day.year.toString().padLeft(4, '0')}-'
-      '${day.month.toString().padLeft(2, '0')}-'
-      '${day.day.toString().padLeft(2, '0')}';
 
   static String _part(LeaveSession session) => switch (session) {
     LeaveSession.fullDay => 'FULL_DAY',
