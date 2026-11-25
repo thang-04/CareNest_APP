@@ -16,6 +16,7 @@ class PersonalInfoScreen extends StatefulWidget {
     required this.role,
     this.source = const FakeAccountSource(),
     this.onSave,
+    this.readOnly = false,
   });
 
   final AppRole role;
@@ -23,6 +24,9 @@ class PersonalInfoScreen extends StatefulWidget {
 
   /// (họ tên, email). Null ⇒ chưa nối máy chủ.
   final void Function(String fullName, String email)? onSave;
+
+  /// Phiên thật: BE không có API tự sửa hồ sơ (sửa cần quyền quản lý tài khoản) ⇒ chỉ xem.
+  final bool readOnly;
 
   @override
   State<PersonalInfoScreen> createState() => _PersonalInfoScreenState();
@@ -84,6 +88,13 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           : ListView(
               padding: const EdgeInsets.all(AppSpacing.pagePadding),
               children: [
+                if (widget.readOnly) ...[
+                  const AppBanner(
+                    message:
+                        'Thông tin do nhà trường quản lý. Cần sửa, liên hệ Hiệu trưởng hoặc Phó hiệu trưởng.',
+                  ),
+                  const SizedBox(height: AppSpacing.space4),
+                ],
                 if (_showNotConnected) ...[
                   const AppBanner(
                     message:
@@ -94,14 +105,15 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 AppTextField(
                   label: 'Họ và tên',
                   controller: _name,
+                  enabled: !widget.readOnly,
                   errorText: _nameError,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.name],
                 ),
                 const SizedBox(height: AppSpacing.space4),
                 AppTextField(
-                  label: 'Số điện thoại',
-                  labelSuffix: '(dùng để đăng nhập)',
+                  label: widget.readOnly ? 'Tên đăng nhập' : 'Số điện thoại',
+                  labelSuffix: widget.readOnly ? null : '(dùng để đăng nhập)',
                   controller: _phone,
                   enabled: false,
                 ),
@@ -109,21 +121,24 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 AppTextField(
                   label: 'Email',
                   controller: _email,
+                  enabled: !widget.readOnly,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.done,
                   autofillHints: const [AutofillHints.email],
                 ),
               ],
             ),
-      bottomNavigationBar: AppBottomDock(
-        children: [
-          AppButton(
-            label: 'Lưu thay đổi',
-            expand: true,
-            onPressed: _loaded ? _save : null,
-          ),
-        ],
-      ),
+      bottomNavigationBar: widget.readOnly
+          ? null
+          : AppBottomDock(
+              children: [
+                AppButton(
+                  label: 'Lưu thay đổi',
+                  expand: true,
+                  onPressed: _loaded ? _save : null,
+                ),
+              ],
+            ),
     );
   }
 }

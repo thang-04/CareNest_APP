@@ -169,7 +169,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         onTap: widget.onOpenCampuses,
                       ),
                     AppListRow(
-                      title: 'Đổi mật khẩu',
+                      title: 'Yêu cầu cấp lại mật khẩu',
                       leading: const Icon(AppIcons.lock),
                       showChevron: true,
                       onTap: widget.onChangePassword,

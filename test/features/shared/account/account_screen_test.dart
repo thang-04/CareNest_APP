@@ -42,7 +42,7 @@ void main() {
     expect(find.textContaining('Con của tôi'), findsOneWidget);
     for (final label in [
       'Thông tin cá nhân',
-      'Đổi mật khẩu',
+      'Yêu cầu cấp lại mật khẩu',
       'Cài đặt thông báo',
       'Hỗ trợ & giới thiệu',
     ]) {
@@ -83,6 +83,31 @@ void main() {
     await tester.tap(find.text('Lưu thay đổi'));
     await tester.pump();
     expect(find.text('Nhập họ và tên.'), findsOneWidget);
+  });
+
+  testWidgets('AC-2: phiên thật hồ sơ chỉ xem, không có nút lưu', (
+    tester,
+  ) async {
+    usePhoneSize(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildLightTheme(),
+        home: const PersonalInfoScreen(role: AppRole.kitchen, readOnly: true),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final fields = find.byType(TextField);
+    for (var i = 0; i < 3; i++) {
+      expect(tester.widget<TextField>(fields.at(i)).enabled, isFalse);
+    }
+    expect(find.text('Lưu thay đổi'), findsNothing);
+    expect(find.text('Tên đăng nhập'), findsOneWidget);
+    expect(
+      find.text(
+        'Thông tin do nhà trường quản lý. Cần sửa, liên hệ Hiệu trưởng hoặc Phó hiệu trưởng.',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('AC-10: Tài khoản và Thông tin cá nhân chữ 2.0 không tràn', (
