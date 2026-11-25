@@ -47,7 +47,8 @@ class FoodSample {
     required this.disposableFrom,
     this.disposalStatus = SampleDisposalStatus.none,
     this.disposableNow = false,
-  });
+    bool? editable,
+  }) : _editable = editable; // ignore: prefer_initializing_formals
 
   final int id;
   final DateTime date;
@@ -68,10 +69,14 @@ class FoodSample {
   /// Đã tới giờ hủy theo giờ máy chủ; nguồn dữ liệu trả, App không so giờ máy
   final bool disposableNow;
 
-  /// Như BE `FoodSample.isEditable`: chưa duyệt và chưa ghi hủy
+  final bool? _editable;
+
+  /// Cờ `editable` của BE (mẫu hôm nay, chưa duyệt, chưa ghi hủy, biên bản M5 chưa ký). Bản giả không
+  /// gửi cờ ⇒ suy như BE `FoodSample.isEditable`.
   bool get editable =>
-      status == SampleStatus.recorded &&
-      disposalStatus == SampleDisposalStatus.none;
+      _editable ??
+      (status == SampleStatus.recorded &&
+          disposalStatus == SampleDisposalStatus.none);
 }
 
 /// Một bữa hôm nay trong sổ lưu mẫu: món theo thực đơn đã công bố và bản đã ghi (nếu có).

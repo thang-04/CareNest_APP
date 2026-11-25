@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
+import 'package:carenest_app/core/integration/load_failure.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
@@ -237,7 +238,7 @@ class _FoodSamplesScreenState extends State<FoodSamplesScreen> {
             return Center(
               child: AppErrorState(
                 title: 'Chưa tải được sổ lưu mẫu',
-                message: 'Kiểm tra kết nối mạng rồi thử lại.',
+                message: loadFailureMessage(snapshot.error),
                 onRetry: () => setState(() {
                   _day = _source.loadToday();
                 }),

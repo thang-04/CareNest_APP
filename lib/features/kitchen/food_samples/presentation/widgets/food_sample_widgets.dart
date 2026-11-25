@@ -247,5 +247,8 @@ class DisposalCard extends StatelessWidget {
 }
 
 /// "Thứ Hai, 12/10 · Cơ sở chính"
-String sampleDayLabel(FoodSampleDay day) =>
-    'Hôm nay · ${DateLabels.weekdayDayMonth(day.date)} · ${day.campusLabel}';
+String sampleDayLabel(FoodSampleDay day) => [
+  'Hôm nay',
+  DateLabels.weekdayDayMonth(day.date),
+  if (day.campusLabel.isNotEmpty) day.campusLabel,
+].join(' · ');
