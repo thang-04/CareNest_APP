@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/core/integration/load_failure.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
@@ -46,7 +47,7 @@ class _FoodQuantitiesScreenState extends State<FoodQuantitiesScreen> {
             AsyncSnapshot(hasError: true) => Center(
               child: AppErrorState(
                 title: 'Chưa tải được lượng thực phẩm',
-                message: 'Kiểm tra kết nối mạng rồi thử lại.',
+                message: loadFailureMessage(snapshot.error),
                 onRetry: () => setState(() {
                   _day = _source.loadDay();
                 }),

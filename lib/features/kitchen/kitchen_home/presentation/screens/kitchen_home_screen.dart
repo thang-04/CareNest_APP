@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:carenest_app/core/integration/load_failure.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/shadows.dart';
@@ -116,7 +117,10 @@ class _KitchenHomeScreenState extends State<KitchenHomeScreen> {
                 Text('Bếp hôm nay', style: textTheme.headlineSmall),
                 if (today != null)
                   Text(
-                    '${DateLabels.weekdayDayMonth(today.date)} · ${today.campusLabel}',
+                    [
+                      DateLabels.weekdayDayMonth(today.date),
+                      if (today.campusLabel.isNotEmpty) today.campusLabel,
+                    ].join(' · '),
                     style: textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -136,7 +140,7 @@ class _KitchenHomeScreenState extends State<KitchenHomeScreen> {
       return [
         AppErrorState(
           title: 'Chưa tải được việc của bếp',
-          message: 'Kiểm tra kết nối mạng rồi thử lại.',
+          message: loadFailureMessage(_error),
           onRetry: _load,
         ),
       ];
