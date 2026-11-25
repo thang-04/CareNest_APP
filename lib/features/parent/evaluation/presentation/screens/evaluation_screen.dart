@@ -132,7 +132,7 @@ class _ChildLine extends StatelessWidget {
             children: [
               Text(child.fullName, style: textTheme.titleSmall),
               Text(
-                '${child.className} · ${child.ageLabel}',
+                child.classAndAge,
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textMuted,
                 ),

@@ -49,7 +49,7 @@ class ChildWalletCard extends StatelessWidget {
                   children: [
                     Text(child.shortName, style: textTheme.headlineSmall),
                     Text(
-                      '${child.className} · ${child.ageLabel}',
+                      child.classAndAge,
                       style: textTheme.bodyMedium?.copyWith(
                         color: AppColors.textMuted,
                       ),

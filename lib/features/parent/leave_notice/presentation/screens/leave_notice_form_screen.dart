@@ -239,8 +239,9 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
     }
   }
 
-  String get _teacherNotice =>
-      '${widget.child.homeroomTeacher} (GV lớp ${widget.child.className}) sẽ nhận được thông báo về đơn này.';
+  String get _teacherNotice => widget.child.homeroomTeacher == null
+      ? 'Giáo viên lớp ${widget.child.className} sẽ nhận được thông báo về đơn này.'
+      : '${widget.child.homeroomTeacher} (GV lớp ${widget.child.className}) sẽ nhận được thông báo về đơn này.';
 
   /// `eats` gửi BE: chỉ đơn nửa buổi; buổi còn học không có bữa ⇒ null (BE bỏ qua).
   bool? get _sentEats {

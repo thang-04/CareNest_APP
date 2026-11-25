@@ -8,31 +8,45 @@ class ChildSummary {
     required this.fullName,
     required this.shortName,
     required this.className,
-    required this.campusName,
-    required this.ageLabel,
-    required this.homeroomTeacher,
+    this.campusName,
+    this.ageLabel,
+    this.homeroomTeacher,
   });
 
   final String id;
   final String fullName;
   final String shortName;
   final String className;
-  final String campusName;
+
+  /// BE `/children/{id}/profile` chưa trả tên điểm trường, nhãn tuổi, tên GV chủ nhiệm ⇒ null, màn ẩn (user 25/11).
+  final String? campusName;
 
   /// "4 tuổi" — BE trả, APP không tự tính từ ngày sinh.
-  final String ageLabel;
+  final String? ageLabel;
 
   /// Tên gọi ngắn của giáo viên chủ nhiệm, vd. "Cô Hà".
-  final String homeroomTeacher;
+  final String? homeroomTeacher;
+
+  /// "Mầm 3A · 4 tuổi" — bỏ phần BE chưa trả.
+  String get classAndAge => [className, ?ageLabel].join(' · ');
+
+  /// "Mầm 3A · Cơ sở chính" — bỏ phần BE chưa trả.
+  String get classAndCampus => [className, ?campusName].join(' · ');
 }
 
 /// Trạng thái điểm danh hôm nay theo dữ liệu BE; APP không tự suy.
+/// BE `ParentAttendanceStatus` (Cần chốt 24/11): thêm không phải ngày học, bé chưa vào lớp / đã nghỉ học.
 enum ParentAttendanceStatus {
   present,
   absentExcused,
   absentUnexcused,
   notRecorded,
+  noSchool,
+  notEnrolled,
 }
+
+/// Buổi nghỉ theo đơn nửa buổi (BE `DayPart`, ATT-12).
+enum AbsentPart { morning, afternoon }
 
 /// Tóm tắt hôm nay của một con (mockup P02). Field cụ thể chờ P-13b ⇒ chỉ hiển thị field có trong dữ liệu.
 @immutable
@@ -44,6 +58,7 @@ class ParentToday {
     required this.attendance,
     required this.unreadNotifications,
     this.arrivedAt,
+    this.absentPart,
     this.menuPublished = false,
     this.activityTitle,
   });
@@ -54,6 +69,9 @@ class ParentToday {
   final ChildSummary child;
   final ParentAttendanceStatus attendance;
   final DateTime? arrivedAt;
+
+  /// Nghỉ một buổi theo đơn (null = không nghỉ nửa buổi).
+  final AbsentPart? absentPart;
   final int unreadNotifications;
 
   /// Chỉ thực đơn đã công bố mới có (NUT-08).

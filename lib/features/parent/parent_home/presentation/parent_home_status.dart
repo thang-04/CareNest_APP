@@ -11,13 +11,17 @@ extension ParentAttendanceStatusView on ParentAttendanceStatus {
     ParentAttendanceStatus.absentExcused => 'Nghỉ có phép',
     ParentAttendanceStatus.absentUnexcused => 'Vắng',
     ParentAttendanceStatus.notRecorded => 'Chưa điểm danh',
+    ParentAttendanceStatus.noSchool => 'Không phải ngày học',
+    ParentAttendanceStatus.notEnrolled => 'Bé chưa vào lớp',
   };
 
   AppStatusTone get tone => switch (this) {
     ParentAttendanceStatus.present => AppStatusTone.green,
     ParentAttendanceStatus.absentExcused => AppStatusTone.blue,
     ParentAttendanceStatus.absentUnexcused => AppStatusTone.red,
-    ParentAttendanceStatus.notRecorded => AppStatusTone.gray,
+    ParentAttendanceStatus.notRecorded ||
+    ParentAttendanceStatus.noSchool ||
+    ParentAttendanceStatus.notEnrolled => AppStatusTone.gray,
   };
 
   IconData? get icon => switch (this) {

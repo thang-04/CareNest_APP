@@ -96,7 +96,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                     style: Theme.of(sheetContext).textTheme.titleSmall,
                   ),
                   Text(
-                    '${child.className} · ${child.campusName}',
+                    child.classAndCampus,
                     style: Theme.of(sheetContext).textTheme.bodyMedium,
                   ),
                 ],

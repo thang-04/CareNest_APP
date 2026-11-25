@@ -105,29 +105,30 @@ class _ProfileContent extends StatelessWidget {
           rows: [
             _InfoRow(label: 'Ngày sinh', value: profile.birthDate),
             _InfoRow(label: 'Giới tính', value: profile.gender),
-            _InfoRow(label: 'Cơ sở', value: profile.campus),
+            if (profile.campus case final campus?)
+              _InfoRow(label: 'Cơ sở', value: campus),
           ],
         ),
-        const SizedBox(height: AppSpacing.sectionGap),
-        const _SectionHeader('Giáo viên chủ nhiệm'),
-        const SizedBox(height: AppSpacing.space2),
-        AppCard(
-          dense: true,
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(profile.teachers, style: textTheme.titleSmall),
-              ),
-              const SizedBox(width: AppSpacing.space3),
-              // Gọi điện cần plugin mở trình quay số ⇒ chưa thêm thư viện, mở "Sắp có"
-              IconButton.filledTonal(
-                tooltip: 'Gọi giáo viên chủ nhiệm',
-                onPressed: () => openComingSoon(context, 'Gọi giáo viên'),
-                icon: const Icon(AppIcons.call),
-              ),
-            ],
+        if (profile.teachers case final teachers?) ...[
+          const SizedBox(height: AppSpacing.sectionGap),
+          const _SectionHeader('Giáo viên chủ nhiệm'),
+          const SizedBox(height: AppSpacing.space2),
+          AppCard(
+            dense: true,
+            child: Row(
+              children: [
+                Expanded(child: Text(teachers, style: textTheme.titleSmall)),
+                const SizedBox(width: AppSpacing.space3),
+                // Gọi điện cần plugin mở trình quay số ⇒ chưa thêm thư viện, mở "Sắp có"
+                IconButton.filledTonal(
+                  tooltip: 'Gọi giáo viên chủ nhiệm',
+                  onPressed: () => openComingSoon(context, 'Gọi giáo viên'),
+                  icon: const Icon(AppIcons.call),
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
         const SizedBox(height: AppSpacing.sectionGap),
         const _SectionHeader('Sức khỏe đã khai báo'),
         const SizedBox(height: AppSpacing.space2),
@@ -281,7 +282,7 @@ class _ProfileCard extends StatelessWidget {
                       style: textTheme.headlineSmall,
                     ),
                     Text(
-                      '${profile.className} · ${profile.ageLabel}',
+                      [profile.className, ?profile.ageLabel].join(' · '),
                       textAlign: TextAlign.center,
                       style: textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,

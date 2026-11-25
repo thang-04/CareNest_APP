@@ -162,12 +162,12 @@ class ChildProfile {
   const ChildProfile({
     required this.fullName,
     required this.className,
-    required this.ageLabel,
+    this.ageLabel,
     required this.schoolYear,
     required this.birthDate,
     required this.gender,
-    required this.campus,
-    required this.teachers,
+    this.campus,
+    this.teachers,
     required this.health,
     required this.guardians,
   });
@@ -177,8 +177,8 @@ class ChildProfile {
   /// "Mầm 3A"
   final String className;
 
-  /// "4 tuổi"
-  final String ageLabel;
+  /// "4 tuổi"; BE chưa trả ⇒ null, màn ẩn (user 25/11).
+  final String? ageLabel;
 
   /// "2026–2027"
   final String schoolYear;
@@ -186,10 +186,12 @@ class ChildProfile {
   /// "14/03/2022 (4 tuổi)"
   final String birthDate;
   final String gender;
-  final String campus;
 
-  /// "Cô Trần Thu Hà · Cô Lê Mai"
-  final String teachers;
+  /// BE chưa trả tên điểm trường ⇒ null, màn ẩn.
+  final String? campus;
+
+  /// "Cô Trần Thu Hà · Cô Lê Mai"; BE chưa trả tên GV ⇒ null, màn ẩn mục.
+  final String? teachers;
   final DeclaredHealth health;
   final List<Guardian> guardians;
 }
