@@ -67,3 +67,9 @@ Làn L:            ghi đủ vào Progress log của plan; chat chỉ tóm tắt
 - `CARENEST_SEED_PASSWORD=<seed local> node scripts/check-auth-contract.mjs` sau khi tách `scripts/lib/oidc-pkce.mjs` → tất cả PASS.
 - `docs/integration/BE_API_INDEX.md` sinh lại từ `../be-app-dev` (430 endpoint).
 - Chưa kiểm: App thật trên thiết bị (emulator máy dev không khởi động được), thực đơn tuần / hoạt động trong ngày (BE chưa có API, App hiện "Sắp có"), tháng đầu năm học với BE thật (đường thu hẹp khoảng ngày khi BE trả 4109 chỉ có unit test).
+
+## 2026-11-25 — Sửa sau review toàn nhánh (nối API phụ huynh)
+- Review độc lập: 6 Important, 12 Minor. Sửa 6 Important, mỗi lỗi có test RED trước: danh sách con tải lại sau mỗi lần đăng nhập; MT chưa đánh giá không vào "Chưa đạt"; tuần thuộc tháng chứa thứ Sáu (OBS-10); khoảng xem lại lùi tới ngày 1 tháng trước; ngoài năm học (hè, BE 4109 mọi khoảng) hiện rỗng thay vì lỗi; màn đọc dữ liệu hiện câu BE khi 403/404/400.
+- `node scripts/verify.mjs` → `VERIFY PASS full | format ok | design ok | analyze ok | tests 449 fail 0 skip 0`.
+- `CARENEST_SEED_PASSWORD=<seed local> node scripts/check-parent-api.mjs --sources` → tất cả PASS (Đánh giá, Khen thưởng tải từ 01/10; Khen thưởng có 2 tháng).
+- Chưa kiểm: như mục trên; tháng hè với BE thật (chỉ unit test).

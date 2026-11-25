@@ -156,3 +156,9 @@ Mỗi task: test map đỏ trước → code → `node scripts/verify.mjs` → c
 - Verify: `node scripts/verify.mjs` → PASS (tests 435 fail 0 skip 0 ở P6); `check-parent-api.mjs --sources` với BE `origin/dev` local → tất cả PASS.
 - Gap cho BE (gửi Cần/nhóm): khoảng ngày phụ huynh nên kẹp vào năm học thay vì 4109; thiếu tên năm học, ngưỡng khen thưởng, `passed`/`passPercent`/học kỳ của chủ đề, số đạt theo lĩnh vực, ngày duyệt danh hiệu, tổng cả năm, nhận xét học kỳ chưa có chỗ hiện ở App.
 - Tiếp: review toàn nhánh, sửa Critical/Important, push khi user cho phép, PR vào `dev`.
+
+### 2026-11-25 — Review toàn nhánh + sửa (chưa push)
+- Review: 6 Important đã sửa (173be73..0991cb0), 12 Minor ghi lại chưa sửa (ledger; gồm effectiveTo của đơn hủy một phần, skippedDates, ngày `today` của router, dòng sức khỏe rỗng).
+- Gap BE thêm: hè BE trả 4109 cho mọi khoảng tới hôm nay ⇒ App hiện rỗng, mất danh hiệu cuối năm mùa hè — cần BE kẹp khoảng vào năm học (chặn phát hành).
+- Verify: `node scripts/verify.mjs` → PASS, tests 449 fail 0 skip 0; `check-parent-api.mjs --sources` → PASS.
+- Tiếp: push khi user cho phép, PR vào `dev`.
