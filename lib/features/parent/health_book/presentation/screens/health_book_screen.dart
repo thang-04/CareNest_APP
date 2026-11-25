@@ -4,6 +4,7 @@ import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/motion.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
+import 'package:carenest_app/core/integration/load_failure.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_avatar.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
@@ -71,7 +72,7 @@ class _HealthBookScreenState extends State<HealthBookScreen> {
             return Center(
               child: AppErrorState(
                 title: 'Chưa tải được sổ sức khỏe',
-                message: 'Kiểm tra kết nối mạng rồi thử lại.',
+                message: loadFailureMessage(snapshot.error),
                 onRetry: _retry,
               ),
             );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
+import 'package:carenest_app/core/integration/load_failure.dart';
 import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
@@ -73,7 +74,7 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
             if (_error != null)
               AppErrorState(
                 title: 'Chưa tải được đơn xin nghỉ',
-                message: 'Kiểm tra kết nối mạng rồi thử lại.',
+                message: loadFailureMessage(_error),
                 onRetry: _load,
               )
             else if (notices == null)

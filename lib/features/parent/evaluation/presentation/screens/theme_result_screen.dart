@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
+import 'package:carenest_app/core/integration/load_failure.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
@@ -50,7 +51,7 @@ class _ThemeResultScreenState extends State<ThemeResultScreen> {
             return Center(
               child: AppErrorState(
                 title: 'Chưa tải được kết quả chủ đề',
-                message: 'Kiểm tra kết nối mạng rồi thử lại.',
+                message: loadFailureMessage(snapshot.error),
                 onRetry: _retry,
               ),
             );

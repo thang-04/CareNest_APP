@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
+import 'package:carenest_app/core/integration/load_failure.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_avatar.dart';
 import 'package:carenest_app/core/widgets/app_bottom_sheet.dart';
@@ -243,7 +244,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
     if (_error != null || today == null) {
       return AppErrorState(
         title: 'Chưa tải được thông tin hôm nay',
-        message: 'Kiểm tra kết nối mạng rồi thử lại.',
+        message: loadFailureMessage(_error),
         onRetry: _load,
       );
     }

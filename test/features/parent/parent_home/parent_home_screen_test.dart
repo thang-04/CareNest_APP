@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
@@ -66,6 +67,14 @@ class _TodaySource implements ParentHomeSource {
     attendance: attendance,
     absentPart: absentPart,
     unreadNotifications: 0,
+  );
+}
+
+/// Hôm nay bị BE từ chối (403): con không còn thuộc tài khoản.
+class _ForbiddenTodaySource extends _TodaySource {
+  @override
+  Future<ParentToday> loadToday(String childId) => Future.error(
+    ApiFailure(403, 'Bạn chỉ xem được thông tin của con mình', 4108),
   );
 }
 
@@ -239,6 +248,19 @@ void main() {
       ),
     );
     expect(find.text('Nghỉ buổi sáng theo đơn'), findsOneWidget);
+  });
+
+  testWidgets('parentHome_403_showsBeReason', (tester) async {
+    SelectedChild.notifier.value = 'c-1';
+    await pumpParentHome(
+      tester,
+      FakeMode.data,
+      source: _ForbiddenTodaySource(),
+    );
+    expect(
+      find.text('Bạn chỉ xem được thông tin của con mình'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('Lỗi tải ⇒ trạng thái lỗi có Thử lại', (tester) async {

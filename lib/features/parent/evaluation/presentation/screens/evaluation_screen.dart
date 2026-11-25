@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
+import 'package:carenest_app/core/integration/load_failure.dart';
 import 'package:carenest_app/core/widgets/app_avatar.dart';
 import 'package:carenest_app/core/widgets/app_segmented.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
@@ -60,7 +61,7 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
             return Center(
               child: AppErrorState(
                 title: 'Chưa tải được đánh giá',
-                message: 'Kiểm tra kết nối mạng rồi thử lại.',
+                message: loadFailureMessage(snapshot.error),
                 onRetry: _retry,
               ),
             );

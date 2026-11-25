@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
+import 'package:carenest_app/core/integration/load_failure.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_avatar.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
@@ -69,7 +70,7 @@ class _ProfileLoaderState extends State<_ProfileLoader> {
         if (snapshot.hasError) {
           return AppErrorState(
             title: 'Chưa tải được thông tin của bé',
-            message: 'Kiểm tra kết nối mạng rồi thử lại.',
+            message: loadFailureMessage(snapshot.error),
             // Thân khối: closure trả Future vào setState thì Flutter báo lỗi
             onRetry: () => setState(() {
               _future = widget.load();

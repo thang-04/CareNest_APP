@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
+import 'package:carenest_app/core/integration/load_failure.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_list_row.dart';
@@ -55,7 +56,7 @@ class _ExamDetailScreenState extends State<ExamDetailScreen> {
             return Center(
               child: AppErrorState(
                 title: 'Chưa tải được phiếu khám',
-                message: 'Kiểm tra kết nối mạng rồi thử lại.',
+                message: loadFailureMessage(snapshot.error),
                 onRetry: _retry,
               ),
             );

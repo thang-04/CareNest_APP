@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 import 'package:carenest_app/features/parent/rewards/data/fake_reward_source.dart';
@@ -39,6 +40,16 @@ final _liveShapeBook = RewardBook(
     teacherNote: 'Con rất lễ phép.',
   ),
 );
+
+/// BE từ chối: con không còn thuộc tài khoản (AUTH-04).
+class _ForbiddenSource implements RewardSource {
+  const _ForbiddenSource();
+
+  @override
+  Future<RewardBook> load(String childId) => Future.error(
+    ApiFailure(403, 'Bạn chỉ xem được thông tin của con mình', 4108),
+  );
+}
 
 class _Opened {
   var daily = 0;
@@ -142,6 +153,15 @@ void main() {
     expect(find.text('Con rất lễ phép.'), findsOneWidget);
     expect(find.textContaining('NĂM HỌC'), findsNothing);
     expect(find.textContaining('Hiệu trưởng duyệt ngày'), findsNothing);
+  });
+
+  testWidgets('rewards_403_showsBeReason', (tester) async {
+    await _pumpRewards(tester, source: const _ForbiddenSource());
+    expect(
+      find.text('Bạn chỉ xem được thông tin của con mình'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Kiểm tra kết nối mạng'), findsNothing);
   });
 
   testWidgets('"Xem đánh giá từng ngày" mở trang Đánh giá', (tester) async {
