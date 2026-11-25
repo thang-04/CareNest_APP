@@ -110,7 +110,7 @@ void main() {
       inScaffold: true,
     );
     await tester.scrollUntilVisible(find.text('Hủy mẫu'), 200);
-    expect(find.text('3/9 phần có ảnh · bữa trưa còn 2 nhóm'), findsOneWidget);
+    expect(find.text('1/3 bữa có ảnh · bữa trưa cần chụp'), findsOneWidget);
     expect(find.text('Cần chụp'), findsOneWidget);
     expect(
       find.text('Bữa trưa chưa ghi · bữa phụ sáng chờ PHT duyệt'),

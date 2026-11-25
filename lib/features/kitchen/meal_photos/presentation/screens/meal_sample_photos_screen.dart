@@ -2,10 +2,14 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/core/integration/load_failure.dart';
+import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/utils/date_labels.dart';
+import 'package:carenest_app/core/widgets/app_bottom_sheet.dart';
+import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
@@ -15,9 +19,8 @@ import 'package:carenest_app/features/kitchen/meal_photos/domain/kitchen_meal_ph
 import 'package:carenest_app/features/kitchen/meal_photos/presentation/meal_photos_status.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/presentation/widgets/meal_photo_widgets.dart';
 
-/// Bếp · Ảnh mẫu bữa ăn theo nhóm tuổi (canvas "Màn bếp theo nhóm tuổi (B)", user duyệt 18/11):
-/// chọn nhóm tuổi trước, rồi chụp từng bữa nhóm đó ăn theo cấu hình của Hiệu trưởng. Mỗi bữa
-/// ít nhất 1 ảnh, chỉ đăng trong giờ đăng (NUT-16). BE chưa có API theo nhóm tuổi ⇒ dữ liệu giả.
+/// Bếp · Ảnh mẫu bữa ăn của điểm trường (NUT-16, user 25/11): mỗi bữa 1 ảnh như BE, chụp lại thì
+/// thay ảnh cũ (có hộp xác nhận). Chỉ đăng trong giờ đăng do Hiệu trưởng đặt; ngoài giờ BE chặn.
 class MealSamplePhotosScreen extends StatefulWidget {
   const MealSamplePhotosScreen({super.key, this.source, this.camera});
 
@@ -37,13 +40,10 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
       widget.camera ?? ImagePickerSamplePhotoCamera();
   late Future<KitchenPhotoDay> _day = _source.loadToday();
 
-  /// Nhóm bếp đã chọn; chưa chọn ⇒ mở nhóm đầu tiên còn bữa cần chụp
-  String? _groupId;
-
-  /// Bữa đang chụp hoặc đang đăng theo "nhóm|bữa": khoá nút để không đăng trùng.
+  /// Bữa đang chụp hoặc đang đăng: khoá nút để không đăng trùng.
   final Set<String> _posting = {};
 
-  /// Lỗi vừa gặp theo "nhóm|bữa": báo ngay trong thẻ bữa.
+  /// Lỗi vừa gặp theo bữa: báo ngay trong thẻ bữa.
   final Map<String, String> _errors = {};
 
   /// Ảnh vừa chụp mà đăng lỗi: giữ lại để đăng lại, không bắt chụp lại (CODING_GUIDE §7.1).
@@ -54,26 +54,51 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
   static const _uploadError =
       'Chưa đăng được ảnh vừa chụp. Kiểm tra mạng rồi đăng lại.';
 
-  static String _key(AgeGroupMeals group, SampleMeal meal) =>
-      '${group.id}|${meal.id}';
+  /// Lỗi BE (ngoài giờ đăng, ảnh quá lớn…) hiện câu BE; mất mạng hiện câu đăng lại.
+  static String _uploadMessage(Object error) => switch (error) {
+    ApiFailure(:final status, :final message)
+        when status >= 400 && status < 500 && status != 401 =>
+      message,
+    _ => _uploadError,
+  };
 
-  static AgeGroupMeals _defaultGroup(KitchenPhotoDay day) =>
-      day.groups
-          .where(
-            (group) => group.meals.any(
-              (meal) => meal.status == MealPhotoStatus.needed,
-            ),
-          )
-          .firstOrNull ??
-      day.groups.first;
+  /// Bữa đã có ảnh: BE thay ảnh cũ ⇒ hỏi trước khi chụp lại.
+  Future<bool> _confirmRetake(SampleMeal meal) async {
+    final confirmed = await showAppBottomSheet<bool>(
+      context: context,
+      title: 'Chụp lại ảnh ${MealPhotosStatus.inSentence(meal)}?',
+      builder: (sheetContext) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Mỗi bữa chỉ giữ 1 ảnh. Ảnh mới sẽ thay ảnh đã đăng, ảnh cũ không xem lại được.',
+            style: Theme.of(
+              sheetContext,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: AppSpacing.space4),
+          AppButton(
+            label: 'Chụp ảnh mới',
+            expand: true,
+            onPressed: () => Navigator.of(sheetContext).pop(true),
+          ),
+          const SizedBox(height: AppSpacing.space2),
+          AppButton(
+            label: 'Giữ ảnh cũ',
+            variant: AppButtonVariant.text,
+            expand: true,
+            onPressed: () => Navigator.of(sheetContext).pop(false),
+          ),
+        ],
+      ),
+    );
+    return confirmed == true;
+  }
 
-  Future<void> _takePhoto(AgeGroupMeals group, SampleMeal meal) async {
-    final key = _key(group, meal);
-    setState(() {
-      // Giữ nhóm đang chụp, không nhảy sang nhóm khác khi nhóm này đủ ảnh
-      _groupId = group.id;
-      _posting.add(key);
-    });
+  Future<void> _takePhoto(SampleMeal meal) async {
+    if (meal.photos.isNotEmpty && !await _confirmRetake(meal)) return;
+    if (!mounted) return;
+    setState(() => _posting.add(meal.id));
     final Uint8List? bytes;
     try {
       bytes = await _camera.takePhoto();
@@ -81,50 +106,39 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
       // Bị từ chối quyền hoặc máy không có app camera
       if (!mounted) return;
       setState(() {
-        _posting.remove(key);
-        _errors[key] = _cameraError;
+        _posting.remove(meal.id);
+        _errors[meal.id] = _cameraError;
       });
       return;
     }
     if (!mounted) return;
     if (bytes == null) {
       // Bếp huỷ chụp: không đăng, giữ nguyên báo lỗi cũ (nếu có)
-      setState(() {
-        _posting.remove(key);
-      });
+      setState(() => _posting.remove(meal.id));
       return;
     }
-    await _post(group, meal, bytes);
+    await _post(meal, bytes);
   }
 
-  Future<void> _post(
-    AgeGroupMeals group,
-    SampleMeal meal,
-    Uint8List bytes,
-  ) async {
-    final key = _key(group, meal);
+  Future<void> _post(SampleMeal meal, Uint8List bytes) async {
     setState(() {
-      _posting.add(key);
-      _errors.remove(key);
-      _unsent.remove(key);
+      _posting.add(meal.id);
+      _errors.remove(meal.id);
+      _unsent.remove(meal.id);
     });
     try {
-      final day = await _source.addPhoto(
-        groupId: group.id,
-        mealId: meal.id,
-        bytes: bytes,
-      );
+      final day = await _source.addPhoto(mealId: meal.id, bytes: bytes);
       if (!mounted) return;
       setState(() {
-        _posting.remove(key);
+        _posting.remove(meal.id);
         _day = Future.value(day);
       });
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() {
-        _posting.remove(key);
-        _errors[key] = _uploadError;
-        _unsent[key] = bytes;
+        _posting.remove(meal.id);
+        _errors[meal.id] = _uploadMessage(error);
+        _unsent[meal.id] = bytes;
       });
     }
   }
@@ -139,7 +153,7 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
           appBar: AppBar(
             title: const Text('Ảnh mẫu bữa ăn'),
             actions: [
-              if (day != null)
+              if (day != null && day.campusLabel.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.pagePadding),
                   child: Center(child: _CampusLabel(label: day.campusLabel)),
@@ -157,7 +171,7 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
       return Center(
         child: AppErrorState(
           title: 'Chưa tải được ảnh mẫu',
-          message: 'Kiểm tra kết nối mạng rồi thử lại.',
+          message: loadFailureMessage(snapshot.error),
           onRetry: () => setState(() {
             _day = _source.loadToday();
           }),
@@ -179,7 +193,7 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
         ),
       );
     }
-    if (day.groups.isEmpty) {
+    if (day.meals.isEmpty) {
       return const Center(
         child: AppEmptyState(
           icon: AppIcons.camera,
@@ -188,40 +202,25 @@ class _MealSamplePhotosScreenState extends State<MealSamplePhotosScreen> {
         ),
       );
     }
-    final group =
-        day.groups.where((item) => item.id == _groupId).firstOrNull ??
-        _defaultGroup(day);
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.pagePadding),
       children: [
         _DayProgress(day: day),
-        const SizedBox(height: AppSpacing.space5),
-        _GroupTiles(
-          groups: day.groups,
-          selectedId: group.id,
-          onSelect: (id) => setState(() {
-            _groupId = id;
-          }),
-        ),
         const SizedBox(height: AppSpacing.sectionGap),
-        _GroupHeader(group: group),
-        const SizedBox(height: AppSpacing.space4),
-        for (final (i, meal) in group.meals.indexed)
+        for (final (i, meal) in day.meals.indexed)
           MealTimelineItem(
             status: meal.status,
-            isLast: i == group.meals.length - 1,
+            isLast: i == day.meals.length - 1,
             child: MealPhotoCard(
               key: ValueKey('meal-card-${meal.name}'),
-              groupName: group.name,
               meal: meal,
-              posting: _posting.contains(_key(group, meal)),
-              error: _errors[_key(group, meal)],
-              unsent: _unsent[_key(group, meal)],
-              onCapture: () => _takePhoto(group, meal),
+              posting: _posting.contains(meal.id),
+              error: _errors[meal.id],
+              unsent: _unsent[meal.id],
+              loadPhoto: _source.loadPhoto,
+              onCapture: () => _takePhoto(meal),
               onRetry: () {
-                if (_unsent[_key(group, meal)] case final bytes?) {
-                  _post(group, meal, bytes);
-                }
+                if (_unsent[meal.id] case final bytes?) _post(meal, bytes);
               },
             ),
           ),
@@ -256,7 +255,7 @@ class _CampusLabel extends StatelessWidget {
   }
 }
 
-/// Tiến độ cả ngày: số phần (nhóm × bữa) đã có ảnh trên tổng số phần.
+/// Tiến độ cả ngày: số bữa đã có ảnh trên tổng số bữa.
 class _DayProgress extends StatelessWidget {
   const _DayProgress({required this.day});
 
@@ -265,8 +264,8 @@ class _DayProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final total = day.groups.fold(0, (sum, group) => sum + group.meals.length);
-    final done = day.groups.fold(0, (sum, group) => sum + group.doneMeals);
+    final total = day.meals.length;
+    final done = day.doneMeals;
     return AppCard(
       dense: true,
       child: Column(
@@ -277,7 +276,7 @@ class _DayProgress extends StatelessWidget {
             style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
           ),
           const SizedBox(height: AppSpacing.space1),
-          Text('$done/$total phần đã có ảnh mẫu', style: textTheme.titleMedium),
+          Text('$done/$total bữa đã có ảnh mẫu', style: textTheme.titleMedium),
           const SizedBox(height: AppSpacing.space3),
           ExcludeSemantics(
             child: LinearProgressIndicator(
@@ -290,100 +289,6 @@ class _DayProgress extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Ô nhóm tuổi xếp 2 cột, các ô cùng hàng cao bằng nhau.
-class _GroupTiles extends StatelessWidget {
-  const _GroupTiles({
-    required this.groups,
-    required this.selectedId,
-    required this.onSelect,
-  });
-
-  final List<AgeGroupMeals> groups;
-  final String selectedId;
-  final ValueChanged<String> onSelect;
-
-  Widget _tile(AgeGroupMeals group) => AgeGroupTile(
-    key: ValueKey('group-tile-${group.id}'),
-    group: group,
-    selected: group.id == selectedId,
-    onTap: () => onSelect(group.id),
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (var i = 0; i < groups.length; i += 2) ...[
-          if (i > 0) const SizedBox(height: AppSpacing.space2),
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(child: _tile(groups[i])),
-                const SizedBox(width: AppSpacing.space2),
-                Expanded(
-                  child: i + 1 < groups.length
-                      ? _tile(groups[i + 1])
-                      : const SizedBox.shrink(),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-/// Tên nhóm đang xem và các bữa nhóm ăn theo cấu hình của Hiệu trưởng.
-class _GroupHeader extends StatelessWidget {
-  const _GroupHeader({required this.group});
-
-  final AgeGroupMeals group;
-
-  /// "bữa phụ sáng, bữa trưa và bữa chiều"
-  static String _mealList(List<SampleMeal> meals) {
-    final names = meals.map(MealPhotosStatus.inSentence).toList();
-    if (names.length < 2) return names.join();
-    return '${names.take(names.length - 1).join(', ')} và ${names.last}';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final muted = textTheme.bodySmall?.copyWith(color: AppColors.textMuted);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Semantics(
-          header: true,
-          child: Text(group.name, style: textTheme.headlineSmall),
-        ),
-        const SizedBox(height: AppSpacing.space1),
-        Text(
-          '${group.ageRange} · ăn ${_mealList(group.meals)}',
-          style: textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-        ),
-        const SizedBox(height: AppSpacing.space2),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(AppIcons.info, size: AppSizes.iconBadge, color: muted?.color),
-            const SizedBox(width: AppSpacing.space2),
-            Expanded(
-              child: Text(
-                'Bữa theo cấu hình của Hiệu trưởng · mỗi bữa ít nhất 1 ảnh',
-                style: muted,
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 }

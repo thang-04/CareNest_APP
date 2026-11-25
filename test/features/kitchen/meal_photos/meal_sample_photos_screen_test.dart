@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/core/theme/app_theme.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/data/fake_kitchen_photo_source.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/domain/kitchen_meal_photos.dart';
@@ -36,25 +37,29 @@ class _FakeCamera implements SamplePhotoCamera {
   }
 }
 
-/// Ghi lại mọi lần đăng; [failures] lần đầu lỗi mạng.
+/// Ghi lại mọi lần đăng; [failures] lần đầu lỗi; [error] là lỗi ném ra (mặc định mất mạng).
 class _RecordingSource extends FakeKitchenPhotoSource {
-  _RecordingSource({this.failures = 0, super.delay = Duration.zero});
+  _RecordingSource({
+    this.failures = 0,
+    this.error,
+    super.delay = Duration.zero,
+  });
 
   int failures;
+  final Object? error;
   final posted = <Uint8List>[];
 
   @override
   Future<KitchenPhotoDay> addPhoto({
-    required String groupId,
     required String mealId,
     required Uint8List bytes,
   }) async {
     posted.add(bytes);
     if (failures > 0) {
       failures--;
-      throw StateError('mất mạng');
+      throw error ?? StateError('mất mạng');
     }
-    return super.addPhoto(groupId: groupId, mealId: mealId, bytes: bytes);
+    return super.addPhoto(mealId: mealId, bytes: bytes);
   }
 }
 
@@ -85,23 +90,18 @@ class _DaySource implements KitchenPhotoSource {
 
   @override
   Future<KitchenPhotoDay> addPhoto({
-    required String groupId,
     required String mealId,
     required Uint8List bytes,
   }) async => day;
+
+  @override
+  Future<Uint8List> loadPhoto(String photoId) async => _png;
 }
 
-KitchenPhotoDay _oneGroupDay(List<SampleMeal> meals) => KitchenPhotoDay(
+KitchenPhotoDay _day(List<SampleMeal> meals) => KitchenPhotoDay(
   date: FakeParentHomeSource.today,
   campusLabel: 'Cơ sở chính',
-  groups: [
-    AgeGroupMeals(
-      id: 'mg-lon',
-      name: 'Mẫu giáo lớn',
-      ageRange: '5–6 tuổi',
-      meals: meals,
-    ),
-  ],
+  meals: meals,
 );
 
 Future<void> pumpPhotos(
@@ -123,75 +123,36 @@ Future<void> pumpPhotos(
   await tester.pumpAndSettle();
 }
 
-/// Thẻ của một bữa trong nhóm đang chọn.
+/// Thẻ của một bữa.
 Finder mealCard(String meal) => find.byKey(ValueKey('meal-card-$meal'));
 
 Finder inCard(String meal, String text) =>
     find.descendant(of: mealCard(meal), matching: find.text(text));
 
-Finder groupTile(String id) => find.byKey(ValueKey('group-tile-$id'));
-
-Finder inTile(String id, String text) =>
-    find.descendant(of: groupTile(id), matching: find.text(text));
-
-Future<void> openGroup(WidgetTester tester, String id) async {
-  await tester.ensureVisible(groupTile(id));
-  await tester.pumpAndSettle();
-  await tester.tap(groupTile(id));
-  await tester.pumpAndSettle();
-}
-
-/// Bấm vùng chụp của bữa trưa nhóm đang mở (Mẫu giáo nhỡ: đang trong giờ, chưa có ảnh).
-Future<void> tapLunchCapture(WidgetTester tester) async {
-  final zone = inCard('Bữa trưa', 'Chụp ảnh mẫu bữa trưa');
+Future<void> tapIn(WidgetTester tester, Finder finder) async {
   // Chữ lớn đẩy thẻ bữa ra ngoài vùng ListView đã dựng ⇒ cuộn tới khi thấy
-  await tester.scrollUntilVisible(zone, 200);
+  await tester.scrollUntilVisible(finder, 200);
   await tester.pumpAndSettle();
-  await tester.tap(zone);
+  await tester.tap(finder);
 }
+
+/// Bấm vùng chụp của bữa trưa (đang trong giờ, chưa có ảnh).
+Future<void> tapLunchCapture(WidgetTester tester) =>
+    tapIn(tester, inCard('Bữa trưa', 'Chụp ảnh mẫu bữa trưa'));
 
 void main() {
-  testWidgets('Ảnh mẫu: mở nhóm còn bữa cần chụp, tiến độ cả ngày', (
+  testWidgets('NUT-16: mỗi bữa 1 ảnh của điểm trường, tiến độ theo bữa', (
     tester,
   ) async {
     await pumpPhotos(tester);
     expect(find.text('Cơ sở chính'), findsOneWidget);
-    expect(find.text('3/9 phần đã có ảnh mẫu'), findsOneWidget);
-    expect(inTile('nha-tre', '2/3'), findsOneWidget);
-    expect(inTile('mg-be', '1/2'), findsOneWidget);
-    expect(inTile('mg-nho', '0/2'), findsOneWidget);
-    expect(inTile('mg-lon', '0/2'), findsOneWidget);
-    expect(
-      find.bySemanticsLabel('Mẫu giáo nhỡ, 4 đến 5 tuổi, 0 trên 2 bữa có ảnh'),
-      findsOneWidget,
-    );
+    expect(find.text('1/3 bữa đã có ảnh mẫu'), findsOneWidget);
     expect(inCard('Bữa trưa', 'Cần chụp'), findsOneWidget);
     expect(
       inCard('Bữa trưa', 'Đăng được 10:30–11:30 · còn 40 phút'),
       findsOneWidget,
     );
-    expect(
-      inCard('Bữa trưa', 'Ảnh đăng cho nhóm Mẫu giáo nhỡ'),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('Ảnh mẫu: mỗi nhóm tuổi chỉ có các bữa theo cấu hình', (
-    tester,
-  ) async {
-    await pumpPhotos(tester);
-    expect(find.text('4–5 tuổi · ăn bữa trưa và bữa chiều'), findsOneWidget);
-    expect(mealCard('Bữa phụ sáng'), findsNothing);
-
-    await openGroup(tester, 'nha-tre');
-    expect(
-      find.text('24–36 tháng · ăn bữa phụ sáng, bữa trưa và bữa chiều'),
-      findsOneWidget,
-    );
-    expect(mealCard('Bữa phụ sáng'), findsOneWidget);
-    expect(mealCard('Bữa trưa'), findsOneWidget);
-    await tester.scrollUntilVisible(mealCard('Bữa chiều'), 200);
-    expect(mealCard('Bữa chiều'), findsOneWidget);
+    expect(inCard('Bữa trưa', 'Ảnh đăng cho cả điểm trường'), findsOneWidget);
   });
 
   testWidgets('Ảnh mẫu: bấm vùng chụp mở camera, đăng đúng ảnh vừa chụp', (
@@ -204,28 +165,16 @@ void main() {
     await tester.pumpAndSettle();
     expect(camera.calls, 1);
     expect(source.posted, [_png]);
-    expect(inCard('Bữa trưa', 'Có 1 ảnh'), findsOneWidget);
+    expect(inCard('Bữa trưa', 'Đã có ảnh'), findsOneWidget);
     expect(inCard('Bữa trưa', '10:50'), findsOneWidget);
-    expect(inTile('mg-nho', '1/2'), findsOneWidget);
-    // Vẫn ở nhóm vừa chụp, không nhảy sang Mẫu giáo lớn
-    expect(find.text('4–5 tuổi · ăn bữa trưa và bữa chiều'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('4/9 phần đã có ảnh mẫu'), -200);
-    expect(find.text('4/9 phần đã có ảnh mẫu'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('2/3 bữa đã có ảnh mẫu'), -200);
+    expect(find.text('2/3 bữa đã có ảnh mẫu'), findsOneWidget);
   });
 
   testWidgets('Ảnh mẫu: ảnh vừa chụp hiện ngay, ảnh có sẵn là ô giữ chỗ', (
     tester,
   ) async {
     await pumpPhotos(tester);
-    await tapLunchCapture(tester);
-    await tester.pumpAndSettle();
-    expect(
-      find.descendant(of: mealCard('Bữa trưa'), matching: find.byType(Image)),
-      findsOneWidget,
-    );
-
-    await tester.scrollUntilVisible(groupTile('nha-tre'), -200);
-    await openGroup(tester, 'nha-tre');
     expect(inCard('Bữa phụ sáng', '07:52'), findsOneWidget);
     expect(
       find.descendant(
@@ -234,6 +183,60 @@ void main() {
       ),
       findsNothing,
     );
+    await tapLunchCapture(tester);
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(of: mealCard('Bữa trưa'), matching: find.byType(Image)),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Ảnh mẫu: ảnh BE tải qua nguồn có auth', (tester) async {
+    await pumpPhotos(
+      tester,
+      source: _DaySource(
+        _day(const [
+          SampleMeal(
+            id: 'LUNCH',
+            name: 'Bữa trưa',
+            window: PhotoWindow.open,
+            opensAt: '10:30',
+            closesAt: '11:30',
+            photos: [SamplePhoto(id: '9', postedAt: '10:41')],
+          ),
+        ]),
+      ),
+    );
+    expect(
+      find.descendant(of: mealCard('Bữa trưa'), matching: find.byType(Image)),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Ảnh mẫu: chụp lại phải xác nhận vì ảnh mới thay ảnh cũ', (
+    tester,
+  ) async {
+    final camera = _FakeCamera();
+    final source = _RecordingSource();
+    await pumpPhotos(tester, source: source, camera: camera);
+    await tapLunchCapture(tester);
+    await tester.pumpAndSettle();
+    expect(inCard('Bữa trưa', 'Chụp ảnh mẫu bữa trưa'), findsNothing);
+
+    await tapIn(tester, inCard('Bữa trưa', 'Chụp lại'));
+    await tester.pumpAndSettle();
+    expect(find.text('Chụp lại ảnh bữa trưa?'), findsOneWidget);
+    await tester.tap(find.text('Giữ ảnh cũ'));
+    await tester.pumpAndSettle();
+    expect(camera.calls, 1);
+
+    await tapIn(tester, inCard('Bữa trưa', 'Chụp lại'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Chụp ảnh mới'));
+    await tester.pumpAndSettle();
+    expect(camera.calls, 2);
+    expect(source.posted, hasLength(2));
+    expect(inCard('Bữa trưa', 'Đã có ảnh'), findsOneWidget);
   });
 
   testWidgets('Ảnh mẫu: không mở được camera ⇒ báo, vùng chụp bấm lại được', (
@@ -276,37 +279,18 @@ void main() {
     expect(inCard('Bữa trưa', 'Chụp ảnh mẫu bữa trưa'), findsOneWidget);
   });
 
-  testWidgets('Ảnh mẫu: có ảnh rồi vẫn Chụp thêm được trong giờ', (
-    tester,
-  ) async {
-    await pumpPhotos(tester);
-    await tapLunchCapture(tester);
-    await tester.pumpAndSettle();
-    expect(inCard('Bữa trưa', 'Chụp ảnh mẫu bữa trưa'), findsNothing);
-
-    await tester.ensureVisible(inCard('Bữa trưa', 'Chụp thêm'));
-    await tester.pumpAndSettle();
-    await tester.tap(inCard('Bữa trưa', 'Chụp thêm'));
-    await tester.pumpAndSettle();
-    expect(inCard('Bữa trưa', 'Có 2 ảnh'), findsOneWidget);
-    expect(inTile('mg-nho', '1/2'), findsOneWidget);
-  });
-
   testWidgets('Ảnh mẫu: chỉ bữa đang trong giờ mới chụp được', (tester) async {
     await pumpPhotos(tester);
-    await tester.scrollUntilVisible(mealCard('Bữa chiều'), 200);
-    expect(inCard('Bữa chiều', 'Chưa tới giờ'), findsOneWidget);
-    expect(inCard('Bữa chiều', 'Nút chụp mở lúc 14:30'), findsOneWidget);
-    expect(inCard('Bữa chiều', 'Chụp ảnh mẫu bữa chiều'), findsNothing);
-
-    await tester.scrollUntilVisible(groupTile('nha-tre'), -200);
-    await openGroup(tester, 'nha-tre');
-    expect(inCard('Bữa phụ sáng', 'Có 2 ảnh'), findsOneWidget);
+    expect(inCard('Bữa phụ sáng', 'Đã có ảnh'), findsOneWidget);
     expect(
       inCard('Bữa phụ sáng', 'Đăng được 07:30–08:30 · đã qua'),
       findsOneWidget,
     );
-    expect(inCard('Bữa phụ sáng', 'Chụp thêm'), findsNothing);
+    expect(inCard('Bữa phụ sáng', 'Chụp lại'), findsNothing);
+    await tester.scrollUntilVisible(mealCard('Bữa chiều'), 200);
+    expect(inCard('Bữa chiều', 'Chưa tới giờ'), findsOneWidget);
+    expect(inCard('Bữa chiều', 'Nút chụp mở lúc 14:30'), findsOneWidget);
+    expect(inCard('Bữa chiều', 'Chụp ảnh mẫu bữa chiều'), findsNothing);
   });
 
   testWidgets('Ảnh mẫu: hết giờ mà chưa có ảnh ⇒ chỉ báo đỏ, không chụp bù', (
@@ -315,7 +299,7 @@ void main() {
     await pumpPhotos(
       tester,
       source: _DaySource(
-        _oneGroupDay(const [
+        _day(const [
           SampleMeal(
             id: 'LUNCH',
             name: 'Bữa trưa',
@@ -335,7 +319,6 @@ void main() {
       findsOneWidget,
     );
     expect(inCard('Bữa trưa', 'Chụp ảnh mẫu bữa trưa'), findsNothing);
-    expect(inCard('Bữa trưa', 'Chụp thêm'), findsNothing);
   });
 
   testWidgets('Ảnh mẫu: Hiệu trưởng chưa đặt giờ đăng ⇒ báo, không chụp', (
@@ -344,7 +327,7 @@ void main() {
     await pumpPhotos(
       tester,
       source: _DaySource(
-        _oneGroupDay(const [
+        _day(const [
           SampleMeal(
             id: 'AFTERNOON',
             name: 'Bữa chiều',
@@ -374,12 +357,12 @@ void main() {
       await tester.tap(inCard('Bữa trưa', 'Đang đăng ảnh…'));
       await tester.pumpAndSettle();
       expect(source.posted, hasLength(1));
-      expect(inCard('Bữa trưa', 'Có 1 ảnh'), findsOneWidget);
+      expect(inCard('Bữa trưa', 'Đã có ảnh'), findsOneWidget);
     },
   );
 
   testWidgets(
-    'Ảnh mẫu: đăng lỗi ⇒ giữ ảnh vừa chụp, Đăng lại gửi đúng ảnh đó',
+    'Ảnh mẫu: đăng lỗi mạng ⇒ giữ ảnh vừa chụp, Đăng lại gửi đúng ảnh đó',
     (tester) async {
       final camera = _FakeCamera();
       final source = _RecordingSource(failures: 1);
@@ -394,28 +377,35 @@ void main() {
         findsOneWidget,
       );
       expect(inCard('Bữa trưa', 'Chưa đăng'), findsOneWidget);
-      expect(inCard('Bữa trưa', 'Cần chụp'), findsOneWidget);
 
-      await tester.ensureVisible(inCard('Bữa trưa', 'Đăng lại ảnh'));
-      await tester.pumpAndSettle();
-      await tester.tap(inCard('Bữa trưa', 'Đăng lại ảnh'));
+      await tapIn(tester, inCard('Bữa trưa', 'Đăng lại ảnh'));
       await tester.pumpAndSettle();
       expect(camera.calls, 1);
       expect(source.posted, [_png, _png]);
-      expect(inCard('Bữa trưa', 'Có 1 ảnh'), findsOneWidget);
+      expect(inCard('Bữa trưa', 'Đã có ảnh'), findsOneWidget);
       expect(inCard('Bữa trưa', 'Đăng lại ảnh'), findsNothing);
-      expect(inCard('Bữa trưa', 'Chưa đăng'), findsNothing);
     },
   );
 
-  testWidgets('Ảnh mẫu: tải lỗi rồi Thử lại ⇒ hiện các nhóm tuổi', (
+  testWidgets('Ảnh mẫu: BE từ chối (ngoài giờ đăng) ⇒ hiện câu BE', (
     tester,
   ) async {
+    final source = _RecordingSource(
+      failures: 1,
+      error: ApiFailure(400, 'Ngoài giờ đăng ảnh bữa này', 6065),
+    );
+    await pumpPhotos(tester, source: source);
+    await tapLunchCapture(tester);
+    await tester.pumpAndSettle();
+    expect(inCard('Bữa trưa', 'Ngoài giờ đăng ảnh bữa này'), findsOneWidget);
+  });
+
+  testWidgets('Ảnh mẫu: tải lỗi rồi Thử lại ⇒ hiện các bữa', (tester) async {
     await pumpPhotos(tester, source: _FailOnceSource());
     expect(find.text('Chưa tải được ảnh mẫu'), findsOneWidget);
     await tester.tap(find.text('Thử lại'));
     await tester.pumpAndSettle();
-    expect(inTile('nha-tre', '2/3'), findsOneWidget);
+    expect(find.text('1/3 bữa đã có ảnh mẫu'), findsOneWidget);
   });
 
   testWidgets('Ảnh mẫu: ngày nghỉ ⇒ không có bữa cần ảnh', (tester) async {
@@ -435,9 +425,6 @@ void main() {
     expect(tester.takeException(), isNull);
     await tapLunchCapture(tester);
     await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
-    await tester.scrollUntilVisible(groupTile('nha-tre'), -300);
-    await openGroup(tester, 'nha-tre');
     expect(tester.takeException(), isNull);
   });
 }

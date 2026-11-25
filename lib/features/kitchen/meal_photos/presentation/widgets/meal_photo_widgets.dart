@@ -13,108 +13,6 @@ import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/domain/kitchen_meal_photos.dart';
 import 'package:carenest_app/features/kitchen/meal_photos/presentation/meal_photos_status.dart';
 
-/// Ô chọn nhóm tuổi: tên, độ tuổi, số bữa đã có ảnh / số bữa nhóm ăn, một vạch mỗi bữa.
-class AgeGroupTile extends StatelessWidget {
-  const AgeGroupTile({
-    super.key,
-    required this.group,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final AgeGroupMeals group;
-  final bool selected;
-  final VoidCallback onTap;
-
-  /// Vạch mỗi bữa cao 6px như canvas
-  static const _segmentHeight = AppSpacing.space1 * 1.5;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final total = group.meals.length;
-    final label =
-        '${group.name}, ${group.ageRange.replaceAll('–', ' đến ')}, '
-        '${group.doneMeals} trên $total bữa có ảnh';
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: label,
-      excludeSemantics: true,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          boxShadow: selected ? AppShadows.tinted(AppColors.brand) : null,
-        ),
-        child: Material(
-          color: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            side: selected
-                ? const BorderSide(color: AppColors.brand, width: 2)
-                : const BorderSide(color: AppColors.border),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.cardGap),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(group.name, style: textTheme.titleSmall),
-                      ),
-                      const SizedBox(width: AppSpacing.space2),
-                      Text(
-                        '${group.doneMeals}/$total',
-                        style: textTheme.labelLarge?.copyWith(
-                          color: MealPhotosStatus.groupCount(group),
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.space1),
-                  Text(
-                    group.ageRange,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                  const Spacer(),
-                  const SizedBox(height: AppSpacing.space2),
-                  Row(
-                    children: [
-                      for (final (i, meal) in group.meals.indexed) ...[
-                        if (i > 0) const SizedBox(width: AppSpacing.space1),
-                        Expanded(
-                          child: Container(
-                            height: _segmentHeight,
-                            decoration: BoxDecoration(
-                              color: MealPhotosStatus.color(meal.status),
-                              borderRadius: BorderRadius.circular(
-                                AppRadius.pill,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// Một mục trên dòng thời gian các bữa: chấm màu theo trạng thái, đường nối xuống bữa sau.
 class MealTimelineItem extends StatelessWidget {
   const MealTimelineItem({
@@ -189,17 +87,19 @@ class MealTimelineItem extends StatelessWidget {
 class MealPhotoCard extends StatelessWidget {
   const MealPhotoCard({
     super.key,
-    required this.groupName,
     required this.meal,
     required this.posting,
     required this.onCapture,
     required this.onRetry,
     this.error,
     this.unsent,
+    this.loadPhoto,
   });
 
-  final String groupName;
   final SampleMeal meal;
+
+  /// Tải ảnh đã đăng từ BE (API có auth); null ⇒ ô giữ chỗ
+  final Future<Uint8List> Function(String photoId)? loadPhoto;
 
   /// Đang mở camera hoặc đang đăng: khoá nút để không đăng trùng
   final bool posting;
@@ -273,6 +173,7 @@ class MealPhotoCard extends StatelessWidget {
           _PhotoGrid(
             meal: meal,
             unsent: unsent,
+            loadPhoto: loadPhoto,
             addTile: canCapture && meal.photos.isNotEmpty
                 ? _AddPhotoTile(meal: meal, posting: posting, onTap: onCapture)
                 : null,
@@ -282,7 +183,7 @@ class MealPhotoCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.space3),
           _CaptureZone(
             title: 'Chụp ảnh mẫu ${MealPhotosStatus.inSentence(meal)}',
-            subtitle: 'Ảnh đăng cho nhóm $groupName',
+            subtitle: 'Ảnh đăng cho cả điểm trường',
             posting: posting,
             onTap: onCapture,
           ),
@@ -425,7 +326,7 @@ class _CaptureZone extends StatelessWidget {
   }
 }
 
-/// Ô "Chụp thêm" cuối lưới ảnh khi bữa còn trong giờ đăng.
+/// Ô "Chụp lại" cạnh ảnh khi bữa còn trong giờ đăng: ảnh mới thay ảnh cũ (BE 1 ảnh/bữa).
 class _AddPhotoTile extends StatelessWidget {
   const _AddPhotoTile({
     required this.meal,
@@ -439,13 +340,13 @@ class _AddPhotoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = posting ? 'Đang đăng ảnh…' : 'Chụp thêm';
+    final label = posting ? 'Đang đăng ảnh…' : 'Chụp lại';
     return Semantics(
       button: true,
       enabled: !posting,
       label: posting
           ? label
-          : 'Chụp thêm ảnh mẫu ${MealPhotosStatus.inSentence(meal)}',
+          : 'Chụp lại ảnh mẫu ${MealPhotosStatus.inSentence(meal)}, thay ảnh cũ',
       excludeSemantics: true,
       child: _DashedFrame(
         radius: AppRadius.lg,
@@ -497,9 +398,15 @@ class _AddPhotoTile extends StatelessWidget {
 
 /// Lưới ảnh 2 cột 4:3 kèm giờ đăng; ảnh vừa chụp mà đăng lỗi có viền đỏ "Chưa đăng".
 class _PhotoGrid extends StatelessWidget {
-  const _PhotoGrid({required this.meal, this.unsent, this.addTile});
+  const _PhotoGrid({
+    required this.meal,
+    this.unsent,
+    this.addTile,
+    this.loadPhoto,
+  });
 
   final SampleMeal meal;
+  final Future<Uint8List> Function(String photoId)? loadPhoto;
   final Uint8List? unsent;
   final Widget? addTile;
 
@@ -516,6 +423,9 @@ class _PhotoGrid extends StatelessWidget {
           for (final (i, photo) in meal.photos.indexed)
             _PhotoTile(
               bytes: photo.bytes,
+              load: photo.bytes == null && loadPhoto != null
+                  ? () => loadPhoto!(photo.id)
+                  : null,
               cacheWidth: cacheWidth,
               semanticLabel: 'Ảnh ${i + 1} $mealName, đăng ${photo.postedAt}',
               chip: AppStatusBadge(
@@ -567,10 +477,12 @@ class _PhotoTile extends StatelessWidget {
     required this.semanticLabel,
     required this.chip,
     this.failed = false,
+    this.load,
   });
 
-  /// Null với ảnh giả có sẵn (chưa có URL): hiện ô giữ chỗ
+  /// Ảnh vừa chụp trên máy; null ⇒ tải bằng [load], không có [load] thì hiện ô giữ chỗ
   final Uint8List? bytes;
+  final Future<Uint8List> Function()? load;
   final int cacheWidth;
   final String semanticLabel;
   final Widget chip;
@@ -597,15 +509,10 @@ class _PhotoTile extends StatelessWidget {
             children: [
               if (bytes != null)
                 Image.memory(bytes, fit: BoxFit.cover, cacheWidth: cacheWidth)
+              else if (load case final load?)
+                _LoadedPhoto(load: load, cacheWidth: cacheWidth)
               else
-                const ColoredBox(
-                  color: AppColors.primarySoft,
-                  child: Icon(
-                    AppIcons.meal,
-                    size: AppSizes.iconNavigation,
-                    color: AppColors.primaryBorder,
-                  ),
-                ),
+                const _PhotoPlaceholder(),
               Positioned(
                 left: AppSpacing.space2,
                 bottom: AppSpacing.space2,
@@ -668,4 +575,47 @@ class _DashedRRectPainter extends CustomPainter {
   @override
   bool shouldRepaint(_DashedRRectPainter oldDelegate) =>
       oldDelegate.radius != radius;
+}
+
+/// Ô giữ chỗ khi chưa có ảnh để hiện (ảnh giả, đang tải, tải lỗi).
+class _PhotoPlaceholder extends StatelessWidget {
+  const _PhotoPlaceholder();
+
+  @override
+  Widget build(BuildContext context) => const ColoredBox(
+    color: AppColors.primarySoft,
+    child: Icon(
+      AppIcons.meal,
+      size: AppSizes.iconNavigation,
+      color: AppColors.primaryBorder,
+    ),
+  );
+}
+
+/// Ảnh đã đăng tải từ BE một lần khi ô hiện; giữ trong bộ nhớ, không lưu ra máy.
+class _LoadedPhoto extends StatefulWidget {
+  const _LoadedPhoto({required this.load, required this.cacheWidth});
+
+  final Future<Uint8List> Function() load;
+  final int cacheWidth;
+
+  @override
+  State<_LoadedPhoto> createState() => _LoadedPhotoState();
+}
+
+class _LoadedPhotoState extends State<_LoadedPhoto> {
+  late final Future<Uint8List> _bytes = widget.load();
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<Uint8List>(
+    future: _bytes,
+    builder: (context, snapshot) => switch (snapshot.data) {
+      final bytes? => Image.memory(
+        bytes,
+        fit: BoxFit.cover,
+        cacheWidth: widget.cacheWidth,
+      ),
+      null => const _PhotoPlaceholder(),
+    },
+  );
 }

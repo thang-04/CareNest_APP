@@ -7,34 +7,27 @@ import 'package:carenest_app/features/kitchen/meal_photos/domain/kitchen_meal_ph
 
 /// Nhãn, tông, màu của ảnh mẫu bữa ăn. Màu không đứng một mình: thẻ bữa luôn có nhãn chữ.
 abstract final class MealPhotosStatus {
-  static (String, AppStatusTone, IconData?) badge(SampleMeal meal) =>
-      switch (meal.status) {
-        MealPhotoStatus.done => (
-          'Có ${meal.photos.length} ảnh',
-          AppStatusTone.green,
-          AppIcons.check,
-        ),
-        MealPhotoStatus.needed => (
-          'Cần chụp',
-          AppStatusTone.orange,
-          AppIcons.camera,
-        ),
-        MealPhotoStatus.upcoming => (
-          'Chưa tới giờ',
-          AppStatusTone.gray,
-          AppIcons.clock,
-        ),
-        MealPhotoStatus.missed => (
-          'Quá giờ, chưa có ảnh',
-          AppStatusTone.red,
-          AppIcons.alertTriangle,
-        ),
-        MealPhotoStatus.noWindow => (
-          'Chưa có giờ đăng',
-          AppStatusTone.gray,
-          null,
-        ),
-      };
+  static (String, AppStatusTone, IconData?) badge(
+    SampleMeal meal,
+  ) => switch (meal.status) {
+    MealPhotoStatus.done => ('Đã có ảnh', AppStatusTone.green, AppIcons.check),
+    MealPhotoStatus.needed => (
+      'Cần chụp',
+      AppStatusTone.orange,
+      AppIcons.camera,
+    ),
+    MealPhotoStatus.upcoming => (
+      'Chưa tới giờ',
+      AppStatusTone.gray,
+      AppIcons.clock,
+    ),
+    MealPhotoStatus.missed => (
+      'Quá giờ, chưa có ảnh',
+      AppStatusTone.red,
+      AppIcons.alertTriangle,
+    ),
+    MealPhotoStatus.noWindow => ('Chưa có giờ đăng', AppStatusTone.gray, null),
+  };
 
   /// Vạch tiến độ trên ô nhóm và chấm dòng thời gian
   static Color color(MealPhotoStatus status) => switch (status) {
@@ -44,17 +37,6 @@ abstract final class MealPhotosStatus {
     MealPhotoStatus.upcoming ||
     MealPhotoStatus.noWindow => AppColors.borderStrong,
   };
-
-  /// Màu số "0/2" trên ô nhóm: đỏ khi có bữa quá giờ chưa ảnh, cam khi có bữa cần chụp
-  static Color groupCount(AgeGroupMeals group) {
-    final statuses = group.meals.map((meal) => meal.status);
-    if (statuses.contains(MealPhotoStatus.missed)) return AppColors.toneRedText;
-    if (statuses.contains(MealPhotoStatus.needed)) {
-      return AppColors.toneOrangeText;
-    }
-    if (group.doneMeals > 0) return AppColors.toneGreenText;
-    return AppColors.textSecondary;
-  }
 
   /// "bữa trưa" — tên buổi đặt giữa câu
   static String inSentence(SampleMeal meal) => meal.name.toLowerCase();
