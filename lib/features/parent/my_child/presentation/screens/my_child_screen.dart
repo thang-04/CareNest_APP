@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:carenest_app/features/parent/school_year/data/fake_child_school_year_source.dart';
 import 'package:carenest_app/features/parent/school_year/domain/child_school_year.dart';
 import 'package:carenest_app/features/parent/school_year/presentation/parent_selected_year.dart';
@@ -10,7 +12,6 @@ import 'package:carenest_app/core/integration/load_failure.dart';
 import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_avatar.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
-import 'package:carenest_app/core/widgets/app_coming_soon.dart';
 import 'package:carenest_app/core/widgets/app_skeleton.dart';
 import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
@@ -53,6 +54,10 @@ class MyChildScreen extends StatelessWidget {
             _ProfileLoader(
               key: ValueKey(childId),
               load: () => source.loadProfile(childId),
+              teachers: _TeachersSection(
+                key: ValueKey('teachers-$childId'),
+                load: () => source.loadTeachers(childId),
+              ),
             ),
           ],
         ),
@@ -63,9 +68,10 @@ class MyChildScreen extends StatelessWidget {
 
 /// Tải hồ sơ theo bé; khóa theo bé nên kết quả của bé cũ không đè lên bé mới.
 class _ProfileLoader extends StatefulWidget {
-  const _ProfileLoader({super.key, required this.load});
+  const _ProfileLoader({super.key, required this.load, required this.teachers});
 
   final Future<ChildProfile> Function() load;
+  final Widget teachers;
 
   @override
   State<_ProfileLoader> createState() => _ProfileLoaderState();
@@ -91,16 +97,17 @@ class _ProfileLoaderState extends State<_ProfileLoader> {
         }
         final profile = snapshot.data;
         if (profile == null) return const AppSkeletonList(rows: 4);
-        return _ProfileContent(profile: profile);
+        return _ProfileContent(profile: profile, teachers: widget.teachers);
       },
     );
   }
 }
 
 class _ProfileContent extends StatelessWidget {
-  const _ProfileContent({required this.profile});
+  const _ProfileContent({required this.profile, required this.teachers});
 
   final ChildProfile profile;
+  final Widget teachers;
 
   @override
   Widget build(BuildContext context) {
@@ -122,26 +129,7 @@ class _ProfileContent extends StatelessWidget {
               _InfoRow(label: 'Cơ sở', value: campus),
           ],
         ),
-        if (profile.teachers case final teachers?) ...[
-          const SizedBox(height: AppSpacing.sectionGap),
-          const _SectionHeader('Giáo viên chủ nhiệm'),
-          const SizedBox(height: AppSpacing.space2),
-          AppCard(
-            dense: true,
-            child: Row(
-              children: [
-                Expanded(child: Text(teachers, style: textTheme.titleSmall)),
-                const SizedBox(width: AppSpacing.space3),
-                // Gọi điện cần plugin mở trình quay số ⇒ chưa thêm thư viện, mở "Sắp có"
-                IconButton.filledTonal(
-                  tooltip: 'Gọi giáo viên chủ nhiệm',
-                  onPressed: () => openComingSoon(context, 'Gọi giáo viên'),
-                  icon: const Icon(AppIcons.call),
-                ),
-              ],
-            ),
-          ),
-        ],
+        teachers,
         const SizedBox(height: AppSpacing.sectionGap),
         const _SectionHeader('Sức khỏe đã khai báo'),
         const SizedBox(height: AppSpacing.space2),
@@ -429,6 +417,116 @@ class _AllergyBadges extends StatelessWidget {
             icon: AppIcons.alertTriangle,
           ),
       ],
+    );
+  }
+}
+
+/// Giáo viên đang dạy lớp của bé (user 26/11): mỗi cô một dòng, nhãn nhỏ "Chủ nhiệm", nút gọi mở
+/// trình quay số của máy (PAR-04: không chat). Đang tải / chưa có cô ⇒ không hiện mục.
+class _TeachersSection extends StatefulWidget {
+  const _TeachersSection({super.key, required this.load});
+
+  final Future<List<ChildTeacher>> Function() load;
+
+  @override
+  State<_TeachersSection> createState() => _TeachersSectionState();
+}
+
+class _TeachersSectionState extends State<_TeachersSection> {
+  late Future<List<ChildTeacher>> _future = widget.load();
+  String? _callError;
+
+  Future<void> _call(ChildTeacher teacher) async {
+    final uri = Uri(scheme: 'tel', path: teacher.phone);
+    setState(() => _callError = null);
+    final opened = await canLaunchUrl(uri) && await launchUrl(uri);
+    if (!opened && mounted) {
+      setState(
+        () => _callError =
+            'Không mở được trình gọi. Gọi tay số ${teacher.phone}.',
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return FutureBuilder<List<ChildTeacher>>(
+      future: _future,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Padding(
+            padding: const EdgeInsets.only(top: AppSpacing.sectionGap),
+            child: AppErrorState(
+              title: 'Chưa tải được giáo viên của lớp',
+              message: loadFailureMessage(snapshot.error),
+              onRetry: () => setState(() {
+                _future = widget.load();
+              }),
+            ),
+          );
+        }
+        final teachers = snapshot.data ?? const <ChildTeacher>[];
+        if (teachers.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: AppSpacing.sectionGap),
+            const _SectionHeader('Giáo viên của lớp'),
+            const SizedBox(height: AppSpacing.space2),
+            AppCard(
+              dense: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final (i, teacher) in teachers.indexed) ...[
+                    if (i > 0) const Divider(height: AppSpacing.space6),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                teacher.fullName,
+                                style: textTheme.titleSmall,
+                              ),
+                              if (teacher.homeroom) ...[
+                                const SizedBox(height: AppSpacing.space1),
+                                const AppStatusBadge(
+                                  label: 'Chủ nhiệm',
+                                  tone: AppStatusTone.teal,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        if (teacher.phone != null) ...[
+                          const SizedBox(width: AppSpacing.space3),
+                          IconButton.filledTonal(
+                            tooltip: 'Gọi ${teacher.fullName}',
+                            onPressed: () => _call(teacher),
+                            icon: const Icon(AppIcons.call),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                  if (_callError case final error?) ...[
+                    const SizedBox(height: AppSpacing.space2),
+                    Text(
+                      error,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: AppColors.dangerText,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

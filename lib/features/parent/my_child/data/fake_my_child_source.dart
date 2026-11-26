@@ -12,56 +12,44 @@ class FakeMyChildSource implements MyChildSource {
   static DateTime _at(int day, int hour, int minute) =>
       DateTime(2026, 10, day, hour, minute);
 
-  static String _teacherFull(String childId) =>
-      childId == 'child-2' ? 'Cô Vũ Minh Thư' : 'Cô Trần Thu Hà';
-
-  static DailyReview _review(String childId) => DailyReview(
-    teacher: _teacherFull(childId),
-    tags: const [
-      ReviewTag(criterion: ReviewCriterion.health, label: 'Sức khỏe: Tốt'),
-      ReviewTag(criterion: ReviewCriterion.emotion, label: 'Cảm xúc: Vui vẻ'),
-      ReviewTag(criterion: ReviewCriterion.learning, label: 'Học tập: Đạt'),
-      ReviewTag(criterion: ReviewCriterion.behavior, label: 'Hành vi tốt'),
-    ],
-    note:
-        'Bé hào hứng tô màu, tự xếp đồ dùng gọn gàng. Cần nhắc bé uống thêm nước.',
-  );
+  /// Giáo án ngày giả (thứ Hai 12/10): mỗi dòng của bảng tuần và hoạt động của ngày.
+  @override
+  Future<ActivityDay> loadActivities(String childId, {DateTime? date}) async =>
+      ActivityDay(
+        date: date ?? FakeParentHomeSource.today,
+        groups: const [
+          ActivityGroup(label: 'Đón trẻ', items: ['Trò chuyện về mùa thu']),
+          ActivityGroup(label: 'Thể dục sáng', items: ['Bài tập với nơ']),
+          ActivityGroup(
+            label: 'Hoạt động học',
+            items: ['Tạo hình: Tô màu chiếc lá mùa thu'],
+          ),
+          ActivityGroup(
+            label: 'Chơi ngoài trời',
+            items: ['Quan sát cây bàng', 'Trò chơi: Mèo đuổi chuột'],
+          ),
+          ActivityGroup(label: 'Hoạt động chiều', items: ['Ôn bài hát']),
+        ],
+      );
 
   @override
-  Future<ActivityDay> loadActivities(String childId) async => ActivityDay(
-    date: FakeParentHomeSource.today,
-    review: _review(childId),
-    entries: [
-      ActivityEntry(
-        time: _at(12, 7, 42),
-        title: 'Đón trẻ',
-        detail: 'Mẹ đưa bé đến lớp',
-      ),
-      ActivityEntry(
-        time: _at(12, 8, 30),
-        title: 'Thể dục sáng',
-        detail: 'Bé tham gia tích cực',
-      ),
-      ActivityEntry(
-        time: _at(12, 9, 15),
-        title: 'Tạo hình',
-        detail: 'Tô màu chiếc lá mùa thu · 4 ảnh',
-        isCurrent: true,
-      ),
-      ActivityEntry(
-        time: _at(12, 10, 45),
-        title: 'Ăn trưa',
-        detail: 'Ăn hết suất · cơm, canh bí đỏ, cá',
-      ),
-      ActivityEntry(
-        time: _at(12, 12, 0),
-        title: 'Ngủ trưa',
-        detail: 'Ngủ ngon khoảng 2 giờ',
-      ),
-    ],
-    photoTitle: 'Tạo hình',
-    photoCount: 4,
-  );
+  Future<List<ChildTeacher>> loadTeachers(String childId) async =>
+      childId == 'child-2'
+      ? const [
+          ChildTeacher(
+            fullName: 'Cô Vũ Minh Thư',
+            homeroom: true,
+            phone: '0912000002',
+          ),
+        ]
+      : const [
+          ChildTeacher(
+            fullName: 'Cô Trần Thu Hà',
+            homeroom: true,
+            phone: '0912000001',
+          ),
+          ChildTeacher(fullName: 'Cô Lê Mai', homeroom: false),
+        ];
 
   @override
   Future<AttendanceMonth> loadAttendance(
@@ -112,7 +100,6 @@ class FakeMyChildSource implements MyChildSource {
       birthDate: second ? '02/08/2021 (5 tuổi)' : '14/03/2022 (4 tuổi)',
       gender: 'Nữ',
       campus: child.campusName,
-      teachers: second ? 'Cô Vũ Minh Thư' : 'Cô Trần Thu Hà · Cô Lê Mai',
       health: second
           ? const DeclaredHealth(
               allergyState: DeclarationState.reported,

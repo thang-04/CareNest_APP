@@ -6,59 +6,39 @@ import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dar
 /// Mọi nhãn/đánh giá dưới đây là giá trị BE trả (đã công bố cho phụ huynh — PAR-02, P-13b);
 /// APP không tự xếp loại, không tự tính.
 
-/// Tiêu chí đánh giá hằng ngày; danh sách thật do trường cấu hình (OBS-02, P-11).
-enum ReviewCriterion { health, emotion, learning, behavior }
-
+/// Một dòng hoạt động trong giáo án ngày đã ban hành (EDU-37): tên dòng ("Hoạt động học") và các hoạt
+/// động của ngày. Không giờ, không ảnh (user 26/11).
 @immutable
-class ReviewTag {
-  const ReviewTag({required this.criterion, required this.label});
+class ActivityGroup {
+  const ActivityGroup({required this.label, required this.items});
 
-  final ReviewCriterion criterion;
-
-  /// "Sức khỏe: Tốt"
   final String label;
+  final List<String> items;
 }
 
-@immutable
-class DailyReview {
-  const DailyReview({required this.teacher, required this.tags, this.note});
-
-  /// "Cô Trần Thu Hà"
-  final String teacher;
-  final List<ReviewTag> tags;
-  final String? note;
-}
-
-@immutable
-class ActivityEntry {
-  const ActivityEntry({
-    required this.time,
-    required this.title,
-    this.detail,
-    this.isCurrent = false,
-  });
-
-  final DateTime time;
-  final String title;
-  final String? detail;
-  final bool isCurrent;
-}
-
+/// Hoạt động trong ngày của lớp bé (BE `GET /children/{id}/activities`); rỗng ⇒ lớp chưa có giáo án ngày đó.
 @immutable
 class ActivityDay {
-  const ActivityDay({
-    required this.date,
-    required this.entries,
-    this.review,
-    this.photoTitle,
-    this.photoCount = 0,
-  });
+  const ActivityDay({required this.date, required this.groups});
 
   final DateTime date;
-  final List<ActivityEntry> entries;
-  final DailyReview? review;
-  final String? photoTitle;
-  final int photoCount;
+  final List<ActivityGroup> groups;
+}
+
+/// Giáo viên đang dạy lớp của bé (BE `GET /children/{id}/teachers`, PAR-04: chỉ để gọi điện).
+@immutable
+class ChildTeacher {
+  const ChildTeacher({
+    required this.fullName,
+    required this.homeroom,
+    this.phone,
+  });
+
+  final String fullName;
+  final bool homeroom;
+
+  /// Null ⇒ không có nút gọi.
+  final String? phone;
 }
 
 /// `notRecorded`: GV chưa điểm danh nhưng đã ghi sức khỏe đầu ngày (hiện để phụ huynh thấy).
@@ -184,7 +164,6 @@ class ChildProfile {
     required this.birthDate,
     required this.gender,
     this.campus,
-    this.teachers,
     required this.health,
     required this.guardians,
   });
@@ -207,14 +186,13 @@ class ChildProfile {
   /// BE chưa trả tên điểm trường ⇒ null, màn ẩn.
   final String? campus;
 
-  /// "Cô Trần Thu Hà · Cô Lê Mai"; BE chưa trả tên GV ⇒ null, màn ẩn mục.
-  final String? teachers;
   final DeclaredHealth health;
   final List<Guardian> guardians;
 }
 
 abstract interface class MyChildSource {
-  Future<ActivityDay> loadActivities(String childId);
+  Future<ActivityDay> loadActivities(String childId, {DateTime? date});
+  Future<List<ChildTeacher>> loadTeachers(String childId);
   Future<AttendanceMonth> loadAttendance(
     String childId, {
     ChildSchoolYear? year,

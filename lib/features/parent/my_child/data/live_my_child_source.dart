@@ -16,10 +16,47 @@ class LiveMyChildSource implements MyChildSource {
   final MobileApi _api;
   final DateTime Function() _clock;
 
-  /// Q1 (user 25/11): BE chưa có API hoạt động trong ngày; phiên thật mở "Sắp có", không gọi tới đây.
+  /// EDU-37: `GET /children/{id}/activities?date=` — dòng hoạt động của giáo án ngày đã ban hành.
   @override
-  Future<ActivityDay> loadActivities(String childId) =>
-      Future.error(UnsupportedError('Hoạt động trong ngày chưa có API'));
+  Future<ActivityDay> loadActivities(String childId, {DateTime? date}) async {
+    final query = date == null ? '' : '?date=${apiDate(date)}';
+    final data =
+        await _api.json('GET', '/children/$childId/activities$query') as Map? ??
+        const {};
+    return ActivityDay(
+      date: switch (data['date']) {
+        final String day => DateTime.parse(day),
+        _ => date ?? DateTime.now(),
+      },
+      groups: [
+        for (final row
+            in (data['activities'] as List? ?? const []).whereType<Map>())
+          ActivityGroup(
+            label: '${row['label'] ?? ''}',
+            items: [
+              for (final item in row['items'] as List? ?? const []) '$item',
+            ],
+          ),
+      ],
+    );
+  }
+
+  /// PAR-04: `GET /children/{id}/teachers` — GV đang dạy lớp, chủ nhiệm trước (BE xếp).
+  @override
+  Future<List<ChildTeacher>> loadTeachers(String childId) async {
+    final data = await _api.json('GET', '/children/$childId/teachers');
+    return [
+      for (final item in (data as List? ?? const []).whereType<Map>())
+        ChildTeacher(
+          fullName: '${item['fullName'] ?? ''}',
+          homeroom: item['homeroom'] == true,
+          phone: switch (item['phone']) {
+            final String phone when phone.isNotEmpty => phone,
+            _ => null,
+          },
+        ),
+    ];
+  }
 
   @override
   Future<AttendanceMonth> loadAttendance(

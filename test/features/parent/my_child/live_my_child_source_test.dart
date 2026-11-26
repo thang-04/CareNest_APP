@@ -50,10 +50,9 @@ void main() {
     expect(result.className, 'Mầm 3A');
     expect(result.birthDate, '14/03/2022');
     expect(result.gender, 'Nam');
-    // BE chưa trả tên năm học, điểm trường, GV, tuổi ⇒ ẩn (user 25/11)
+    // BE chưa trả tên năm học, điểm trường, tuổi ⇒ ẩn (user 25/11); GV tải riêng (/teachers)
     expect(result.schoolYear, isNull);
     expect(result.campus, isNull);
-    expect(result.teachers, isNull);
     expect(result.ageLabel, isNull);
     expect(result.health.allergyState, DeclarationState.reported);
     expect(result.health.allergies, ['Hải sản']);
@@ -267,5 +266,42 @@ void main() {
     expect(month.days.last.healthLine, isNull);
     expect(month.days.last.healthNote, isNull);
     expect(month.days.last.pickupLine, 'Mẹ');
+  });
+
+  test('EDU-37: loadActivities_mapsRowsOfDay', () async {
+    final day = await source({
+      'GET /children/5/activities?date=2026-11-24': (_) => {
+        'date': '2026-11-24',
+        'activities': [
+          {
+            'label': 'Hoạt động học',
+            'items': ['Bật xa', 'Làm quen chữ p'],
+          },
+          {
+            'label': 'Chơi ngoài trời',
+            'items': ['Quan sát cây'],
+          },
+        ],
+      },
+    }).loadActivities('5', date: DateTime(2026, 11, 24));
+    expect(day.date, DateTime(2026, 11, 24));
+    expect(day.groups.map((g) => g.label), [
+      'Hoạt động học',
+      'Chơi ngoài trời',
+    ]);
+    expect(day.groups.first.items, ['Bật xa', 'Làm quen chữ p']);
+  });
+
+  test('PAR-04: loadTeachers_homeroomAndPhone', () async {
+    final teachers = await source({
+      'GET /children/5/teachers': (_) => [
+        {'fullName': 'Kiều Thu Nga', 'phone': '0343484905', 'homeroom': true},
+        {'fullName': 'Lê Hoa', 'phone': null, 'homeroom': false},
+      ],
+    }).loadTeachers('5');
+    expect(teachers.first.fullName, 'Kiều Thu Nga');
+    expect(teachers.first.homeroom, isTrue);
+    expect(teachers.first.phone, '0343484905');
+    expect(teachers.last.phone, isNull);
   });
 }

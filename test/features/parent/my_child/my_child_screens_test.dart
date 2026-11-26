@@ -48,7 +48,6 @@ class _NotProvidedSource extends FakeMyChildSource {
       birthDate: base.birthDate,
       gender: base.gender,
       campus: base.campus,
-      teachers: base.teachers,
       health: const DeclaredHealth(
         allergyState: DeclarationState.notProvided,
         diet: DeclaredItem.notProvided(),
@@ -137,8 +136,12 @@ void main() {
 
       expect(find.text('14/03/2022 (4 tuổi)'), findsOneWidget);
       expect(find.text('Cơ sở chính – Thượng Hồng'), findsOneWidget);
-      expect(find.text('Cô Trần Thu Hà · Cô Lê Mai'), findsOneWidget);
-      expect(find.byTooltip('Gọi giáo viên chủ nhiệm'), findsOneWidget);
+      // User 26/11: mỗi cô một dòng, nhãn Chủ nhiệm, nút gọi khi có SĐT
+      expect(find.text('Cô Trần Thu Hà'), findsOneWidget);
+      expect(find.text('Cô Lê Mai'), findsOneWidget);
+      expect(find.text('Chủ nhiệm'), findsOneWidget);
+      expect(find.byTooltip('Gọi Cô Trần Thu Hà'), findsOneWidget);
+      expect(find.byTooltip('Gọi Cô Lê Mai'), findsNothing);
 
       await tester.scrollUntilVisible(find.text('Tiền sử gia đình'), 200);
       expect(find.text('Sức khỏe đã khai báo'), findsOneWidget);
@@ -146,7 +149,8 @@ void main() {
       expect(find.text('Không'), findsNWidgets(2));
       expect(find.text('Bình thường'), findsOneWidget);
       expect(find.text('Có — Tăng huyết áp'), findsOneWidget);
-      expect(find.byType(AppStatusBadge), findsNothing);
+      // Không có badge dị ứng; badge duy nhất là nhãn Chủ nhiệm của cô
+      expect(find.byType(AppStatusBadge), findsOneWidget);
 
       await tester.scrollUntilVisible(
         find.textContaining('Thông tin do nhà trường quản lý'),
@@ -210,13 +214,24 @@ void main() {
     }
   });
 
-  testWidgets('P09 / AC-9: ảnh hoạt động là khối giữ chỗ, có "+1"', (
+  testWidgets('EDU-37: hoạt động theo dòng giáo án, không giờ, không ảnh', (
     tester,
   ) async {
     await pumpScreen(tester, const ChildActivitiesScreen(childId: 'child-1'));
-    expect(find.text('Hành vi tốt'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('+1'), 200);
+    expect(find.text('Hoạt động học'), findsOneWidget);
+    expect(find.text('Tạo hình: Tô màu chiếc lá mùa thu'), findsOneWidget);
     expect(find.byType(Image), findsNothing);
+  });
+
+  testWidgets('EDU-37: ngày chưa có giáo án ⇒ câu trống', (tester) async {
+    await pumpScreen(
+      tester,
+      const ChildActivitiesScreen(
+        childId: 'child-1',
+        source: _NoActivitySource(),
+      ),
+    );
+    expect(find.text('Lớp chưa có giáo án ngày này'), findsOneWidget);
   });
 
   testWidgets('P10: số đếm tháng, chọn ngày nghỉ có phép hiện suất đã huỷ', (
@@ -347,4 +362,12 @@ class _NoYearSource implements ChildSchoolYearSource {
 
   @override
   Future<List<ChildSchoolYear>> loadYears(String childId) async => const [];
+}
+
+class _NoActivitySource extends FakeMyChildSource {
+  const _NoActivitySource();
+
+  @override
+  Future<ActivityDay> loadActivities(String childId, {DateTime? date}) async =>
+      ActivityDay(date: DateTime(2026, 10, 12), groups: const []);
 }
