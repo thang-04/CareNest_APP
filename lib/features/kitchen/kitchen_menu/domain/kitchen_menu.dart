@@ -28,7 +28,7 @@ class MenuSessionDishes {
 }
 
 /// Thực đơn một ngày bếp xem (BE `/nutrition/kitchen/day.menu`): chỉ tuần đã công bố (NUT-08).
-/// Món thay thế theo món (NUT-23) BE chưa có — chờ BE (đề xuất Thắng mục 3).
+/// Cảnh báo dị ứng theo món (NUT-23 đang được sửa) BE chưa có — chờ BE (đề xuất Thắng mục 3).
 @immutable
 class KitchenMenuDay {
   const KitchenMenuDay({

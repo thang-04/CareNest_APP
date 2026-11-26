@@ -17,7 +17,7 @@ Nguồn chung: card `BE:docs/modules/nutrition.md` · flow `BE:docs/business/flo
 - BE: rule NUT-08 (PHT dinh dưỡng công bố; đã công bố không sửa), NUT-13 (một thực đơn chung hai cơ sở; nhà trẻ khác mẫu giáo, các lứa mẫu giáo cùng món khác định lượng; bộ 4 tuần xoay vòng — đóng P-07)
 - Endpoint: chưa có
 - AI chỉ tạo MealPlan (thực đơn) DRAFT — bếp không thấy DRAFT.
-- Tab Thực đơn (phương án B, user 25/11): màn `features/kitchen/kitchen_menu` — dải ngày Thứ Hai–Thứ Sáu, món theo bữa × khối (Nhà trẻ / Mẫu giáo) từ `GET /nutrition/kitchen/day?date`; tuần chưa công bố ⇒ "Thực đơn tuần này chưa công bố". Món thay thế theo món (NUT-23) chờ BE (đề xuất Thắng mục 3). `SchoolMenuScreen` (tuần × nhóm tuổi, định lượng) chỉ còn cho màn Phó HT xem thử.
+- Tab Thực đơn (phương án B, user 25/11): màn `features/kitchen/kitchen_menu` — dải ngày Thứ Hai–Thứ Sáu, món theo bữa × khối (Nhà trẻ / Mẫu giáo) từ `GET /nutrition/kitchen/day?date`; tuần chưa công bố ⇒ "Thực đơn tuần này chưa công bố". Cảnh báo dị ứng theo món chờ BE (Thắng đổi NUT-23 sang cảnh báo, đề xuất mục 3). `SchoolMenuScreen` (tuần × nhóm tuổi, định lượng) chỉ còn cho màn Phó HT xem thử.
 
 ### Lượng thực phẩm cần trong ngày (hàng tươi / hàng khô) — **màn dữ liệu giả theo BE (18/11)**
 - BE: rule NUT-06, NUT-07 (công thức: `BE:docs/business/BUSINESS_RULES.md`), NUT-10, NUT-18 (gam/trẻ theo nhóm tuổi — đóng P-10)
