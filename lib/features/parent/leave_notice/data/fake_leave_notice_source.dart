@@ -130,6 +130,8 @@ class FakeLeaveNoticeSource implements LeaveNoticeSource {
       seenByTeacher: old.seenByTeacher,
       eats: old.eats,
       eatsMeals: old.eatsMeals,
+      noticeOnly: old.noticeOnly,
+      skippedDates: old.skippedDates,
     );
     _notices[index] = cancelled;
     return cancelled;

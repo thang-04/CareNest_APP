@@ -60,6 +60,7 @@ class LiveLeaveNoticeSource implements LeaveNoticeSource {
             )
             as Map;
     return LeaveMealPlan(
+      noticeOnly: data['noticeOnly'] == true,
       offMeals: _meals(data['offMeals']),
       // eatsApplies false ⇒ buổi còn học không có bữa của nhóm tuổi, không hỏi ăn
       keptMeals: data['eatsApplies'] == true
@@ -111,5 +112,14 @@ class LiveLeaveNoticeSource implements LeaveNoticeSource {
     seenByTeacher: item['teacherSeenAt'] != null,
     eats: item['eats'] as bool?,
     eatsMeals: _meals(item['eatsMeals']),
+    noticeOnly: item['noticeOnly'] == true,
+    effectiveTo: switch (item['effectiveTo']) {
+      final String date => DateTime.parse(date),
+      _ => null,
+    },
+    skippedDates: [
+      for (final date in item['skippedDates'] as List? ?? const [])
+        DateTime.parse('$date'),
+    ],
   );
 }

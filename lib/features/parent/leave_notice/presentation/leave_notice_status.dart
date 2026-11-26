@@ -19,6 +19,16 @@ extension LeaveNoticeView on LeaveNotice {
   /// "13/10/2026 · Cả ngày" hoặc "11/10 – 13/10/2026 · Cả ngày"
   String get periodLabel => '${DateLabels.range(from, to)} · ${session.label}';
 
+  /// Ghi chú thêm theo BE (ATT-05b): đơn chỉ báo cô giáo, ngày đã qua giờ chốt, huỷ một phần.
+  List<String> get notes => [
+    if (noticeOnly) 'Chỉ báo cô giáo (gửi sau giờ chốt)',
+    if (!noticeOnly && skippedDates.isNotEmpty)
+      'Ngày ${skippedDates.map(DateLabels.dayMonth).join(', ')} '
+          'đã qua giờ chốt khi gửi: giữ nguyên điểm danh',
+    if (status == LeaveNoticeStatus.submitted && lastDay.isBefore(to))
+      'Hiệu lực tới ${DateLabels.dayMonth(lastDay)} (đã huỷ phần còn lại)',
+  ];
+
   /// Dòng bữa ăn của đơn nửa buổi theo `eats` BE trả; cả ngày hoặc không áp dụng ⇒ null.
   String? get mealLabel {
     final value = eats;

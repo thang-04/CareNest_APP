@@ -59,7 +59,7 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
       final notices = [
         for (final notice in await _source.loadNotices(widget.childId))
           if (year == null ||
-              (!notice.to.isBefore(year.startDate) &&
+              (!notice.lastDay.isBefore(year.startDate) &&
                   !notice.from.isAfter(year.endDate)))
             notice,
       ];
@@ -82,7 +82,7 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
   /// (giờ chốt do HT cấu hình — ATT-06).
   bool _cancellable(LeaveNotice notice) =>
       notice.status == LeaveNoticeStatus.submitted &&
-      !notice.to.isBefore(_source.today) &&
+      !notice.lastDay.isBefore(_source.today) &&
       !(widget.year?.readOnly ?? false);
 
   Future<void> _cancel(LeaveNotice notice) async {
@@ -182,6 +182,15 @@ class _LeaveNoticeListScreenState extends State<LeaveNoticeListScreen> {
                             if (notice.mealLabel case final meal?) ...[
                               const SizedBox(height: AppSpacing.space1),
                               Text(meal, style: textTheme.bodyMedium),
+                            ],
+                            for (final note in notice.notes) ...[
+                              const SizedBox(height: AppSpacing.space1),
+                              Text(
+                                note,
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
                             ],
                             const SizedBox(height: AppSpacing.space1),
                             Text(

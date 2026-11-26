@@ -13,10 +13,18 @@ enum LeaveMeal { morningSnack, lunch, afternoonSnack }
 /// buổi nghỉ (huỷ), [keptMeals] thuộc buổi còn học (theo lựa chọn "Bé tham gia ăn").
 @immutable
 class LeaveMealPlan {
-  const LeaveMealPlan({required this.offMeals, required this.keptMeals});
+  const LeaveMealPlan({
+    required this.offMeals,
+    required this.keptMeals,
+    this.noticeOnly = false,
+  });
 
   final List<LeaveMeal> offMeals;
   final List<LeaveMeal> keptMeals;
+
+  /// ATT-05b (user chốt 25/11): nghỉ chiều hôm nay sau giờ chốt ⇒ đơn chỉ báo cô giáo, không đổi
+  /// điểm danh và suất ăn; BE quyết định.
+  final bool noticeOnly;
 }
 
 @immutable
@@ -32,6 +40,9 @@ class LeaveNotice {
     this.seenByTeacher = false,
     this.eats,
     this.eatsMeals = const [],
+    this.noticeOnly = false,
+    this.effectiveTo,
+    this.skippedDates = const [],
   });
 
   final String id;
@@ -50,6 +61,18 @@ class LeaveNotice {
 
   /// BE `eatsMeals`: các bữa của buổi còn học.
   final List<LeaveMeal> eatsMeals;
+
+  /// BE `noticeOnly`: đơn gửi sau giờ chốt chỉ báo cô giáo (ATT-05b).
+  final bool noticeOnly;
+
+  /// BE `effectiveTo`: ngày cuối còn hiệu lực sau khi huỷ một phần; null ⇒ [to].
+  final DateTime? effectiveTo;
+
+  /// BE `skippedDates`: ngày đã qua giờ chốt khi gửi, giữ nguyên điểm danh (ATT-05b).
+  final List<DateTime> skippedDates;
+
+  /// Ngày cuối đơn còn hiệu lực.
+  DateTime get lastDay => effectiveTo ?? to;
 }
 
 /// Dữ liệu phụ huynh nhập; BE kiểm tra lại mọi thứ (ngày qua cut-off, quyền — ATT-05b, AUTH-04).

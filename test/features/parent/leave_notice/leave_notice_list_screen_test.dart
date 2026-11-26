@@ -63,6 +63,44 @@ Finder dateValue(String label, String value) =>
 
 void main() {
   testWidgets(
+    'ATT-05b: nghỉ chiều sau giờ chốt ⇒ chỉ báo cô, không hỏi ăn, không huỷ suất',
+    (tester) async {
+      await pumpForm(tester, _NoticeOnlySource());
+      await tester.tap(find.text('Buổi chiều'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Bé có ăn bữa Phụ sáng, Trưa ở trường không?'),
+        findsNothing,
+      );
+      await tester.scrollUntilVisible(
+        find.text(
+          'Đã qua giờ chốt: đơn chỉ báo cô giáo, '
+          'không đổi điểm danh và suất ăn ngày 13/10.',
+        ),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+    },
+  );
+
+  testWidgets(
+    'ATT-05b: danh sách ghi rõ đơn chỉ báo cô và ngày đã qua giờ chốt',
+    (tester) async {
+      await pumpList(tester, _NoticeOnlySource());
+      expect(find.text('Chỉ báo cô giáo (gửi sau giờ chốt)'), findsOneWidget);
+      expect(
+        find.text('Ngày 13/10 đã qua giờ chốt khi gửi: giữ nguyên điểm danh'),
+        findsOneWidget,
+      );
+      // Huỷ từ 15/10: chỉ còn hiệu lực tới 14/10
+      expect(
+        find.text('Hiệu lực tới 14/10 (đã huỷ phần còn lại)'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
     'AC-4 (ATT-05): P04 chỉ có GV đã xem / chưa xem, không có duyệt',
     (tester) async {
       await pumpList(tester, FakeLeaveNoticeSource(delay: Duration.zero));
@@ -406,6 +444,47 @@ void main() {
 
     expect(find.text('Đã có đơn nghỉ trùng ngày 13/10/2026'), findsOneWidget);
   });
+}
+
+/// Nguồn giả: đã qua giờ chốt hôm nay, nghỉ chiều chỉ là báo cô giáo (ATT-05b).
+class _NoticeOnlySource extends FakeLeaveNoticeSource {
+  _NoticeOnlySource() : super(delay: Duration.zero);
+
+  @override
+  Future<List<LeaveNotice>> loadNotices(String childId) async => [
+    LeaveNotice(
+      id: 'n-1',
+      childId: childId,
+      from: DateTime(2026, 10, 12),
+      to: DateTime(2026, 10, 12),
+      session: LeaveSession.afternoon,
+      reason: 'Bé mệt',
+      status: LeaveNoticeStatus.submitted,
+      noticeOnly: true,
+    ),
+    LeaveNotice(
+      id: 'n-2',
+      childId: childId,
+      from: DateTime(2026, 10, 13),
+      to: DateTime(2026, 10, 16),
+      effectiveTo: DateTime(2026, 10, 14),
+      skippedDates: [DateTime(2026, 10, 13)],
+      session: LeaveSession.fullDay,
+      reason: 'Về quê',
+      status: LeaveNoticeStatus.submitted,
+    ),
+  ];
+
+  @override
+  Future<LeaveMealPlan> loadMealPlan(
+    String childId,
+    DateTime date,
+    LeaveSession session,
+  ) async => const LeaveMealPlan(
+    offMeals: [LeaveMeal.afternoonSnack],
+    keptMeals: [LeaveMeal.morningSnack, LeaveMeal.lunch],
+    noticeOnly: true,
+  );
 }
 
 /// Nguồn giả: BE từ chối đơn (vd. 4022 trùng ngày).

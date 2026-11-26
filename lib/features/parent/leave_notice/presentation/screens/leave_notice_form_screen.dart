@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/core/utils/class_labels.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
@@ -244,13 +245,15 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
   }
 
   String get _teacherNotice => widget.child.homeroomTeacher == null
-      ? 'Giáo viên lớp ${widget.child.className} sẽ nhận được thông báo về đơn này.'
-      : '${widget.child.homeroomTeacher} (GV lớp ${widget.child.className}) sẽ nhận được thông báo về đơn này.';
+      ? 'Giáo viên ${classLabel(widget.child.className, lower: true)} sẽ nhận được thông báo về đơn này.'
+      : '${widget.child.homeroomTeacher} (GV ${classLabel(widget.child.className, lower: true)}) sẽ nhận được thông báo về đơn này.';
 
   /// `eats` gửi BE: chỉ đơn nửa buổi; buổi còn học không có bữa ⇒ null (BE bỏ qua).
   bool? get _sentEats {
     if (!_isHalfDay) return null;
     final plan = _mealPlan;
+    // ATT-05b: đơn chỉ báo cô giáo không đổi suất ⇒ không gửi lựa chọn ăn
+    if (plan != null && plan.noticeOnly) return null;
     return plan == null || plan.keptMeals.isNotEmpty ? _eats : null;
   }
 
@@ -266,6 +269,10 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
     }
     final plan = _mealPlan;
     if (plan == null) return null;
+    if (plan.noticeOnly) {
+      return 'Đã qua giờ chốt: đơn chỉ báo cô giáo, '
+          'không đổi điểm danh và suất ăn $day.';
+    }
     final cancelled = [...plan.offMeals, if (!_eats) ...plan.keptMeals];
     if (cancelled.isEmpty) return 'Suất ăn $day không đổi.';
     final kept = _eats && plan.keptMeals.isNotEmpty
@@ -292,7 +299,7 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
         ),
       ];
     }
-    if (plan == null) return const [];
+    if (plan == null || plan.noticeOnly) return const [];
     if (plan.keptMeals.isEmpty) {
       return [
         const SizedBox(height: AppSpacing.space4),
@@ -342,7 +349,7 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
                         style: textTheme.titleSmall,
                       ),
                       Text(
-                        'Lớp ${widget.child.className}',
+                        classLabel(widget.child.className),
                         style: textTheme.bodyMedium?.copyWith(
                           color: AppColors.textMuted,
                         ),

@@ -14,11 +14,18 @@ Map<String, Object?> _leave({
   List<String> eatsMeals = const [],
   String status = 'ACTIVE',
   String? seenAt,
+  String toDate = '2026-11-27',
+  String? effectiveTo,
+  List<String> skippedDates = const [],
+  bool noticeOnly = false,
 }) => {
   'id': id,
   'childId': childId,
   'fromDate': '2026-11-27',
-  'toDate': '2026-11-27',
+  'toDate': toDate,
+  'effectiveTo': effectiveTo ?? toDate,
+  'skippedDates': skippedDates,
+  'noticeOnly': noticeOnly,
   'reason': 'Bé đi khám',
   'status': status,
   'part': part,
@@ -171,5 +178,53 @@ void main() {
     final notice = await source.cancel('9');
     expect(api.calls, contains('PATCH /leave-requests/9/cancel'));
     expect(notice.status, LeaveNoticeStatus.cancelled);
+  });
+
+  test(
+    'ATT-05b: preview after cutoff today ⇒ noticeOnly, no meal change',
+    () async {
+      api.routes['POST /leave-requests/preview'] = (_) => {
+        'offMeals': ['AFTERNOON'],
+        'keptMeals': ['MORNING', 'LUNCH'],
+        'eatsApplies': true,
+        'appliedDates': <String>[],
+        'skippedDates': ['2026-11-26'],
+        'noticeOnly': true,
+      };
+      final plan = await source.loadMealPlan(
+        '5',
+        DateTime(2026, 11, 26),
+        LeaveSession.afternoon,
+      );
+      expect(plan.noticeOnly, isTrue);
+    },
+  );
+
+  test('ATT-05b: notice maps noticeOnly, effectiveTo, skippedDates', () async {
+    api.routes['GET /leave-requests/me'] = (_) => [
+      _leave(id: 9, part: 'AFTERNOON', noticeOnly: true),
+      _leave(
+        id: 8,
+        toDate: '2026-11-30',
+        effectiveTo: '2026-11-28',
+        skippedDates: ['2026-11-27'],
+      ),
+    ];
+    final notices = await source.loadNotices('5');
+    expect(notices.first.noticeOnly, isTrue);
+    expect(notices.last.effectiveTo, DateTime(2026, 11, 28));
+    expect(notices.last.skippedDates, [DateTime(2026, 11, 27)]);
+  });
+
+  test('cancel_afterCutoff_surfaces4024', () async {
+    api.routes['PATCH /leave-requests/9/cancel'] = (_) => throw ApiFailure(
+      409,
+      'Các ngày của đơn đã qua giờ chốt, không hủy được',
+      4024,
+    );
+    expect(
+      () => source.cancel('9'),
+      throwsA(isA<ApiFailure>().having((e) => e.errorCode, 'code', 4024)),
+    );
   });
 }
