@@ -63,6 +63,7 @@ abstract final class RoutePaths {
   static const teacherAccount = '/teacher/account';
   static const teacherAttendance = '/teacher/attendance';
   static const teacherDailyHealth = '/teacher/daily-health';
+  static const teacherAttendanceSummary = '/teacher/attendance/summary';
   static const teacherLeaveNotices = '/teacher/leave-notices';
   static const teacherReviews = '/teacher/reviews';
   static const teacherMenu = '/teacher/menu';

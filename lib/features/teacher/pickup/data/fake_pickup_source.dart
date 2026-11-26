@@ -9,6 +9,9 @@ class FakePickupSource implements PickupSource {
 
   static final shared = FakePickupSource();
 
+  /// Hôm nay của dữ liệu giả (cùng ngày giả của các màn Xem thử).
+  static final today = DateTime(2026, 10, 12);
+
   static const _waiting = {
     'child-1',
     'k-02',
@@ -66,6 +69,13 @@ class FakePickupSource implements PickupSource {
     ];
   }
 
+  /// Bé k-02 đã bị gọi phụ huynh không trả một lần (hiện "1 lần không trả trẻ").
+  static final _declined = PickupRecord(
+    verification: PickupVerification.phoneDeclined,
+    note: 'Phụ huynh nhờ người lạ đón, cô không trả',
+    recordedAt: DateTime(2026, 10, 12, 16, 20),
+  );
+
   late final Map<String, PickupRow> _rows = {
     for (final (i, kid) in FakeAttendanceSource.kids.indexed)
       kid.childId: kid.hasLeaveNotice
@@ -73,17 +83,21 @@ class FakePickupSource implements PickupSource {
               childId: kid.childId,
               fullName: kid.fullName,
               status: PickupStatus.absent,
+              code: kid.childId.toUpperCase(),
             )
           : _waiting.contains(kid.childId)
           ? PickupRow(
               childId: kid.childId,
               fullName: kid.fullName,
               status: PickupStatus.waiting,
+              code: kid.childId.toUpperCase(),
+              attempts: kid.childId == 'k-02' ? [_declined] : const [],
             )
           : PickupRow(
               childId: kid.childId,
               fullName: kid.fullName,
               status: PickupStatus.pickedUp,
+              code: kid.childId.toUpperCase(),
               pickup: PickupRecord(
                 verification: PickupVerification.photoMatch,
                 guardianPosition: 1,
@@ -100,9 +114,40 @@ class FakePickupSource implements PickupSource {
   final List<PickupRequest> requests = [];
 
   @override
-  Future<List<PickupRow>> loadBoard(String classId) async => [
-    ..._rows.values.where((row) => row.status == PickupStatus.waiting),
-    ..._rows.values.where((row) => row.status == PickupStatus.pickedUp),
+  Future<PickupBoard> loadBoard(String classId, {DateTime? date}) async =>
+      PickupBoard(
+        className: FakeClassRosterSource.className,
+        date: date ?? today,
+        today: today,
+        rows: [
+          ..._rows.values.where((row) => row.status == PickupStatus.waiting),
+          ..._rows.values.where((row) => row.status == PickupStatus.pickedUp),
+          ..._rows.values.where((row) => row.status == PickupStatus.absent),
+        ],
+      );
+
+  @override
+  Future<List<PickupRecord>> loadResults({DateTime? date}) async => [
+    PickupRecord(
+      verification: _declined.verification,
+      note: _declined.note,
+      childName: 'Lê Hoàng Nam',
+      className: FakeClassRosterSource.className,
+      recordedAt: _declined.recordedAt,
+    ),
+    for (final row in _rows.values)
+      if (row.pickup != null)
+        PickupRecord(
+          verification: row.pickup!.verification,
+          guardianPosition: row.pickup!.guardianPosition,
+          pickupPersonName: row.pickup!.pickupPersonName,
+          pickupPersonRelationship: row.pickup!.pickupPersonRelationship,
+          handedOverAt: row.pickup!.handedOverAt,
+          note: row.pickup!.note,
+          childName: row.fullName,
+          className: FakeClassRosterSource.className,
+          recordedAt: row.pickup!.handedOverAt,
+        ),
   ];
 
   @override

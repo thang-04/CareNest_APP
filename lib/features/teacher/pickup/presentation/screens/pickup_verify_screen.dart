@@ -28,8 +28,11 @@ class PickupVerifyScreen extends StatefulWidget {
     required this.onDone,
     this.source,
     this.now,
+    this.callMode = false,
   });
 
+  /// true ⇒ mở từ "Gọi phụ huynh": chỉ gọi và ghi kết quả cuộc gọi (không so ảnh).
+  final bool callMode;
   final String childId;
   final VoidCallback onDone;
   final PickupSource? source;
@@ -77,6 +80,16 @@ class _PickupVerifyScreenState extends State<PickupVerifyScreen> {
     } catch (error) {
       if (mounted) setState(() => _error = error);
     }
+  }
+
+  /// "Lần trước (16:20): Gọi phụ huynh – không trả. `ghi chú`" — từ attempts BE trả.
+  static String _lastFailure(PickupRow row) {
+    final last = row.attempts.lastWhere((a) => !a.verification.handedOver);
+    final at = last.recordedAt == null
+        ? ''
+        : ' (${DateLabels.time24(last.recordedAt!)})';
+    return 'Lần trước$at: ${last.verification.label}. ${last.note ?? ''}'
+        .trim();
   }
 
   DateTime _now() => (widget.now ?? DateTime.now)();
@@ -170,9 +183,12 @@ class _PickupVerifyScreenState extends State<PickupVerifyScreen> {
         .where((guardian) => guardian.position == _selectedGuardianPosition)
         .firstOrNull;
     return Scaffold(
-      appBar: AppBar(title: const Text('Trả trẻ')),
+      appBar: AppBar(
+        title: Text(widget.callMode ? 'Gọi phụ huynh' : 'Trả trẻ'),
+      ),
       bottomNavigationBar:
-          child?.row.status == PickupStatus.waiting &&
+          !widget.callMode &&
+              child?.row.status == PickupStatus.waiting &&
               child!.guardians.isNotEmpty
           ? AppBottomDock(
               children: [
@@ -237,6 +253,15 @@ class _PickupVerifyScreenState extends State<PickupVerifyScreen> {
                     ],
                   ),
                 ),
+                if (child.row.attempts
+                    .where((a) => !a.verification.handedOver)
+                    .isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.space3),
+                  AppBanner(
+                    kind: AppBannerKind.warning,
+                    message: _lastFailure(child.row),
+                  ),
+                ],
                 const SizedBox(height: AppSpacing.space3),
                 AppCard(
                   flush: true,

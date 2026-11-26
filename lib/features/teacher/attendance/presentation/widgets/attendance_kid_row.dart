@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/motion.dart';
 import 'package:carenest_app/core/constants/shadows.dart';
@@ -8,26 +9,89 @@ import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/features/teacher/attendance/domain/attendance.dart';
 
-/// Một trẻ — mockup T02: tên + ghi chú · hai nút Có mặt / Vắng. Có mặt là ăn mọi bữa (ATT-02), không nhập riêng.
-/// Bé có đơn nghỉ: nút Vắng sáng + nhãn "Phụ huynh báo nghỉ", không sửa được (giống Web).
+/// Thẻ đơn nghỉ trên dòng trẻ — cùng chữ với Web (`LEAVE_PART_TAGS`).
+String leaveTagOf(KidAttendance kid) {
+  final leave = kid.leave!;
+  if (leave.noticeOnly) return 'Báo nghỉ chiều sau giờ chốt';
+  if (leave.isHalfDay) {
+    return leave.part == DayPartCode.morning
+        ? 'Nghỉ buổi sáng · PH báo'
+        : 'Nghỉ buổi chiều · PH báo';
+  }
+  return switch (kid.status) {
+    AttendanceStatus.excused => 'Vắng có phép · Phụ huynh báo nghỉ',
+    AttendanceStatus.present => 'Đến dù có đơn nghỉ',
+    _ => 'Phụ huynh báo nghỉ',
+  };
+}
+
+String _partLabel(DayPartCode part) => switch (part) {
+  DayPartCode.fullDay => 'Cả ngày',
+  DayPartCode.morning => 'Chỉ sáng',
+  DayPartCode.afternoon => 'Chỉ chiều',
+};
+
+String _temperatureText(double value) =>
+    '${value.toStringAsFixed(1).replaceAll('.', ',')} °C';
+
+/// Một trẻ — mockup T02: tên + thẻ thông tin BE trả · hai nút Có mặt / Vắng. Bữa ăn chọn ở màn "Trẻ tham gia ăn".
+/// Thẻ đơn nghỉ chạm để xem chi tiết (BE trả, chỉ xem).
 class AttendanceKidRow extends StatelessWidget {
   const AttendanceKidRow({
     super.key,
     required this.kid,
     required this.onPresent,
     required this.onAbsent,
+    this.onOpenLeave,
     this.enabled = true,
   });
 
   final KidAttendance kid;
   final VoidCallback onPresent;
   final VoidCallback onAbsent;
+  final VoidCallback? onOpenLeave;
   final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final subtitle = kid.note ?? '';
+    final badges = <Widget>[
+      if (kid.hasAllergy)
+        const AppStatusBadge(
+          label: 'Có dị ứng',
+          tone: AppStatusTone.orange,
+          icon: AppIcons.alertTriangle,
+        ),
+      if (!kid.mealRegistered)
+        const AppStatusBadge(label: 'Không báo ăn', tone: AppStatusTone.gray),
+      if (kid.presentPart case final part? when kid.absentPart != null)
+        AppStatusBadge(label: _partLabel(part), tone: AppStatusTone.blue),
+      if (kid.health.temperature case final temperature?)
+        AppStatusBadge(
+          label: _temperatureText(temperature),
+          tone: AppStatusTone.gray,
+        ),
+      if (kid.health.noted)
+        const AppStatusBadge(
+          label: 'Cần lưu ý',
+          tone: AppStatusTone.orange,
+          icon: AppIcons.heart,
+        ),
+      if (kid.hasLeaveNotice)
+        Semantics(
+          button: true,
+          label: '${leaveTagOf(kid)}: ${kid.fullName}. Xem đơn nghỉ',
+          excludeSemantics: true,
+          child: InkWell(
+            onTap: onOpenLeave,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            child: AppStatusBadge(
+              label: leaveTagOf(kid),
+              tone: AppStatusTone.blue,
+            ),
+          ),
+        ),
+    ];
     final nameBlock = Semantics(
       container: true,
       child: Padding(
@@ -41,21 +105,14 @@ class AttendanceKidRow extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: textTheme.titleSmall,
             ),
-            // Có phép chỉ do đơn nghỉ của phụ huynh (ATT-09), GV không chọn
-            if (kid.hasLeaveNotice) ...[
+            if (badges.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.space1),
-              const AppStatusBadge(
-                label: 'Phụ huynh báo nghỉ',
-                tone: AppStatusTone.blue,
+              Wrap(
+                spacing: AppSpacing.space2,
+                runSpacing: AppSpacing.space1,
+                children: badges,
               ),
             ],
-            if (subtitle.isNotEmpty)
-              Text(
-                subtitle,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textMuted,
-                ),
-              ),
           ],
         ),
       ),
@@ -69,18 +126,15 @@ class AttendanceKidRow extends StatelessWidget {
           semanticLabel: '${kid.fullName}: có mặt',
           tone: AppStatusTone.green,
           selected: kid.status == AttendanceStatus.present,
-          // Bé có đơn nghỉ không sửa được (giống Web)
-          onTap: enabled && !kid.hasLeaveNotice ? onPresent : null,
+          onTap: enabled ? onPresent : null,
         ),
         const SizedBox(width: AppSpacing.space2),
         _Toggle(
           label: 'Vắng',
           semanticLabel: '${kid.fullName}: vắng',
           tone: AppStatusTone.red,
-          selected:
-              kid.status == AttendanceStatus.unexcused ||
-              kid.status == AttendanceStatus.excused,
-          onTap: enabled && !kid.hasLeaveNotice ? onAbsent : null,
+          selected: kid.isAbsent,
+          onTap: enabled ? onAbsent : null,
         ),
       ],
     );
@@ -154,7 +208,6 @@ class _Toggle extends StatelessWidget {
           ),
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space2),
-          // Clay: nút chưa chọn trắng nổi gờ đáy; nút đã chọn nền tông + viền tông + quầng
           decoration: BoxDecoration(
             color: selected ? colors.background : AppColors.surface,
             borderRadius: BorderRadius.circular(AppRadius.pill),

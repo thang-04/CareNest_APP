@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 /// Kết quả GV quan sát khi nhận trẻ — khớp enum BE `HealthObservation`; hệ thống không tự suy từ thân nhiệt.
 enum HealthObservation {
   noConcern('NO_CONCERN', 'Bình thường'),
-  noted('NOTED', 'Cần lưu ý');
+  noted('NOTED', 'Có dấu hiệu');
 
   const HealthObservation(this.code, this.label);
   final String code;
@@ -64,6 +64,7 @@ class DailyHealthEntry {
     this.note,
     this.referral,
     this.recordedAt,
+    this.recordedByName,
   });
 
   /// APP sinh mỗi lần bấm lưu; gửi lặp BE trả lại bản đã lưu (idempotent).
@@ -82,6 +83,9 @@ class DailyHealthEntry {
   final String? note;
   final HealthReferral? referral;
   final DateTime? recordedAt;
+
+  /// Người ghi — BE `recordedByName`.
+  final String? recordedByName;
 }
 
 /// Một bé có mặt trong màn Sức khỏe đầu ngày — từ BE `ClassAttendanceResponse.ChildRow`
@@ -94,6 +98,7 @@ class DailyHealthKid {
     this.latest,
     this.entryCount = 0,
     this.handedOverAt,
+    this.code,
   });
 
   final String childId;
@@ -103,6 +108,9 @@ class DailyHealthKid {
 
   /// BE `DailyHealthResponse.ChildDay.handedOverAt` — đã trả trẻ thì không ghi thêm (HEALTH_CHILD_PICKED_UP).
   final DateTime? handedOverAt;
+
+  /// Mã trẻ nếu BE trả.
+  final String? code;
 
   bool get checked => latest != null;
   bool get pickedUp => handedOverAt != null;
@@ -116,6 +124,7 @@ class DailyHealthSheet {
     required this.date,
     required this.canRecord,
     required this.kids,
+    this.schoolDay = true,
   });
 
   final String classId;
@@ -127,10 +136,37 @@ class DailyHealthSheet {
 
   /// Chỉ bé có mặt (ATT: PRESENT).
   final List<DailyHealthKid> kids;
+
+  /// BE `DayInfoResponse.schoolDay`.
+  final bool schoolDay;
+}
+
+/// Các lần ghi trong ngày của một trẻ, mới nhất trước — BE `DailyHealthResponse.ChildDay`.
+@immutable
+class DailyHealthChildDay {
+  const DailyHealthChildDay({
+    required this.entries,
+    required this.canRecord,
+    this.handedOverAt,
+  });
+
+  final List<DailyHealthEntry> entries;
+
+  /// BE: GV lớp, hôm nay, trẻ đã lưu Có mặt.
+  final bool canRecord;
+  final DateTime? handedOverAt;
 }
 
 abstract interface class DailyHealthSource {
-  Future<DailyHealthSheet> loadSheet(String classId);
+  /// [date] null = hôm nay do BE chọn.
+  Future<DailyHealthSheet> loadSheet(String classId, {DateTime? date});
+
+  /// BE: `GET /classes/{classId}/children/{childId}/daily-health[?date=]` — lịch sử trong ngày.
+  Future<DailyHealthChildDay> loadChildDay(
+    String classId,
+    String childId, {
+    DateTime? date,
+  });
 
   /// BE: `POST /daily-health-entries`.
   Future<DailyHealthEntry> save(DailyHealthEntry entry);

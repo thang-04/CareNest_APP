@@ -101,6 +101,7 @@ class FakeDailyReviewSource implements DailyReviewSource {
               answers: _done.contains(kid.id)
                   ? {
                       for (final c in criteria) c.id: c.defaultOption,
+                      if (kid.id == 'k-06') 'health': 'Có biểu hiện',
                       if (kid.id == 'k-06') 'nap': 'Ngủ ít',
                       if (kid.id == 'k-02') 'meal-lunch': 'Ăn ít',
                     }
@@ -118,12 +119,16 @@ class FakeDailyReviewSource implements DailyReviewSource {
                 _ => const [],
               },
               flagged: kid.id == 'k-07',
+              healthSigns: kid.id == 'k-06' ? const ['Ho'] : const [],
             ),
   };
 
   @override
-  Future<ReviewDay> loadDay(String classId) async => ReviewDay(
-    date: FakeParentHomeSource.today,
+  Future<ReviewDay> loadDay(
+    String classId, {
+    DateTime? date,
+  }) async => ReviewDay(
+    date: date ?? FakeParentHomeSource.today,
     activityLine: 'Tạo hình: Bé tô màu chiếc lá mùa thu',
     criteria: criteria,
     flagLabel: 'Hành vi tốt',

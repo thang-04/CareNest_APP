@@ -93,7 +93,6 @@ import 'package:carenest_app/features/shared/notifications/presentation/screens/
 import 'package:carenest_app/features/shared/school_menu/presentation/screens/school_menu_overview_screen.dart';
 import 'package:carenest_app/features/shared/school_menu/presentation/screens/school_menu_screen.dart';
 import 'package:carenest_app/features/teacher/activity_schedule/presentation/screens/activity_schedule_screen.dart';
-import 'package:carenest_app/features/teacher/attendance/data/fake_attendance_source.dart';
 import 'package:carenest_app/features/teacher/attendance/presentation/screens/attendance_screen.dart';
 import 'package:carenest_app/features/teacher/class_leave_notices/presentation/screens/class_leave_screen.dart';
 import 'package:carenest_app/features/teacher/class_roster/data/fake_class_roster_source.dart';
@@ -107,6 +106,7 @@ import 'package:carenest_app/features/teacher/health_measure/presentation/screen
 import 'package:carenest_app/features/teacher/pickup/presentation/screens/pickup_list_screen.dart';
 import 'package:carenest_app/features/teacher/pickup/presentation/screens/pickup_verify_screen.dart';
 import 'package:carenest_app/features/teacher/rewards/presentation/screens/teacher_rewards_screen.dart';
+import 'package:carenest_app/features/teacher/school_year/domain/school_year.dart';
 import 'package:carenest_app/features/teacher/school_year/presentation/selected_school_year.dart';
 import 'package:carenest_app/features/teacher/teacher_home/presentation/screens/teacher_home_screen.dart';
 import 'package:carenest_app/routing/live_access.dart';
@@ -114,6 +114,29 @@ import 'package:carenest_app/routing/navigation_destinations.dart';
 import 'package:carenest_app/routing/kitchen_sources.dart';
 import 'package:carenest_app/routing/notification_targets.dart';
 import 'package:carenest_app/routing/parent_sources.dart';
+import 'package:carenest_app/core/integration/load_failure.dart';
+import 'package:carenest_app/core/widgets/app_skeleton.dart';
+import 'package:carenest_app/core/integration/api_dates.dart';
+import 'package:carenest_app/features/teacher/attendance/data/fake_attendance_summary_source.dart';
+import 'package:carenest_app/features/teacher/attendance/data/live_attendance_summary_source.dart';
+import 'package:carenest_app/features/teacher/attendance/presentation/screens/attendance_summary_screen.dart';
+import 'package:carenest_app/features/teacher/class_roster/data/live_child_health_source.dart';
+import 'package:carenest_app/features/teacher/pickup/presentation/screens/pickup_result_screen.dart';
+import 'package:carenest_app/features/teacher/shared/class_option.dart';
+import 'package:carenest_app/routing/teacher_sources.dart';
+import 'package:carenest_app/features/teacher/attendance/data/live_attendance_source.dart';
+import 'package:carenest_app/features/teacher/class_leave_notices/data/fake_class_leave_source.dart';
+import 'package:carenest_app/features/teacher/class_leave_notices/data/live_class_leave_source.dart';
+import 'package:carenest_app/features/teacher/class_roster/data/live_class_roster_source.dart';
+import 'package:carenest_app/features/teacher/class_roster/data/live_teacher_classes.dart';
+import 'package:carenest_app/features/teacher/daily_health/data/live_daily_health_source.dart';
+import 'package:carenest_app/features/teacher/daily_review/data/live_daily_review_source.dart';
+import 'package:carenest_app/features/teacher/daily_review/data/live_kid_evaluation_source.dart';
+import 'package:carenest_app/features/teacher/health_measure/data/live_health_measure_source.dart';
+import 'package:carenest_app/features/teacher/pickup/data/live_pickup_source.dart';
+import 'package:carenest_app/features/teacher/rewards/data/live_teacher_reward_source.dart';
+import 'package:carenest_app/features/teacher/school_year/data/live_school_year_source.dart';
+import 'package:carenest_app/features/teacher/teacher_home/data/live_teacher_home_source.dart';
 import 'package:carenest_app/routing/route_paths.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -248,6 +271,7 @@ List<RouteBase> _staffAndParentRoutes(
   NotificationSource notifications = const FakeNotificationSource(),
   ParentSources parent = const ParentSources(),
   KitchenSources kitchen = const KitchenSources(),
+  TeacherSources teacher = const TeacherSources(),
 }) => [
   _roleShell(
     rootKey,
@@ -274,27 +298,61 @@ List<RouteBase> _staffAndParentRoutes(
     NavDestinations.teacher,
     {
       RoutePaths.teacherToday: (context, state) => TeacherHomeScreen(
+        source: teacher.home,
         onSwitchToParent: _homeSwitch(context, account, AppMode.parent),
       ),
-      RoutePaths.teacherClass: (context, state) => const ClassRosterScreen(),
+      RoutePaths.teacherClass: (context, state) => TeacherClassGate(
+        sources: teacher,
+        builder: (classId, classes) => ClassRosterScreen(
+          classId: classId,
+          source: teacher.roster ?? const FakeClassRosterSource(),
+          childHealthSource: teacher.childHealth,
+        ),
+      ),
     },
     account: account,
     notifications: notifications,
   ),
-  ..._teacherRoutes(),
+  ..._teacherRoutes(teacher),
   GoRoute(
     path: RoutePaths.teacherAttendance,
-    // Lớp đang chọn là state; bản dữ liệu giả chỉ có một lớp
-    builder: (context, state) => AttendanceScreen(
-      classId: FakeAttendanceSource.classId,
-      // Lưu điểm danh xong đi thẳng sang Sức khỏe đầu ngày (HLT-07)
-      onSaved: () => context.pushReplacement(RoutePaths.teacherDailyHealth),
+    // Phiên thật: lớp của giáo viên từ BE; bản giả chỉ có một lớp
+    builder: (context, state) => TeacherClassGate(
+      sources: teacher,
+      builder: (classId, classes) => AttendanceScreen(
+        classId: classId,
+        classes: classes,
+        source: teacher.attendance,
+        // Sức khỏe đầu ngày (HLT-07) mở bằng nút riêng, cùng ngày đang xem
+        onOpenHealth: (_, date) => context.push<void>(
+          '${RoutePaths.teacherDailyHealth}?date=${apiDate(date)}',
+        ),
+        onOpenSummary: (_) =>
+            context.push<void>(RoutePaths.teacherAttendanceSummary),
+      ),
+    ),
+  ),
+  GoRoute(
+    path: RoutePaths.teacherAttendanceSummary,
+    builder: (context, state) => TeacherClassGate(
+      sources: teacher,
+      builder: (classId, classes) => AttendanceSummaryScreen(
+        classId: classId,
+        source: teacher.attendanceSummary ?? FakeAttendanceSummarySource(),
+      ),
     ),
   ),
   GoRoute(
     path: RoutePaths.teacherDailyHealth,
-    builder: (context, state) =>
-        const DailyHealthScreen(classId: FakeAttendanceSource.classId),
+    builder: (context, state) => TeacherClassGate(
+      sources: teacher,
+      builder: (classId, classes) => DailyHealthScreen(
+        classId: classId,
+        classes: classes,
+        source: teacher.dailyHealth,
+        initialDate: DateTime.tryParse(state.uri.queryParameters['date'] ?? ''),
+      ),
+    ),
   ),
   _roleShell(
     rootKey,
@@ -484,24 +542,39 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
 }
 
 /// Màn con của Giáo viên; màn chi tiết theo trẻ mang ID trẻ trên đường dẫn.
-List<GoRoute> _teacherRoutes() {
+/// Phiên thật lấy lớp từ BE ([TeacherClassGate]); màn chưa có API hiện "Sắp có".
+List<GoRoute> _teacherRoutes(TeacherSources teacher) {
+  Widget gated(
+    Widget Function(String classId, List<ClassOption> classes) build,
+  ) => TeacherClassGate(sources: teacher, builder: build);
+
   GoRoute listWithDetail(
     String path,
-    Widget Function(BuildContext context, Future<void> Function(String id) open)
+    Widget Function(
+      BuildContext context,
+      String classId,
+      Future<void> Function(String id) open,
+    )
     list,
-    Widget Function(BuildContext context, String childId) detail,
+    Widget Function(BuildContext context, String classId, String childId)
+    detail,
   ) {
     return GoRoute(
       path: path,
-      builder: (context, state) => list(
-        context,
-        (id) => context.push<void>(RoutePaths.kidDetail(path, id)),
+      builder: (context, state) => gated(
+        (classId, classes) => list(
+          context,
+          classId,
+          (id) => context.push<void>(RoutePaths.kidDetail(path, id)),
+        ),
       ),
       routes: [
         GoRoute(
           path: ':childId',
-          builder: (context, state) =>
-              detail(context, state.pathParameters['childId']!),
+          builder: (context, state) => gated(
+            (classId, classes) =>
+                detail(context, classId, state.pathParameters['childId']!),
+          ),
         ),
       ],
     );
@@ -510,28 +583,78 @@ List<GoRoute> _teacherRoutes() {
   return [
     GoRoute(
       path: RoutePaths.teacherLeaveNotices,
-      builder: (context, state) => const ClassLeaveScreen(),
+      builder: (context, state) => gated(
+        (classId, classes) => ClassLeaveScreen(
+          classId: classId,
+          classes: classes,
+          source: teacher.leave ?? const FakeClassLeaveSource(),
+        ),
+      ),
     ),
     GoRoute(
       path: RoutePaths.teacherReviews,
-      builder: (context, state) => DailyReviewListScreen(
-        onOpenKid: (id) => context.push<void>(
-          RoutePaths.kidDetail(RoutePaths.teacherReviews, id),
+      builder: (context, state) => gated(
+        (classId, classes) => DailyReviewListScreen(
+          classId: classId,
+          classes: classes,
+          source: teacher.review,
+          onOpenKid: (id) => context.push<void>(
+            RoutePaths.kidDetail(RoutePaths.teacherReviews, id),
+          ),
         ),
       ),
       routes: [
         GoRoute(
           path: ':childId',
-          builder: (context, state) => KidEvaluationScreen(
-            childId: state.pathParameters['childId']!,
-            onOpenTheme: (childId, themeId) => context.push<void>(
-              '${RoutePaths.kidDetail(RoutePaths.teacherReviews, childId)}/themes/$themeId',
+          builder: (context, state) => gated(
+            (classId, classes) => KidEvaluationScreen(
+              childId: state.pathParameters['childId']!,
+              classId: classId,
+              rosterSource: teacher.roster,
+              source: teacher.evaluation ?? const FakeEvaluationSource(),
+              onOpenTheme: (childId, themeId) => context.push<void>(
+                '${RoutePaths.kidDetail(RoutePaths.teacherReviews, childId)}/themes/$themeId',
+              ),
             ),
           ),
           routes: [
             GoRoute(
               path: 'themes/:themeId',
               builder: (context, state) {
+                final live = teacher.roster;
+                if (teacher.live && live != null) {
+                  // Phiên thật: bé lấy từ lớp của giáo viên, kết quả chủ đề từ BE
+                  return gated(
+                    (classId, classes) => FutureBuilder<ClassRoster>(
+                      future: live.loadRoster(classId),
+                      builder: (context, snapshot) {
+                        final roster = snapshot.data;
+                        if (roster == null) {
+                          return Scaffold(
+                            appBar: AppBar(),
+                            body: snapshot.hasError
+                                ? AppErrorState(
+                                    title: 'Chưa tải được lớp',
+                                    message: loadFailureMessage(snapshot.error),
+                                  )
+                                : const AppSkeletonList(rows: 3),
+                          );
+                        }
+                        final kid = roster.kids
+                            .where(
+                              (k) => k.id == state.pathParameters['childId'],
+                            )
+                            .firstOrNull;
+                        if (kid == null) return const NotFoundScreen();
+                        return ThemeResultScreen(
+                          child: KidEvaluationScreen.summaryOf(kid, roster),
+                          themeId: state.pathParameters['themeId']!,
+                          source: teacher.evaluation!,
+                        );
+                      },
+                    ),
+                  );
+                }
                 final kid = FakeClassRosterSource.kidById(
                   state.pathParameters['childId']!,
                 );
@@ -555,30 +678,80 @@ List<GoRoute> _teacherRoutes() {
     ),
     GoRoute(
       path: RoutePaths.teacherMenu,
-      builder: (context, state) => SchoolMenuScreen(
-        initialDay: FakeParentHomeSource.today,
-        footerNote: 'Chỉ xem thực đơn đã công bố.',
-      ),
+      builder: (context, state) => teacher.live
+          ? const _ComingSoonPage('Thực đơn tuần')
+          : SchoolMenuScreen(
+              initialDay: FakeParentHomeSource.today,
+              footerNote: 'Chỉ xem thực đơn đã công bố.',
+            ),
     ),
     GoRoute(
       path: RoutePaths.teacherRewards,
-      builder: (context, state) => const TeacherRewardsScreen(),
+      builder: (context, state) => gated(
+        (classId, classes) => TeacherRewardsScreen(
+          classId: classId,
+          classes: classes,
+          source: teacher.rewards,
+        ),
+      ),
     ),
-    listWithDetail(
-      RoutePaths.teacherPickup,
-      (context, open) => PickupListScreen(onVerify: open),
-      (context, id) =>
-          PickupVerifyScreen(childId: id, onDone: () => context.pop()),
+    GoRoute(
+      path: RoutePaths.teacherPickup,
+      builder: (context, state) => gated(
+        (classId, classes) => PickupListScreen(
+          classId: classId,
+          classes: classes,
+          source: teacher.pickup,
+          onVerify: (id) => context.push<void>(
+            RoutePaths.kidDetail(RoutePaths.teacherPickup, id),
+          ),
+          onCall: (id) => context.push<void>(
+            '${RoutePaths.kidDetail(RoutePaths.teacherPickup, id)}?mode=call',
+          ),
+          onOpenResults: () =>
+              context.push<void>('${RoutePaths.teacherPickup}/result'),
+          onOpenHealth: (_, date) => context.push<void>(
+            '${RoutePaths.teacherDailyHealth}?date=${apiDate(date)}',
+          ),
+          onOpenAttendance: () =>
+              context.push<void>(RoutePaths.teacherAttendance),
+        ),
+      ),
+      routes: [
+        GoRoute(
+          path: 'result',
+          builder: (context, state) =>
+              PickupResultScreen(source: teacher.pickup),
+        ),
+        GoRoute(
+          path: ':childId',
+          builder: (context, state) => PickupVerifyScreen(
+            childId: state.pathParameters['childId']!,
+            source: teacher.pickup,
+            callMode: state.uri.queryParameters['mode'] == 'call',
+            onDone: () => context.pop(),
+          ),
+        ),
+      ],
     ),
     listWithDetail(
       RoutePaths.teacherHealth,
-      (context, open) => HealthMeasureListScreen(onOpenKid: open),
-      (context, id) => HealthMeasureDetailScreen(childId: id),
+      (context, classId, open) => HealthMeasureListScreen(
+        classId: classId,
+        source: teacher.measure,
+        onOpenKid: open,
+      ),
+      (context, classId, id) => HealthMeasureDetailScreen(
+        childId: id,
+        classId: classId,
+        source: teacher.measure,
+      ),
     ),
     GoRoute(
       path: RoutePaths.teacherSchedule,
-      builder: (context, state) =>
-          ActivityScheduleScreen(initialDay: FakeParentHomeSource.today),
+      builder: (context, state) => teacher.live
+          ? const _ComingSoonPage('Lịch hoạt động')
+          : ActivityScheduleScreen(initialDay: FakeParentHomeSource.today),
     ),
   ];
 }
@@ -835,6 +1008,7 @@ GoRouter _buildLiveRouter(
           schoolYears: LiveChildSchoolYearSource(api),
         ),
         kitchen: _liveKitchen(api),
+        teacher: _liveTeacher(api),
       ),
     ],
     errorBuilder: (context, state) => const NotFoundScreen(),
@@ -993,6 +1167,39 @@ class _ComingSoonPage extends StatelessWidget {
 }
 
 /// Nguồn bếp phiên thật; "Việc hôm nay" ghép từ ảnh mẫu + sổ lưu mẫu BE trả (user 25/11).
+/// Nguồn giáo viên gọi BE. Lớp = lớp `teaches` đầu tiên; danh sách năm học lấy từ BE.
+TeacherSources _liveTeacher(MobileApi api) {
+  final years = LiveSchoolYearSource(api);
+  SelectedSchoolYear.source = years;
+  // Năm đang chọn mặc định = năm đang chạy của BE (không dùng năm giả)
+  years
+      .loadYears()
+      .then((list) {
+        final active = list
+            .where((year) => year.status == SchoolYearStatus.active)
+            .firstOrNull;
+        if (active != null) SelectedSchoolYear.notifier.value = active;
+      })
+      .catchError((Object _) {});
+
+  return TeacherSources(
+    live: true,
+    loadClasses: () => loadTeacherClasses(api),
+    home: LiveTeacherHomeSource(api),
+    roster: LiveClassRosterSource(api),
+    attendance: LiveAttendanceSource(api),
+    attendanceSummary: LiveAttendanceSummarySource(api),
+    childHealth: LiveChildHealthSource(api),
+    dailyHealth: LiveDailyHealthSource(api),
+    pickup: LivePickupSource(api),
+    leave: LiveClassLeaveSource(api),
+    measure: LiveHealthMeasureSource(api),
+    review: LiveDailyReviewSource(api),
+    evaluation: LiveKidEvaluationSource(api),
+    rewards: LiveTeacherRewardSource(api),
+  );
+}
+
 KitchenSources _liveKitchen(MobileApi api) {
   final photos = LiveKitchenPhotoSource(api);
   final samples = LiveFoodSampleSource(api);

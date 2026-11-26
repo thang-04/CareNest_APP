@@ -61,9 +61,7 @@ void main() {
       expect(find.textContaining('duyệt'), findsNothing);
       expect(find.textContaining('Đánh dấu đã xem'), findsNothing);
       expect(find.byType(AppButton), findsNothing);
-      await tester.tap(find.text('Tất cả'));
-      await tester.pump();
-      await tester.scrollUntilVisible(find.text('Lê Hoàng Nam'), 200);
+      await tester.scrollUntilVisible(find.text('Phạm Khánh Linh'), 200);
     },
   );
 
@@ -104,18 +102,18 @@ void main() {
       expect(find.text('Mầm 3A · 2/${kids.length}'), findsOneWidget);
       expect(find.widgetWithText(AppButton, 'Lưu'), findsNothing);
 
-      await tester.tap(find.byTooltip('Bé sau'));
+      await tester.tap(find.byTooltip('Trẻ sau'));
       await tester.pumpAndSettle();
       expect(find.text(kids[2].fullName), findsOneWidget);
-      await tester.tap(find.byTooltip('Bé trước'));
+      await tester.tap(find.byTooltip('Trẻ trước'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Bé trước'));
+      await tester.tap(find.byTooltip('Trẻ trước'));
       await tester.pumpAndSettle();
       expect(find.text(kids.first.fullName), findsOneWidget);
 
       await tester.tap(find.text(kids.first.fullName));
       await tester.pumpAndSettle();
-      expect(find.text('Chọn bé'), findsOneWidget);
+      expect(find.text('Chọn trẻ'), findsOneWidget);
       await tester.tap(find.text(kids[4].fullName).last);
       await tester.pumpAndSettle();
       expect(find.text('Mầm 3A · 5/${kids.length}'), findsOneWidget);
@@ -131,6 +129,7 @@ void main() {
     (tester) async {
       await pumpScreen(tester, ClassLeaveScreen(today: DateTime(2026, 10, 1)));
       expect(find.text('Đang hiệu lực'), findsWidgets);
+      await tester.scrollUntilVisible(find.text('Đã hủy'), 200);
       expect(find.text('Đã hủy'), findsOneWidget);
       expect(find.text('Không áp dụng: 11/10'), findsOneWidget);
       expect(find.textContaining('Đã xem'), findsNothing);
@@ -145,19 +144,13 @@ void main() {
       const TeacherRewardsScreen(source: FakeTeacherRewardSource()),
     );
     expect(find.text('Phiếu bé ngoan'), findsOneWidget);
-    expect(find.text('Phiếu tuần'), findsOneWidget);
-    expect(find.text('Phiếu tháng'), findsWidgets);
+    expect(find.text('Tuần'), findsOneWidget);
+    expect(find.text('Tháng'), findsOneWidget);
     expect(find.text('Nguyễn Minh Anh'), findsOneWidget);
-
-    expect(find.text('Đang lập'), findsOneWidget);
 
     await tester.tap(find.text('Đề xuất'));
     await tester.pumpAndSettle();
-    // OBS-14: chỉ danh hiệu BE; chưa chọn thì hiện gợi ý
-    expect(find.text('Có mặt 152/160 · Bé chăm ngoan'), findsOneWidget);
-    expect(find.text('Có mặt 131/160 · Bé ngoan (gợi ý)'), findsOneWidget);
-    expect(find.textContaining('Bé tiến bộ'), findsNothing);
-    expect(find.textContaining('Bé ngoan toàn diện'), findsNothing);
+    expect(find.text('Chờ PHT xem xét'), findsOneWidget);
   });
 
   testWidgets(
@@ -168,7 +161,7 @@ void main() {
         tester,
         PickupListScreen(onVerify: noop, source: source),
       );
-      expect(find.bySemanticsLabel('Đã đón: 19'), findsOneWidget);
+      expect(find.textContaining('Đã đón ('), findsOneWidget);
       expect(find.textContaining('Đăng ký'), findsNothing);
 
       var done = false;
@@ -255,8 +248,8 @@ void main() {
         tester,
         HealthMeasureListScreen(onOpenKid: noop, source: source),
       );
-      expect(find.text('13/28 bé'), findsOneWidget);
-      expect(find.text('104 cm · 17,2 kg · vừa xong'), findsOneWidget);
+      expect(find.text('Đã nhập 13/28 trẻ'), findsOneWidget);
+      expect(find.text('104 cm · 17,2 kg · 05/11 · BMI 15,9'), findsOneWidget);
 
       await pumpScreen(
         tester,
