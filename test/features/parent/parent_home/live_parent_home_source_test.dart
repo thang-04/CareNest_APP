@@ -27,7 +27,10 @@ void main() {
       'GET /children/5/profile': (_) => profileJson(5, 'Nguyễn Minh Anh'),
       'GET /children/3/profile': (_) =>
           profileJson(3, 'Nguyễn Bảo Ngọc', className: 'Lá 1'),
-      'GET /me/notifications': (_) => {'unreadCount': 4, 'items': <Object>[]},
+      'GET /me/notifications?limit=1': (_) => {
+        'unreadCount': 4,
+        'items': <Object>[],
+      },
     });
   });
 
@@ -149,5 +152,19 @@ void main() {
       LiveParentHomeSource(api, session).loadToday('9'),
       throwsA(isA<ApiFailure>().having((e) => e.status, 'status', 403)),
     );
+  });
+
+  test('loadToday_notificationsFail_stillLoadsWithoutUnread', () async {
+    api.routes['GET /children/5/attendance/today'] = (_) => {
+      'date': '2026-11-25',
+      'status': 'PRESENT',
+    };
+    api.routes['GET /me/notifications?limit=1'] = (_) =>
+        throw ApiFailure(500, 'Lỗi máy chủ');
+
+    final today = await LiveParentHomeSource(api, session).loadToday('5');
+
+    expect(today.child.fullName, 'Nguyễn Minh Anh');
+    expect(today.unreadNotifications, 0);
   });
 }

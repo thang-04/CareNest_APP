@@ -49,11 +49,14 @@ class LiveParentHomeSource implements ParentHomeSource {
   Future<ParentToday> loadToday(String childId) async {
     final results = await Future.wait([
       _api.json('GET', '/children/$childId/attendance/today'),
-      _api.json('GET', '/me/notifications'),
+      // Chỉ cần số chưa đọc; tải thông báo lỗi không làm hỏng trang chủ
+      _api
+          .json('GET', '/me/notifications?limit=1')
+          .then<Object?>((feed) => feed, onError: (_) => const {}),
       loadChildren(),
     ]);
     final today = results[0]! as Map;
-    final feed = results[1]! as Map;
+    final feed = results[1] as Map? ?? const {};
     var children = results[2]! as List<ChildSummary>;
     // Bé mới có trên tài khoản sau lần tải danh sách ⇒ tải lại một lần
     if (!children.any((child) => child.id == childId)) {
