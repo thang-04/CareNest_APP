@@ -85,7 +85,8 @@ class LiveMyChildSource implements MyChildSource {
       absentCount: _count(totals['absent']),
       days: [
         for (final day in (data['days'] as List? ?? const []).whereType<Map>())
-          if (_dayStatus(day['status']) case final status?)
+          if (_dayStatus(day['status'], health['${day['date']}'])
+              case final status?)
             _day(day, status, health['${day['date']}']),
       ],
     );
@@ -142,13 +143,15 @@ class LiveMyChildSource implements MyChildSource {
 
   static double _count(Object? value) => (value as num?)?.toDouble() ?? 0;
 
-  /// Không phải ngày học / chưa vào lớp / chưa điểm danh ⇒ không có dấu trên lịch.
-  static AttendanceDayStatus? _dayStatus(Object? code) => switch (code) {
-    'PRESENT' => AttendanceDayStatus.present,
-    'ABSENT_EXCUSED' => AttendanceDayStatus.excused,
-    'ABSENT' => AttendanceDayStatus.absent,
-    _ => null,
-  };
+  /// Không phải ngày học / chưa vào lớp ⇒ bỏ; chưa điểm danh ⇒ chỉ giữ khi đã có sức khỏe đầu ngày.
+  static AttendanceDayStatus? _dayStatus(Object? code, Map? health) =>
+      switch (code) {
+        'PRESENT' => AttendanceDayStatus.present,
+        'ABSENT_EXCUSED' => AttendanceDayStatus.excused,
+        'ABSENT' => AttendanceDayStatus.absent,
+        'NOT_RECORDED' when health != null => AttendanceDayStatus.notRecorded,
+        _ => null,
+      };
 
   static AttendanceDay _day(
     Map<Object?, Object?> day,
@@ -165,13 +168,24 @@ class LiveMyChildSource implements MyChildSource {
       },
       mealsLine: eaten.isEmpty ? null : 'đã ăn ${eaten.join(' · ')}',
       mealCancelled: (day['cancelledMeals'] as List? ?? const []).isNotEmpty,
+      pickupLine: switch (day['pickedUpByName']) {
+        final String name when name.trim().isNotEmpty => name.trim(),
+        _ => null,
+      },
       absentPart: switch (day['absentPart']) {
         'MORNING' => AbsentPart.morning,
         'AFTERNOON' => AbsentPart.afternoon,
         _ => null,
       },
-      healthLine: health == null ? null : _healthLine(health),
-      healthNote: health?['note']?.toString(),
+      // Không có nhiệt độ / biểu hiện / lời cô ⇒ không hiện dòng trống
+      healthLine: switch (health == null ? '' : _healthLine(health)) {
+        '' => null,
+        final line => line,
+      },
+      healthNote: switch (health?['note']?.toString().trim()) {
+        final String note when note.isNotEmpty => note,
+        _ => null,
+      },
     );
   }
 

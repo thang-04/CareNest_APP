@@ -23,12 +23,14 @@ extension on AttendanceDayStatus {
     AttendanceDayStatus.present => 'Có mặt',
     AttendanceDayStatus.excused => 'Nghỉ có phép',
     AttendanceDayStatus.absent => 'Vắng',
+    AttendanceDayStatus.notRecorded => 'Chưa điểm danh',
   };
 
   AppStatusTone get tone => switch (this) {
     AttendanceDayStatus.present => AppStatusTone.green,
     AttendanceDayStatus.excused => AppStatusTone.blue,
     AttendanceDayStatus.absent => AppStatusTone.red,
+    AttendanceDayStatus.notRecorded => AppStatusTone.gray,
   };
 }
 
@@ -238,7 +240,8 @@ class _DayDetail extends StatelessWidget {
         const SizedBox(height: AppSpacing.space2),
         if (day.absentPart case final part?)
           InfoLine(
-            label: 'Nghỉ theo đơn',
+            // Nửa buổi theo đơn hoặc đón sớm trước mốc đủ ngày (PCK-04); BE không phân biệt
+            label: 'Nghỉ nửa ngày',
             value: part == AbsentPart.morning ? 'Buổi sáng' : 'Buổi chiều',
           ),
         if (day.arrivedAt case final arrived?)

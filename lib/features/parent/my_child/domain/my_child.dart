@@ -61,7 +61,8 @@ class ActivityDay {
   final int photoCount;
 }
 
-enum AttendanceDayStatus { present, excused, absent }
+/// `notRecorded`: GV chưa điểm danh nhưng đã ghi sức khỏe đầu ngày (hiện để phụ huynh thấy).
+enum AttendanceDayStatus { present, excused, absent, notRecorded }
 
 @immutable
 class AttendanceDay {

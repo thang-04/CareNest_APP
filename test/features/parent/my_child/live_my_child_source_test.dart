@@ -234,4 +234,38 @@ void main() {
     expect(day.healthLine, '37,8 °C · Sốt, Ho');
     expect(day.healthNote, 'Cô đã báo mẹ');
   });
+
+  test('loadAttendance_notRecordedWithHealth_kept_emptyHealthHidden', () async {
+    final month = await source(
+      attendanceRoutes(
+        days: [
+          {'date': '2026-11-25', 'status': 'NOT_RECORDED'},
+          {'date': '2026-11-24', 'status': 'NOT_RECORDED'},
+          {'date': '2026-11-23', 'status': 'PRESENT', 'pickedUpByName': 'Mẹ'},
+        ],
+        health: [
+          {
+            'date': '2026-11-25',
+            'temperature': 36.5,
+            'symptoms': <String>[],
+            'note': 'Bé khỏe',
+          },
+          {
+            'date': '2026-11-23',
+            'temperature': null,
+            'symptoms': <String>[],
+            'note': '  ',
+          },
+        ],
+      ),
+    ).loadAttendance('5');
+
+    // Chưa điểm danh nhưng đã có sức khỏe đầu ngày ⇒ vẫn hiện; chưa có gì ⇒ bỏ
+    expect(month.days.map((d) => d.date.day), [25, 23]);
+    expect(month.days.first.status, AttendanceDayStatus.notRecorded);
+    expect(month.days.first.healthLine, '36,5 °C');
+    expect(month.days.last.healthLine, isNull);
+    expect(month.days.last.healthNote, isNull);
+    expect(month.days.last.pickupLine, 'Mẹ');
+  });
 }
