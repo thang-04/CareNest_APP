@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/core/utils/class_labels.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/integration/load_failure.dart';
@@ -185,7 +186,7 @@ class ParentYearChip extends StatelessWidget {
                         ),
                         if (year.className.isNotEmpty)
                           Text(
-                            'Lớp ${year.className}',
+                            classLabel(year.className),
                             style: Theme.of(sheetContext).textTheme.bodyMedium,
                           ),
                       ],

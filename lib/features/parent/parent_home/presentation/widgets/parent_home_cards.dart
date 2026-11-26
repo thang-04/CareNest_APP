@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:carenest_app/core/utils/class_labels.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/shadows.dart';
@@ -265,7 +266,7 @@ class OtherChildrenPeek extends StatelessWidget {
     return Semantics(
       button: true,
       label: single
-          ? 'Xem bé ${first.fullName}, lớp ${first.className}'
+          ? 'Xem bé ${first.fullName}, ${classLabel(first.className, lower: true)}'
           : 'Chọn trong ${others.length} bé khác',
       excludeSemantics: true,
       child: Material(
