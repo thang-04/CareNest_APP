@@ -243,7 +243,7 @@ void main() {
     expect(find.text('Mẫu giáo 3A'), findsOneWidget);
   });
 
-  testWidgets('parentHome_live_menuAndActivityComingSoon', (tester) async {
+  testWidgets('parentHome_live_menuComingSoon_activityOpens', (tester) async {
     SelectedChild.notifier.value = 'c-1';
     await pumpParentHome(
       tester,
@@ -251,9 +251,9 @@ void main() {
       source: _TodaySource(),
       live: true,
     );
-    // Q1: BE chưa có API thực đơn tuần, hoạt động trong ngày ⇒ không hiện "Chưa công bố" giả
+    // Q1: BE chưa có API thực đơn tuần ⇒ "Sắp có"; hoạt động trong ngày đã có API (EDU-37, 26/11)
     expect(find.bySemanticsLabel('Thực đơn: Sắp có'), findsOneWidget);
-    expect(find.bySemanticsLabel('Hoạt động: Sắp có'), findsOneWidget);
+    expect(find.bySemanticsLabel('Hoạt động: Xem'), findsOneWidget);
   });
 
   testWidgets('parentHome_halfDay_showsAbsentPart', (tester) async {

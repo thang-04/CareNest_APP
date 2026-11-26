@@ -391,7 +391,7 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
         onSubmitted: openList,
       );
     }),
-    // Q1 (user 25/11): BE chưa có API thực đơn tuần, hoạt động trong ngày ⇒ phiên thật hiện "Sắp có"
+    // Q1 (user 25/11): BE chưa có API thực đơn tuần cho phụ huynh ⇒ phiên thật hiện "Sắp có"
     route(
       RoutePaths.parentMenu,
       (context, state, child) => parent.live
@@ -400,9 +400,10 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
     ),
     route(
       RoutePaths.parentActivities,
-      (context, state, child) => parent.live
-          ? const _ComingSoonPage('Hoạt động trong ngày')
-          : ChildActivitiesScreen(childId: child.id),
+      (context, state, child) => ChildActivitiesScreen(
+        childId: child.id,
+        source: parent.myChild ?? const FakeMyChildSource(),
+      ),
     ),
     route(
       RoutePaths.parentAttendance,

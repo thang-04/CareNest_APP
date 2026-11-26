@@ -113,6 +113,27 @@ void main() {
     expect(find.textContaining('Cơ sở'), findsNothing);
   });
 
+  testWidgets('live_parentActivities_usesBe (EDU-37)', (tester) async {
+    final session = FakeLiveSession(['PARENT'], childIds: [5]);
+    final api = parentApi(session);
+    api.routes['GET /children/5/activities'] = (_) => {
+      'date': '2026-11-24',
+      'activities': [
+        {
+          'label': 'Hoạt động học',
+          'items': ['Bật xa'],
+        },
+      ],
+    };
+    await pumpLiveApp(
+      tester,
+      session,
+      api: api,
+      location: RoutePaths.withChild(RoutePaths.parentActivities, '5'),
+    );
+    expect(find.text('Bật xa'), findsOneWidget);
+  });
+
   testWidgets('live_parentHome_menuAndActivityComingSoon', (tester) async {
     final session = FakeLiveSession(['PARENT'], childIds: [5]);
     await pumpLiveApp(
@@ -124,7 +145,7 @@ void main() {
     expect(find.bySemanticsLabel('Thực đơn: Sắp có'), findsOneWidget);
   });
 
-  for (final path in [RoutePaths.parentMenu, RoutePaths.parentActivities]) {
+  for (final path in [RoutePaths.parentMenu]) {
     testWidgets('live_parentNoApiRoute_showsComingSoon $path', (tester) async {
       final session = FakeLiveSession(['PARENT'], childIds: [5]);
       await pumpLiveApp(
