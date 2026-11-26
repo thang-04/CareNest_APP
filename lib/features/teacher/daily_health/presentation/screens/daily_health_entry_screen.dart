@@ -4,26 +4,35 @@ import 'package:flutter/services.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
 import 'package:carenest_app/core/layouts/app_bottom_dock.dart';
+import 'package:carenest_app/core/constants/colors.dart';
+import 'package:carenest_app/core/theme/app_status_colors.dart';
+import 'package:carenest_app/core/utils/date_labels.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
+import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/core/widgets/app_filter_chip.dart';
 import 'package:carenest_app/core/widgets/app_segmented.dart';
+import 'package:carenest_app/core/widgets/app_skeleton.dart';
+import 'package:carenest_app/core/widgets/app_status_badge.dart';
 import 'package:carenest_app/core/widgets/app_text_field.dart';
 import 'package:carenest_app/features/teacher/daily_health/domain/daily_health.dart';
 
-/// Ghi sức khỏe một bé — field theo BE `DailyHealthRequest`. Validation chỉ hỗ trợ nhập
-/// (khoảng thân nhiệt, độ dài); BE kiểm tra lại và quyết định báo phụ huynh (HLT-14).
+/// Ghi sức khỏe một trẻ + lịch sử trong ngày như khung bên phải của Web — field theo BE `DailyHealthRequest`.
+/// Validation chỉ hỗ trợ nhập (khoảng thân nhiệt, độ dài); BE kiểm tra lại và quyết định báo phụ huynh (HLT-14).
+/// [readOnly] hoặc BE trả `canRecord = false` ⇒ chỉ xem lịch sử.
 class DailyHealthEntryScreen extends StatefulWidget {
   const DailyHealthEntryScreen({
     super.key,
     required this.sheet,
     required this.kid,
     required this.source,
+    this.readOnly = false,
   });
 
   final DailyHealthSheet sheet;
   final DailyHealthKid kid;
   final DailyHealthSource source;
+  final bool readOnly;
 
   @override
   State<DailyHealthEntryScreen> createState() => _DailyHealthEntryScreenState();
@@ -48,6 +57,44 @@ class _DailyHealthEntryScreenState extends State<DailyHealthEntryScreen> {
   /// Một requestId cho một lần nhập; bấm lưu lại sau lỗi mạng gửi cùng id ⇒ BE không ghi trùng.
   late final String _requestId =
       '${widget.kid.childId}-${DateTime.now().microsecondsSinceEpoch}';
+
+  DailyHealthChildDay? _day;
+  bool _historyLoading = true;
+  bool _historyFailed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    setState(() {
+      _historyLoading = true;
+      _historyFailed = false;
+    });
+    try {
+      final day = await widget.source.loadChildDay(
+        widget.sheet.classId,
+        widget.kid.childId,
+        date: widget.sheet.date,
+      );
+      if (!mounted) return;
+      setState(() {
+        _day = day;
+        _historyLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _historyFailed = true;
+        _historyLoading = false;
+      });
+    }
+  }
+
+  /// Form chỉ khi màn cho ghi và BE không báo ngược lại (đã trả trẻ, ngày đã qua…).
+  bool get _canWrite => !widget.readOnly && (_day?.canRecord ?? true);
 
   @override
   void dispose() {
@@ -162,105 +209,157 @@ class _DailyHealthEntryScreenState extends State<DailyHealthEntryScreen> {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.pagePadding),
         children: [
-          AppTextField(
-            label: 'Thân nhiệt (°C)',
-            labelSuffix: 'không bắt buộc',
-            controller: _temperature,
-            hint: '36,8',
-            errorText: _temperatureError,
-            enabled: !_saving,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-              LengthLimitingTextInputFormatter(4),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.space4),
-          Text('Quan sát', style: textTheme.titleSmall),
-          const SizedBox(height: AppSpacing.space2),
-          AppSegmented<HealthObservation>(
-            segments: [
-              for (final value in HealthObservation.values)
-                (value, value.label),
-            ],
-            selected: _observation,
-            onChanged: (value) {
-              if (_saving) return;
-              setState(() => _observation = value);
-            },
-          ),
-          if (noted) ...[
-            const SizedBox(height: AppSpacing.space4),
-            Text('Biểu hiện', style: textTheme.titleSmall),
-            const SizedBox(height: AppSpacing.space2),
-            _chips(HealthSymptom.values, _symptoms, (s) => s.label),
-            if (_notedError != null) ...[
-              const SizedBox(height: AppSpacing.space2),
-              AppBanner(kind: AppBannerKind.danger, message: _notedError!),
-            ],
-            const SizedBox(height: AppSpacing.space4),
-            Text('Đã xử trí', style: textTheme.titleSmall),
-            const SizedBox(height: AppSpacing.space2),
-            _chips(HealthAction.values, _actions, (a) => a.label),
-            if (_actions.contains(HealthAction.referral)) ...[
-              const SizedBox(height: AppSpacing.space3),
-              AppTextField(
-                label: 'Nơi chuyển',
-                controller: _place,
-                errorText: _placeError,
-                maxLength: 150,
-                enabled: !_saving,
-              ),
-              const SizedBox(height: AppSpacing.space3),
-              AppTextField(
-                label: 'Giờ chuyển',
-                controller: _time,
-                hint: 'HH:mm',
-                errorText: _timeError,
-                keyboardType: TextInputType.datetime,
-                enabled: !_saving,
-              ),
-              const SizedBox(height: AppSpacing.space3),
-              AppTextField(
-                label: 'Người đi kèm',
-                controller: _escort,
-                maxLength: 100,
-                enabled: !_saving,
-              ),
-            ],
+          if (_day?.handedOverAt case final at?) ...[
+            AppBanner(
+              icon: AppIcons.lock,
+              message:
+                  'Đã trả trẻ lúc ${DateLabels.time24(at)}, không ghi thêm.',
+            ),
+            const SizedBox(height: AppSpacing.space3),
+          ] else if (widget.readOnly) ...[
+            const AppBanner(
+              icon: AppIcons.lock,
+              message: 'Đang xem lịch sử, không sửa được',
+            ),
+            const SizedBox(height: AppSpacing.space3),
           ],
-          const SizedBox(height: AppSpacing.space4),
+          if (_canWrite) ..._formChildren(textTheme, noted),
+          if (_canWrite) const SizedBox(height: AppSpacing.sectionGap),
+          Text('Lịch sử trong ngày', style: textTheme.titleMedium),
+          const SizedBox(height: AppSpacing.space3),
+          _buildHistory(textTheme),
+        ],
+      ),
+      bottomNavigationBar: !_canWrite
+          ? null
+          : AppBottomDock(
+              children: [
+                AppButton(
+                  label: _saveError == null ? 'Lưu' : 'Lưu lại',
+                  loadingLabel: 'Đang lưu',
+                  isLoading: _saving,
+                  expand: true,
+                  onPressed: _save,
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildHistory(TextTheme textTheme) {
+    if (_historyLoading) return const AppSkeletonList(rows: 2);
+    if (_historyFailed) {
+      return AppBanner(
+        kind: AppBannerKind.warning,
+        message: 'Chưa tải được lịch sử trong ngày.',
+        icon: AppIcons.refresh,
+      );
+    }
+    final entries = _day?.entries ?? const <DailyHealthEntry>[];
+    if (entries.isEmpty) {
+      return Text(
+        'Chưa có lần ghi nhận. Lần kiểm tra đã lưu sẽ hiển thị tại đây.',
+        style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+      );
+    }
+    return Column(
+      children: [
+        for (final entry in entries)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.cardGap),
+            child: _HistoryCard(entry: entry),
+          ),
+      ],
+    );
+  }
+
+  List<Widget> _formChildren(TextTheme textTheme, bool noted) {
+    return [
+      AppTextField(
+        label: 'Thân nhiệt (°C)',
+        labelSuffix: 'không bắt buộc',
+        controller: _temperature,
+        hint: '36,8',
+        errorText: _temperatureError,
+        enabled: !_saving,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+          LengthLimitingTextInputFormatter(4),
+        ],
+      ),
+      const SizedBox(height: AppSpacing.space4),
+      Text('Quan sát', style: textTheme.titleSmall),
+      const SizedBox(height: AppSpacing.space2),
+      AppSegmented<HealthObservation>(
+        segments: [
+          for (final value in HealthObservation.values) (value, value.label),
+        ],
+        selected: _observation,
+        onChanged: (value) {
+          if (_saving) return;
+          setState(() => _observation = value);
+        },
+      ),
+      if (noted) ...[
+        const SizedBox(height: AppSpacing.space4),
+        Text('Biểu hiện ghi nhận', style: textTheme.titleSmall),
+        const SizedBox(height: AppSpacing.space2),
+        _chips(HealthSymptom.values, _symptoms, (s) => s.label),
+        if (_notedError != null) ...[
+          const SizedBox(height: AppSpacing.space2),
+          AppBanner(kind: AppBannerKind.danger, message: _notedError!),
+        ],
+        const SizedBox(height: AppSpacing.space4),
+        Text('Xử trí', style: textTheme.titleSmall),
+        const SizedBox(height: AppSpacing.space2),
+        _chips(HealthAction.values, _actions, (a) => a.label),
+        if (_actions.contains(HealthAction.referral)) ...[
+          const SizedBox(height: AppSpacing.space3),
           AppTextField(
-            label: 'Ghi chú',
-            labelSuffix: 'không bắt buộc',
-            controller: _note,
-            multiline: true,
-            maxLength: 500,
+            label: 'Nơi chuyển đến',
+            controller: _place,
+            errorText: _placeError,
+            maxLength: 150,
             enabled: !_saving,
           ),
           const SizedBox(height: AppSpacing.space3),
-          const AppBanner(
-            icon: AppIcons.info,
-            message: 'Không phải chẩn đoán y tế',
+          AppTextField(
+            label: 'Giờ chuyển',
+            controller: _time,
+            hint: 'HH:mm',
+            errorText: _timeError,
+            keyboardType: TextInputType.datetime,
+            enabled: !_saving,
           ),
-          if (_saveError != null) ...[
-            const SizedBox(height: AppSpacing.space3),
-            AppBanner(kind: AppBannerKind.danger, message: _saveError!),
-          ],
-        ],
-      ),
-      bottomNavigationBar: AppBottomDock(
-        children: [
-          AppButton(
-            label: _saveError == null ? 'Lưu' : 'Lưu lại',
-            loadingLabel: 'Đang lưu',
-            isLoading: _saving,
-            expand: true,
-            onPressed: _save,
+          const SizedBox(height: AppSpacing.space3),
+          AppTextField(
+            label: 'Người đi cùng',
+            controller: _escort,
+            maxLength: 100,
+            enabled: !_saving,
           ),
         ],
+      ],
+      const SizedBox(height: AppSpacing.space4),
+      AppTextField(
+        label: 'Ghi chú',
+        labelSuffix: 'không bắt buộc',
+        controller: _note,
+        multiline: true,
+        maxLength: 500,
+        enabled: !_saving,
       ),
-    );
+      const SizedBox(height: AppSpacing.space3),
+      const AppBanner(
+        icon: AppIcons.info,
+        message: 'Không phải chẩn đoán y tế',
+      ),
+      if (_saveError != null) ...[
+        const SizedBox(height: AppSpacing.space3),
+        AppBanner(kind: AppBannerKind.danger, message: _saveError!),
+      ],
+    ];
   }
 
   Widget _chips<T>(List<T> values, Set<T> selected, String Function(T) label) {
@@ -279,6 +378,66 @@ class _DailyHealthEntryScreenState extends State<DailyHealthEntryScreen> {
                   }),
           ),
       ],
+    );
+  }
+}
+
+/// Một lần ghi đã lưu: giờ, thân nhiệt, quan sát, biểu hiện, xử trí, ghi chú, người ghi.
+class _HistoryCard extends StatelessWidget {
+  const _HistoryCard({required this.entry});
+
+  final DailyHealthEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final muted = textTheme.bodyMedium?.copyWith(color: AppColors.textMuted);
+    final referral = entry.referral;
+    final lines = [
+      if (entry.symptoms.isNotEmpty)
+        'Biểu hiện: ${entry.symptoms.map((s) => s.label).join(', ')}',
+      if (entry.actions.isNotEmpty)
+        'Xử trí: ${entry.actions.map((a) => a.label).join(', ')}',
+      if (referral != null)
+        'Chuyển đến: ${[if (referral.place?.isNotEmpty ?? false) referral.place!, if (referral.time?.isNotEmpty ?? false) referral.time!, if (referral.escort?.isNotEmpty ?? false) 'đi cùng ${referral.escort}'].join(' · ')}',
+      if (entry.note?.isNotEmpty ?? false) 'Ghi chú: ${entry.note}',
+    ];
+    return AppCard(
+      dense: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: AppSpacing.space2,
+            runSpacing: AppSpacing.space2,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              if (entry.recordedAt case final at?)
+                Text(DateLabels.time24(at), style: textTheme.titleSmall),
+              Text(
+                entry.temperature == null
+                    ? 'Chưa đo thân nhiệt'
+                    : '${entry.temperature!.toStringAsFixed(1).replaceAll('.', ',')} °C',
+                style: textTheme.bodyMedium,
+              ),
+              AppStatusBadge(
+                label: entry.observation.label,
+                tone: entry.observation == HealthObservation.noted
+                    ? AppStatusTone.orange
+                    : AppStatusTone.green,
+              ),
+            ],
+          ),
+          for (final line in lines) ...[
+            const SizedBox(height: AppSpacing.space1),
+            Text(line, style: textTheme.bodyMedium),
+          ],
+          if (entry.recordedByName?.isNotEmpty ?? false) ...[
+            const SizedBox(height: AppSpacing.space1),
+            Text('Người ghi: ${entry.recordedByName}', style: muted),
+          ],
+        ],
+      ),
     );
   }
 }

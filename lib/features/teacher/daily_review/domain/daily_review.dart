@@ -35,6 +35,7 @@ class KidReview {
     this.comment = '',
     this.attentionNotes = const [],
     this.flagged = false,
+    this.healthSigns = const [],
   });
 
   final String childId;
@@ -53,8 +54,11 @@ class KidReview {
   /// Các lưu ý quan sát được, ví dụ sức khỏe hoặc hành vi.
   final List<String> attentionNotes;
 
-  /// Gắn cờ hành vi tốt — phiếu bé ngoan OBS-10 PROPOSED.
+  /// Cờ bé ngoan trong ngày (BE `flag`).
   final bool flagged;
+
+  /// Biểu hiện sức khỏe BE ghi nhận trong ngày (nhãn); rỗng = bình thường.
+  final List<String> healthSigns;
 }
 
 @immutable
@@ -66,9 +70,19 @@ class ReviewDay {
     required this.flagLabel,
     required this.kids,
     this.classComment = '',
+    this.attendanceTaken = true,
+    this.locked = false,
+    this.yearReadOnly = false,
   });
 
   final DateTime date;
+
+  /// Lớp đã điểm danh ngày này; chưa ⇒ chưa có trẻ để đánh giá (BE `attendanceTaken`).
+  final bool attendanceTaken;
+
+  /// Ngày đã khóa (BE `locked`) / lớp thuộc năm học chỉ xem (BE `yearReadOnly`).
+  final bool locked;
+  final bool yearReadOnly;
 
   /// "Tạo hình: Bé tô màu chiếc lá mùa thu" — ngữ cảnh hoạt động (OBS-07 OPEN), không phải giáo án.
   final String activityLine;
@@ -168,7 +182,8 @@ class ReviewLabeledNote {
 
 /// Chỉ đọc trên App — BE `GET /classes/{classId}/daily-assessment`; ghi làm trên Web.
 abstract interface class DailyReviewSource {
-  Future<ReviewDay> loadDay(String classId);
+  /// [date] null ⇒ hôm nay (BE bỏ qua tham số `date`).
+  Future<ReviewDay> loadDay(String classId, {DateTime? date});
 
   /// BE: nhận xét tuần và các đợt đánh giá định kỳ; APP chỉ xem.
   Future<List<PeriodReview>> loadPeriods(String classId);

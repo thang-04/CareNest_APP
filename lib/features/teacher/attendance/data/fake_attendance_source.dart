@@ -1,15 +1,16 @@
+import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 import 'package:carenest_app/features/teacher/attendance/domain/attendance.dart';
 import 'package:carenest_app/features/teacher/class_roster/data/fake_class_roster_source.dart';
-import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_source.dart';
 
 /// Nguồn dữ liệu điểm danh lớp/ngày; bản thật là upsert idempotent theo lớp/ngày (BE PAT-IDEMPOTENT-BATCH).
+/// [date] null = hôm nay theo BE.
 abstract interface class AttendanceSource {
-  Future<AttendanceSheet> loadSheet(String classId);
+  Future<AttendanceSheet> loadSheet(String classId, {DateTime? date});
   Future<void> save(String classId, DateTime date, List<KidAttendance> kids);
 }
 
-/// Dữ liệu giả lớp Mầm 3A (28 trẻ) đầu giờ 12/10, dạng như BE: chưa bé nào được ghi; Khánh Linh và
-/// Minh Châu có đơn nghỉ — khớp màn Đơn xin nghỉ của lớp.
+/// Dữ liệu giả lớp Mầm 3A (28 trẻ) đầu giờ 12/10, dạng như BE: chưa trẻ nào được ghi thủ công; Khánh Linh
+/// và một trẻ khác có đơn nghỉ cả ngày (BE đã ghi Vắng có phép), một trẻ nghỉ sáng. Ngày khác hôm nay: đã khóa.
 class FakeAttendanceSource implements AttendanceSource {
   FakeAttendanceSource({
     this.mode = FakeMode.data,
@@ -28,31 +29,106 @@ class FakeAttendanceSource implements AttendanceSource {
   /// Danh sách vừa gửi lưu (để test kiểm tra thân request).
   List<KidAttendance>? lastSaved;
 
-  static const _notes = {
-    'child-1': 'Đơn nghỉ 13/10',
-    'k-02': 'Dị ứng hải sản',
-    'k-03': 'Ốm · đơn 11–13/10',
-    'k-08': 'Việc gia đình · đơn 12/10',
-  };
-  static const _onLeave = {'k-03', 'k-08'};
+  /// Ngày đã yêu cầu ở lần tải gần nhất (để test kiểm tra tham số).
+  DateTime? lastRequestedDate;
+
+  static final _today = FakeParentHomeSource.today;
+
+  static LeaveNotice _leave(
+    String reason, {
+    DayPartCode part = DayPartCode.fullDay,
+    bool? eats,
+    List<MealSession> eatsMeals = const [],
+  }) => LeaveNotice(
+    fromDate: DateTime(2026, 10, 11),
+    toDate: DateTime(2026, 10, 13),
+    reason: reason,
+    part: part,
+    eats: eats,
+    eatsMeals: eatsMeals,
+  );
 
   static List<KidAttendance> get kids => [
     for (final kid in FakeClassRosterSource.kids)
-      KidAttendance(
-        childId: kid.id,
-        fullName: kid.fullName,
-        // Như BE `ClassAttendanceResponse` đầu giờ: chưa ghi (record null); đơn nghỉ là thẻ `leave`
-        status: AttendanceStatus.notRecorded,
-        note: _notes[kid.id],
-        hasLeaveNotice: _onLeave.contains(kid.id),
-      ),
+      switch (kid.id) {
+        // BE ghi sẵn Vắng có phép cho đơn nghỉ cả ngày
+        'k-03' => KidAttendance(
+          childId: kid.id,
+          fullName: kid.fullName,
+          status: AttendanceStatus.excused,
+          leave: _leave('Ốm'),
+        ),
+        'k-08' => KidAttendance(
+          childId: kid.id,
+          fullName: kid.fullName,
+          status: AttendanceStatus.excused,
+          leave: _leave('Việc gia đình'),
+        ),
+        'k-09' => KidAttendance(
+          childId: kid.id,
+          fullName: kid.fullName,
+          status: AttendanceStatus.excused,
+          absentPart: DayPartCode.morning,
+          leave: _leave(
+            'Khám bệnh buổi sáng',
+            part: DayPartCode.morning,
+            eats: true,
+            eatsMeals: const [MealSession.afternoon],
+          ),
+        ),
+        'k-02' => KidAttendance(
+          childId: kid.id,
+          fullName: kid.fullName,
+          status: AttendanceStatus.notRecorded,
+          hasAllergy: true,
+          health: const KidHealthBrief(
+            checked: true,
+            noted: true,
+            temperature: 37.8,
+          ),
+        ),
+        'k-06' => KidAttendance(
+          childId: kid.id,
+          fullName: kid.fullName,
+          status: AttendanceStatus.notRecorded,
+          mealRegistered: false,
+        ),
+        _ => KidAttendance(
+          childId: kid.id,
+          fullName: kid.fullName,
+          status: AttendanceStatus.notRecorded,
+        ),
+      },
   ];
 
+  /// Ngày đã qua: BE trả sổ đã ghi, đã khóa.
+  static List<KidAttendance> _history() => [
+    for (final kid in kids)
+      kid.status == AttendanceStatus.notRecorded
+          ? kid.copyWith(
+              status: AttendanceStatus.present,
+              meals: {
+                for (final s in MealSession.values) s: kid.mealRegistered,
+              },
+            )
+          : kid,
+  ];
+
+  static bool _sameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
   @override
-  Future<AttendanceSheet> loadSheet(String classId) async {
+  Future<AttendanceSheet> loadSheet(String classId, {DateTime? date}) async {
     await Future<void>.delayed(delay);
+    lastRequestedDate = date;
     if (mode == FakeMode.error) throw StateError('Không tải được dữ liệu giả');
-    final list = mode == FakeMode.empty ? const <KidAttendance>[] : kids;
+    final day = date ?? _today;
+    final past = !_sameDay(day, _today);
+    final list = mode == FakeMode.empty
+        ? const <KidAttendance>[]
+        : past
+        ? _history()
+        : kids;
     return AttendanceSheet(
       classSummary: ClassSummary(
         id: classId,
@@ -60,10 +136,11 @@ class FakeAttendanceSource implements AttendanceSource {
         campusName: FakeClassRosterSource.campusName,
         childCount: list.length,
       ),
-      date: FakeParentHomeSource.today,
+      date: day,
+      today: _today,
       kids: list,
       lockAt: '08:30',
-      locked: locked,
+      locked: locked || past,
     );
   }
 

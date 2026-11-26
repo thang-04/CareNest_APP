@@ -13,6 +13,9 @@ class RosterTag {
   final String label;
 }
 
+/// `Child.status` BE; nhãn như Web: Đang học / Chờ xếp lớp / Đã nghỉ học.
+enum RosterKidStatus { active, pendingPlacement, left }
+
 /// Một trẻ trong lớp được phân công (AUTH-03).
 @immutable
 class RosterKid {
@@ -22,6 +25,8 @@ class RosterKid {
     required this.ageLabel,
     required this.guardianLine,
     this.tag,
+    this.dateOfBirth,
+    this.status = RosterKidStatus.active,
   });
 
   final String id;
@@ -31,6 +36,8 @@ class RosterKid {
   /// "Mẹ: 0912 345 678"
   final String guardianLine;
   final RosterTag? tag;
+  final DateTime? dateOfBirth;
+  final RosterKidStatus status;
 
   /// Tên gọi trong lớp: hai chữ cuối, vd. "Minh Anh".
   String get shortName {
