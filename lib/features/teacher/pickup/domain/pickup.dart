@@ -27,12 +27,24 @@ enum PickupVerification {
   phoneConfirmed('PHONE_CONFIRMED'),
 
   /// Gọi phụ huynh, không giao ⇒ bắt buộc ghi chú.
-  phoneDeclined('PHONE_DECLINED');
+  phoneDeclined('PHONE_DECLINED'),
+
+  /// Chỉ còn ở bản ghi cũ (Web: "Không liên lạc được phụ huynh"); App không tạo mới.
+  phoneUnreachable('PHONE_UNREACHABLE');
 
   const PickupVerification(this.code);
   final String code;
 
-  bool get handedOver => this != phoneDeclined;
+  /// Chỉ khớp ảnh / phụ huynh xác nhận qua điện thoại mới cho trẻ ra về (BE `outcome` HANDED_OVER).
+  bool get handedOver => this == photoMatch || this == phoneConfirmed;
+
+  /// Nhãn như Web `VERIFICATION_LABELS`.
+  String get label => switch (this) {
+    photoMatch => 'Khớp ảnh đăng ký',
+    phoneConfirmed => 'Phụ huynh xác nhận qua điện thoại',
+    phoneDeclined => 'Gọi phụ huynh – không trả',
+    phoneUnreachable => 'Không liên lạc được phụ huynh',
+  };
 }
 
 /// Phụ huynh/người giám hộ trên hồ sơ trẻ — BE `PickupChildResponse.PickupGuardian`.
@@ -66,6 +78,9 @@ class PickupRecord {
     this.pickupPersonRelationship,
     this.handedOverAt,
     this.note,
+    this.childName,
+    this.className,
+    this.recordedAt,
   });
 
   final PickupVerification verification;
@@ -74,6 +89,11 @@ class PickupRecord {
   final GuardianRelationship? pickupPersonRelationship;
   final DateTime? handedOverAt;
   final String? note;
+
+  /// Chỉ có ở danh sách kết quả `GET /pickups` (BE `PickupRecordResponse`).
+  final String? childName;
+  final String? className;
+  final DateTime? recordedAt;
 }
 
 /// Một dòng bảng đón — BE `PickupBoardResponse.PickupRow`.
@@ -83,15 +103,49 @@ class PickupRow {
     required this.childId,
     required this.fullName,
     required this.status,
+    this.code = '',
     this.pickup,
+    this.attempts = const [],
   });
 
   final String childId;
   final String fullName;
   final PickupStatus status;
 
+  /// Mã trẻ (Web hiện dưới tên).
+  final String code;
+
   /// Lần giao gần nhất (null khi chưa giao).
   final PickupRecord? pickup;
+
+  /// Mọi lần xác minh trong ngày, cũ trước (BE `attempts`).
+  final List<PickupRecord> attempts;
+
+  /// Số lần gọi phụ huynh mà không trả trẻ trong ngày.
+  int get failedAttempts =>
+      attempts.where((attempt) => !attempt.verification.handedOver).length;
+}
+
+/// Bảng đón của lớp một ngày — BE `PickupBoardResponse`. `today` là hôm nay theo giờ trường;
+/// chỉ ngày = hôm nay mới trả trẻ được.
+@immutable
+class PickupBoard {
+  const PickupBoard({
+    required this.rows,
+    required this.date,
+    required this.today,
+    this.className = '',
+  });
+
+  final List<PickupRow> rows;
+  final DateTime date;
+  final DateTime today;
+  final String className;
+
+  bool get canRecord =>
+      date.year == today.year &&
+      date.month == today.month &&
+      date.day == today.day;
 }
 
 /// Màn trả một bé — BE `PickupChildResponse`.
@@ -127,8 +181,11 @@ class PickupRequest {
 }
 
 abstract interface class PickupSource {
-  /// BE: `GET /classes/{classId}/pickups?date=`.
-  Future<List<PickupRow>> loadBoard(String classId);
+  /// BE: `GET /classes/{classId}/pickups?date=` — [date] null = hôm nay theo giờ trường.
+  Future<PickupBoard> loadBoard(String classId, {DateTime? date});
+
+  /// BE: `GET /pickups?date=` — kết quả trả trẻ của các lớp giáo viên trong ngày (mới nhất trước).
+  Future<List<PickupRecord>> loadResults({DateTime? date});
 
   /// BE: `GET /pickups/children/{childId}?date=`.
   Future<PickupChild> loadChild(String childId);

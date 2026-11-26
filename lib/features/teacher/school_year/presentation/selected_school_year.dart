@@ -20,19 +20,30 @@ abstract final class SelectedSchoolYear {
 
   static SchoolYear get value => notifier.value;
 
-  static void reset() => notifier.value = FakeSchoolYearSource.years.firstWhere(
-    (year) => year.status == SchoolYearStatus.active,
-  );
+  /// `schoolYearId` gửi BE: null ⇒ BE lấy năm đang chạy; năm đã đóng / sắp tới gửi id.
+  static String? get apiYearId =>
+      value.status == SchoolYearStatus.active ? null : value.id;
+
+  /// Nguồn danh sách năm cho [SchoolYearChip]; phiên thật đặt bản gọi BE.
+  static SchoolYearSource source = const FakeSchoolYearSource();
+
+  static void reset() {
+    source = const FakeSchoolYearSource();
+    notifier.value = FakeSchoolYearSource.years.firstWhere(
+      (year) => year.status == SchoolYearStatus.active,
+    );
+  }
 }
 
 /// Ô chọn năm học: "Năm học 2026–2027"; năm đã đóng kèm nhãn "Chỉ xem".
 class SchoolYearChip extends StatelessWidget {
-  const SchoolYearChip({super.key, this.source = const FakeSchoolYearSource()});
+  const SchoolYearChip({super.key, this.source});
 
-  final SchoolYearSource source;
+  /// null ⇒ [SelectedSchoolYear.source].
+  final SchoolYearSource? source;
 
   Future<void> _pick(BuildContext context) async {
-    final years = await source.loadYears();
+    final years = await (source ?? SelectedSchoolYear.source).loadYears();
     if (!context.mounted) return;
     final picked = await showAppBottomSheet<SchoolYear>(
       context: context,

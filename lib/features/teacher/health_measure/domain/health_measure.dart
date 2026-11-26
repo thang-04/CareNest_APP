@@ -1,6 +1,25 @@
 import 'package:flutter/foundation.dart';
 
+import 'package:carenest_app/core/theme/app_status_colors.dart';
+
 enum MeasureState { measured, pending, absent }
+
+/// Mức BMI theo tuổi BE xếp cho số đo đã lưu (HLT-18) — APP chỉ đổi mã sang chữ, không tự tính.
+@immutable
+class MeasureResult {
+  const MeasureResult({
+    required this.label,
+    required this.tone,
+    this.detail = '',
+  });
+
+  /// "Bình thường"
+  final String label;
+  final AppStatusTone tone;
+
+  /// "BMI 15,9"
+  final String detail;
+}
 
 @immutable
 class MeasureKid {
@@ -15,6 +34,7 @@ class MeasureKid {
     this.previous,
     this.note,
     this.published = true,
+    this.result,
   });
 
   final String childId;
@@ -26,49 +46,93 @@ class MeasureKid {
   final String? height;
   final String? weight;
 
-  /// "vừa xong", "5 phút trước"
+  /// "05/09"
   final String? measuredWhen;
 
   /// "05/09: 103 cm · 16,8 kg"
   final String? previous;
   final String? note;
   final bool published;
+
+  /// BMI và mức BMI BE trả cho số đo đã lưu; null khi BE không trả.
+  final MeasureResult? result;
 }
 
-/// Kết quả xếp loại BE tính theo chuẩn của trường (HLT-03, P-13 PENDING) — APP chỉ hiển thị.
+/// Kỳ cân đo đang mở ở điểm trường của lớp: tên, loại, ngày, trạng thái, tiến độ nhập (BE trả).
 @immutable
-class MeasureResult {
-  const MeasureResult({
-    required this.label,
-    required this.detail,
-    required this.position,
+class MeasureCampaign {
+  const MeasureCampaign({
+    required this.name,
+    required this.kindLabel,
+    required this.dateRange,
+    required this.statusLabel,
+    required this.recorded,
+    required this.total,
+    this.campusName = '',
+    this.absent = 0,
   });
 
-  /// "Bình thường"
-  final String label;
+  final String name;
+  final String kindLabel;
+  final String campusName;
 
-  /// "Cân nặng/tuổi · Chiều cao/tuổi đạt"
-  final String detail;
+  /// "05/11/2026 – 20/11/2026"
+  final String dateRange;
+  final String statusLabel;
+  final int recorded;
+  final int total;
+  final int absent;
+}
 
-  /// 0..1 trên thang Thiếu cân – Bình thường – Thừa cân, BE trả.
-  final double position;
+/// Một dòng của "Đợt khám và kỳ cân đo" (`GET /health-checks`), chỉ xem.
+@immutable
+class HealthCampaign {
+  const HealthCampaign({
+    required this.id,
+    required this.name,
+    required this.kindLabel,
+    required this.dateRange,
+    required this.statusLabel,
+    required this.statusTone,
+    required this.recorded,
+    required this.total,
+    this.campusName = '',
+    this.warningLabel,
+  });
+
+  final String id;
+  final String name;
+  final String kindLabel;
+  final String campusName;
+  final String dateRange;
+  final String statusLabel;
+  final AppStatusTone statusTone;
+  final int recorded;
+  final int total;
+
+  /// "2 trẻ có cảnh báo" — số do BE đếm; null ⇒ không có.
+  final String? warningLabel;
 }
 
 @immutable
 class MeasureMonth {
-  const MeasureMonth({required this.title, required this.kids});
+  const MeasureMonth({required this.title, required this.kids, this.campaign});
 
-  /// "Kỳ cân đo quý IV" — tên kỳ do HT/PHT mở (HLT-01)
+  /// Kỳ cân đo đang mở không có ⇒ rỗng.
   final String title;
   final List<MeasureKid> kids;
+  final MeasureCampaign? campaign;
+
+  /// HLT-01: chỉ nhập số đo khi có kỳ cân đo đang diễn ra.
+  bool get isOpen => campaign != null;
 }
 
 /// Nguồn cân đo theo HLT-09, HLT-11, HLT-13. BE quyết định quyền, kỳ đo và kết quả.
 abstract interface class HealthMeasureSource {
   Future<MeasureMonth> loadMonth(String classId);
 
-  /// Kết quả BE tính cho số đo đã lưu; null khi BE chưa trả (thiếu số, chưa có chuẩn).
-  Future<MeasureResult?> preview(String childId, String height, String weight);
+  /// Các đợt khám, kỳ cân đo xem được (chỉ đọc).
+  Future<List<HealthCampaign>> loadCampaigns();
 
   /// Tạo hoặc sửa số đo. Sửa bản đã có bắt buộc `reason`; lưu là công bố.
   Future<void> saveMeasurement({

@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:carenest_app/core/constants/app_icons.dart';
 import 'package:carenest_app/core/constants/colors.dart';
 import 'package:carenest_app/core/constants/sizes.dart';
-import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/core/widgets/app_banner.dart';
 import 'package:carenest_app/core/widgets/app_button.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
@@ -40,7 +39,6 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
       widget.source ?? FakeHealthMeasureSource.shared;
   MeasureMonth? _month;
   MeasureKid? _kid;
-  MeasureResult? _result;
   final _heightController = TextEditingController();
   final _weightController = TextEditingController();
   final _noteController = TextEditingController();
@@ -75,11 +73,6 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
     final kid = month.kids
         .where((k) => k.childId == widget.childId)
         .firstOrNull;
-    MeasureResult? result;
-    if (kid?.state == MeasureState.measured) {
-      result = await _source.preview(kid!.childId, kid.height!, kid.weight!);
-    }
-    if (!mounted) return;
     if (!_initializedFields && kid != null) {
       _heightController.text = kid.height ?? '';
       _weightController.text = kid.weight ?? '';
@@ -89,7 +82,6 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
     setState(() {
       _month = month;
       _kid = kid;
-      _result = result;
     });
   }
 
@@ -183,6 +175,14 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
           ? const Padding(
               padding: EdgeInsets.all(AppSpacing.pagePadding),
               child: AppSkeletonList(rows: 3),
+            )
+          : !month.isOpen
+          ? const Center(
+              child: AppEmptyState(
+                icon: AppIcons.heart,
+                title: 'Chưa mở kỳ cân đo',
+                message: 'Chỉ nhập được số đo khi nhà trường mở kỳ cân đo.',
+              ),
             )
           : kid == null
           ? const Center(
@@ -320,7 +320,7 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.space4),
-                  if (_result case final result?)
+                  if (kid.result case final result?)
                     AppCard(
                       dense: true,
                       child: Column(
@@ -338,18 +338,17 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
                             children: [
                               AppStatusBadge(
                                 label: result.label,
-                                tone: AppStatusTone.green,
+                                tone: result.tone,
                               ),
-                              Text(
-                                result.detail,
-                                style: textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.textSecondary,
+                              if (result.detail.isNotEmpty)
+                                Text(
+                                  result.detail,
+                                  style: textTheme.bodyMedium?.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
-                          const SizedBox(height: AppSpacing.space3),
-                          _ResultScale(position: result.position),
                         ],
                       ),
                     ),
@@ -363,87 +362,6 @@ class _HealthMeasureDetailScreenState extends State<HealthMeasureDetailScreen> {
                 ),
               ],
             ),
-    );
-  }
-}
-
-/// Thang Thiếu cân – Bình thường – Thừa cân; vị trí chấm do BE trả, có nhãn chữ bên dưới.
-class _ResultScale extends StatelessWidget {
-  const _ResultScale({required this.position});
-
-  final double position;
-
-  @override
-  Widget build(BuildContext context) {
-    final green = AppStatusColors.of(context).tone(AppStatusTone.green);
-    final labelStyle = Theme.of(context).textTheme.labelMedium?.copyWith(
-      color: AppColors.textMuted,
-      fontWeight: FontWeight.w500,
-    );
-    return ExcludeSemantics(
-      child: Column(
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) => SizedBox(
-              height: 16,
-              child: Stack(
-                alignment: Alignment.centerLeft,
-                children: [
-                  Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: AppColors.track,
-                      borderRadius: BorderRadius.circular(AppRadius.pill),
-                    ),
-                  ),
-                  Positioned(
-                    left: constraints.maxWidth / 3,
-                    width: constraints.maxWidth / 3,
-                    child: Container(
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: green.border,
-                        borderRadius: BorderRadius.circular(AppRadius.pill),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: (constraints.maxWidth - 14) * position.clamp(0, 1),
-                    child: Container(
-                      width: 14,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        color: green.foreground,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.space1),
-          Row(
-            children: [
-              Expanded(child: Text('Thiếu cân', style: labelStyle)),
-              Expanded(
-                child: Text(
-                  'Bình thường',
-                  textAlign: TextAlign.center,
-                  style: labelStyle,
-                ),
-              ),
-              Expanded(
-                child: Text(
-                  'Thừa cân',
-                  textAlign: TextAlign.end,
-                  style: labelStyle,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }

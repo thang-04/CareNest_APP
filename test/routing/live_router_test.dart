@@ -32,10 +32,15 @@ class FeedApi extends MobileApi {
   FeedApi(super.session);
 
   @override
-  Future<Object?> json(String method, String path, {Object? body}) async => {
-    'unreadCount': 0,
-    'items': <Object>[],
-  };
+  Future<Object?> json(String method, String path, {Object? body}) async {
+    // Lớp của giáo viên (cổng TeacherClassGate)
+    if (path == '/attendance/classes') {
+      return [
+        {'id': 7, 'name': 'Mầm 3A', 'teaches': true},
+      ];
+    }
+    return {'unreadCount': 0, 'items': <Object>[]};
+  }
 }
 
 Future<GoRouter> pumpLive(WidgetTester tester, List<String> roles) async {

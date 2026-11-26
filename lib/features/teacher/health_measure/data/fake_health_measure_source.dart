@@ -1,10 +1,14 @@
+import 'package:carenest_app/core/theme/app_status_colors.dart';
 import 'package:carenest_app/features/teacher/class_roster/data/fake_class_roster_source.dart';
 import 'package:carenest_app/features/teacher/health_measure/domain/health_measure.dart';
 
 /// Dữ liệu giả mockup T07 / T07.1: 13 bé đã đo, 15 bé chưa đo (Khánh Linh, Minh Châu, Đức Huy vắng).
 /// Khớp màn Phụ huynh: Minh Anh 104 cm · 17,2 kg, lần trước 05/09: 103 cm · 16,8 kg.
 class FakeHealthMeasureSource implements HealthMeasureSource {
-  FakeHealthMeasureSource();
+  FakeHealthMeasureSource({this.open = true});
+
+  /// false ⇒ không có kỳ cân đo đang mở (màn chỉ xem).
+  final bool open;
 
   static final shared = FakeHealthMeasureSource();
 
@@ -49,35 +53,65 @@ class FakeHealthMeasureSource implements HealthMeasureSource {
           : id == 'child-1'
           ? '17,2'
           : prevWeight,
-      measuredWhen: !measured
-          ? null
-          : id == 'child-1'
-          ? 'vừa xong'
-          : '${i * 3 + 5} phút trước',
+      measuredWhen: !measured ? null : '05/11',
+      result: !measured ? null : _normal,
       previous: previous,
     );
   }
 
-  @override
-  Future<MeasureMonth> loadMonth(String classId) async => MeasureMonth(
-    title: 'Kỳ cân đo quý IV',
-    kids: [for (final kid in FakeClassRosterSource.kids) _kids[kid.id]!],
+  static const _normal = MeasureResult(
+    label: 'Bình thường',
+    tone: AppStatusTone.green,
+    detail: 'BMI 15,9',
   );
 
-  // Kết quả giả thay cho BE: đủ hai số thì trả "Bình thường"
   @override
-  Future<MeasureResult?> preview(
-    String childId,
-    String height,
-    String weight,
-  ) async {
-    if (height.trim().isEmpty || weight.trim().isEmpty) return null;
-    return const MeasureResult(
-      label: 'Bình thường',
-      detail: 'Cân nặng/tuổi · Chiều cao/tuổi đạt',
-      position: 0.5,
+  Future<MeasureMonth> loadMonth(String classId) async {
+    if (!open) return const MeasureMonth(title: '', kids: []);
+    final kids = [for (final kid in FakeClassRosterSource.kids) _kids[kid.id]!];
+    return MeasureMonth(
+      title: 'Kỳ cân đo quý IV',
+      kids: kids,
+      campaign: MeasureCampaign(
+        name: 'Kỳ cân đo quý IV',
+        kindLabel: 'Kỳ cân đo',
+        campusName: 'Cơ sở chính',
+        dateRange: '05/11/2026 – 20/11/2026',
+        statusLabel: 'Đang diễn ra',
+        recorded: kids.where((k) => k.state == MeasureState.measured).length,
+        total: kids.length,
+        absent: kids.where((k) => k.state == MeasureState.absent).length,
+      ),
     );
   }
+
+  @override
+  Future<List<HealthCampaign>> loadCampaigns() async => [
+    if (open)
+      const HealthCampaign(
+        id: '2',
+        name: 'Kỳ cân đo quý IV',
+        kindLabel: 'Kỳ cân đo',
+        campusName: 'Cơ sở chính',
+        dateRange: '05/11/2026 – 20/11/2026',
+        statusLabel: 'Đang diễn ra',
+        statusTone: AppStatusTone.green,
+        recorded: 16,
+        total: 28,
+      ),
+    const HealthCampaign(
+      id: '1',
+      name: 'Kỳ cân đo quý III',
+      kindLabel: 'Kỳ cân đo',
+      campusName: 'Cơ sở chính',
+      dateRange: '01/09/2026 – 10/09/2026',
+      statusLabel: 'Đã đóng',
+      statusTone: AppStatusTone.gray,
+      recorded: 25,
+      total: 28,
+      warningLabel: '1 trẻ có cảnh báo',
+    ),
+  ];
 
   @override
   Future<void> saveMeasurement({
@@ -88,7 +122,7 @@ class FakeHealthMeasureSource implements HealthMeasureSource {
     String? reason,
   }) async {
     final current = _kids[childId];
-    if (current == null || current.state == MeasureState.absent) {
+    if (!open || current == null || current.state == MeasureState.absent) {
       throw StateError('Không thể lưu số đo cho bé này');
     }
     _kids[childId] = MeasureKid(
@@ -98,7 +132,8 @@ class FakeHealthMeasureSource implements HealthMeasureSource {
       state: MeasureState.measured,
       height: height,
       weight: weight,
-      measuredWhen: 'vừa xong',
+      measuredWhen: 'hôm nay',
+      result: _normal,
       previous: current.state == MeasureState.measured
           ? '${current.height} cm · ${current.weight} kg'
           : current.previous,
