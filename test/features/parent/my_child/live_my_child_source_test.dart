@@ -169,6 +169,8 @@ void main() {
             'status': 'PRESENT',
             'absentPart': 'MORNING',
             'arrivedAt': '2026-11-24T06:05:00Z',
+            'pickedUpAt': '2026-11-24T09:45:00Z',
+            'pickedUpByName': 'Nguyễn Thị Thu (Mẹ)',
             'mealsEaten': ['LUNCH', 'AFTERNOON'],
             'cancelledMeals': ['MORNING'],
           },
@@ -197,7 +199,7 @@ void main() {
     expect(day.arrivedAt, DateTime.utc(2026, 11, 24, 6, 5).toLocal());
     expect(day.mealsLine, 'đã ăn trưa · chiều');
     expect(day.mealCancelled, isTrue);
-    expect(day.pickupLine, isNull);
+    expect(day.pickupLine, '16:45 · Nguyễn Thị Thu (Mẹ)');
   });
 
   test('loadAttendance_attachesDailyHealth', () async {

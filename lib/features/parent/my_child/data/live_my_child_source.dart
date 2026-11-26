@@ -196,6 +196,9 @@ class LiveMyChildSource implements MyChildSource {
     Map<Object?, Object?>? health,
   ) {
     final eaten = _meals(day['mealsEaten']);
+    final pickupName = (day['pickedUpByName'] as String?)?.trim();
+    final pickupInstant = DateTime.tryParse(day['pickedUpAt'] as String? ?? '');
+    final schoolTime = pickupInstant?.toUtc().add(const Duration(hours: 7));
     return AttendanceDay(
       date: DateTime.parse(day['date']! as String),
       status: status,
@@ -205,9 +208,10 @@ class LiveMyChildSource implements MyChildSource {
       },
       mealsLine: eaten.isEmpty ? null : 'đã ăn ${eaten.join(' · ')}',
       mealCancelled: (day['cancelledMeals'] as List? ?? const []).isNotEmpty,
-      pickupLine: switch (day['pickedUpByName']) {
-        final String name when name.trim().isNotEmpty => name.trim(),
-        _ => null,
+      pickupLine: switch ((pickupName, schoolTime)) {
+        (null || '', _) => null,
+        (final name, null) => name,
+        (final name, final at?) => '${DateLabels.time24(at)} · $name',
       },
       absentPart: switch (day['absentPart']) {
         'MORNING' => AbsentPart.morning,
