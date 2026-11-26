@@ -82,7 +82,7 @@ class LiveNotificationSource implements NotificationSource {
     final t when t.startsWith('EDU_') => NotificationKind.approval,
     final t when t.contains('HEALTH') || t.startsWith('CHILD_TB') =>
       NotificationKind.health,
-    'MENU_PUBLISHED' => NotificationKind.menu,
+    'MENU_PUBLISHED' || 'MENU_CHANGED' => NotificationKind.menu,
     final t when t.startsWith('LEAVE_') => NotificationKind.leave,
     final t when t.startsWith('ATTENDANCE_') || t == 'CHILD_PICKED_UP' =>
       NotificationKind.attendance,

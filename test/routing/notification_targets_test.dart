@@ -31,4 +31,19 @@ void main() {
     expect(parentNotificationTarget('HEALTH_RESULT_PUBLISHED', null), isNull);
     expect(parentNotificationTarget(null, '5'), isNull);
   });
+
+  test(
+    'bếp: suất đã xác nhận mở Suất ăn theo lớp, đổi thực đơn mở tab Thực đơn',
+    () {
+      expect(
+        kitchenNotificationTarget('MEAL_COUNT_CONFIRMED')?.path,
+        RoutePaths.kitchenMeals,
+      );
+      expect(
+        kitchenNotificationTarget('MENU_CHANGED')?.path,
+        RoutePaths.kitchenMenu,
+      );
+      expect(kitchenNotificationTarget('SCHOOL_ANNOUNCEMENT'), isNull);
+    },
+  );
 }

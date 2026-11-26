@@ -41,7 +41,10 @@ void main() {
       'classId': 12,
       'className': 'Mầm 3A',
     },
-    'GET /me/notifications': (_) => {'unreadCount': 0, 'items': <Object>[]},
+    'GET /me/notifications?limit=1': (_) => {
+      'unreadCount': 0,
+      'items': <Object>[],
+    },
     'GET /leave-requests/me': (_) => <Object>[],
     // Năm đang chạy phủ hôm nay (giờ máy) ⇒ khoảng ngày như trước khi có ô Năm học
     'GET /children/5/school-years': (_) {

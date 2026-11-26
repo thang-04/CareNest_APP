@@ -31,3 +31,16 @@ import 'package:carenest_app/routing/route_paths.dart';
   if (label == null || path == null) return null;
   return (label: label, path: RoutePaths.withChild(path, childId));
 }
+
+/// Nút mở màn trong chi tiết thông báo của bếp: suất đã xác nhận ⇒ Suất ăn theo lớp; thực đơn đổi ⇒
+/// tab Thực đơn. BE `link` (vd. `/kitchen/meal-count`) là đường dẫn Web nên App không dùng.
+({String label, String path})? kitchenNotificationTarget(String? type) =>
+    switch (type) {
+      'MEAL_COUNT_CONFIRMED' => (
+        label: 'Xem suất ăn theo lớp',
+        path: RoutePaths.kitchenMeals,
+      ),
+      'MENU_CHANGED' ||
+      'MENU_PUBLISHED' => (label: 'Xem thực đơn', path: RoutePaths.kitchenMenu),
+      _ => null,
+    };

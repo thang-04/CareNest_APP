@@ -359,7 +359,6 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
     builder: build,
   );
 
-  final today = parent.today;
   return [
     route(
       RoutePaths.parentLeaveNotices,
@@ -397,7 +396,7 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
       RoutePaths.parentMenu,
       (context, state, child) => parent.live
           ? const _ComingSoonPage('Thực đơn tuần')
-          : WeeklyMenuScreen(childId: child.id, initialDay: today),
+          : WeeklyMenuScreen(childId: child.id, initialDay: parent.today),
     ),
     route(
       RoutePaths.parentActivities,
@@ -413,7 +412,8 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
         (year) => ChildAttendanceScreen(
           childId: child.id,
           year: year,
-          initialDay: today,
+          // Đọc mỗi lần mở màn: router sống qua nửa đêm không giữ ngày cũ
+          initialDay: parent.today,
           source: parent.myChild ?? const FakeMyChildSource(),
         ),
       ),
@@ -906,20 +906,29 @@ StatefulShellRoute _roleShell(
                       id: state.pathParameters['id']!,
                       source: notifications,
                       // Phụ huynh phiên thật: nút mở màn của bé theo loại thông báo (PAR-07)
-                      actionFor: live && role == AppRole.parent
-                          ? (item) {
-                              final target = parentNotificationTarget(
-                                item.type,
-                                item.childId,
+                      actionFor: !live
+                          ? null
+                          : (item) {
+                              final target = switch (role) {
+                                AppRole.parent => parentNotificationTarget(
+                                  item.type,
+                                  item.childId,
+                                ),
+                                AppRole.kitchen => kitchenNotificationTarget(
+                                  item.type,
+                                ),
+                                _ => null,
+                              };
+                              if (target == null) return null;
+                              return (
+                                label: target.label,
+                                // Tab Thực đơn bếp là nhánh của thanh đáy ⇒ chuyển tab, không chồng màn
+                                open: () =>
+                                    target.path == RoutePaths.kitchenMenu
+                                    ? context.go(target.path)
+                                    : context.push(target.path),
                               );
-                              return target == null
-                                  ? null
-                                  : (
-                                      label: target.label,
-                                      open: () => context.push(target.path),
-                                    );
-                            }
-                          : null,
+                            },
                     ),
                   ),
                 ],
