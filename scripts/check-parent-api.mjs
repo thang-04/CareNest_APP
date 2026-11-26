@@ -86,14 +86,14 @@ const profile = await call("GET", `/children/${id}/profile`);
 check(
   "GET /children/{id}/profile (Bé của tôi, thẻ bé)",
   profile.status === 200 && !!profile.data?.child,
-  `cls ${profile.data?.cls ? "có" : "null"}, declaration ${profile.data?.declaration ? "có" : "null"}, guardians ${len(profile.data?.child?.guardians)}, gender ${profile.data?.child?.gender ?? "—"}`,
+  `cls ${profile.data?.cls ? "có" : "null"}, declaration ${profile.data?.declaration ? "có" : "null"}, guardians ${len(profile.data?.child?.guardians)}, gender ${profile.data?.child?.gender ? "có" : "—"}`,
 );
 
 const todayRes = await call("GET", `/children/${id}/attendance/today`);
 check(
   "GET /children/{id}/attendance/today (Trang chủ)",
   todayRes.status === 200 && typeof todayRes.data?.status === "string",
-  `status ${todayRes.data?.status}, absentPart ${todayRes.data?.absentPart ?? "null"}`,
+  `status ${todayRes.data?.status ? "có" : "—"}, absentPart ${todayRes.data?.absentPart ? "có" : "null"}`,
 );
 
 const notes = await call("GET", "/me/notifications");
