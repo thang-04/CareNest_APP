@@ -88,9 +88,13 @@ class LiveEvaluationSource implements EvaluationSource {
       for (final monday in mondays)
         EvaluationWeek(
           // Tên tuần của giáo án chỉ có ở nhận xét tuần; tuần chưa có nhận xét ghi ngày đầu tuần
+          // Tuần giáo án có thể bắt đầu sau thứ Hai (nghỉ lễ) ⇒ so theo thứ Hai của tuần
           label:
-              comments.where((c) => c.from == monday).firstOrNull?.weekLabel ??
-              'Tuần ${DateLabels.dayMonth(monday)}',
+              comments
+                  .where((c) => mondayOf(c.from) == monday)
+                  .firstOrNull
+                  ?.weekLabel ??
+              _weekTitle(monday),
           from: monday,
           to: DateTime(monday.year, monday.month, monday.day + 4),
           days: byWeek[monday]!..sort((a, b) => a.date.compareTo(b.date)),
@@ -154,8 +158,15 @@ class LiveEvaluationSource implements EvaluationSource {
     ];
   }
 
+  /// "Tuần 09/11" khi BE không có tên tuần giáo án.
+  static String _weekTitle(DateTime monday) =>
+      'Tuần ${DateLabels.dayMonth(monday)}';
+
   static WeeklyComment _comment(Map<Object?, Object?> item) => WeeklyComment(
-    weekLabel: item['weekLabel']?.toString() ?? '',
+    weekLabel: switch (item['weekLabel']?.toString().trim()) {
+      final String label when label.isNotEmpty => label,
+      _ => _weekTitle(mondayOf(_date(item['weekFrom'] ?? item['weekStart']))),
+    },
     from: _date(item['weekFrom'] ?? item['weekStart']),
     to: _date(item['weekEnd']),
     paragraphs: [
@@ -188,6 +199,7 @@ class LiveEvaluationSource implements EvaluationSource {
       // Màn chi tiết tải lại sổ rồi tìm theo ID ⇒ ID ổn định theo kỳ của chủ đề
       id: 'theme-${item['startDate']}-${item['classId']}',
       name: item['themeName']?.toString() ?? '',
+      className: item['className']?.toString(),
       semester: null,
       from: _date(item['startDate']),
       to: _date(item['endDate']),

@@ -75,7 +75,7 @@ class _ThemeResultScreenState extends State<ThemeResultScreen> {
           }
           return _ThemeResultView(
             theme: theme,
-            className: widget.child.className,
+            className: theme.className ?? widget.child.className,
           );
         },
       ),

@@ -134,6 +134,41 @@ void main() {
     expect(comment.teacherName, 'Cô Hà');
   });
 
+  test(
+    'load_weekLabel_matchesMondayEvenIfWeekStartsLater_emptyLabelFallsBack',
+    () async {
+      final book = await load(
+        routes(
+          assessments: [
+            emptyDay('2026-11-18', 'ABSENT'),
+            emptyDay('2026-11-11', 'ABSENT'),
+          ],
+          comments: [
+            // Thứ Hai nghỉ lễ: tuần giáo án bắt đầu thứ Ba
+            {
+              'weekStart': '2026-11-16',
+              'weekFrom': '2026-11-17',
+              'weekEnd': '2026-11-20',
+              'weekLabel': 'Tuần 11',
+              'content': 'Tốt.',
+              'teacherName': 'Cô Hà',
+            },
+            {
+              'weekStart': '2026-11-09',
+              'weekFrom': '2026-11-09',
+              'weekEnd': '2026-11-13',
+              'weekLabel': null,
+              'content': 'Ngoan.',
+              'teacherName': 'Cô Hà',
+            },
+          ],
+        ),
+      );
+      expect(book.weeks.map((w) => w.label), ['Tuần 11', 'Tuần 09/11']);
+      expect(book.weeklyComments.last.weekLabel, 'Tuần 09/11');
+    },
+  );
+
   test('load_mapsThemeSemesterYearEnd', () async {
     final book = await load(
       routes(
@@ -142,6 +177,8 @@ void main() {
           'themes': [
             {
               'themeName': 'Gia đình',
+              'classId': 7,
+              'className': 'Lớp Nhà trẻ 1',
               'startDate': '2026-10-05',
               'endDate': '2026-10-30',
               'met': 3,
@@ -194,6 +231,8 @@ void main() {
 
     final theme = book.themes.single;
     expect(theme.name, 'Gia đình');
+    // Lớp lúc học chủ đề (BE trả), không phải lớp hiện tại
+    expect(theme.className, 'Lớp Nhà trẻ 1');
     expect(theme.from, DateTime(2026, 10, 5));
     expect(theme.to, DateTime(2026, 10, 30));
     expect(theme.status, PeriodStatus.confirmed);

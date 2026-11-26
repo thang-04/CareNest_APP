@@ -148,10 +148,14 @@ class ThemeResult {
     this.goals = const [],
     this.confirmedBy,
     this.confirmedAt,
+    this.className,
   });
 
   final String id;
   final String name;
+
+  /// Lớp của bé khi học chủ đề (BE `className`); null ⇒ màn dùng lớp hiện tại.
+  final String? className;
 
   /// 1 hoặc 2; BE phụ huynh chưa trả ⇒ null, màn không chia theo học kỳ.
   final int? semester;
