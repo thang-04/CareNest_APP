@@ -64,7 +64,7 @@ class PickupGuardian {
   final GuardianRelationship relationship;
   final String phone;
 
-  /// URL có hạn, chỉ tải qua auth; null ⇒ chưa có ảnh (PCK-02: gọi phụ huynh).
+  /// URL ngoài hoặc đường dẫn BE cần auth; null ⇒ chưa có ảnh (PCK-02: gọi phụ huynh).
   final String? photoUrl;
 }
 
@@ -189,6 +189,9 @@ abstract interface class PickupSource {
 
   /// BE: `GET /pickups/children/{childId}?date=`.
   Future<PickupChild> loadChild(String childId);
+
+  /// Tải ảnh nội bộ BE bằng Bearer token. URL ngoài được màn ảnh tải trực tiếp.
+  Future<Uint8List?> loadPhoto(String url);
 
   /// BE: `POST /pickups` — BE ghi giờ, người đón và báo phụ huynh (PCK-04).
   Future<void> record(PickupRequest request);

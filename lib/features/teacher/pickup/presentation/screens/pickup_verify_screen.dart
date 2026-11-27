@@ -284,6 +284,7 @@ class _PickupVerifyScreenState extends State<PickupVerifyScreen> {
                 for (final guardian in child.guardians) ...[
                   _GuardianCard(
                     guardian: guardian,
+                    source: _source,
                     enabled: !_saving,
                     selected: guardian.position == _selectedGuardianPosition,
                     onSelect: () => setState(
@@ -316,12 +317,13 @@ class _PickupVerifyScreenState extends State<PickupVerifyScreen> {
 
 /// Ảnh giữ chỗ: bản giả không dùng ảnh người thật; ảnh thật chỉ tải qua URL có auth.
 class _Photo extends StatelessWidget {
-  const _Photo({required this.size, this.url});
+  const _Photo({required this.size, this.url, this.source});
 
   final double size;
 
   /// URL ảnh có hạn BE trả (`photoUrl`); null/lỗi tải ⇒ icon, GV phải gọi xác nhận (PCK-02).
   final String? url;
+  final PickupSource? source;
 
   @override
   Widget build(BuildContext context) {
@@ -339,14 +341,28 @@ class _Photo extends StatelessWidget {
         color: AppColors.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
-      // TODO(G94-385): gắn header Authorization khi có HTTP client (ảnh chỉ tải qua auth)
-      child: photoUrl == null || !photoUrl.startsWith('http')
+      child: photoUrl == null
           ? placeholder
-          : Image.network(
+          : photoUrl.startsWith('http')
+          ? Image.network(
               photoUrl,
               fit: BoxFit.cover,
               gaplessPlayback: true,
               errorBuilder: (_, _, _) => placeholder,
+            )
+          : FutureBuilder(
+              future: source?.loadPhoto(photoUrl),
+              builder: (context, snapshot) {
+                final bytes = snapshot.data;
+                return bytes == null
+                    ? placeholder
+                    : Image.memory(
+                        bytes,
+                        fit: BoxFit.cover,
+                        gaplessPlayback: true,
+                        errorBuilder: (_, _, _) => placeholder,
+                      );
+              },
             ),
     );
   }
@@ -355,6 +371,7 @@ class _Photo extends StatelessWidget {
 class _GuardianCard extends StatelessWidget {
   const _GuardianCard({
     required this.guardian,
+    required this.source,
     required this.enabled,
     required this.selected,
     required this.onSelect,
@@ -362,6 +379,7 @@ class _GuardianCard extends StatelessWidget {
   });
 
   final PickupGuardian guardian;
+  final PickupSource source;
   final bool enabled;
   final bool selected;
   final VoidCallback onSelect;
@@ -386,7 +404,7 @@ class _GuardianCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  _Photo(size: 96, url: guardian.photoUrl),
+                  _Photo(size: 96, url: guardian.photoUrl, source: source),
                   const SizedBox(width: AppSpacing.space3),
                   Expanded(
                     child: Column(

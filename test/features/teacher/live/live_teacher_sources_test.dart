@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/features/teacher/attendance/data/live_attendance_source.dart';
 import 'package:carenest_app/features/teacher/attendance/domain/attendance.dart';
+import 'package:carenest_app/features/shared/school_menu/data/live_teacher_menu_source.dart';
+import 'package:carenest_app/features/teacher/activity_schedule/data/live_activity_schedule_source.dart';
 import 'package:carenest_app/features/teacher/class_roster/data/live_class_roster_source.dart';
 import 'package:carenest_app/features/teacher/class_roster/data/live_teacher_classes.dart';
 import 'package:carenest_app/features/teacher/class_roster/domain/class_roster.dart';
@@ -393,6 +395,97 @@ void main() {
       ).loadToday();
       expect(today.className, isEmpty);
       expect(today.tasks, isEmpty);
+    });
+
+    test('loadToday_includesFirstTeachingActivityToday', () async {
+      final api = ScriptedApi(session, {
+        ...routes(),
+        'GET /classes/12/teaching-activities?weekStart=2026-11-23': (_) => [
+          {
+            'date': '2026-11-26',
+            'weekLabel': 'Tuần 13',
+            'activities': [
+              {'label': 'Hoạt động học', 'topic': 'Tạo hình: Tô màu chiếc lá'},
+            ],
+          },
+        ],
+      });
+      final schedule = LiveActivityScheduleSource(
+        api,
+        clock: () => DateTime(2026, 11, 26),
+      );
+      final today = await LiveTeacherHomeSource(
+        api,
+        schedule: schedule,
+        clock: () => DateTime(2026, 11, 26),
+      ).loadToday();
+      expect(
+        today.currentActivity,
+        'Hoạt động học · Tạo hình: Tô màu chiếc lá',
+      );
+    });
+  });
+
+  group('teacher read-only views', () {
+    test('menu maps published meals of assigned class', () async {
+      final api = ScriptedApi(session, {
+        'GET /classes/12/menu?weekStart=2026-11-23': (_) => {
+          'classId': 12,
+          'className': 'Mầm 3A',
+          'weekStart': '2026-11-23',
+          'published': true,
+          'days': [
+            {
+              'date': '2026-11-23',
+              'dayOff': false,
+              'meals': [
+                {
+                  'session': 'LUNCH',
+                  'dishes': ['Cơm', 'Canh bí đỏ'],
+                },
+              ],
+            },
+          ],
+        },
+      });
+      final week = await LiveTeacherMenuSource(
+        api,
+        clock: () => DateTime(2026, 11, 26),
+      ).loadWeek('12');
+      expect(week.groups.single, ('12', 'Mầm 3A'));
+      expect(week.publishedNote, 'Đã công bố');
+      expect(
+        week.days[DateTime(2026, 11, 23)]!['12']!.meals.single.dishes,
+        'Cơm · Canh bí đỏ',
+      );
+    });
+
+    test('schedule maps approved teaching activities by day', () async {
+      final api = ScriptedApi(session, {
+        'GET /classes/12/teaching-activities?weekStart=2026-11-23': (_) => [
+          {
+            'date': '2026-11-26',
+            'weekLabel': 'Tuần 13',
+            'activities': [
+              {
+                'key': 'hoc',
+                'label': 'Hoạt động học',
+                'topic': 'Tạo hình: Tô màu chiếc lá',
+              },
+            ],
+          },
+        ],
+      });
+      final week = await LiveActivityScheduleSource(
+        api,
+        clock: () => DateTime(2026, 11, 26),
+      ).loadWeek('12');
+      expect(week.theme, 'Tuần 13');
+      expect(week.days[DateTime.thursday]!.single.title, 'Hoạt động học');
+      expect(
+        week.days[DateTime.thursday]!.single.detail,
+        'Tạo hình: Tô màu chiếc lá',
+      );
     });
   });
 }

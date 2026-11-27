@@ -92,6 +92,10 @@ import 'package:carenest_app/features/shared/notifications/presentation/screens/
 import 'package:carenest_app/features/shared/notifications/presentation/screens/notifications_screen.dart';
 import 'package:carenest_app/features/shared/school_menu/presentation/screens/school_menu_overview_screen.dart';
 import 'package:carenest_app/features/shared/school_menu/presentation/screens/school_menu_screen.dart';
+import 'package:carenest_app/features/shared/school_menu/data/live_teacher_menu_source.dart';
+import 'package:carenest_app/features/shared/school_menu/data/fake_school_menu_source.dart';
+import 'package:carenest_app/features/teacher/activity_schedule/data/fake_activity_schedule_source.dart';
+import 'package:carenest_app/features/teacher/activity_schedule/data/live_activity_schedule_source.dart';
 import 'package:carenest_app/features/teacher/activity_schedule/presentation/screens/activity_schedule_screen.dart';
 import 'package:carenest_app/features/teacher/attendance/presentation/screens/attendance_screen.dart';
 import 'package:carenest_app/features/teacher/class_leave_notices/presentation/screens/class_leave_screen.dart';
@@ -677,12 +681,16 @@ List<GoRoute> _teacherRoutes(TeacherSources teacher) {
     ),
     GoRoute(
       path: RoutePaths.teacherMenu,
-      builder: (context, state) => teacher.live
-          ? const _ComingSoonPage('Thực đơn tuần')
-          : SchoolMenuScreen(
-              initialDay: FakeParentHomeSource.today,
-              footerNote: 'Chỉ xem thực đơn đã công bố.',
-            ),
+      builder: (context, state) => gated(
+        (classId, classes) => SchoolMenuScreen(
+          initialDay: teacher.live
+              ? DateTime.now()
+              : FakeParentHomeSource.today,
+          footerNote: 'Chỉ xem thực đơn đã công bố.',
+          campusId: classId,
+          source: teacher.menu ?? const FakeSchoolMenuSource(),
+        ),
+      ),
     ),
     GoRoute(
       path: RoutePaths.teacherRewards,
@@ -748,9 +756,15 @@ List<GoRoute> _teacherRoutes(TeacherSources teacher) {
     ),
     GoRoute(
       path: RoutePaths.teacherSchedule,
-      builder: (context, state) => teacher.live
-          ? const _ComingSoonPage('Lịch hoạt động')
-          : ActivityScheduleScreen(initialDay: FakeParentHomeSource.today),
+      builder: (context, state) => gated(
+        (classId, classes) => ActivityScheduleScreen(
+          initialDay: teacher.live
+              ? DateTime.now()
+              : FakeParentHomeSource.today,
+          classId: classId,
+          source: teacher.schedule ?? const FakeActivityScheduleSource(),
+        ),
+      ),
     ),
   ];
 }
@@ -1160,6 +1174,7 @@ class _ComingSoonPage extends StatelessWidget {
 /// Nguồn giáo viên gọi BE. Lớp = lớp `teaches` đầu tiên; danh sách năm học lấy từ BE.
 TeacherSources _liveTeacher(MobileApi api) {
   final years = LiveSchoolYearSource(api);
+  final schedule = LiveActivityScheduleSource(api);
   SelectedSchoolYear.source = years;
   // Năm đang chọn mặc định = năm đang chạy của BE (không dùng năm giả)
   years
@@ -1175,7 +1190,9 @@ TeacherSources _liveTeacher(MobileApi api) {
   return TeacherSources(
     live: true,
     loadClasses: () => loadTeacherClasses(api),
-    home: LiveTeacherHomeSource(api),
+    loadYearClasses: (schoolYearId) =>
+        loadTeacherClasses(api, schoolYearId: schoolYearId),
+    home: LiveTeacherHomeSource(api, schedule: schedule),
     roster: LiveClassRosterSource(api),
     attendance: LiveAttendanceSource(api),
     attendanceSummary: LiveAttendanceSummarySource(api),
@@ -1187,6 +1204,8 @@ TeacherSources _liveTeacher(MobileApi api) {
     review: LiveDailyReviewSource(api),
     evaluation: LiveKidEvaluationSource(api),
     rewards: LiveTeacherRewardSource(api),
+    menu: LiveTeacherMenuSource(api),
+    schedule: schedule,
   );
 }
 

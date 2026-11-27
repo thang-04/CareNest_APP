@@ -42,8 +42,24 @@ class _ActivityScheduleScreenState extends State<ActivityScheduleScreen> {
     return FutureBuilder<WeekSchedule>(
       future: _week,
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Hoạt động dạy học')),
+            body: const AppErrorState(
+              title: 'Chưa tải được hoạt động',
+              message: 'Kiểm tra kết nối mạng rồi thử lại.',
+            ),
+          );
+        }
         final week = snapshot.data;
         final weekEnd = week?.weekStart.add(const Duration(days: 4));
+        final selected = week == null
+            ? _selected
+            : _selected.isBefore(week.weekStart)
+            ? week.weekStart
+            : _selected.isAfter(weekEnd!)
+            ? weekEnd
+            : _selected;
         return Scaffold(
           appBar: AppBar(title: const Text('Hoạt động dạy học')),
           body: week == null
@@ -59,7 +75,7 @@ class _ActivityScheduleScreenState extends State<ActivityScheduleScreen> {
                         for (var i = 0; i < 5; i++)
                           week.weekStart.add(Duration(days: i)),
                       ],
-                      selected: _selected,
+                      selected: selected,
                       onChanged: (value) => setState(() => _selected = value),
                     ),
                     const SizedBox(height: AppSpacing.space3),
@@ -75,7 +91,7 @@ class _ActivityScheduleScreenState extends State<ActivityScheduleScreen> {
                           const SizedBox(width: AppSpacing.space3),
                           Expanded(
                             child: Text(
-                              'Kế hoạch tuần ${week.weekStart.day}–${DateLabels.dayMonth(weekEnd!)} · Chủ đề “${week.theme}”',
+                              '${week.theme} · ${week.weekStart.day}–${DateLabels.dayMonth(weekEnd!)}',
                               style: textTheme.titleSmall,
                             ),
                           ),
@@ -86,14 +102,14 @@ class _ActivityScheduleScreenState extends State<ActivityScheduleScreen> {
                     Semantics(
                       header: true,
                       child: Text(
-                        DateUtils.isSameDay(_selected, widget.initialDay)
+                        DateUtils.isSameDay(selected, widget.initialDay)
                             ? 'Hoạt động dạy học hôm nay'
-                            : 'Hoạt động ngày ${DateLabels.dayMonth(_selected)}',
+                            : 'Hoạt động ngày ${DateLabels.dayMonth(selected)}',
                         style: textTheme.titleMedium,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.space3),
-                    if (week.days[_selected.weekday] case final entries?)
+                    if (week.days[selected.weekday] case final entries?)
                       AppTimeline(
                         entries: [
                           for (final entry in entries)
@@ -104,7 +120,7 @@ class _ActivityScheduleScreenState extends State<ActivityScheduleScreen> {
                               isCurrent:
                                   entry.isCurrent &&
                                   DateUtils.isSameDay(
-                                    _selected,
+                                    selected,
                                     widget.initialDay,
                                   ),
                             ),

@@ -5,6 +5,8 @@ import 'package:carenest_app/core/widgets/app_state_view.dart';
 import 'package:carenest_app/features/parent/evaluation/domain/evaluation.dart';
 import 'package:carenest_app/features/teacher/attendance/data/fake_attendance_source.dart';
 import 'package:carenest_app/features/teacher/attendance/domain/attendance_summary.dart';
+import 'package:carenest_app/features/shared/school_menu/domain/school_menu.dart';
+import 'package:carenest_app/features/teacher/activity_schedule/domain/activity_schedule.dart';
 import 'package:carenest_app/features/teacher/class_leave_notices/domain/class_leave_notice.dart';
 import 'package:carenest_app/features/teacher/class_roster/domain/child_health.dart';
 import 'package:carenest_app/features/teacher/class_roster/data/live_teacher_classes.dart';
@@ -39,9 +41,11 @@ class TeacherSources {
     this.review,
     this.evaluation,
     this.rewards,
+    this.menu,
+    this.schedule,
   });
 
-  /// Phiên thật: màn chưa có API ở BE (lịch hoạt động, thực đơn) hiện "Sắp có".
+  /// Phiên thật dùng các nguồn gọi BE; bản xem thử dùng nguồn giả mặc định của từng màn.
   final bool live;
 
   /// Lớp giáo viên xem được (GET /attendance/classes); lớp `teaches` xếp trước. Chọn lớp đầu có `teaches`.
@@ -62,6 +66,8 @@ class TeacherSources {
   final DailyReviewSource? review;
   final EvaluationSource? evaluation;
   final TeacherRewardSource? rewards;
+  final SchoolMenuSource? menu;
+  final ActivityScheduleSource? schedule;
 }
 
 /// Chờ lớp của giáo viên rồi mới dựng màn; bản giả dùng lớp giả, không gọi mạng.

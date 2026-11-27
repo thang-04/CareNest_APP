@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:carenest_app/core/integration/api_dates.dart';
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/features/teacher/pickup/domain/pickup.dart';
@@ -55,6 +57,12 @@ class LivePickupSource implements PickupSource {
           ),
       ],
     );
+  }
+
+  @override
+  Future<Uint8List?> loadPhoto(String url) async {
+    if (url.startsWith('http')) return null;
+    return _api.binary(url);
   }
 
   /// POST không tự thử lại: lỗi mạng ⇒ GV tải lại bảng đón rồi quyết định (tránh ghi trùng).

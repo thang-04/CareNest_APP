@@ -1,9 +1,23 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carenest_app/features/teacher/pickup/data/live_pickup_source.dart';
 import 'package:carenest_app/features/teacher/pickup/domain/pickup.dart';
 
 import '../../../helpers/live_fakes.dart';
+
+class _PhotoApi extends ScriptedApi {
+  _PhotoApi(FakeLiveSession session) : super(session, const {});
+
+  String? requestedPath;
+
+  @override
+  Future<Uint8List> binary(String path) async {
+    requestedPath = path;
+    return Uint8List.fromList([1, 2, 3]);
+  }
+}
 
 void main() {
   final session = FakeLiveSession(['TEACHER']);
@@ -163,5 +177,16 @@ void main() {
       'note': 'Không khớp người đón',
     });
     expect(api.calls, ['POST /pickups']);
+  });
+
+  test('loadPhoto_usesAuthenticatedBinaryEndpointForRelativeUrl', () async {
+    final api = _PhotoApi(session);
+
+    final bytes = await LivePickupSource(
+      api,
+    ).loadPhoto('/children/5/guardians/8/photo');
+
+    expect(api.requestedPath, '/children/5/guardians/8/photo');
+    expect(bytes, [1, 2, 3]);
   });
 }

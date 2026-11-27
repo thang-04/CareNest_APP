@@ -1,17 +1,23 @@
 import 'package:carenest_app/core/integration/mobile_api.dart';
 import 'package:carenest_app/features/teacher/class_roster/data/live_teacher_classes.dart';
+import 'package:carenest_app/features/teacher/activity_schedule/domain/activity_schedule.dart';
 import 'package:carenest_app/features/teacher/teacher_home/domain/teacher_today.dart';
 
 /// Trang chủ GV từ BE (chưa có endpoint riêng): tên = `GET /accounts/me`; lớp = `GET /attendance/classes`
 /// (lớp đầu tiên `teaches`, hoặc [classId]); số đã điểm danh, giờ chốt, khóa, khám đầu ngày =
-/// `GET /classes/{id}/attendance`; số đơn nghỉ = `GET /leave-requests?classId=`. BE chưa có lịch hoạt động
-/// đang diễn ra ⇒ `currentActivity` null. APP chỉ đếm bản ghi BE trả, không áp rule.
+/// `GET /classes/{id}/attendance`; số đơn nghỉ = `GET /leave-requests?classId=`; hoạt động hôm nay lấy từ
+/// nguồn lịch đã ban hành. APP chỉ hiển thị dữ liệu BE trả, không áp rule nghiệp vụ.
 class LiveTeacherHomeSource implements TeacherHomeSource {
-  LiveTeacherHomeSource(this._api, {this.classId, DateTime Function()? clock})
-    : _clock = clock ?? DateTime.now;
+  LiveTeacherHomeSource(
+    this._api, {
+    this.classId,
+    this.schedule,
+    DateTime Function()? clock,
+  }) : _clock = clock ?? DateTime.now;
 
   final MobileApi _api;
   final String? classId;
+  final ActivityScheduleSource? schedule;
   final DateTime Function() _clock;
 
   @override
@@ -38,6 +44,7 @@ class LiveTeacherHomeSource implements TeacherHomeSource {
     final sheet =
         await _api.json('GET', '/classes/$id/attendance') as Map? ?? const {};
     final leaveCount = await _leaveCount(id);
+    final currentActivity = await _currentActivity(id);
 
     final day = sheet['day'] as Map? ?? const {};
     final schoolDay = day['schoolDay'] != false;
@@ -63,6 +70,7 @@ class LiveTeacherHomeSource implements TeacherHomeSource {
       date: DateTime.tryParse('${day['date']}') ?? _clock(),
       className: cls.name,
       childCount: total,
+      currentActivity: currentActivity,
       deadlineNote: cutoff.isEmpty ? null : 'Hạn điểm danh: $cutoff',
       attendanceRecorded: schoolDay && total > 0 ? recorded : null,
       tasks: [
@@ -142,6 +150,22 @@ class LiveTeacherHomeSource implements TeacherHomeSource {
     try {
       final data = await _api.json('GET', '/leave-requests?classId=$id');
       return data is List ? data.length : null;
+    } on ApiFailure {
+      return null;
+    }
+  }
+
+  Future<String?> _currentActivity(String classId) async {
+    final source = schedule;
+    if (source == null) return null;
+    try {
+      final today = _clock();
+      final week = await source.loadWeek(classId);
+      final entries = week.days[today.weekday] ?? const <ScheduleEntry>[];
+      final entry = entries.firstOrNull;
+      if (entry == null) return null;
+      final detail = entry.detail?.trim() ?? '';
+      return detail.isEmpty ? entry.title : '${entry.title} · $detail';
     } on ApiFailure {
       return null;
     }

@@ -1,4 +1,5 @@
 import 'package:carenest_app/features/teacher/attendance/data/fake_attendance_source.dart';
+import 'dart:typed_data';
 import 'package:carenest_app/features/teacher/class_roster/data/fake_class_roster_source.dart';
 import 'package:carenest_app/features/teacher/pickup/domain/pickup.dart';
 
@@ -156,6 +157,9 @@ class FakePickupSource implements PickupSource {
     className: FakeClassRosterSource.className,
     guardians: guardiansOf(childId),
   );
+
+  @override
+  Future<Uint8List?> loadPhoto(String url) async => null;
 
   @override
   Future<void> record(PickupRequest request) async {

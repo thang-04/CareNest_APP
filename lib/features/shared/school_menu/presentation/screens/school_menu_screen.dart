@@ -120,23 +120,31 @@ class _SchoolMenuScreenState extends State<SchoolMenuScreen> {
 
   List<Widget> _content(BuildContext context, SchoolMenuWeek week) {
     final textTheme = Theme.of(context).textTheme;
+    final day = week.days.keys.any((item) => DateUtils.isSameDay(item, _day))
+        ? _day
+        : week.days.keys.firstOrNull ?? _day;
+    final group = week.groups.any((item) => item.$1 == _group)
+        ? _group
+        : week.groups.firstOrNull?.$1;
     final menu = week.days.entries
-        .where((entry) => DateUtils.isSameDay(entry.key, _day))
+        .where((entry) => DateUtils.isSameDay(entry.key, day))
         .firstOrNull
-        ?.value[_group];
+        ?.value[group];
     return [
       AppDayStrip(
         days: week.days.keys.toList(),
-        selected: _day,
+        selected: day,
         onChanged: (value) => setState(() => _day = value),
       ),
       const SizedBox(height: AppSpacing.space3),
-      AppSegmented<String>(
-        segments: week.groups,
-        selected: _group,
-        onChanged: (value) => setState(() => _group = value),
-      ),
-      const SizedBox(height: AppSpacing.space3),
+      if (week.groups.length > 1) ...[
+        AppSegmented<String>(
+          segments: week.groups,
+          selected: group ?? '',
+          onChanged: (value) => setState(() => _group = value),
+        ),
+        const SizedBox(height: AppSpacing.space3),
+      ],
       if (menu == null)
         const AppEmptyState(
           icon: AppIcons.menuBook,
@@ -145,7 +153,9 @@ class _SchoolMenuScreenState extends State<SchoolMenuScreen> {
         )
       else ...[
         Text(
-          'Nhóm ${menu.groupLabel} (${menu.ageRange}) · ${menu.childCount} bé · định lượng theo nhóm tuổi',
+          menu.ageRange.isEmpty
+              ? menu.groupLabel
+              : 'Nhóm ${menu.groupLabel} (${menu.ageRange}) · ${menu.childCount} bé · định lượng theo nhóm tuổi',
           style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
         ),
         const SizedBox(height: AppSpacing.space3),
@@ -198,7 +208,7 @@ class _SchoolMenuScreenState extends State<SchoolMenuScreen> {
       ],
       if (widget.bottom != null) ...[
         const SizedBox(height: AppSpacing.space2),
-        widget.bottom!(context, week, _group, _day),
+        widget.bottom!(context, week, group ?? '', day),
       ],
       const SizedBox(height: AppSpacing.space3),
       Text(
