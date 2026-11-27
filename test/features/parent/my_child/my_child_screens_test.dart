@@ -304,35 +304,34 @@ void main() {
     expect(find.textContaining('null'), findsNothing);
   });
 
-  testWidgets(
-    'P05: đổi ngày trong tuần, hôm nay có ảnh mẫu bếp đăng theo bữa',
-    (tester) async {
-      await pumpScreen(
-        tester,
-        WeeklyMenuScreen(childId: 'child-1', initialDay: today),
-      );
-      expect(find.textContaining('Cháo thịt bằm'), findsOneWidget);
-      expect(find.text('Ảnh mẫu nhóm Mầm · Bếp đăng 07:50'), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.text('Ảnh mẫu nhóm Mầm · Bếp đăng 10:52'),
-        200,
-      );
-      expect(find.byType(Image), findsNothing);
+  testWidgets('P05: đổi ngày trong tuần; hôm nay có ảnh bữa bếp đăng', (
+    tester,
+  ) async {
+    await pumpScreen(
+      tester,
+      WeeklyMenuScreen(childId: 'child-1', initialDay: today),
+    );
+    expect(find.text('Cháo thịt bằm'), findsOneWidget);
+    expect(find.text('Bếp đăng 07:50'), findsOneWidget);
+    expect(find.byType(Image), findsNothing);
 
-      await tester.scrollUntilVisible(find.text('T3'), -200);
-      await tester.tap(find.text('T3'));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('Bún bò'), findsOneWidget);
-      expect(find.textContaining('Ảnh mẫu nhóm'), findsNothing);
-    },
-  );
+    await tester.scrollUntilVisible(find.text('T3'), -200);
+    await tester.tap(find.text('T3'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bún bò'), findsOneWidget);
+    expect(find.textContaining('Bếp đăng'), findsNothing);
+  });
 
-  testWidgets('P05: bé có dị ứng ⇒ cảnh báo suất thay thế', (tester) async {
+  testWidgets('P05: bé dị ứng cá ⇒ cảnh báo dưới món có cá', (tester) async {
     await pumpScreen(
       tester,
       WeeklyMenuScreen(childId: 'child-2', initialDay: today),
     );
-    await tester.scrollUntilVisible(find.textContaining('dị ứng hải sản'), 200);
+    await tester.scrollUntilVisible(
+      find.text('Có Cá — bé đã khai dị ứng'),
+      200,
+    );
+    expect(find.text('Có Cá — bé đã khai dị ứng'), findsOneWidget);
   });
 
   for (final (name, screen, scaffold) in <(String, Widget, bool)>[

@@ -69,6 +69,8 @@ import 'package:carenest_app/features/parent/parent_home/data/live_parent_home_s
 import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
 import 'package:carenest_app/features/parent/parent_home/presentation/screens/parent_home_screen.dart';
 import 'package:carenest_app/features/parent/parent_home/presentation/selected_child.dart';
+import 'package:carenest_app/features/parent/parent_menu/data/fake_weekly_menu_source.dart';
+import 'package:carenest_app/features/parent/parent_menu/data/live_weekly_menu_source.dart';
 import 'package:carenest_app/features/parent/parent_menu/presentation/screens/weekly_menu_screen.dart';
 import 'package:carenest_app/features/parent/school_year/data/fake_child_school_year_source.dart';
 import 'package:carenest_app/features/parent/school_year/data/live_child_school_year_source.dart';
@@ -449,12 +451,13 @@ List<GoRoute> _parentChildRoutes(ParentSources parent) {
         onSubmitted: openList,
       );
     }),
-    // Q1 (user 25/11): BE chưa có API thực đơn tuần cho phụ huynh ⇒ phiên thật hiện "Sắp có"
     route(
       RoutePaths.parentMenu,
-      (context, state, child) => parent.live
-          ? const _ComingSoonPage('Thực đơn tuần')
-          : WeeklyMenuScreen(childId: child.id, initialDay: parent.today),
+      (context, state, child) => WeeklyMenuScreen(
+        childId: child.id,
+        initialDay: parent.today,
+        source: parent.menu ?? const FakeWeeklyMenuSource(),
+      ),
     ),
     route(
       RoutePaths.parentActivities,
@@ -1005,9 +1008,10 @@ GoRouter _buildLiveRouter(
           evaluation: LiveEvaluationSource(api),
           rewards: LiveRewardSource(api),
           healthBook: LiveHealthBookSource(api),
+          menu: LiveWeeklyMenuSource(api),
           schoolYears: LiveChildSchoolYearSource(api),
         ),
-        kitchen: _liveKitchen(api),
+        kitchen: _liveKitchen(api, session),
         teacher: _liveTeacher(api),
       ),
     ],
@@ -1200,12 +1204,13 @@ TeacherSources _liveTeacher(MobileApi api) {
   );
 }
 
-KitchenSources _liveKitchen(MobileApi api) {
+KitchenSources _liveKitchen(MobileApi api, MobileSession session) {
   final photos = LiveKitchenPhotoSource(api);
   final samples = LiveFoodSampleSource(api);
   return KitchenSources(
     home: LiveKitchenHomeSource(
       api,
+      account: () => session.account,
       tasks: () async {
         final results = await Future.wait([
           photos.loadToday(),

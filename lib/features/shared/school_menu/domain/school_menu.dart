@@ -1,6 +1,21 @@
 import 'package:flutter/foundation.dart';
 
-import 'package:carenest_app/features/parent/parent_menu/domain/weekly_menu.dart';
+/// Một bữa của màn thực đơn mẫu (Xem thử BGH/bếp): chữ dựng sẵn.
+@immutable
+class MenuMeal {
+  const MenuMeal({
+    required this.name,
+    required this.time,
+    required this.dishes,
+  });
+
+  /// "Bữa sáng"
+  final String name;
+
+  /// "07:45"
+  final String time;
+  final String dishes;
+}
 
 /// Thực đơn thay thế cho trẻ dị ứng / ăn chay ở mức cần để nấu: số bé, đổi món — không tên trẻ (AUTH-05).
 @immutable

@@ -1,95 +1,102 @@
 import 'package:flutter/foundation.dart';
 
+/// Bữa theo BE `MealSession`; nhãn như màn bếp.
+enum MenuSession {
+  morning('MORNING', 'Bữa phụ sáng'),
+  lunch('LUNCH', 'Bữa trưa'),
+  afternoon('AFTERNOON', 'Bữa chiều');
+
+  const MenuSession(this.code, this.label);
+  final String code;
+  final String label;
+
+  static MenuSession? fromCode(Object? code) =>
+      values.where((s) => s.code == code).firstOrNull;
+}
+
+/// Một món (BE `ParentMenuResponse` PAR-14). [childAllergens] = chất trong món mà bé đã khai dị ứng,
+/// BE đối chiếu; APP chỉ hiện cảnh báo, không tự so (NUT-23).
 @immutable
-class MenuMeal {
-  const MenuMeal({
+class MenuDish {
+  const MenuDish({
     required this.name,
-    required this.time,
-    required this.dishes,
-    this.photos,
+    this.allergens = const [],
+    this.childAllergens = const [],
   });
 
-  /// "Bữa sáng"
   final String name;
-
-  /// "07:45"
-  final String time;
-  final String dishes;
-
-  /// Ảnh mẫu của bữa cho nhóm tuổi của bé; null ⇒ ngày đó không có phần ảnh.
-  final MealPhotos? photos;
+  final List<String> allergens;
+  final List<String> childAllergens;
 }
 
-/// Ảnh mẫu một bữa theo nhóm tuổi của bé, bếp chụp (NUT-16); một bữa có thể nhiều ảnh
-/// (đề xuất A, user 17/11). BE chưa có API theo nhóm tuổi ⇒ dữ liệu giả; ảnh thật tải qua URL có auth.
-/// Trạng thái do nguồn dữ liệu trả, App không tự suy theo giờ máy.
+/// Ảnh bữa ăn bếp đăng (NUT-16); tải qua API có auth bằng [photoId].
 @immutable
-sealed class MealPhotos {
-  const MealPhotos();
+class MenuPhoto {
+  const MenuPhoto({required this.photoId, required this.uploadedAt});
 
-  const factory MealPhotos.posted({
-    required String ageGroup,
-    required DateTime postedAt,
-    required List<String> photoIds,
-  }) = PostedMealPhotos;
-
-  /// Đã qua giờ ăn mà bếp chưa đăng ảnh.
-  const factory MealPhotos.missing() = MissingMealPhotos;
-
-  /// Chưa tới giờ ăn.
-  const factory MealPhotos.upcoming() = UpcomingMealPhotos;
+  final String photoId;
+  final DateTime uploadedAt;
 }
 
-final class PostedMealPhotos extends MealPhotos {
-  const PostedMealPhotos({
-    required this.ageGroup,
-    required this.postedAt,
-    required this.photoIds,
+@immutable
+class MenuMealEntry {
+  const MenuMealEntry({
+    required this.session,
+    required this.dishes,
+    this.photo,
   });
 
-  /// Nhãn nhóm tuổi, vd. "Mầm".
-  final String ageGroup;
-  final DateTime postedAt;
-  final List<String> photoIds;
+  final MenuSession session;
+  final List<MenuDish> dishes;
+
+  /// null ⇒ bếp chưa đăng ảnh bữa này.
+  final MenuPhoto? photo;
 }
 
-final class MissingMealPhotos extends MealPhotos {
-  const MissingMealPhotos();
-}
-
-final class UpcomingMealPhotos extends MealPhotos {
-  const UpcomingMealPhotos();
-}
-
-/// Thực đơn một ngày đã công bố (NUT-08) cho một bé. Năng lượng và ghi chú dị ứng là chữ BE trả,
-/// APP không tự tính hay so chuẩn (NUT-06, NUT-09).
+/// Một ngày trong tuần của bé. [meals] rỗng khi chưa công bố, ngày nghỉ, bé chưa học hoặc
+/// bé không báo ăn — lý do lấy từ cờ BE, APP không tự suy.
 @immutable
 class MenuDay {
   const MenuDay({
     required this.date,
     required this.meals,
-    this.energyNote,
-    this.allergyNote,
-    this.allergyAlert = false,
+    this.enrolled = true,
+    this.dayOff = false,
   });
 
   final DateTime date;
-  final List<MenuMeal> meals;
-  final String? energyNote;
-  final String? allergyNote;
-
-  /// Bé có thực đơn thay thế ⇒ nhắc kiểu cảnh báo thay vì xác nhận.
-  final bool allergyAlert;
+  final List<MenuMealEntry> meals;
+  final bool enrolled;
+  final bool dayOff;
 }
 
 @immutable
 class WeeklyMenu {
-  const WeeklyMenu({required this.weekStart, required this.days});
+  const WeeklyMenu({
+    required this.weekStart,
+    required this.days,
+    this.published = true,
+    this.mealsHidden = false,
+    this.unmatchedAllergies = const [],
+  });
 
   final DateTime weekStart;
   final List<MenuDay> days;
+
+  /// Tuần đã công bố (NUT-08).
+  final bool published;
+
+  /// Bé không báo ăn ⇒ BE ẩn món và ảnh.
+  final bool mealsHidden;
+
+  /// Dị ứng bé đã khai nhưng không khớp danh mục chất ⇒ BE không cảnh báo được theo món.
+  final List<String> unmatchedAllergies;
 }
 
 abstract interface class WeeklyMenuSource {
-  Future<WeeklyMenu> loadWeek(String childId);
+  /// [weekStart] null ⇒ tuần hiện tại theo BE.
+  Future<WeeklyMenu> loadWeek(String childId, {DateTime? weekStart});
+
+  /// Byte ảnh bữa; null ⇒ chỉ có khối giữ chỗ (Xem thử).
+  Future<Uint8List?> loadPhoto(String childId, String photoId);
 }

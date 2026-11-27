@@ -1,5 +1,3 @@
-import 'package:carenest_app/features/parent/parent_menu/data/fake_weekly_menu_source.dart';
-import 'package:carenest_app/features/parent/parent_menu/domain/weekly_menu.dart';
 import 'package:carenest_app/features/shared/school_menu/domain/school_menu.dart';
 
 /// Thực đơn giả tuần 12–16/10, cùng món với màn Phụ huynh (P05) và có định lượng (mockup K02, H07).
@@ -16,6 +14,36 @@ class FakeSchoolMenuSource implements SchoolMenuSource {
   ];
 
   static const secondCampusId = 'campus-2';
+
+  static final weekStart = DateTime(2026, 10, 12);
+
+  static const _breakfasts = [
+    'Cháo thịt bằm · Sữa tươi',
+    'Bún bò · Sữa chua',
+    'Phở gà · Sữa tươi',
+    'Bánh mì trứng · Sữa đậu nành',
+    'Xôi gấc · Sữa tươi',
+  ];
+  static const _lunches = [
+    'Cơm trắng · Canh bí đỏ nấu thịt · Cá basa sốt cà chua · Chuối',
+    'Cơm trắng · Canh rau ngót · Thịt kho trứng cút · Dưa hấu',
+    'Cơm trắng · Canh cải nấu tôm · Gà rim gừng · Thanh long',
+    'Cơm trắng · Canh mồng tơi nấu cua · Đậu sốt thịt · Đu đủ',
+    'Cơm trắng · Canh chua cá · Thịt bò xào · Cam',
+  ];
+  static const _snacks = [
+    'Bánh flan · Nước cam',
+    'Chè đậu xanh',
+    'Sữa chua · Bánh quy',
+    'Khoai lang luộc · Sữa tươi',
+    'Bánh bông lan · Nước ép táo',
+  ];
+
+  static List<MenuMeal> _mealsOf(int day) => [
+    MenuMeal(name: 'Bữa sáng', time: '07:45', dishes: _breakfasts[day]),
+    MenuMeal(name: 'Bữa trưa', time: '10:45', dishes: _lunches[day]),
+    MenuMeal(name: 'Bữa chiều', time: '14:30', dishes: _snacks[day]),
+  ];
 
   static const _ages = {
     'nha-tre': '2–3 tuổi',
@@ -122,20 +150,19 @@ class FakeSchoolMenuSource implements SchoolMenuSource {
 
   @override
   Future<SchoolMenuWeek> loadWeek(String campusId) async {
-    final parentWeek = await const FakeWeeklyMenuSource().loadWeek('child-1');
     final second = campusId == secondCampusId;
     final counts = second ? _secondCounts : _counts;
     final alternatives = second ? _secondAlternatives : _alternatives;
     return SchoolMenuWeek(
-      weekStart: FakeWeeklyMenuSource.weekStart,
+      weekStart: weekStart,
       groups: groups,
       publishedNote: 'Đã duyệt & công bố · 09/10',
       nutritionSummary: second
           ? 'Năng lượng đạt chuẩn 4/4 nhóm tuổi'
           : 'Năng lượng đạt chuẩn 3/3 nhóm tuổi · Canxi nhóm Mầm còn thiếu',
       days: {
-        for (final (i, day) in parentWeek.days.indexed)
-          day.date: {
+        for (var i = 0; i < 5; i++)
+          weekStart.add(Duration(days: i)): {
             for (final id in counts.keys)
               id: AgeGroupMenu(
                 groupId: id,
@@ -143,7 +170,7 @@ class FakeSchoolMenuSource implements SchoolMenuSource {
                 ageRange: _ages[id]!,
                 childCount: counts[id]!,
                 meals: [
-                  for (final (m, meal) in day.meals.indexed)
+                  for (final (m, meal) in _mealsOf(i).indexed)
                     MenuMeal(
                       name: meal.name,
                       time: meal.time,

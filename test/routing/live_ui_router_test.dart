@@ -134,30 +134,36 @@ void main() {
     expect(find.text('Bật xa'), findsOneWidget);
   });
 
-  testWidgets('live_parentHome_menuAndActivityComingSoon', (tester) async {
+  testWidgets('live_parentHome_menuStatusFromBe (PAR-14)', (tester) async {
     final session = FakeLiveSession(['PARENT'], childIds: [5]);
+    final api = parentApi(session)
+      ..routes['GET /children/5/menu'] = (_) => {'published': true};
     await pumpLiveApp(
       tester,
       session,
-      api: parentApi(session),
+      api: api,
       location: RoutePaths.parentToday,
     );
-    expect(find.bySemanticsLabel('Thực đơn: Sắp có'), findsOneWidget);
+    expect(find.bySemanticsLabel('Thực đơn: Đã công bố'), findsOneWidget);
   });
 
-  for (final path in [RoutePaths.parentMenu]) {
-    testWidgets('live_parentNoApiRoute_showsComingSoon $path', (tester) async {
-      final session = FakeLiveSession(['PARENT'], childIds: [5]);
-      await pumpLiveApp(
-        tester,
-        session,
-        api: parentApi(session),
-        location: RoutePaths.withChild(path, '5'),
-      );
-      // Q1: chưa có API ở BE ⇒ không hiện thực đơn/hoạt động giả
-      expect(find.byType(AppComingSoon), findsOneWidget);
-    });
-  }
+  testWidgets('live_parentMenu_loadsWeekFromBe (PAR-14)', (tester) async {
+    final session = FakeLiveSession(['PARENT'], childIds: [5]);
+    final api = parentApi(session)
+      ..routes['GET /children/5/menu'] = (_) => {
+        'weekStart': '2026-11-23',
+        'published': false,
+        'days': <Object>[],
+      };
+    await pumpLiveApp(
+      tester,
+      session,
+      api: api,
+      location: RoutePaths.withChild(RoutePaths.parentMenu, '5'),
+    );
+    expect(find.byType(AppComingSoon), findsNothing);
+    expect(find.text('Thực đơn tuần này chưa công bố'), findsOneWidget);
+  });
 
   testWidgets('live_myChildTab_showsBeProfile', (tester) async {
     final session = FakeLiveSession(['PARENT'], childIds: [5]);
@@ -290,7 +296,7 @@ void main() {
             'session': 'LUNCH',
             'status': 'CONFIRMED',
             'needsReconfirmation': false,
-            'totals': {'normal': 135, 'substitute': 4},
+            'totals': {'normal': 139, 'substitute': 0},
           },
         ],
       },
@@ -307,7 +313,7 @@ void main() {
       location: RoutePaths.kitchenHome,
     );
     expect(api.calls, contains('GET /nutrition/kitchen/day'));
-    // Bản giả có bữa trưa 182 suất; BE trả 139 (135 thường + 4 thay thế)
+    // Bản giả có bữa trưa 182 suất; BE trả 139
     expect(find.text('139'), findsOneWidget);
     expect(find.text('182'), findsNothing);
   });
