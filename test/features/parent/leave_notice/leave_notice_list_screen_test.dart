@@ -1,3 +1,5 @@
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -431,6 +433,118 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  Future<void> pickToday(WidgetTester tester) async {
+    await tester.tap(dateField('Từ ngày'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Hai, 12/10/2026')));
+    await tester.pumpAndSettle();
+  }
+
+  bool selectedSegment(WidgetTester tester, String label) =>
+      tester.getSemantics(find.text(label)).flagsCollection.isSelected ==
+      Tristate.isTrue;
+
+  testWidgets(
+    'ATT-05b: hôm nay qua giờ chốt ⇒ khoá Cả ngày, Buổi sáng, tự chọn Buổi chiều',
+    (tester) async {
+      final source = _TodaySource();
+      await pumpForm(tester, source);
+      await pickToday(tester);
+
+      expect(
+        find.text(
+          'Đã qua giờ chốt hôm nay: chỉ báo nghỉ được buổi chiều, '
+          'đơn chỉ báo cô giáo.',
+        ),
+        findsOneWidget,
+      );
+      expect(selectedSegment(tester, 'Buổi chiều'), isTrue);
+      await tester.tap(find.text('Cả ngày'));
+      await tester.pumpAndSettle();
+      expect(selectedSegment(tester, 'Buổi chiều'), isTrue);
+
+      await tester.scrollUntilVisible(
+        find.byType(TextField),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.enterText(find.byType(TextField), 'Bé mệt');
+      await tester.tap(find.text('Gửi đơn xin nghỉ'));
+      await tester.pumpAndSettle();
+      expect(source.sent?.session, LeaveSession.afternoon);
+      expect(source.sent?.eats, isNull);
+    },
+  );
+
+  testWidgets('ATT-05b: hôm nay không học ⇒ khoá cả 3 buổi, không gửi được', (
+    tester,
+  ) async {
+    final source = _TodaySource(noSchool: true);
+    await pumpForm(tester, source);
+    await pickToday(tester);
+
+    expect(find.text('Hôm nay không có buổi học'), findsOneWidget);
+    await tester.tap(find.text('Buổi chiều'));
+    await tester.pumpAndSettle();
+    expect(selectedSegment(tester, 'Buổi chiều'), isFalse);
+    await tester.scrollUntilVisible(
+      find.byType(TextField),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.enterText(find.byType(TextField), 'Bé mệt');
+    await tester.tap(find.text('Gửi đơn xin nghỉ'));
+    await tester.pumpAndSettle();
+    expect(source.sent, isNull);
+  });
+
+  testWidgets('ATT-05b: đã tới giờ chiều (4032) ⇒ khoá cả 3, hiện câu BE', (
+    tester,
+  ) async {
+    final source = _TodaySource(afternoonStarted: true);
+    await pumpForm(tester, source);
+    await pickToday(tester);
+
+    expect(find.text(_afternoonStarted), findsOneWidget);
+    expect(find.textContaining('Đã qua giờ chốt hôm nay'), findsNothing);
+    await tester.tap(find.text('Buổi chiều'));
+    await tester.pumpAndSettle();
+    expect(selectedSegment(tester, 'Buổi chiều'), isFalse);
+    await tester.scrollUntilVisible(
+      find.byType(TextField),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.enterText(find.byType(TextField), 'Bé mệt');
+    await tester.tap(find.text('Gửi đơn xin nghỉ'));
+    await tester.pumpAndSettle();
+    expect(source.sent, isNull);
+  });
+
+  testWidgets('ATT-05b: lỗi mạng khi kiểm tra hôm nay ⇒ không khoá buổi', (
+    tester,
+  ) async {
+    await pumpForm(tester, _TodaySource(offline: true));
+    await pickToday(tester);
+    expect(find.textContaining('Đã qua giờ chốt hôm nay'), findsNothing);
+    await tester.tap(find.text('Buổi sáng'));
+    await tester.pumpAndSettle();
+    expect(selectedSegment(tester, 'Buổi sáng'), isTrue);
+  });
+
+  testWidgets('ATT-05b: đổi sang ngày mai ⇒ mở lại các buổi', (tester) async {
+    await pumpForm(tester, _TodaySource());
+    await pickToday(tester);
+    await tester.tap(dateField('Từ ngày'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^Thứ Ba, 13/10/2026')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Đã qua giờ chốt hôm nay'), findsNothing);
+    await tester.tap(find.text('Cả ngày'));
+    await tester.pumpAndSettle();
+    expect(selectedSegment(tester, 'Cả ngày'), isTrue);
+  });
+
   testWidgets('submit_beRejects_showsBeMessage', (tester) async {
     await pumpForm(tester, _RejectingSource());
     await tester.scrollUntilVisible(
@@ -445,6 +559,9 @@ void main() {
     expect(find.text('Đã có đơn nghỉ trùng ngày 13/10/2026'), findsOneWidget);
   });
 }
+
+const _afternoonStarted =
+    'Đã tới giờ bắt đầu buổi chiều (13:30), không gửi hoặc hủy báo nghỉ chiều hôm nay';
 
 /// Nguồn giả: đã qua giờ chốt hôm nay, nghỉ chiều chỉ là báo cô giáo (ATT-05b).
 class _NoticeOnlySource extends FakeLeaveNoticeSource {
@@ -494,4 +611,45 @@ class _RejectingSource extends FakeLeaveNoticeSource {
   @override
   Future<LeaveNotice> submit(LeaveNoticeDraft draft) async =>
       throw ApiFailure(409, 'Đã có đơn nghỉ trùng ngày 13/10/2026', 4022);
+}
+
+/// Nguồn giả hôm nay 12/10 (ATT-05b): BE preview Cả ngày trả 4021 khi qua giờ chốt; [noSchool] ⇒
+/// buổi chiều cũng 4021 (ngày không học); [afternoonStarted] ⇒ buổi chiều 4032 (đã tới giờ chiều);
+/// [offline] ⇒ lỗi mạng.
+class _TodaySource extends FakeLeaveNoticeSource {
+  _TodaySource({
+    this.noSchool = false,
+    this.afternoonStarted = false,
+    this.offline = false,
+  }) : super(delay: Duration.zero);
+
+  final bool noSchool;
+  final bool afternoonStarted;
+  final bool offline;
+  LeaveNoticeDraft? sent;
+
+  @override
+  Future<LeaveMealPlan> loadMealPlan(
+    String childId,
+    DateTime date,
+    LeaveSession session,
+  ) async {
+    if (date != today) return super.loadMealPlan(childId, date, session);
+    if (offline) throw ApiFailure(0, 'Mất mạng');
+    if (session != LeaveSession.afternoon || noSchool) {
+      throw ApiFailure(400, 'Khoảng đã chọn không có ngày học nào', 4021);
+    }
+    if (afternoonStarted) throw ApiFailure(409, _afternoonStarted, 4032);
+    return const LeaveMealPlan(
+      offMeals: [LeaveMeal.afternoonSnack],
+      keptMeals: [LeaveMeal.morningSnack, LeaveMeal.lunch],
+      noticeOnly: true,
+    );
+  }
+
+  @override
+  Future<LeaveNotice> submit(LeaveNoticeDraft draft) {
+    sent = draft;
+    return super.submit(draft);
+  }
 }

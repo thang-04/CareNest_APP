@@ -59,6 +59,12 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
   bool _mealPlanFailed = false;
   int _mealPlanRequest = 0;
 
+  /// Buổi khoá khi chọn hôm nay (ATT-05b), suy từ BE preview: Cả ngày 4021 ⇒ qua giờ chốt; chiều
+  /// cũng 4021 (không học) hoặc 4032 (đã tới giờ chiều) ⇒ khoá cả 3. Lỗi mạng ⇒ không khoá.
+  Set<LeaveSession> _locked = const {};
+  String? _lockNote;
+  int _todayRequest = 0;
+
   /// Công tắc "Bé tham gia ăn" cho bữa của buổi còn học; BE mặc định có ăn.
   bool _eats = true;
   final _reason = TextEditingController();
@@ -122,6 +128,78 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
     }
   }
 
+  bool get _allLocked => _locked.length == LeaveSession.values.length;
+
+  Future<void> _checkToday() async {
+    final request = ++_todayRequest;
+    setState(() {
+      _locked = const {};
+      _lockNote = null;
+    });
+    if (_from != _source.today) return;
+    bool current() => mounted && request == _todayRequest;
+    try {
+      await _source.loadMealPlan(widget.child.id, _from, LeaveSession.fullDay);
+      return;
+    } on ApiFailure catch (error) {
+      if (error.errorCode != _noSchoolDay) return;
+    } catch (_) {
+      return;
+    }
+    LeaveMealPlan? afternoon;
+    try {
+      afternoon = await _source.loadMealPlan(
+        widget.child.id,
+        _from,
+        LeaveSession.afternoon,
+      );
+    } on ApiFailure catch (error) {
+      // Không học hôm nay, hoặc đã tới giờ chiều (BE 4032) ⇒ không còn buổi nào báo được
+      final note = switch (error.errorCode) {
+        _noSchoolDay => 'Hôm nay không có buổi học',
+        _afternoonStarted => error.message,
+        _ => null,
+      };
+      if (note != null) {
+        if (!current()) return;
+        setState(() {
+          _locked = LeaveSession.values.toSet();
+          _lockNote = note;
+        });
+        return;
+      }
+      // Lỗi khác (vd. bé đã vắng hôm nay): vẫn khoá Cả ngày, Buổi sáng; BE báo lý do khi gửi
+    } catch (_) {
+      return;
+    }
+    if (!current()) return;
+    setState(() {
+      _locked = const {LeaveSession.fullDay, LeaveSession.morning};
+      _lockNote =
+          'Đã qua giờ chốt hôm nay: chỉ báo nghỉ được buổi chiều, '
+          'đơn chỉ báo cô giáo.';
+      _session = LeaveSession.afternoon;
+      _to = _from;
+      _eats = true;
+    });
+    if (afternoon == null) {
+      _loadMealPlan();
+    } else {
+      // Bỏ kết quả preview cũ đang chờ, dùng luôn bản buổi chiều vừa tải
+      _mealPlanRequest++;
+      setState(() {
+        _mealPlan = afternoon;
+        _mealPlanFailed = false;
+      });
+    }
+  }
+
+  /// BE `LEAVE_NO_SCHOOL_DAY`: khoảng chọn không còn ngày học (gồm hôm nay đã qua giờ chốt).
+  static const _noSchoolDay = 4021;
+
+  /// BE: đã tới giờ bắt đầu buổi chiều, không gửi hoặc hủy báo nghỉ chiều hôm nay.
+  static const _afternoonStarted = 4032;
+
   void _selectSession(LeaveSession session) {
     setState(() {
       _session = session;
@@ -145,6 +223,7 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
       if (_to.isBefore(day) || _isHalfDay) _to = day;
     });
     if (_isHalfDay) _loadMealPlan();
+    _checkToday();
   }
 
   Future<void> _pickTo() async {
@@ -260,6 +339,7 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
   /// Dòng đậm đầu hộp (Figma PH03): bữa nào huỷ theo đơn, lấy từ cách chia bữa BE trả.
   String? get _mealNotice {
     final day = 'ngày ${DateLabels.dayMonth(_from)}';
+    if (_allLocked) return null;
     if (!_isHalfDay) {
       // ATT-04 CONFIRMED: nghỉ cả ngày ⇒ huỷ suất các ngày đó
       final days = DateLabels.dayMonth(_from) == DateLabels.dayMonth(_to)
@@ -371,8 +451,18 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
                 (session, session.label),
             ],
             selected: _session,
+            disabled: _locked,
             onChanged: _submitting ? (_) {} : _selectSession,
           ),
+          if (_lockNote != null) ...[
+            const SizedBox(height: AppSpacing.space2),
+            Text(
+              _lockNote!,
+              style: textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
           ..._mealChoice(textTheme),
           const SizedBox(height: AppSpacing.space4),
           AppTextField(
@@ -407,7 +497,7 @@ class _LeaveNoticeFormScreenState extends State<LeaveNoticeFormScreen> {
             loadingLabel: 'Đang gửi',
             isLoading: _submitting,
             expand: true,
-            onPressed: _submit,
+            onPressed: _allLocked ? null : _submit,
           ),
         ],
       ),
