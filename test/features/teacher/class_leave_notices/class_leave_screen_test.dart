@@ -20,19 +20,13 @@ Future<void> pump(WidgetTester tester, DateTime today) async {
 
 void main() {
   testWidgets(
-    'Đơn nghỉ của phụ huynh: trường như Web, chỉ xem, khoảng mặc định',
+    'Đơn xin nghỉ của lớp: trường như Web, chỉ xem, khoảng mặc định',
     (tester) async {
       await pump(tester, DateTime(2026, 10, 12));
-      expect(find.text('Đơn nghỉ của phụ huynh'), findsOneWidget);
-      expect(find.text('Từ ngày 01/10/2026'), findsOneWidget);
-      expect(find.text('Đến ngày 11/12/2026'), findsOneWidget);
-      expect(find.text('Đặt lại bộ lọc'), findsNothing);
+      expect(find.text('Đơn xin nghỉ của lớp'), findsOneWidget);
+      expect(find.text('Hôm nay & sắp tới'), findsOneWidget);
       expect(
-        find.textContaining('Buổi: Buổi chiều', findRichText: true),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining('Không ăn (Bữa trưa)', findRichText: true),
+        find.textContaining('Buổi chiều · Không ăn (Bữa trưa)'),
         findsOneWidget,
       );
       expect(
@@ -40,13 +34,19 @@ void main() {
         findsOneWidget,
       );
       expect(find.byType(AppButton), findsNothing);
-      // Đơn 29/9 nằm ngoài khoảng mặc định
+      // Tất cả: hiện khoảng ngày mặc định; đơn 29/9 vẫn ngoài khoảng
+      await tester.tap(find.text('Tất cả'));
+      await tester.pumpAndSettle();
+      expect(find.text('Từ 01/10/2026'), findsOneWidget);
+      expect(find.text('Đến 11/12/2026'), findsOneWidget);
       expect(find.text('Lê Hoàng Nam'), findsNothing);
     },
   );
 
-  testWidgets('khoảng ngày không có đơn ⇒ Không có đơn nghỉ', (tester) async {
+  testWidgets('khoảng ngày không có đơn ⇒ Không có đơn xin nghỉ', (
+    tester,
+  ) async {
     await pump(tester, DateTime(2027, 6, 1));
-    expect(find.text('Không có đơn nghỉ'), findsOneWidget);
+    expect(find.text('Không có đơn xin nghỉ'), findsOneWidget);
   });
 }

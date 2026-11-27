@@ -85,31 +85,31 @@ HealthEntry _entry(int month, double h, double w) => HealthEntry(
 
 void main() {
   testWidgets(
-    'Danh sách trẻ: chip trạng thái có số, dòng có ngày sinh, phụ huynh',
+    'Lớp học: tiêu đề có số bé, dòng có ngày sinh, phụ huynh, nhãn trạng thái',
     (tester) async {
       await pumpRoster(tester);
-      expect(find.textContaining('Danh sách trẻ'), findsOneWidget);
-      expect(find.text('Tổng số trẻ 3'), findsOneWidget);
-      expect(find.text('Đang học 1'), findsOneWidget);
-      expect(find.text('Chờ xếp lớp 1'), findsOneWidget);
-      expect(find.text('Đã nghỉ học 1'), findsOneWidget);
-      expect(find.textContaining('Ngày sinh 14/03/2022'), findsOneWidget);
-      expect(find.text('Phụ huynh Mẹ: 0912345678'), findsOneWidget);
+      expect(
+        find.textContaining('Lớp học · Mầm 3A · 3 bé', findRichText: true),
+        findsOneWidget,
+      );
+      expect(find.text('Ngày sinh 14/03/2022'), findsOneWidget);
+      expect(find.text('4 tuổi · Mẹ: 0912345678'), findsOneWidget);
+      // Bé đang học không có nhãn; bé chờ xếp lớp, đã nghỉ có nhãn
+      expect(find.text('Đang học'), findsNothing);
+      expect(find.text('Chờ xếp lớp'), findsOneWidget);
+      expect(find.text('Đã nghỉ học'), findsOneWidget);
     },
   );
 
-  testWidgets('Lọc theo trạng thái và tìm không dấu', (tester) async {
+  testWidgets('Tìm không dấu; không khớp ⇒ trạng thái rỗng', (tester) async {
     await pumpRoster(tester);
-    await tester.tap(find.text('Chờ xếp lớp 1'));
-    await tester.pump();
-    expect(find.text('Lê Hoàng Nam'), findsOneWidget);
-    expect(find.text('Nguyễn Minh Anh'), findsNothing);
-    await tester.tap(find.text('Tổng số trẻ 3'));
-    await tester.pump();
     await tester.enterText(find.byType(TextField), 'khanh linh');
     await tester.pump();
     expect(find.text('Phạm Khánh Linh'), findsOneWidget);
     expect(find.text('Lê Hoàng Nam'), findsNothing);
+    await tester.enterText(find.byType(TextField), 'zzz');
+    await tester.pump();
+    expect(find.text('Không có bé nào khớp'), findsOneWidget);
   });
 
   testWidgets('Chạm trẻ ⇒ biểu đồ và bảng số liệu, lịch sử khám cân đo', (

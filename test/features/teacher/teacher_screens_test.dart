@@ -102,18 +102,18 @@ void main() {
       expect(find.text('Mầm 3A · 2/${kids.length}'), findsOneWidget);
       expect(find.widgetWithText(AppButton, 'Lưu'), findsNothing);
 
-      await tester.tap(find.byTooltip('Trẻ sau'));
+      await tester.tap(find.byTooltip('Bé sau'));
       await tester.pumpAndSettle();
       expect(find.text(kids[2].fullName), findsOneWidget);
-      await tester.tap(find.byTooltip('Trẻ trước'));
+      await tester.tap(find.byTooltip('Bé trước'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Trẻ trước'));
+      await tester.tap(find.byTooltip('Bé trước'));
       await tester.pumpAndSettle();
       expect(find.text(kids.first.fullName), findsOneWidget);
 
       await tester.tap(find.text(kids.first.fullName));
       await tester.pumpAndSettle();
-      expect(find.text('Chọn trẻ'), findsOneWidget);
+      expect(find.text('Chọn bé'), findsOneWidget);
       await tester.tap(find.text(kids[4].fullName).last);
       await tester.pumpAndSettle();
       expect(find.text('Mầm 3A · 5/${kids.length}'), findsOneWidget);
@@ -150,7 +150,7 @@ void main() {
 
     await tester.tap(find.text('Đề xuất'));
     await tester.pumpAndSettle();
-    expect(find.text('Chờ PHT xem xét'), findsOneWidget);
+    expect(find.text('Đang lập'), findsOneWidget);
   });
 
   testWidgets(
@@ -161,7 +161,7 @@ void main() {
         tester,
         PickupListScreen(onVerify: noop, source: source),
       );
-      expect(find.textContaining('Đã đón ('), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp(r'^Đã đón: \d+$')), findsOneWidget);
       expect(find.textContaining('Đăng ký'), findsNothing);
 
       var done = false;
@@ -248,7 +248,7 @@ void main() {
         tester,
         HealthMeasureListScreen(onOpenKid: noop, source: source),
       );
-      expect(find.text('Đã nhập 13/28 trẻ'), findsOneWidget);
+      expect(find.text('13/28 bé'), findsOneWidget);
       expect(find.text('104 cm · 17,2 kg · 05/11 · BMI 15,9'), findsOneWidget);
 
       await pumpScreen(

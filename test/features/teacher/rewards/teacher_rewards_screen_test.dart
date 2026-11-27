@@ -171,7 +171,7 @@ void main() {
     );
     await tester.tap(find.text('Đề xuất'));
     await tester.pumpAndSettle();
-    expect(find.text('Chờ PHT xem xét'), findsOneWidget);
+    expect(find.text('Đang lập'), findsOneWidget);
     expect(find.text('Có mặt 152/160 · Bé chăm ngoan'), findsOneWidget);
     expect(find.text('Có mặt 131/160 · Bé ngoan (gợi ý)'), findsOneWidget);
   });

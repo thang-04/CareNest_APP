@@ -36,32 +36,23 @@ class _PastBoardSource extends FakePickupSource {
 }
 
 void main() {
-  testWidgets('tab Chờ đón / Tất cả / Đã đón có số đếm, lọc theo tab', (
+  testWidgets('số Đã đón / Chờ đón, ô tìm, dòng chờ đón có nút Trả trẻ', (
     tester,
   ) async {
     await pump(
       tester,
       PickupListScreen(onVerify: noop, source: FakePickupSource()),
     );
-    expect(find.text('Đón trẻ'), findsOneWidget);
-    expect(find.text('Chờ đón (7)'), findsOneWidget);
-    expect(find.textContaining('Đã đón ('), findsOneWidget);
-    expect(find.text('Tìm tên trẻ...'), findsOneWidget);
+    expect(find.bySemanticsLabel('Chờ đón: 7'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp(r'^Đã đón: \d+$')), findsOneWidget);
+    expect(find.text('Tìm tên bé…'), findsOneWidget);
     expect(find.text('Hôm nay'), findsOneWidget);
-    expect(find.text('Trả trẻ'), findsWidgets);
-    expect(find.text('1 lần không trả trẻ'), findsOneWidget);
-
-    await tester.tap(find.textContaining('Đã đón ('));
-    await tester.pumpAndSettle();
-    expect(find.text('Trả trẻ'), findsNothing);
-    expect(find.text('Khớp ảnh đăng ký'), findsWidgets);
+    expect(find.widgetWithText(AppButton, 'Trả trẻ'), findsWidgets);
+    expect(find.text('Chờ đón · 1 lần không trả trẻ'), findsOneWidget);
   });
 
-  testWidgets('Trả trẻ gọi onVerify; Gọi phụ huynh chỉ hiện khi có onCall', (
-    tester,
-  ) async {
+  testWidgets('Trả trẻ gọi onVerify với bé đang chờ đón', (tester) async {
     final verified = <String>[];
-    final called = <String>[];
     await pump(
       tester,
       PickupListScreen(
@@ -69,19 +60,6 @@ void main() {
         source: FakePickupSource(),
       ),
     );
-    expect(find.text('Gọi phụ huynh'), findsNothing);
-
-    await pump(
-      tester,
-      PickupListScreen(
-        onVerify: (id) async => verified.add(id),
-        onCall: (id) async => called.add(id),
-        source: FakePickupSource(),
-      ),
-    );
-    await tester.tap(find.widgetWithText(AppButton, 'Gọi phụ huynh').first);
-    await tester.pumpAndSettle();
-    expect(called, hasLength(1));
     await tester.tap(find.widgetWithText(AppButton, 'Trả trẻ').first);
     await tester.pumpAndSettle();
     expect(verified, hasLength(1));
@@ -102,7 +80,6 @@ void main() {
     );
     expect(find.text('Đang xem lịch sử, không sửa được'), findsOneWidget);
     expect(find.widgetWithText(AppButton, 'Trả trẻ'), findsNothing);
-    expect(find.widgetWithText(AppButton, 'Gọi phụ huynh'), findsNothing);
   });
 
   testWidgets('BE báo ngày xem không phải hôm nay ⇒ chỉ xem', (tester) async {
