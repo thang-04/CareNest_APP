@@ -167,4 +167,69 @@ void main() {
     expect(today.child.fullName, 'Nguyễn Minh Anh');
     expect(today.unreadNotifications, 0);
   });
+
+  Map<String, Object?> leave({
+    int childId = 5,
+    String status = 'SUBMITTED',
+    bool noticeOnly = true,
+  }) => {
+    'id': 1,
+    'childId': childId,
+    'fromDate': '2026-11-25',
+    'toDate': '2026-11-25',
+    'part': 'AFTERNOON',
+    'status': status,
+    'noticeOnly': noticeOnly,
+  };
+
+  test('loadToday_noticeOnlyAfternoonToday_flagged (ATT-05b)', () async {
+    api.routes['GET /children/5/attendance/today'] = (_) => {
+      'date': '2026-11-25',
+      'status': 'PRESENT',
+    };
+    api.routes['GET /leave-requests/me'] = (_) => [leave()];
+
+    final today = await LiveParentHomeSource(api, session).loadToday('5');
+
+    expect(today.afternoonNoticeSent, isTrue);
+  });
+
+  test('loadToday_cancelledOrOtherChildNotice_notFlagged', () async {
+    api.routes['GET /children/5/attendance/today'] = (_) => {
+      'date': '2026-11-25',
+      'status': 'PRESENT',
+    };
+    api.routes['GET /leave-requests/me'] = (_) => [
+      leave(status: 'CANCELLED'),
+      leave(childId: 3),
+      leave(noticeOnly: false),
+    ];
+
+    final today = await LiveParentHomeSource(api, session).loadToday('5');
+
+    expect(today.afternoonNoticeSent, isFalse);
+  });
+
+  test('loadToday_menuPublished_fromParentMenu (PAR-14)', () async {
+    api.routes['GET /children/5/attendance/today'] = (_) => {
+      'date': '2026-11-25',
+      'status': 'PRESENT',
+    };
+    api.routes['GET /children/5/menu'] = (_) => {'published': true};
+
+    final today = await LiveParentHomeSource(api, session).loadToday('5');
+
+    expect(today.menuPublished, isTrue);
+  });
+
+  test('loadToday_menuFails_notPublished_homeStillLoads', () async {
+    api.routes['GET /children/5/attendance/today'] = (_) => {
+      'date': '2026-11-25',
+      'status': 'PRESENT',
+    };
+
+    final today = await LiveParentHomeSource(api, session).loadToday('5');
+
+    expect(today.menuPublished, isFalse);
+  });
 }

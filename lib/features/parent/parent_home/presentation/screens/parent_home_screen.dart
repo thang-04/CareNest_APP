@@ -30,7 +30,7 @@ class ParentHomeScreen extends StatefulWidget {
 
   final ParentHomeSource? source;
 
-  /// Phiên thật: thực đơn tuần, hoạt động trong ngày chưa có API ở BE ⇒ "Sắp có" (user 25/11, Q1).
+  /// Phiên thật: trang chủ không tải tên hoạt động trong ngày ⇒ ô Hoạt động mời "Xem".
   final bool live;
 
   /// Tài khoản GV kiêm phụ huynh (AUTH-21) ⇒ nút "Giáo viên" chuyển chế độ; null ⇒ ẩn.
@@ -278,7 +278,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
       onOpenActivities: () => _push(RoutePaths.parentActivities),
       // Hồ sơ của bé nằm ở tab Bé của tôi (user 18/11) ⇒ chuyển tab, không mở màn con
       onOpenProfile: () => context.go(RoutePaths.parentChild),
-      menuComingSoon: widget.live,
+      activityNotLoaded: widget.live,
     );
     if (others.isEmpty) return card;
     // Bé khác nằm dưới thẻ đang chọn: vẽ trước, kéo lên, thẻ đang chọn đè lên mép trên

@@ -22,13 +22,13 @@ class ChildWalletCard extends StatelessWidget {
     required this.onOpenMenu,
     required this.onOpenActivities,
     required this.onOpenProfile,
-    this.menuComingSoon = false,
+    this.activityNotLoaded = false,
   });
 
   final ParentToday today;
 
-  /// BE chưa có API thực đơn tuần cho phụ huynh ⇒ ô ghi "Sắp có" (Q1).
-  final bool menuComingSoon;
+  /// Phiên thật không tải tên hoạt động ở trang chủ ⇒ ô Hoạt động mời "Xem".
+  final bool activityNotLoaded;
   final VoidCallback onOpenAttendance;
   final VoidCallback onOpenMenu;
   final VoidCallback onOpenActivities;
@@ -60,7 +60,12 @@ class ChildWalletCard extends StatelessWidget {
                       ),
                     ),
                     if (today.absentPart case final part?)
-                      Text(part.label, style: textTheme.bodyMedium),
+                      Text(part.label, style: textTheme.bodyMedium)
+                    else if (today.afternoonNoticeSent)
+                      Text(
+                        'Đã báo cô nghỉ buổi chiều',
+                        style: textTheme.bodyMedium,
+                      ),
                   ],
                 ),
               ),
@@ -87,18 +92,15 @@ class ChildWalletCard extends StatelessWidget {
               ),
               _StripCell(
                 label: 'Thực đơn',
-                value: menuComingSoon
-                    ? 'Sắp có'
-                    : today.menuPublished
-                    ? 'Đã công bố'
-                    : 'Chưa công bố',
+                value: today.menuPublished ? 'Đã công bố' : 'Chưa công bố',
                 onTap: onOpenMenu,
               ),
               _StripCell(
                 label: 'Hoạt động',
                 // Phiên thật không tải tên hoạt động ở trang chủ ⇒ mời mở màn hoạt động
                 value:
-                    today.activityTitle ?? (menuComingSoon ? 'Xem' : 'Chưa có'),
+                    today.activityTitle ??
+                    (activityNotLoaded ? 'Xem' : 'Chưa có'),
                 onTap: onOpenActivities,
               ),
             ],

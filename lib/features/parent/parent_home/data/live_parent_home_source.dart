@@ -4,7 +4,8 @@ import 'package:carenest_app/features/parent/parent_home/data/fake_parent_home_s
 import 'package:carenest_app/features/parent/parent_home/domain/parent_today.dart';
 
 /// Trang chủ phụ huynh từ BE: con = `childIds` của `/accounts/me` + `GET /children/{id}/profile`,
-/// hôm nay = `GET /children/{id}/attendance/today` (ATT-15), số chưa đọc = `GET /me/notifications`.
+/// hôm nay = `GET /children/{id}/attendance/today` (ATT-15), số chưa đọc = `GET /me/notifications`,
+/// thực đơn tuần đã công bố = `GET /children/{id}/menu` (PAR-14).
 class LiveParentHomeSource implements ParentHomeSource {
   LiveParentHomeSource(this._api, this._session);
 
@@ -54,10 +55,28 @@ class LiveParentHomeSource implements ParentHomeSource {
           .json('GET', '/me/notifications?limit=1')
           .then<Object?>((feed) => feed, onError: (_) => const {}),
       loadChildren(),
+      // Đơn chỉ báo cô hôm nay (ATT-05b); lỗi tải ⇒ bỏ dòng này, không hỏng trang chủ
+      _api
+          .json('GET', '/leave-requests/me')
+          .then<Object?>((list) => list, onError: (_) => const []),
+      // Ô Thực đơn: tuần hiện tại đã công bố chưa (PAR-14); lỗi ⇒ coi như chưa
+      _api
+          .json('GET', '/children/$childId/menu')
+          .then<Object?>((menu) => menu, onError: (_) => const {}),
     ]);
     final today = results[0]! as Map;
     final feed = results[1] as Map? ?? const {};
     var children = results[2]! as List<ChildSummary>;
+    final date = '${today['date']}';
+    final afternoonNoticeSent = (results[3] as List? ?? const [])
+        .whereType<Map>()
+        .any(
+          (leave) =>
+              '${leave['childId']}' == childId &&
+              leave['noticeOnly'] == true &&
+              leave['status'] != 'CANCELLED' &&
+              leave['fromDate'] == date,
+        );
     // Bé mới có trên tài khoản sau lần tải danh sách ⇒ tải lại một lần
     if (!children.any((child) => child.id == childId)) {
       _children = null;
@@ -81,6 +100,8 @@ class LiveParentHomeSource implements ParentHomeSource {
         'AFTERNOON' => AbsentPart.afternoon,
         _ => null,
       },
+      afternoonNoticeSent: afternoonNoticeSent,
+      menuPublished: (results[4] as Map? ?? const {})['published'] == true,
       unreadNotifications: (feed['unreadCount'] as num?)?.toInt() ?? 0,
     );
   }

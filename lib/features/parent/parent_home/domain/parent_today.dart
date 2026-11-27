@@ -59,6 +59,7 @@ class ParentToday {
     required this.unreadNotifications,
     this.arrivedAt,
     this.absentPart,
+    this.afternoonNoticeSent = false,
     this.menuPublished = false,
     this.activityTitle,
   });
@@ -72,6 +73,9 @@ class ParentToday {
 
   /// Nghỉ một buổi theo đơn (null = không nghỉ nửa buổi).
   final AbsentPart? absentPart;
+
+  /// Hôm nay có đơn nghỉ chiều sau giờ chốt (ATT-05b `noticeOnly`): chỉ báo cô, không đổi điểm danh/suất.
+  final bool afternoonNoticeSent;
   final int unreadNotifications;
 
   /// Chỉ thực đơn đã công bố mới có (NUT-08).

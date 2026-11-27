@@ -44,10 +44,12 @@ class _TodaySource implements ParentHomeSource {
   _TodaySource({
     this.attendance = ParentAttendanceStatus.notRecorded,
     this.absentPart,
+    this.afternoonNoticeSent = false,
   });
 
   final ParentAttendanceStatus attendance;
   final AbsentPart? absentPart;
+  final bool afternoonNoticeSent;
 
   static const child = ChildSummary(
     id: 'c-1',
@@ -66,6 +68,7 @@ class _TodaySource implements ParentHomeSource {
     child: child,
     attendance: attendance,
     absentPart: absentPart,
+    afternoonNoticeSent: afternoonNoticeSent,
     unreadNotifications: 0,
   );
 }
@@ -243,7 +246,7 @@ void main() {
     expect(find.text('Mẫu giáo 3A'), findsOneWidget);
   });
 
-  testWidgets('parentHome_live_menuComingSoon_activityOpens', (tester) async {
+  testWidgets('parentHome_live_menuStatus_activityOpens', (tester) async {
     SelectedChild.notifier.value = 'c-1';
     await pumpParentHome(
       tester,
@@ -251,8 +254,8 @@ void main() {
       source: _TodaySource(),
       live: true,
     );
-    // Q1: BE chưa có API thực đơn tuần ⇒ "Sắp có"; hoạt động trong ngày đã có API (EDU-37, 26/11)
-    expect(find.bySemanticsLabel('Thực đơn: Sắp có'), findsOneWidget);
+    // Thực đơn theo cờ BE (PAR-14), không còn "Sắp có"; hoạt động mời mở màn
+    expect(find.bySemanticsLabel('Thực đơn: Sắp có'), findsNothing);
     expect(find.bySemanticsLabel('Hoạt động: Xem'), findsOneWidget);
   });
 
@@ -267,6 +270,21 @@ void main() {
       ),
     );
     expect(find.text('Nghỉ buổi sáng theo đơn'), findsOneWidget);
+  });
+
+  testWidgets('parentHome_noticeOnlyAfternoon_showsLine (ATT-05b)', (
+    tester,
+  ) async {
+    SelectedChild.notifier.value = 'c-1';
+    await pumpParentHome(
+      tester,
+      FakeMode.data,
+      source: _TodaySource(
+        attendance: ParentAttendanceStatus.present,
+        afternoonNoticeSent: true,
+      ),
+    );
+    expect(find.text('Đã báo cô nghỉ buổi chiều'), findsOneWidget);
   });
 
   testWidgets('parentHome_403_showsBeReason', (tester) async {
