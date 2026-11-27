@@ -11,11 +11,24 @@ class FakeKitchenMenuSource implements KitchenMenuSource {
     blocks: [
       MenuBlockDishes(
         label: 'Nhà trẻ',
-        dishes: ['Cháo thịt bằm bí đỏ', 'Sữa chua'],
+        dishes: [
+          KitchenDish(name: 'Cháo thịt bằm bí đỏ'),
+          KitchenDish(name: 'Sữa chua', allergens: ['Sữa']),
+        ],
       ),
       MenuBlockDishes(
         label: 'Mẫu giáo',
-        dishes: ['Cơm trắng', 'Cá basa sốt cà chua', 'Canh rau ngót'],
+        dishes: [
+          KitchenDish(name: 'Cơm trắng'),
+          KitchenDish(
+            name: 'Cá basa sốt cà chua',
+            allergens: ['Cá'],
+            warnings: [
+              DishAllergyWarning(allergen: 'Cá', byClass: ['Mầm 3A: 1 trẻ']),
+            ],
+          ),
+          KitchenDish(name: 'Canh rau ngót'),
+        ],
       ),
     ],
   );
@@ -33,7 +46,10 @@ class FakeKitchenMenuSource implements KitchenMenuSource {
                 session: 'MORNING',
                 label: 'Bữa phụ sáng',
                 blocks: [
-                  MenuBlockDishes(label: 'Nhà trẻ', dishes: ['Sữa tươi']),
+                  MenuBlockDishes(
+                    label: 'Nhà trẻ',
+                    dishes: [KitchenDish(name: 'Sữa tươi')],
+                  ),
                 ],
               ),
               _lunch,
@@ -43,7 +59,10 @@ class FakeKitchenMenuSource implements KitchenMenuSource {
                 blocks: [
                   MenuBlockDishes(
                     label: 'Mẫu giáo',
-                    dishes: ['Bánh flan', 'Nước cam'],
+                    dishes: [
+                      KitchenDish(name: 'Bánh flan', allergens: ['Trứng']),
+                      KitchenDish(name: 'Nước cam'),
+                    ],
                   ),
                 ],
               ),

@@ -23,7 +23,20 @@ class LiveKitchenMenuSource implements KitchenMenuSource {
           label: kitchenBlockLabels['${menu['menuBlock']}'] ?? '',
           dishes: [
             for (final dish in KitchenDayData.maps(menu['dishes']))
-              '${dish['name'] ?? ''}',
+              KitchenDish(
+                name: '${dish['name'] ?? ''}',
+                allergens: [
+                  for (final a in KitchenDayData.maps(dish['allergens']))
+                    '${a['name'] ?? ''}',
+                ],
+                warnings: [
+                  for (final w in KitchenDayData.maps(dish['allergyWarnings']))
+                    DishAllergyWarning(
+                      allergen: '${(w['allergen'] as Map?)?['name'] ?? ''}',
+                      byClass: _byClass(w['byClass']),
+                    ),
+                ],
+              ),
           ],
         ),
       );
@@ -40,6 +53,10 @@ class LiveKitchenMenuSource implements KitchenMenuSource {
       date: DateTime.parse('${day['date']}'),
       published: day['menuStatus'] == 'PUBLISHED',
       isDayOff: day['dayOff'] == true,
+      unmatched: [
+        for (final u in KitchenDayData.maps(day['unmatchedAllergies']))
+          '${u['name'] ?? ''} — ${_byClass(u['byClass']).join(', ')}',
+      ],
       sessions: [
         for (final session in kitchenSessionOrder)
           if (bySession[session] case final blocks?)
@@ -51,4 +68,10 @@ class LiveKitchenMenuSource implements KitchenMenuSource {
       ],
     );
   }
+
+  /// "Mầm 1: 2 trẻ" — chỉ số trẻ, không tên (AUTH-05).
+  static List<String> _byClass(Object? list) => [
+    for (final c in KitchenDayData.maps(list))
+      '${c['classroomName'] ?? ''}: ${KitchenDayData.count(c['count'])} trẻ',
+  ];
 }

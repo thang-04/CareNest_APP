@@ -148,8 +148,52 @@ class _KitchenMenuScreenState extends State<KitchenMenuScreen> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.space1),
-                for (final dish in block.dishes)
-                  Text(dish, style: textTheme.bodyMedium),
+                for (final dish in block.dishes) ...[
+                  Text(dish.name, style: textTheme.bodyMedium),
+                  // NUT-23: cảnh báo có biểu tượng + chữ, không chỉ màu
+                  for (final warning in dish.warnings) ...[
+                    const SizedBox(height: AppSpacing.space1),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          AppIcons.alertTriangle,
+                          size: AppSizes.iconBadge,
+                          color: AppColors.dangerText,
+                        ),
+                        const SizedBox(width: AppSpacing.space1),
+                        Expanded(
+                          child: Text(
+                            'Có ${warning.allergen} · '
+                            '${warning.byClass.join(' · ')}',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: AppColors.dangerText,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.space3),
+      ],
+      if (day.unmatched.isNotEmpty) ...[
+        AppCard(
+          dense: true,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Dị ứng đã khai chưa khớp danh mục chất',
+                style: textTheme.titleSmall,
+              ),
+              for (final item in day.unmatched) ...[
+                const SizedBox(height: AppSpacing.space1),
+                Text(item, style: textTheme.bodyMedium),
               ],
             ],
           ),
@@ -157,7 +201,7 @@ class _KitchenMenuScreenState extends State<KitchenMenuScreen> {
         const SizedBox(height: AppSpacing.space3),
       ],
       Text(
-        'Chỉ xem. Số suất thay thế theo lớp xem ở Suất ăn theo lớp.',
+        'Chỉ xem. Số trẻ dị ứng theo khai báo, không theo điểm danh; món không có cảnh báo chưa chắc an toàn.',
         style: textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
       ),
     ];

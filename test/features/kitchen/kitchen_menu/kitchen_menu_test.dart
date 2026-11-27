@@ -28,7 +28,22 @@ Map<String, Object?> _day(String date, {String status = 'PUBLISHED'}) => {
             'menuBlock': 'KINDERGARTEN',
             'dishes': [
               {'id': 3, 'code': 'D3', 'name': 'Cơm trắng'},
-              {'id': 4, 'code': 'D4', 'name': 'Cá basa sốt cà'},
+              {
+                'id': 4,
+                'code': 'D4',
+                'name': 'Cá basa sốt cà',
+                'allergens': [
+                  {'id': 2, 'code': 'FISH', 'name': 'Cá'},
+                ],
+                'allergyWarnings': [
+                  {
+                    'allergen': {'id': 2, 'code': 'FISH', 'name': 'Cá'},
+                    'byClass': [
+                      {'classroomId': 11, 'classroomName': 'Mầm 1', 'count': 2},
+                    ],
+                  },
+                ],
+              },
             ],
           },
           {
@@ -41,6 +56,14 @@ Map<String, Object?> _day(String date, {String status = 'PUBLISHED'}) => {
         ],
   'servings': <Object>[],
   'foods': <Object>[],
+  'unmatchedAllergies': [
+    {
+      'name': 'Hạt điều',
+      'byClass': [
+        {'classroomId': 11, 'classroomName': 'Mầm 1', 'count': 1},
+      ],
+    },
+  ],
 };
 
 void main() {
@@ -59,7 +82,15 @@ void main() {
       expect(day.sessions.map((s) => s.label), ['Bữa phụ sáng', 'Bữa trưa']);
       final lunch = day.sessions.last;
       expect(lunch.blocks.map((b) => b.label), ['Nhà trẻ', 'Mẫu giáo']);
-      expect(lunch.blocks.last.dishes, ['Cơm trắng', 'Cá basa sốt cà']);
+      expect(lunch.blocks.last.dishes.map((d) => d.name), [
+        'Cơm trắng',
+        'Cá basa sốt cà',
+      ]);
+      final fish = lunch.blocks.last.dishes.last;
+      expect(fish.allergens, ['Cá']);
+      expect(fish.warnings.single.allergen, 'Cá');
+      expect(fish.warnings.single.byClass, ['Mầm 1: 2 trẻ']);
+      expect(day.unmatched, ['Hạt điều — Mầm 1: 1 trẻ']);
     });
 
     test('otherDay_sendsDate_draftWeekNotPublished', () async {
@@ -100,6 +131,8 @@ void main() {
       expect(find.text('Bữa trưa'), findsOneWidget);
       expect(find.text('Mẫu giáo'), findsOneWidget);
       expect(find.text('Cá basa sốt cà'), findsOneWidget);
+      expect(find.text('Có Cá · Mầm 1: 2 trẻ'), findsOneWidget);
+      expect(find.textContaining('Hạt điều'), findsOneWidget);
 
       // Thứ Sáu 27/11 trong dải ngày tuần 23–27/11
       await tester.tap(find.text('27/11'));
