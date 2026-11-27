@@ -25,7 +25,8 @@ export const CHECKS = {
     label: "số tay trong BorderRadius/EdgeInsets/SizedBox — dùng AppSpacing/AppRadius/AppSizes",
     scope: /^features\//,
     skip: /^$/,
-    re: /BorderRadius\.circular\([1-9]|EdgeInsets\.[a-zA-Z]+\([^)]*[1-9]|SizedBox\((?:width|height): *[1-9]/g,
+    // Số đứng riêng, không phải chữ số trong tên hằng (AppSpacing.space1 hợp lệ)
+    re: /BorderRadius\.circular\([1-9]|EdgeInsets\.[a-zA-Z]+\([^)]*?(?<![\w.])[1-9]|SizedBox\((?:width|height): *[1-9]/g,
   },
   icon: {
     label: "Icons.* ở feature — dùng AppIcons",

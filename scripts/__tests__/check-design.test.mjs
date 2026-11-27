@@ -38,6 +38,22 @@ test("đếm đúng luật theo phạm vi, bỏ dòng comment, không nhầm App
   assert.deepEqual(m.hex, { [SCREEN]: 1 });
 });
 
+test("hằng có chữ số trong tên (AppSpacing.space1) không tính là số tay", () => {
+  const root = makeRepo({
+    [SCREEN]: [
+      "EdgeInsets.only(top: AppSpacing.space1);",
+      "EdgeInsets.only(",
+      "  left: AppSpacing.pagePadding,",
+      "  bottom: AppSpacing.space3,",
+      ");",
+      "EdgeInsets.symmetric(vertical: AppSpacing.space2);",
+      "EdgeInsets.only(top: 6);",
+      "EdgeInsets.fromLTRB(0, AppSpacing.space2, 0, 12);",
+    ].join("\n"),
+  });
+  assert.deepEqual(measure(root).rawNumber, { [SCREEN]: 2 });
+});
+
 test("file mới có vi phạm hoặc vượt baseline ⇒ FAIL; bằng baseline ⇒ ok", () => {
   const baseline = { icon: { [SCREEN]: 1 } };
   assert.deepEqual(compare({ icon: { [SCREEN]: 1 } }, baseline), []);
