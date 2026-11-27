@@ -26,14 +26,13 @@ class KitchenTask {
 /// Trạng thái số suất trong ngày theo BE `KitchenDayResponse.countStatus`.
 enum KitchenCountStatus { none, partial, confirmed }
 
-/// Số suất đã xác nhận một bữa. Tổng và số thay thế do nguồn dữ liệu trả (BE NUT-01), App không cộng.
+/// Số suất đã xác nhận một bữa (BE NUT-01). NUT-23 (25/11): không còn suất thay thế.
 @immutable
 class SessionServings {
   const SessionServings({
     required this.session,
     required this.label,
     required this.total,
-    required this.substitute,
     this.blockNote,
   });
 
@@ -43,7 +42,6 @@ class SessionServings {
   /// "Bữa phụ sáng"
   final String label;
   final int total;
-  final int substitute;
 
   /// "Nhà trẻ" khi chỉ một khối ăn bữa này (NUT-13, cấu hình nhóm tuổi của HT)
   final String? blockNote;
@@ -60,6 +58,7 @@ class KitchenToday {
     required this.tasks,
     this.confirmedAt,
     this.isDayOff = false,
+    this.allergyDishes = 0,
   });
 
   final DateTime date;
@@ -73,6 +72,9 @@ class KitchenToday {
   final DateTime? confirmedAt;
   final List<KitchenTask> tasks;
   final bool isDayOff;
+
+  /// Số món hôm nay có trẻ dị ứng (BE `allergyWarnings`, NUT-23) + dị ứng chưa khớp danh mục ⇒ nhắc 1 dòng
+  final int allergyDishes;
 }
 
 abstract interface class KitchenHomeSource {

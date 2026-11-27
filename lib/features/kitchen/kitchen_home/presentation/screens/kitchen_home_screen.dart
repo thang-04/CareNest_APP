@@ -164,6 +164,36 @@ class _KitchenHomeScreenState extends State<KitchenHomeScreen> {
           today: today,
           onOpenClasses: () => _open(RoutePaths.kitchenMeals),
         ),
+        if (today.allergyDishes > 0) ...[
+          const SizedBox(height: AppSpacing.space3),
+          // NUT-23: chỉ nhắc, chi tiết theo món ở tab Thực đơn; có icon + chữ, không chỉ màu
+          InkWell(
+            onTap: () => _open(RoutePaths.kitchenMenu),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppSizes.minimumTapTarget,
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    AppIcons.alertTriangle,
+                    size: AppSizes.iconBadge,
+                    color: AppColors.dangerText,
+                  ),
+                  const SizedBox(width: AppSpacing.space1),
+                  Expanded(
+                    child: Text(
+                      '${today.allergyDishes} món hôm nay có trẻ dị ứng · xem ở Thực đơn',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: AppColors.dangerText,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: AppSpacing.sectionGap),
         Semantics(
           header: true,
@@ -318,11 +348,7 @@ class _ServingRow extends StatelessWidget {
     final block = serving.blockNote;
     return Semantics(
       container: true,
-      label: [
-        serving.label,
-        ?block,
-        '${serving.total} suất, ${serving.substitute} thay thế',
-      ].join(', '),
+      label: [serving.label, ?block, '${serving.total} suất'].join(', '),
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.cardGap),
@@ -353,12 +379,6 @@ class _ServingRow extends StatelessWidget {
                   '${serving.total}',
                   style: textTheme.headlineSmall?.copyWith(
                     fontFeatures: AppTextStyles.tabularFigures,
-                  ),
-                ),
-                Text(
-                  '${serving.substitute} thay thế',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: AppColors.textMuted,
                   ),
                 ),
               ],

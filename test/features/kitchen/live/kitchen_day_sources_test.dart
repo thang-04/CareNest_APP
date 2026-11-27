@@ -35,7 +35,19 @@ Map<String, Object?> _day({bool dayOff = false}) => {
       'session': 'LUNCH',
       'menuBlock': 'KINDERGARTEN',
       'dishes': [
-        {'id': 3, 'code': 'D3', 'name': 'Cơm, cá kho'},
+        {
+          'id': 3,
+          'code': 'D3',
+          'name': 'Cơm, cá kho',
+          'allergyWarnings': [
+            {
+              'allergen': {'id': 2, 'code': 'FISH', 'name': 'Cá'},
+              'byClass': [
+                {'classroomId': 11, 'classroomName': 'Mầm 1', 'count': 1},
+              ],
+            },
+          ],
+        },
       ],
     },
   ],
@@ -138,9 +150,32 @@ void main() {
       expect(morning.total, 15);
       expect(morning.blockNote, 'Nhà trẻ');
       final lunch = today.servings.last;
-      expect(lunch.total, 37);
-      expect(lunch.substitute, 2);
+      // NUT-23: tổng = normal; BE giữ substitute = 0 cho client cũ, App bỏ qua
+      expect(lunch.total, 35);
       expect(lunch.blockNote, isNull);
+      // NUT-23: Trang chủ nhắc 1 dòng khi có món có trẻ dị ứng
+      expect(today.allergyDishes, 1);
+    });
+
+    test('campusLabel_fromAccountAssignment (AUTH-22)', () async {
+      session.account!['assignments'] = [
+        {'staffRole': 'KITCHEN_STAFF', 'campusId': 2, 'campusName': 'Cơ sở 2'},
+        {'staffRole': 'KITCHEN_STAFF', 'campusId': 1, 'campusName': 'Cơ sở 1'},
+      ];
+      final today = await LiveKitchenHomeSource(
+        _api(session),
+        account: () => session.account,
+      ).loadToday();
+      // Điểm trường của ngày bếp (campusId 1), không lấy dòng đầu
+      expect(today.campusLabel, 'Cơ sở 1');
+    });
+
+    test('campusLabel_noAssignment_empty', () async {
+      final today = await LiveKitchenHomeSource(
+        _api(session),
+        account: () => session.account,
+      ).loadToday();
+      expect(today.campusLabel, '');
     });
 
     test('sessionWaitingReconfirmation_isHidden', () async {
@@ -172,11 +207,8 @@ void main() {
       expect(sheet!.sessions.map((s) => s.session), ['MORNING', 'LUNCH']);
       final lunch = sheet.sessions.last;
       expect(lunch.classes.map((c) => c.className), ['Mầm 1', 'Nhà trẻ 1']);
-      expect(lunch.classes.first.regular, 20);
-      expect(lunch.classes.first.alternative, 2);
-      expect(lunch.total, 37);
-      expect(lunch.regular, 35);
-      expect(lunch.alternative, 2);
+      expect(lunch.classes.first.servings, 20);
+      expect(lunch.total, 35);
     });
 
     test('noConfirmedSession_isNull', () async {
