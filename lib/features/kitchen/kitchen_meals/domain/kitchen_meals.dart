@@ -20,6 +20,9 @@ class ClassMealCount {
 
   /// Lớp có yêu cầu điều chỉnh đang chờ xác nhận lại (NUT-03) ⇒ tô nhẹ dòng.
   final bool changed;
+
+  /// Tổng suất của lớp; bếp từ 25/11 chỉ hiện số này (NUT-23 bỏ suất thay thế).
+  int get servings => regular + alternative;
 }
 
 /// Suất đã xác nhận một bữa theo lớp (BE `KitchenDayResponse.servings` của một buổi).

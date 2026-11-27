@@ -92,13 +92,14 @@ void main() {
     expect(find.text('Bếp hôm nay'), findsOneWidget);
     expect(find.text('Thứ Hai, 12/10 · Cơ sở chính'), findsOneWidget);
     expect(find.text('PHT xác nhận 08:30'), findsOneWidget);
-    expect(
-      labelOf('Bữa phụ sáng'),
-      'Bữa phụ sáng, Nhà trẻ, 46 suất, 1 thay thế',
-    );
-    expect(labelOf('Bữa trưa'), 'Bữa trưa, 182 suất, 7 thay thế');
-    expect(labelOf('Bữa chiều'), 'Bữa chiều, 182 suất, 7 thay thế');
+    expect(labelOf('Bữa phụ sáng'), 'Bữa phụ sáng, Nhà trẻ, 46 suất');
+    expect(labelOf('Bữa trưa'), 'Bữa trưa, 182 suất');
+    expect(labelOf('Bữa chiều'), 'Bữa chiều, 182 suất');
     expect(find.text('Xem theo lớp'), findsOneWidget);
+    expect(
+      find.text('1 món hôm nay có trẻ dị ứng · xem ở Thực đơn'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('K01 (NUT-16, NUT-21): việc hôm nay từ ảnh mẫu và sổ lưu mẫu', (
@@ -218,13 +219,15 @@ void main() {
     expect(find.text('PHT xác nhận 08:30 · chỉ xem'), findsOneWidget);
     expect(find.text('Bữa phụ sáng · Nhà trẻ'), findsOneWidget);
     expect(find.bySemanticsLabel('Tổng suất: 46'), findsOneWidget);
-    expect(labelOf('Nhà trẻ 1'), 'Nhà trẻ 1, 23 suất thường, 1 suất thay thế');
+    expect(labelOf('Nhà trẻ 1'), 'Nhà trẻ 1, 24 suất');
     expect(find.text('Mầm 3A'), findsNothing);
 
     await tester.tap(find.text('Trưa'));
     await tester.pumpAndSettle();
     expect(find.bySemanticsLabel('Tổng suất: 182'), findsOneWidget);
-    expect(labelOf('Mầm 3A'), 'Mầm 3A, 24 suất thường, 1 suất thay thế');
+    expect(labelOf('Mầm 3A'), 'Mầm 3A, 25 suất');
+    // NUT-23 (25/11): chỉ cảnh báo dị ứng, không còn suất thay thế
+    expect(find.textContaining('thay thế'), findsNothing);
     // Không còn banner điều chỉnh chờ duyệt (NUT-03, NUT-04), không tên trẻ (AUTH-05)
     expect(find.textContaining('chờ'), findsNothing);
     expect(find.textContaining('Nguyễn'), findsNothing);

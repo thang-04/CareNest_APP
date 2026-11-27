@@ -7,12 +7,20 @@ import 'package:carenest_app/core/theme/app_text_styles.dart';
 import 'package:carenest_app/core/widgets/app_card.dart';
 import 'package:carenest_app/features/kitchen/kitchen_meals/domain/kitchen_meals.dart';
 
-/// Bảng suất theo lớp (thường / thay thế) — K03 bếp và V04 Phó HT. Số do BE trả; không tên trẻ.
+/// Bảng suất theo lớp — K03 bếp và V04 Phó HT. Số do BE trả; không tên trẻ.
 class MealCountTable extends StatelessWidget {
-  const MealCountTable({super.key, required this.classes, this.footer});
+  const MealCountTable({
+    super.key,
+    required this.classes,
+    this.footer,
+    this.showAlternative = true,
+  });
 
   final List<ClassMealCount> classes;
   final String? footer;
+
+  /// false ⇒ một cột "SUẤT" (NUT-23 25/11 bỏ suất thay thế); màn Phó HT xem thử giữ 2 cột cũ.
+  final bool showAlternative;
 
   @override
   Widget build(BuildContext context) {
@@ -41,19 +49,20 @@ class MealCountTable extends StatelessWidget {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      'THƯỜNG',
+                      showAlternative ? 'THƯỜNG' : 'SUẤT',
                       textAlign: TextAlign.end,
                       style: header,
                     ),
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      'THAY THẾ',
-                      textAlign: TextAlign.end,
-                      style: header,
+                  if (showAlternative)
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        'THAY THẾ',
+                        textAlign: TextAlign.end,
+                        style: header,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -63,8 +72,11 @@ class MealCountTable extends StatelessWidget {
               container: true,
               label: [
                 row.className,
-                '${row.regular} suất thường',
-                '${row.alternative} suất thay thế',
+                if (showAlternative) ...[
+                  '${row.regular} suất thường',
+                  '${row.alternative} suất thay thế',
+                ] else
+                  '${row.servings} suất',
                 ?row.note,
                 if (row.changed) 'có điều chỉnh chờ duyệt',
               ].join(', '),
@@ -97,19 +109,20 @@ class MealCountTable extends StatelessWidget {
                     Expanded(
                       flex: 2,
                       child: Text(
-                        '${row.regular}',
+                        showAlternative ? '${row.regular}' : '${row.servings}',
                         textAlign: TextAlign.end,
                         style: number,
                       ),
                     ),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        '${row.alternative}',
-                        textAlign: TextAlign.end,
-                        style: number?.copyWith(color: teal.foreground),
+                    if (showAlternative)
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          '${row.alternative}',
+                          textAlign: TextAlign.end,
+                          style: number?.copyWith(color: teal.foreground),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

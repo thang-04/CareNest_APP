@@ -145,17 +145,13 @@ class _SheetBody extends StatelessWidget {
               label: 'Tổng suất',
               tone: AppStatusTone.blue,
             ),
-            AppStatTile(value: '${session.regular}', label: 'Thường'),
-            AppStatTile(
-              value: '${session.alternative}',
-              label: 'Thay thế',
-              tone: AppStatusTone.teal,
-            ),
           ],
         ),
         const SizedBox(height: AppSpacing.space3),
         MealCountTable(
           classes: session.classes,
+          // NUT-23 (25/11): bếp không còn suất thay thế
+          showAlternative: false,
           footer: 'Chỉ xem. Số đổi khi PHT xác nhận lại điểm danh.',
         ),
       ],

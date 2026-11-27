@@ -16,15 +16,15 @@ class LiveKitchenMealsSource implements KitchenMealsSource {
     for (final count in data.confirmedCounts) {
       final session = '${count['session']}';
       final totals = count['totals'] as Map? ?? const {};
+      // NUT-23 (25/11): BE giữ substitute = 0 cho client cũ; App chỉ dùng normal
       final normal = KitchenDayData.count(totals['normal']);
-      final substitute = KitchenDayData.count(totals['substitute']);
       sessions.add(
         SessionMealCount(
           session: session,
           label: kitchenSessionLabels[session] ?? '',
-          total: normal + substitute,
+          total: normal,
           regular: normal,
-          alternative: substitute,
+          alternative: 0,
           blockNote: data.blockNote(session),
           classes: [
             for (final line in KitchenDayData.maps(data.day['servings']))
@@ -32,7 +32,7 @@ class LiveKitchenMealsSource implements KitchenMealsSource {
                 ClassMealCount(
                   className: '${line['classroomName'] ?? ''}',
                   regular: KitchenDayData.count(line['normal']),
-                  alternative: KitchenDayData.count(line['substitute']),
+                  alternative: 0,
                 ),
           ],
         ),
