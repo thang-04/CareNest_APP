@@ -12,11 +12,15 @@ class AppSegmented<T> extends StatelessWidget {
     required this.segments,
     required this.selected,
     required this.onChanged,
+    this.disabled = const {},
   });
 
   final List<(T, String)> segments;
   final T selected;
   final ValueChanged<T> onChanged;
+
+  /// Ô khóa: chữ mờ, chạm không đổi, trình đọc màn hình đọc "đã tắt". Lý do khóa do màn hiện bằng chữ.
+  final Set<T> disabled;
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +44,12 @@ class AppSegmented<T> extends StatelessWidget {
               child: Semantics(
                 button: true,
                 selected: value == selected,
+                enabled: !disabled.contains(value),
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onTap: () => onChanged(value),
+                  onTap: disabled.contains(value)
+                      ? null
+                      : () => onChanged(value),
                   child: AnimatedContainer(
                     duration: AppMotion.fast,
                     curve: AppMotion.curve,
@@ -68,7 +75,9 @@ class AppSegmented<T> extends StatelessWidget {
                         fontWeight: value == selected
                             ? FontWeight.w600
                             : FontWeight.w500,
-                        color: value == selected
+                        color: disabled.contains(value)
+                            ? AppColors.textDisabled
+                            : value == selected
                             ? AppColors.textPrimary
                             : AppColors.textSecondary,
                       ),

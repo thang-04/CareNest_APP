@@ -79,6 +79,39 @@ void main() {
     expect(selected, 'b');
   });
 
+  testWidgets('AppSegmented ô khóa không chọn được, đọc là đã tắt', (
+    tester,
+  ) async {
+    var selected = 'a';
+    await pumpWithTheme(
+      tester,
+      StatefulBuilder(
+        builder: (context, setState) => AppSegmented<String>(
+          segments: const [('a', 'Cả ngày'), ('b', 'Buổi chiều')],
+          selected: selected,
+          disabled: const {'a'},
+          onChanged: (value) => setState(() => selected = value),
+        ),
+      ),
+    );
+    expect(
+      tester.getSemantics(find.text('Cả ngày')),
+      matchesSemantics(
+        label: 'Cả ngày',
+        isButton: true,
+        hasEnabledState: true,
+        hasSelectedState: true,
+        isSelected: true,
+      ),
+    );
+    await tester.tap(find.text('Buổi chiều'));
+    await tester.pump();
+    expect(selected, 'b');
+    await tester.tap(find.text('Cả ngày'));
+    await tester.pump();
+    expect(selected, 'b');
+  });
+
   testWidgets('AppTextField mật khẩu bật/tắt hiện chữ, hiện lỗi dưới ô', (
     tester,
   ) async {
